@@ -1,0 +1,12 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "name": "evex-new",
+  "homepage": "https://evex-new.sh",
+  "include": [
+    "apps/agents/code-reviewer/registry.json",
+    "apps/agents/linear-sprint-triage/registry.json",
+    "apps/agents/incident-commander/registry.json",
+    "apps/agents/github-release-scout/registry.json",
+    "apps/agents/resend-lifecycle-mailer/registry.json"
+  ]
+}

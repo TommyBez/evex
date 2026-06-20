@@ -131,11 +131,11 @@ Most formatting and common issues are automatically fixed by Biome. Run `pnpm dl
 ### Running / lint / build (commands live in `package.json`)
 - Dev server: `pnpm dev` (runs `@evex-new/web` through Turborepo on port 3000).
 - Lint/format check: `pnpm run check` (ultracite/biome through Turborepo). Use `pnpm run fix` for auto-fixes.
-- Agent catalog: update `packages/agent-catalog/src/catalog.ts` when adding/changing an app in `apps/agents/*`; the catalog is source code, not a generated artifact.
-- Build: `pnpm build` (builds the web app and the current Eve app packages). `apps/web` currently uses `next build --webpack`; `next build` with Turbopack stayed in the compile phase locally without surfacing a useful error.
+- Agent catalog: update the root `registry.json` and the relevant `apps/agents/*/registry.json` when adding/changing an app; route handlers serve it through `loadRegistry` / `loadRegistryItem`.
+- Build: `pnpm build` (builds the web app and the current Eve app packages).
 
 ### Database (required to run the app)
-- `apps/web` reads `DATABASE_URL` for auth, profiles, favorites, and install metrics. Public agent metadata/files come from `packages/agent-catalog`.
+- `apps/web` reads `DATABASE_URL` for auth, profiles, favorites, and install metrics. Public agent metadata/files come from the source-owned shadcn registry files.
 - There are **no Drizzle migrations or a `drizzle.config.ts`**. Tables are defined only in `apps/web/lib/db/schema.ts` and must be created manually on a fresh database. Required tables: `user`, `session`, `account`, `verification` (better-auth, camelCase column names — do not rename) plus `agent_install_metric`, `agent_favorite`, and `profile`.
 - For local dev, set `BETTER_AUTH_URL=http://localhost:3000`, any `BETTER_AUTH_SECRET`, and `DATABASE_URL` in the environment used by `apps/web` (for example `apps/web/.env.local` or shell/Vercel project env).
 

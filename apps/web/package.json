@@ -1,6 +1,5 @@
 {
   "dependencies": {
-    "@evex-new/agent-catalog": "workspace:*",
     "@base-ui/react": "^1.5.0",
     "@vercel/analytics": "1.6.1",
     "@vercel/blob": "^2.4.0",
@@ -51,7 +50,7 @@
   },
   "name": "@evex-new/web",
   "scripts": {
-    "build": "next build --webpack",
+    "build": "next build",
     "check": "ultracite check",
     "dev": "next dev",
     "email:preview": "email dev --dir emails --port 3001",

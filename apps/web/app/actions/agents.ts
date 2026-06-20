@@ -1,11 +1,11 @@
 'use server'
 
-import { catalogAgents } from '@evex-new/agent-catalog'
 import { sql } from 'drizzle-orm'
 import { revalidateTag } from 'next/cache'
 import { cacheTags, getAgentTag, getAuthorAgentsTag } from '@/lib/cache-tags'
 import { db } from '@/lib/db'
 import { agentInstallMetric } from '@/lib/db/schema'
+import { getAgentBySlug } from '@/lib/queries'
 
 function revalidateRegistryCaches(slug: string, authorId: string) {
   revalidateTag(cacheTags.agents, 'max')
@@ -18,7 +18,7 @@ function revalidateRegistryCaches(slug: string, authorId: string) {
 // Increment install count. Called from the public registry endpoint, so it is
 // intentionally not user-scoped.
 export async function incrementInstallCount(slug: string): Promise<void> {
-  const agent = catalogAgents.find((candidate) => candidate.slug === slug)
+  const agent = await getAgentBySlug(slug)
   if (!agent) {
     return
   }
@@ -38,5 +38,5 @@ export async function incrementInstallCount(slug: string): Promise<void> {
       },
     })
 
-  revalidateRegistryCaches(slug, agent.author.id)
+  revalidateRegistryCaches(slug, agent.userId)
 }

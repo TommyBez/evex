@@ -25,16 +25,17 @@
 
 ## What is evex-new?
 
-[evex-new](https://evex-new.sh) is a community registry for [eve](https://eve.dev) agents. Browse code-owned agent apps, install one into a folder in seconds, and add your own through a pull request.
+[evex-new](https://evex-new.sh) is a community registry for [eve](https://eve.dev) agents. Browse code-owned agent apps, install one into a project folder in seconds, and add your own through a pull request.
 
 ```bash
 # one-time setup
 npx shadcn@latest registry add @evex-new=https://evex-new.sh/r/{name}.json
 
 # install any agent app by slug
+mkdir code-reviewer
+cd code-reviewer
 npx shadcn@latest add @evex-new/code-reviewer
 
-cd code-reviewer
 pnpm install
 pnpm dev
 ```
@@ -42,7 +43,7 @@ pnpm dev
 Direct URL installs work too:
 
 ```bash
-npx shadcn@latest add https://evex-new.sh/r/code-reviewer
+npx shadcn@latest add https://evex-new.sh/r/code-reviewer.json
 ```
 
 ## Features
@@ -70,8 +71,8 @@ Agent apps live under `apps/agents/<slug>`. The initial catalog contains:
 - `github-release-scout`
 - `resend-lifecycle-mailer`
 
-To add an agent, create a new app folder with `agent.catalog.json`, update
-`packages/agent-catalog/src/catalog.ts`, and open a pull request.
+To add an agent, create a new app folder with `registry.json`, include it from
+the root `registry.json`, and open a pull request.
 
 ## Development
 

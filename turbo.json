@@ -7,9 +7,6 @@
     "apps/*/.env.local"
   ],
   "tasks": {
-    "@evex-new/agent-catalog#build": {
-      "outputs": []
-    },
     "build": {
       "dependsOn": [
         "^build"

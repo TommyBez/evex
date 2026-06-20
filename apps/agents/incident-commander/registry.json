@@ -1,0 +1,122 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "items": [
+    {
+      "name": "incident-commander",
+      "type": "registry:item",
+      "title": "Incident Commander",
+      "description": "Designed for the first thirty minutes of an outage. It builds a factual timeline, tracks action items, and drafts stakeholder updates without blurring facts and assumptions.",
+      "author": "evex-new",
+      "categories": ["devops"],
+      "files": [
+        {
+          "path": "agent/agent.ts",
+          "type": "registry:file",
+          "target": "~/agent/agent.ts"
+        },
+        {
+          "path": "agent/instructions.md",
+          "type": "registry:file",
+          "target": "~/agent/instructions.md"
+        },
+        {
+          "path": "agent/skills/incident-comms/SKILL.md",
+          "type": "registry:file",
+          "target": "~/agent/skills/incident-comms/SKILL.md"
+        },
+        {
+          "path": "agent/skills/incident-comms/references/severity-matrix.md",
+          "type": "registry:file",
+          "target": "~/agent/skills/incident-comms/references/severity-matrix.md"
+        },
+        {
+          "path": "agent/skills/incident-comms/references/update-style.md",
+          "type": "registry:file",
+          "target": "~/agent/skills/incident-comms/references/update-style.md"
+        },
+        {
+          "path": "agent/subagents/mitigation_coordinator/agent.ts",
+          "type": "registry:file",
+          "target": "~/agent/subagents/mitigation_coordinator/agent.ts"
+        },
+        {
+          "path": "agent/subagents/mitigation_coordinator/instructions.md",
+          "type": "registry:file",
+          "target": "~/agent/subagents/mitigation_coordinator/instructions.md"
+        },
+        {
+          "path": "agent/subagents/mitigation_coordinator/tools/triage_actions.ts",
+          "type": "registry:file",
+          "target": "~/agent/subagents/mitigation_coordinator/tools/triage_actions.ts"
+        },
+        {
+          "path": "agent/subagents/status_writer/agent.ts",
+          "type": "registry:file",
+          "target": "~/agent/subagents/status_writer/agent.ts"
+        },
+        {
+          "path": "agent/subagents/status_writer/instructions.md",
+          "type": "registry:file",
+          "target": "~/agent/subagents/status_writer/instructions.md"
+        },
+        {
+          "path": "agent/subagents/status_writer/tools/format_update.ts",
+          "type": "registry:file",
+          "target": "~/agent/subagents/status_writer/tools/format_update.ts"
+        },
+        {
+          "path": "agent/subagents/timeline_builder/agent.ts",
+          "type": "registry:file",
+          "target": "~/agent/subagents/timeline_builder/agent.ts"
+        },
+        {
+          "path": "agent/subagents/timeline_builder/instructions.md",
+          "type": "registry:file",
+          "target": "~/agent/subagents/timeline_builder/instructions.md"
+        },
+        {
+          "path": "agent/subagents/timeline_builder/tools/find_gaps.ts",
+          "type": "registry:file",
+          "target": "~/agent/subagents/timeline_builder/tools/find_gaps.ts"
+        },
+        {
+          "path": "agent/tools/build_timeline.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/build_timeline.ts"
+        },
+        {
+          "path": "agent/tools/track_actions.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/track_actions.ts"
+        },
+        {
+          "path": "package.json",
+          "type": "registry:file",
+          "target": "~/package.json"
+        },
+        {
+          "path": "README.md",
+          "type": "registry:file",
+          "target": "~/README.md"
+        },
+        {
+          "path": "tsconfig.json",
+          "type": "registry:file",
+          "target": "~/tsconfig.json"
+        }
+      ],
+      "meta": {
+        "slug": "incident-commander",
+        "category": "devops",
+        "author": {
+          "id": "evex-new",
+          "name": "evex-new",
+          "url": "https://evex-new.sh"
+        },
+        "dependencies": ["date-fns", "zod"],
+        "createdAt": "2026-06-20T00:00:00.000Z",
+        "updatedAt": "2026-06-20T00:00:00.000Z"
+      }
+    }
+  ]
+}

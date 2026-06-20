@@ -5,7 +5,6 @@ import type { NextConfig } from 'next/types'
 const nextConfig: NextConfig = {
   cacheComponents: true,
   outputFileTracingRoot: path.join(process.cwd(), '../..'),
-  transpilePackages: ['@evex-new/agent-catalog'],
 }
 
 export default withBotId(nextConfig)

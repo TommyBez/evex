@@ -23,7 +23,7 @@ export async function getBaseUrl(): Promise<string> {
 }
 
 export function buildInstallCommand(baseUrl: string, slug: string): string {
-  return `npx shadcn@latest add ${baseUrl}/r/${slug}`
+  return `npx shadcn@latest add ${baseUrl}/r/${slug}.json`
 }
 
 export function buildRegistryCatalogUrl(baseUrl: string): string {

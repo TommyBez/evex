@@ -174,7 +174,7 @@ async function AgentDetailContent({ slug }: { slug: string }) {
         </h2>
         <p className="mt-1 text-muted-foreground text-sm">
           Set up the namespace once, then add this standalone eve app by name.
-          The registry writes files into a new {agent.slug}/ folder.
+          Run the command from the folder where you want the Eve app files.
         </p>
         <div className="mt-3 grid gap-3">
           <div className="grid gap-1.5">

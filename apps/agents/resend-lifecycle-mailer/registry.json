@@ -1,0 +1,57 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "items": [
+    {
+      "name": "resend-lifecycle-mailer",
+      "type": "registry:item",
+      "title": "Resend Lifecycle Mailer",
+      "description": "Builds event-driven lifecycle emails, previews exact recipients and HTML, and only sends through Resend when dry-run mode is disabled.",
+      "author": "evex-new",
+      "categories": ["support"],
+      "files": [
+        {
+          "path": "agent/agent.ts",
+          "type": "registry:file",
+          "target": "~/agent/agent.ts"
+        },
+        {
+          "path": "agent/instructions.md",
+          "type": "registry:file",
+          "target": "~/agent/instructions.md"
+        },
+        {
+          "path": "agent/tools/send_lifecycle_email.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/send_lifecycle_email.ts"
+        },
+        {
+          "path": "package.json",
+          "type": "registry:file",
+          "target": "~/package.json"
+        },
+        {
+          "path": "README.md",
+          "type": "registry:file",
+          "target": "~/README.md"
+        },
+        {
+          "path": "tsconfig.json",
+          "type": "registry:file",
+          "target": "~/tsconfig.json"
+        }
+      ],
+      "meta": {
+        "slug": "resend-lifecycle-mailer",
+        "category": "support",
+        "author": {
+          "id": "evex-new",
+          "name": "evex-new",
+          "url": "https://evex-new.sh"
+        },
+        "dependencies": ["resend", "zod"],
+        "createdAt": "2026-06-20T00:00:00.000Z",
+        "updatedAt": "2026-06-20T00:00:00.000Z"
+      }
+    }
+  ]
+}

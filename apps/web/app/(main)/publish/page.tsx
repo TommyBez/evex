@@ -12,9 +12,9 @@ export const metadata = createPageMetadata({
 
 const steps = [
   'Create a new app under apps/agents/<slug>.',
-  'Add agent.catalog.json with metadata, static author info, and dependencies.',
+  'Add registry.json with metadata, static author info, files, and targets.',
   'Keep the Eve source inside that app, including agent/ and optional evals/.',
-  'Update packages/agent-catalog/src/catalog.ts, then run pnpm check and pnpm build before opening the PR.',
+  'Run pnpm check and pnpm build before opening the PR.',
 ] as const
 
 export default function ContributeAgentPage() {

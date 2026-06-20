@@ -1,0 +1,122 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "items": [
+    {
+      "name": "code-reviewer",
+      "type": "registry:item",
+      "title": "Code Reviewer",
+      "description": "A reviewer tuned for changed behavior rather than style. It ranks hotspots first, then writes terse findings with impact, evidence, and the next thing to verify before merge.",
+      "author": "evex-new",
+      "categories": ["coding"],
+      "files": [
+        {
+          "path": "agent/agent.ts",
+          "type": "registry:file",
+          "target": "~/agent/agent.ts"
+        },
+        {
+          "path": "agent/instructions.md",
+          "type": "registry:file",
+          "target": "~/agent/instructions.md"
+        },
+        {
+          "path": "agent/skills/review-calibration/SKILL.md",
+          "type": "registry:file",
+          "target": "~/agent/skills/review-calibration/SKILL.md"
+        },
+        {
+          "path": "agent/skills/review-calibration/references/review-checklist.md",
+          "type": "registry:file",
+          "target": "~/agent/skills/review-calibration/references/review-checklist.md"
+        },
+        {
+          "path": "agent/skills/review-calibration/references/severity-scale.md",
+          "type": "registry:file",
+          "target": "~/agent/skills/review-calibration/references/severity-scale.md"
+        },
+        {
+          "path": "agent/subagents/risk_triager/agent.ts",
+          "type": "registry:file",
+          "target": "~/agent/subagents/risk_triager/agent.ts"
+        },
+        {
+          "path": "agent/subagents/risk_triager/instructions.md",
+          "type": "registry:file",
+          "target": "~/agent/subagents/risk_triager/instructions.md"
+        },
+        {
+          "path": "agent/subagents/risk_triager/tools/prioritize_files.ts",
+          "type": "registry:file",
+          "target": "~/agent/subagents/risk_triager/tools/prioritize_files.ts"
+        },
+        {
+          "path": "agent/subagents/security_reviewer/agent.ts",
+          "type": "registry:file",
+          "target": "~/agent/subagents/security_reviewer/agent.ts"
+        },
+        {
+          "path": "agent/subagents/security_reviewer/instructions.md",
+          "type": "registry:file",
+          "target": "~/agent/subagents/security_reviewer/instructions.md"
+        },
+        {
+          "path": "agent/subagents/security_reviewer/skills/boundary-checks.md",
+          "type": "registry:file",
+          "target": "~/agent/subagents/security_reviewer/skills/boundary-checks.md"
+        },
+        {
+          "path": "agent/subagents/security_reviewer/tools/check_boundary.ts",
+          "type": "registry:file",
+          "target": "~/agent/subagents/security_reviewer/tools/check_boundary.ts"
+        },
+        {
+          "path": "agent/subagents/test_designer/agent.ts",
+          "type": "registry:file",
+          "target": "~/agent/subagents/test_designer/agent.ts"
+        },
+        {
+          "path": "agent/subagents/test_designer/instructions.md",
+          "type": "registry:file",
+          "target": "~/agent/subagents/test_designer/instructions.md"
+        },
+        {
+          "path": "agent/subagents/test_designer/tools/propose_tests.ts",
+          "type": "registry:file",
+          "target": "~/agent/subagents/test_designer/tools/propose_tests.ts"
+        },
+        {
+          "path": "agent/tools/score_risk.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/score_risk.ts"
+        },
+        {
+          "path": "package.json",
+          "type": "registry:file",
+          "target": "~/package.json"
+        },
+        {
+          "path": "README.md",
+          "type": "registry:file",
+          "target": "~/README.md"
+        },
+        {
+          "path": "tsconfig.json",
+          "type": "registry:file",
+          "target": "~/tsconfig.json"
+        }
+      ],
+      "meta": {
+        "slug": "code-reviewer",
+        "category": "coding",
+        "author": {
+          "id": "evex-new",
+          "name": "evex-new",
+          "url": "https://evex-new.sh"
+        },
+        "dependencies": ["zod"],
+        "createdAt": "2026-06-20T00:00:00.000Z",
+        "updatedAt": "2026-06-20T00:00:00.000Z"
+      }
+    }
+  ]
+}

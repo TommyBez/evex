@@ -44,6 +44,7 @@ function EvexMark({ size = 54 }: { size?: number }) {
       style={{
         width: size,
         height: size,
+        display: 'flex',
         position: 'relative',
         flexShrink: 0,
         borderRadius: 8,

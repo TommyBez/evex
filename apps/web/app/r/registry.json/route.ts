@@ -1,13 +1,10 @@
 import { NextResponse } from 'next/server'
-import { listAgents } from '@/lib/queries'
-import { buildRegistryCatalog } from '@/lib/registry'
-import { getBaseUrl } from '@/lib/site-url'
+import { loadEvexRegistry } from '@/lib/registry'
 
-// Public shadcn registry catalog. The catalog powers CLI discovery
-// (`list`/`search`), while individual item URLs still serve file contents.
+// Public shadcn registry catalog. The loader resolves root `registry.json`
+// includes without requiring generated files under public/r.
 export async function GET() {
-  const [agents, baseUrl] = await Promise.all([listAgents(), getBaseUrl()])
-  const registry = buildRegistryCatalog(agents, baseUrl)
+  const registry = await loadEvexRegistry()
 
   return NextResponse.json(registry, {
     headers: {

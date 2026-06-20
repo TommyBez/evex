@@ -1,0 +1,57 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "items": [
+    {
+      "name": "github-release-scout",
+      "type": "registry:item",
+      "title": "GitHub Release Scout",
+      "description": "Connects to GitHub, gathers recently merged pull requests, and prepares release notes that preserve traceability to PR numbers, labels, and rollout risk.",
+      "author": "evex-new",
+      "categories": ["devops"],
+      "files": [
+        {
+          "path": "agent/agent.ts",
+          "type": "registry:file",
+          "target": "~/agent/agent.ts"
+        },
+        {
+          "path": "agent/instructions.md",
+          "type": "registry:file",
+          "target": "~/agent/instructions.md"
+        },
+        {
+          "path": "agent/tools/collect_merged_prs.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/collect_merged_prs.ts"
+        },
+        {
+          "path": "package.json",
+          "type": "registry:file",
+          "target": "~/package.json"
+        },
+        {
+          "path": "README.md",
+          "type": "registry:file",
+          "target": "~/README.md"
+        },
+        {
+          "path": "tsconfig.json",
+          "type": "registry:file",
+          "target": "~/tsconfig.json"
+        }
+      ],
+      "meta": {
+        "slug": "github-release-scout",
+        "category": "devops",
+        "author": {
+          "id": "evex-new",
+          "name": "evex-new",
+          "url": "https://evex-new.sh"
+        },
+        "dependencies": ["@octokit/rest", "zod"],
+        "createdAt": "2026-06-20T00:00:00.000Z",
+        "updatedAt": "2026-06-20T00:00:00.000Z"
+      }
+    }
+  ]
+}
