@@ -34,6 +34,7 @@ export function generateStaticParams() {
 }
 
 const MAX_RELATED_AGENTS = 3
+const METADATA_TITLE_MAX_LENGTH = 60
 const SUBAGENT_PATH_REGEX = /^agent\/subagents\/([^/]+)/
 
 function pluralize(count: number, singular: string, plural = `${singular}s`) {
@@ -54,16 +55,19 @@ function countFilesByKind(files: readonly AgentRegistryFile[]) {
   let tools = 0
 
   for (const file of files) {
-    if (file.path.includes('/skills/')) {
-      skills += 1
-    }
-    if (file.path.includes('/tools/')) {
-      tools += 1
-    }
-
     const subagentMatch = file.path.match(SUBAGENT_PATH_REGEX)
     if (subagentMatch?.[1]) {
       subagentNames.add(subagentMatch[1])
+      continue
+    }
+
+    if (file.path.includes('/skills/')) {
+      skills += 1
+      continue
+    }
+
+    if (file.path.includes('/tools/')) {
+      tools += 1
     }
   }
 
@@ -92,6 +96,20 @@ function getAgentInstallSummaryDescription({
       fileParts.length > 0 ? fileParts.join(' · ') : 'Core agent files only',
     requires: deps.length > 0 ? deps.join(', ') : 'Runs on the eve baseline',
   }
+}
+
+function getAgentMetadataTitle(agent: AgentWithAuthor): string {
+  const installTitle = `${agent.name} - install @evex/${agent.slug}`
+  if (installTitle.length <= METADATA_TITLE_MAX_LENGTH) {
+    return installTitle
+  }
+
+  const compactTitle = `${agent.name} - @evex/${agent.slug}`
+  if (compactTitle.length <= METADATA_TITLE_MAX_LENGTH) {
+    return compactTitle
+  }
+
+  return `${agent.name} | evex`
 }
 
 function compareRelatedAgents(
@@ -148,15 +166,16 @@ export async function generateMetadata({
   }
 
   const path = `/agents/${agent.slug}`
+  const title = getAgentMetadataTitle(agent)
 
   return {
-    title: `${agent.name} - install @evex/${agent.slug}`,
+    title,
     description: agent.description,
     alternates: {
       canonical: path,
     },
     openGraph: {
-      title: `${agent.name} - install @evex/${agent.slug}`,
+      title,
       description: agent.description,
       url: path,
       siteName: siteConfig.name,
@@ -170,7 +189,7 @@ export async function generateMetadata({
     },
     twitter: {
       card: 'summary_large_image',
-      title: `${agent.name} - install @evex/${agent.slug}`,
+      title,
       description: agent.description,
     },
   }
@@ -367,9 +386,9 @@ function AgentInstallSummary({
   const descriptions = getAgentInstallSummaryDescription({ deps, fileKinds })
   const summaryItems = [
     {
-      label: 'Best for',
+      label: 'Category',
       value: agent.category,
-      description: agent.description,
+      description: `${agent.category} agents and workflows`,
     },
     {
       label: 'Installs',

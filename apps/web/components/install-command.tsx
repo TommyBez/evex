@@ -1,7 +1,7 @@
 'use client'
 
 import { Check, Copy } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
@@ -49,15 +49,32 @@ export function InstallCommand({
   const [copyState, setCopyState] = useState<'copied' | 'failed' | 'idle'>(
     'idle',
   )
+  const resetTimeoutRef = useRef<number | null>(null)
+
+  useEffect(
+    () => () => {
+      if (resetTimeoutRef.current !== null) {
+        window.clearTimeout(resetTimeoutRef.current)
+      }
+    },
+    [],
+  )
 
   const copy = async () => {
+    if (resetTimeoutRef.current !== null) {
+      window.clearTimeout(resetTimeoutRef.current)
+    }
+
     try {
       await navigator.clipboard.writeText(command)
       setCopyState('copied')
     } catch {
       setCopyState('failed')
     }
-    window.setTimeout(() => setCopyState('idle'), 2000)
+    resetTimeoutRef.current = window.setTimeout(() => {
+      setCopyState('idle')
+      resetTimeoutRef.current = null
+    }, 2000)
   }
 
   const copied = copyState === 'copied'
