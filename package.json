@@ -8,6 +8,10 @@
   },
   "scripts": {
     "build": "turbo run build",
+    "db:generate": "pnpm --filter @evex-new/web db:generate",
+    "db:migrate": "pnpm --filter @evex-new/web db:migrate",
+    "db:push": "pnpm --filter @evex-new/web db:push",
+    "db:studio": "pnpm --filter @evex-new/web db:studio",
     "check": "turbo run check",
     "dev": "turbo run dev --filter=@evex-new/web",
     "email:preview": "pnpm --filter @evex-new/web email:preview",

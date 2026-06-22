@@ -41,6 +41,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/react-syntax-highlighter": "^15.5.13",
+    "drizzle-kit": "^0.31.10",
     "postcss": "^8.5",
     "postcss-loader": "^8.2.1",
     "tailwindcss": "^4.2.0",
@@ -52,12 +53,16 @@
   "scripts": {
     "build": "next build",
     "check": "ultracite check",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
     "dev": "next dev",
+    "db:studio": "drizzle-kit studio",
     "email:preview": "email dev --dir emails --port 3001",
     "fix": "ultracite fix",
     "start": "next start",
     "typecheck": "tsc --noEmit --pretty false",
-    "lint": "pnpm fix"
+    "lint": "pnpm fix",
+    "db:push": "drizzle-kit push"
   },
   "version": "0.1.0",
   "private": true,
