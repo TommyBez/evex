@@ -38,7 +38,7 @@ export function MobileNavMenu({
         </Button>
       </DrawerTrigger>
       <DrawerContent className="sm:hidden">
-        <DrawerHeader className="text-left">
+        <DrawerHeader className="text-left group-data-[vaul-drawer-direction=bottom]/drawer-content:text-left">
           <DrawerTitle>Menu</DrawerTitle>
         </DrawerHeader>
         <nav className="grid gap-1 px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)]">

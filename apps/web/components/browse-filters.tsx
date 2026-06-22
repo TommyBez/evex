@@ -43,7 +43,7 @@ export function BrowseFilters() {
         <InputGroupInput
           aria-label="Search agents"
           onChange={(e) => setParam('q', e.target.value)}
-          placeholder="Search agents by name, author, or description..."
+          placeholder="Search agents..."
           type="search"
           value={activeSearch}
         />

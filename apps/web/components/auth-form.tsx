@@ -12,7 +12,6 @@ import {
   CardContent,
   CardDescription,
   CardHeader,
-  CardTitle,
 } from '@/components/ui/card'
 import {
   Field,
@@ -172,9 +171,9 @@ export function AuthForm({ mode }: { mode: 'sign-in' | 'sign-up' }) {
         </Link>
         <Card className="w-full rounded-md border border-border shadow-[var(--shadow-card)] ring-0">
           <CardHeader>
-            <CardTitle className="font-semibold text-2xl">
+            <h1 className="font-semibold text-2xl">
               {isSignUp ? 'Create Account' : 'Welcome Back'}
-            </CardTitle>
+            </h1>
             <CardDescription>
               {isSignUp
                 ? 'Create your account with a one-time email code'

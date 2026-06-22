@@ -15,7 +15,7 @@ export function AgentCard({
   isFavorite?: boolean
 }) {
   return (
-    <Card className="group relative flex h-full w-full min-w-0 flex-col gap-4 rounded-md border border-border p-5 shadow-[var(--shadow-card)] ring-0 transition-colors hover:border-input hover:bg-muted/40">
+    <Card className="group relative flex h-full w-full min-w-0 flex-col gap-4 rounded-md border border-border p-5 shadow-[var(--shadow-card)] ring-0 transition-[background-color,border-color,box-shadow] focus-within:border-input focus-within:bg-muted/40 focus-within:ring-2 focus-within:ring-ring/20 hover:border-input hover:bg-muted/40">
       {/* Overlay link makes the whole card open the agent. The author link
           and favorite button sit above it (z-10) so they remain clickable. */}
       <Link
@@ -45,7 +45,7 @@ export function AgentCard({
           {agent.name}
         </h3>
         <p className="mt-1.5 line-clamp-2 text-pretty text-muted-foreground text-sm leading-relaxed">
-          {agent.title}
+          {agent.description}
         </p>
       </div>
       <div className="flex items-center justify-between gap-3 border-border border-t pt-3 text-muted-foreground text-xs">
@@ -71,7 +71,7 @@ export function AgentCard({
             <span className="truncate">{agent.authorName}</span>
           </span>
         )}
-        <span className="mono-label text-brand opacity-0 transition-opacity group-hover:opacity-100">
+        <span className="mono-label text-brand opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100">
           View →
         </span>
       </div>

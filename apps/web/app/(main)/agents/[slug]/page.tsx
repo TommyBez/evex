@@ -13,7 +13,7 @@ import { Card } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
 import { applyInstallCounts, getAgentRuntimeState } from '@/lib/agent-runtime'
-import type { AgentWithAuthor } from '@/lib/agent-types'
+import type { AgentRegistryFile, AgentWithAuthor } from '@/lib/agent-types'
 import { parseDependencies } from '@/lib/agents'
 import { createPageMetadata, getSiteUrl, siteConfig } from '@/lib/metadata'
 import {
@@ -31,6 +31,104 @@ import {
 export function generateStaticParams() {
   const agents = listStaticAgents()
   return agents.map((agent) => ({ slug: agent.slug }))
+}
+
+const MAX_RELATED_AGENTS = 3
+const SUBAGENT_PATH_REGEX = /^agent\/subagents\/([^/]+)/
+
+function pluralize(count: number, singular: string, plural = `${singular}s`) {
+  return `${count} ${count === 1 ? singular : plural}`
+}
+
+function formatUpdatedDate(date: Date): string {
+  return new Intl.DateTimeFormat('en', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  }).format(date)
+}
+
+function countFilesByKind(files: readonly AgentRegistryFile[]) {
+  const subagentNames = new Set<string>()
+  let skills = 0
+  let tools = 0
+
+  for (const file of files) {
+    if (file.path.includes('/skills/')) {
+      skills += 1
+    }
+    if (file.path.includes('/tools/')) {
+      tools += 1
+    }
+
+    const subagentMatch = file.path.match(SUBAGENT_PATH_REGEX)
+    if (subagentMatch?.[1]) {
+      subagentNames.add(subagentMatch[1])
+    }
+  }
+
+  return {
+    skills,
+    subagents: subagentNames.size,
+    tools,
+  }
+}
+
+function getAgentInstallSummaryDescription({
+  deps,
+  fileKinds,
+}: {
+  deps: readonly string[]
+  fileKinds: ReturnType<typeof countFilesByKind>
+}) {
+  const fileParts = [
+    fileKinds.subagents > 0 ? pluralize(fileKinds.subagents, 'subagent') : null,
+    fileKinds.skills > 0 ? pluralize(fileKinds.skills, 'skill file') : null,
+    fileKinds.tools > 0 ? pluralize(fileKinds.tools, 'tool') : null,
+  ].filter((part): part is string => Boolean(part))
+
+  return {
+    installs:
+      fileParts.length > 0 ? fileParts.join(' · ') : 'Core agent files only',
+    requires: deps.length > 0 ? deps.join(', ') : 'Runs on the eve baseline',
+  }
+}
+
+function compareRelatedAgents(
+  currentAgent: AgentWithAuthor,
+  installCounts: ReadonlyMap<string, number>,
+) {
+  return (left: AgentWithAuthor, right: AgentWithAuthor) => {
+    const leftCategoryMatch = left.category === currentAgent.category ? 1 : 0
+    const rightCategoryMatch = right.category === currentAgent.category ? 1 : 0
+
+    if (leftCategoryMatch !== rightCategoryMatch) {
+      return rightCategoryMatch - leftCategoryMatch
+    }
+
+    const leftInstalls = installCounts.get(left.id) ?? 0
+    const rightInstalls = installCounts.get(right.id) ?? 0
+    if (leftInstalls !== rightInstalls) {
+      return rightInstalls - leftInstalls
+    }
+
+    const leftUpdatedAt = left.updatedAt.getTime()
+    const rightUpdatedAt = right.updatedAt.getTime()
+    if (leftUpdatedAt !== rightUpdatedAt) {
+      return rightUpdatedAt - leftUpdatedAt
+    }
+
+    const currentAuthor = currentAgent.authorUsername?.toLowerCase() ?? ''
+    const leftAuthorMatch =
+      left.authorUsername?.toLowerCase() === currentAuthor ? 1 : 0
+    const rightAuthorMatch =
+      right.authorUsername?.toLowerCase() === currentAuthor ? 1 : 0
+    if (leftAuthorMatch !== rightAuthorMatch) {
+      return rightAuthorMatch - leftAuthorMatch
+    }
+
+    return left.name.localeCompare(right.name)
+  }
 }
 
 export async function generateMetadata({
@@ -52,13 +150,13 @@ export async function generateMetadata({
   const path = `/agents/${agent.slug}`
 
   return {
-    title: agent.name,
+    title: `${agent.name} - install @evex/${agent.slug}`,
     description: agent.description,
     alternates: {
       canonical: path,
     },
     openGraph: {
-      title: agent.name,
+      title: `${agent.name} - install @evex/${agent.slug}`,
       description: agent.description,
       url: path,
       siteName: siteConfig.name,
@@ -72,7 +170,7 @@ export async function generateMetadata({
     },
     twitter: {
       card: 'summary_large_image',
-      title: agent.name,
+      title: `${agent.name} - install @evex/${agent.slug}`,
       description: agent.description,
     },
   }
@@ -103,11 +201,14 @@ function AgentDetailContent({ slug }: { slug: string }) {
   const authorAgents = agent.authorUsername
     ? getStaticAgentsByAuthorUsername(agent.authorUsername)
     : []
+  const relatedCandidates = listStaticAgents().filter((a) => a.id !== agent.id)
   const directCommand = buildInstallCommand(baseUrl, agent.slug)
   const namespaceSetupCommand = buildNamespaceSetupCommand(baseUrl)
   const namespacedInstallCommand = buildNamespacedInstallCommand(agent.slug)
   const deps = parseDependencies(agent.dependencies)
-  const moreFromAuthor = authorAgents.filter((a) => a.id !== agent.id)
+  const moreFromAuthorCount = authorAgents.filter(
+    (a) => a.id !== agent.id,
+  ).length
 
   return (
     <main className="mx-auto w-full min-w-0 max-w-4xl px-4 py-10">
@@ -135,8 +236,8 @@ function AgentDetailContent({ slug }: { slug: string }) {
               <AgentDetailRuntimeControls agentId={agent.id} />
             </Suspense>
           </div>
-          <p className="mt-1 text-pretty text-muted-foreground">
-            {agent.title}
+          <p className="mt-1 max-w-2xl text-pretty text-muted-foreground">
+            {agent.description}
           </p>
           <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-muted-foreground text-sm">
             {agent.authorUsername ? (
@@ -177,23 +278,40 @@ function AgentDetailContent({ slug }: { slug: string }) {
           Set up the namespace once, then add this agent by name. Run the
           command from the existing Eve app where you want the agent installed.
         </p>
-        <div className="mt-3 grid gap-3">
-          <div className="grid gap-1.5">
-            <span className="mono-label text-muted-foreground">Setup once</span>
-            <InstallCommand command={namespaceSetupCommand} />
-          </div>
-          <div className="grid gap-1.5">
+        <AgentInstallSummary agent={agent} deps={deps} files={files} />
+        <div className="mt-4 grid gap-3">
+          <div className="grid gap-1.5 rounded-md border border-border bg-muted/30 p-3">
             <span className="mono-label text-muted-foreground">
-              Install agent
+              1. Setup namespace once
             </span>
-            <InstallCommand command={namespacedInstallCommand} />
+            <InstallCommand
+              command={namespaceSetupCommand}
+              label="@evex namespace setup command"
+            />
           </div>
-          <div className="grid gap-1.5">
-            <span className="mono-label text-muted-foreground">
+          <div className="grid gap-1.5 rounded-md border border-primary/30 bg-primary/5 p-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="mono-label text-muted-foreground">
+                2. Install agent
+              </span>
+              <Badge variant="secondary">Recommended</Badge>
+            </div>
+            <InstallCommand
+              command={namespacedInstallCommand}
+              label={`${agent.name} install command`}
+            />
+          </div>
+          <details className="group grid rounded-md border border-border bg-background p-3">
+            <summary className="mono-label cursor-pointer select-none text-muted-foreground transition-colors hover:text-foreground">
               Direct install
-            </span>
-            <InstallCommand command={directCommand} />
-          </div>
+            </summary>
+            <div className="mt-2">
+              <InstallCommand
+                command={directCommand}
+                label={`${agent.name} direct install command`}
+              />
+            </div>
+          </details>
         </div>
       </Card>
 
@@ -221,16 +339,69 @@ function AgentDetailContent({ slug }: { slug: string }) {
         <AgentFileViewer files={files} />
       </section>
 
-      {moreFromAuthor.length > 0 && (
-        <Suspense fallback={<MoreFromAuthorSkeleton />}>
-          <MoreFromAuthorSection
-            agents={moreFromAuthor}
+      {relatedCandidates.length > 0 && (
+        <Suspense fallback={<RelatedAgentsSkeleton />}>
+          <RelatedAgentsSection
+            agents={relatedCandidates}
             authorName={agent.authorName}
             authorUsername={agent.authorUsername ?? ''}
+            currentAgent={agent}
+            moreFromAuthorCount={moreFromAuthorCount}
           />
         </Suspense>
       )}
     </main>
+  )
+}
+
+function AgentInstallSummary({
+  agent,
+  deps,
+  files,
+}: {
+  agent: AgentWithAuthor
+  deps: readonly string[]
+  files: readonly AgentRegistryFile[]
+}) {
+  const fileKinds = countFilesByKind(files)
+  const descriptions = getAgentInstallSummaryDescription({ deps, fileKinds })
+  const summaryItems = [
+    {
+      label: 'Best for',
+      value: agent.category,
+      description: agent.description,
+    },
+    {
+      label: 'Installs',
+      value: pluralize(files.length, 'file'),
+      description: descriptions.installs,
+    },
+    {
+      label: 'Requires',
+      value: deps.length > 0 ? `${deps.length} dependencies` : 'No extras',
+      description: descriptions.requires,
+    },
+    {
+      label: 'Updated',
+      value: formatUpdatedDate(agent.updatedAt),
+      description: 'Source-owned registry metadata',
+    },
+  ]
+
+  return (
+    <dl className="mt-4 grid gap-px overflow-hidden rounded-md border border-border bg-border sm:grid-cols-2">
+      {summaryItems.map((item) => (
+        <div className="min-w-0 bg-background p-3" key={item.label}>
+          <dt className="mono-label text-muted-foreground">{item.label}</dt>
+          <dd className="mt-1 font-medium text-foreground text-sm capitalize">
+            {item.value}
+          </dd>
+          <p className="mt-1 line-clamp-2 text-muted-foreground text-xs leading-relaxed">
+            {item.description}
+          </p>
+        </div>
+      ))}
+    </dl>
   )
 }
 
@@ -266,7 +437,7 @@ async function AgentDetailRuntimeControls({ agentId }: { agentId: string }) {
   )
 }
 
-function MoreFromAuthorSkeleton() {
+function RelatedAgentsSkeleton() {
   return (
     <>
       <Separator className="my-8" />
@@ -285,14 +456,18 @@ function MoreFromAuthorSkeleton() {
   )
 }
 
-async function MoreFromAuthorSection({
+async function RelatedAgentsSection({
   agents,
   authorName,
   authorUsername,
+  currentAgent,
+  moreFromAuthorCount,
 }: {
   agents: readonly AgentWithAuthor[]
   authorName: string
   authorUsername: string
+  currentAgent: AgentWithAuthor
+  moreFromAuthorCount: number
 }) {
   const runtimeState = await getAgentRuntimeState(
     agents.map((agent) => agent.id),
@@ -301,6 +476,8 @@ async function MoreFromAuthorSection({
     agents,
     runtimeState.installCounts,
   )
+    .sort(compareRelatedAgents(currentAgent, runtimeState.installCounts))
+    .slice(0, MAX_RELATED_AGENTS)
 
   return (
     <>
@@ -308,16 +485,20 @@ async function MoreFromAuthorSection({
       <section>
         <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
           <h2 className="font-semibold text-foreground text-lg">
-            More From {authorName}
+            Related Agents
           </h2>
-          <Link
-            className="text-muted-foreground text-sm transition-colors hover:text-foreground"
-            href={`/authors/${authorUsername}`}
-          >
-            View Author →
-          </Link>
+          {authorUsername ? (
+            <Link
+              className="text-muted-foreground text-sm transition-colors hover:text-foreground"
+              href={`/authors/${authorUsername}`}
+            >
+              {moreFromAuthorCount > MAX_RELATED_AGENTS
+                ? `View all ${moreFromAuthorCount} by ${authorName} →`
+                : `View ${authorName} →`}
+            </Link>
+          ) : null}
         </div>
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {agentsWithInstalls.map((agent) => (
             <AgentCard
               agent={agent}

@@ -22,7 +22,7 @@ export function SiteFooter() {
         <nav className="flex items-center gap-1">
           <a
             aria-label="evex on GitHub"
-            className="inline-flex size-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+            className="inline-flex size-11 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground sm:size-9"
             href={REPO_URL}
             rel="noreferrer noopener"
             target="_blank"
@@ -31,7 +31,7 @@ export function SiteFooter() {
           </a>
           <a
             aria-label="TommyBez on X"
-            className="inline-flex size-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+            className="inline-flex size-11 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground sm:size-9"
             href={X_PROFILE_URL}
             rel="noreferrer noopener"
             target="_blank"

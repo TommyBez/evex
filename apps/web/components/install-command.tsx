@@ -5,24 +5,64 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
+function getCopyLabel({
+  copyState,
+  label,
+}: {
+  copyState: 'copied' | 'failed' | 'idle'
+  label: string
+}): string {
+  if (copyState === 'copied') {
+    return `Copied ${label}`
+  }
+  if (copyState === 'failed') {
+    return `Copy failed for ${label}`
+  }
+  return `Copy ${label}`
+}
+
+function getCopyStatusText({
+  copyLabel,
+  copyState,
+}: {
+  copyLabel: string
+  copyState: 'copied' | 'failed' | 'idle'
+}): string {
+  if (copyState === 'copied') {
+    return 'Copied'
+  }
+  if (copyState === 'failed') {
+    return 'Failed'
+  }
+  return copyLabel
+}
+
 export function InstallCommand({
   command,
   className,
+  label = 'install command',
 }: {
   command: string
   className?: string
+  label?: string
 }) {
-  const [copied, setCopied] = useState(false)
+  const [copyState, setCopyState] = useState<'copied' | 'failed' | 'idle'>(
+    'idle',
+  )
 
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(command)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
+      setCopyState('copied')
     } catch {
-      // Clipboard may be unavailable; ignore.
+      setCopyState('failed')
     }
+    window.setTimeout(() => setCopyState('idle'), 2000)
   }
+
+  const copied = copyState === 'copied'
+  const copyLabel = getCopyLabel({ copyState, label })
+  const copyStatusText = getCopyStatusText({ copyLabel, copyState })
 
   return (
     <div
@@ -37,12 +77,22 @@ export function InstallCommand({
       >
         $
       </span>
-      <code className="min-w-0 flex-1 overflow-x-auto whitespace-nowrap font-mono text-graphite-foreground text-sm">
+      <code className="min-w-0 flex-1 overflow-x-auto whitespace-pre-wrap break-words font-mono text-graphite-foreground text-sm sm:whitespace-nowrap">
         {command}
       </code>
+      <span
+        aria-live="polite"
+        className={cn(
+          'mono-label shrink-0 text-graphite-foreground/60',
+          copyState === 'idle' && 'sr-only',
+          copied && 'text-brand',
+        )}
+      >
+        {copyStatusText}
+      </span>
       <Button
-        aria-label="Copy install command"
-        className="size-8 shrink-0 text-graphite-foreground hover:bg-white/10 hover:text-graphite-foreground"
+        aria-label={copyLabel}
+        className="min-h-11 min-w-11 shrink-0 text-graphite-foreground hover:bg-white/10 hover:text-graphite-foreground sm:min-h-8 sm:min-w-8"
         onClick={copy}
         size="icon"
         type="button"

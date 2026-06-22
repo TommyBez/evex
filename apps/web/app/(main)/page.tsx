@@ -21,7 +21,7 @@ export default function HomePage({
   return (
     <>
       <Hero />
-      <main className="mx-auto w-full min-w-0 max-w-6xl px-4 pb-20">
+      <main className="mx-auto w-full min-w-0 max-w-6xl px-4 pb-20" id="agents">
         <section className="flex flex-col gap-6">
           <Suspense fallback={<FiltersSkeleton />}>
             <BrowseFilters />
@@ -38,7 +38,7 @@ export default function HomePage({
 function Hero() {
   return (
     <section className="w-full min-w-0">
-      <div className="mx-auto grid w-full min-w-0 max-w-6xl items-center gap-10 px-4 py-12 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:py-16">
+      <div className="mx-auto grid w-full min-w-0 max-w-6xl items-center gap-8 px-4 py-8 sm:px-6 sm:py-12 lg:grid-cols-[1.05fr_0.95fr] lg:gap-10 lg:py-16">
         <div className="min-w-0">
           <span className="mono-label inline-flex items-center gap-2 text-muted-foreground">
             <span
@@ -54,20 +54,20 @@ function Hero() {
             Browse agent configurations built for the eve framework, then add
             any of them to your project. Add your own by opening a pull request.
           </p>
-          <div className="mt-8 flex flex-wrap items-center gap-4">
+          <div className="mt-6 flex flex-wrap items-center gap-4 sm:mt-8">
             <Button
               className="h-10 rounded-md px-4"
-              render={
-                <a
-                  href="https://github.com/TommyBez/evex"
-                  rel="noreferrer noopener"
-                  target="_blank"
-                >
-                  Open Repository
-                </a>
-              }
+              render={<a href="#agents">Browse Agents</a>}
               size="lg"
             />
+            <a
+              className="inline-flex items-center gap-1.5 font-medium text-foreground text-sm underline-offset-4 transition-colors hover:text-brand hover:underline"
+              href="https://github.com/TommyBez/evex"
+              rel="noreferrer noopener"
+              target="_blank"
+            >
+              Open Repository
+            </a>
             <a
               className="inline-flex items-center gap-1.5 font-medium text-foreground text-sm underline-offset-4 transition-colors hover:text-brand hover:underline"
               href="https://eve.dev/docs/introduction"
@@ -102,7 +102,7 @@ async function Stats() {
   ]
 
   return (
-    <dl className="mt-12 flex items-center gap-10 border-border border-t pt-6">
+    <dl className="mt-8 flex items-center gap-8 border-border border-t pt-5 sm:mt-12 sm:gap-10 sm:pt-6">
       {items.map((item) => (
         <div className="flex flex-col gap-1" key={item.label}>
           <dd className="font-semibold text-2xl text-foreground tabular-nums">
@@ -126,7 +126,7 @@ function HeroDemo() {
           200 OK
         </span>
       </div>
-      <pre className="whitespace-pre-wrap break-words px-4 py-5 font-mono text-xs leading-relaxed sm:whitespace-pre sm:text-sm">
+      <pre className="max-h-40 whitespace-pre-wrap break-words px-4 py-4 font-mono text-xs leading-relaxed sm:max-h-none sm:whitespace-pre sm:py-5 sm:text-sm">
         <code>
           <span className="text-brand">$</span>{' '}
           <span className="text-graphite-foreground">
@@ -163,6 +163,22 @@ function HeroDemo() {
   )
 }
 
+function getResultContext({
+  category,
+  query,
+}: {
+  category?: string
+  query?: string
+}): string {
+  if (query) {
+    return `for "${query}"`
+  }
+  if (category && category !== 'all') {
+    return `in ${category}`
+  }
+  return 'available'
+}
+
 async function AgentResults({
   searchParams,
 }: {
@@ -174,6 +190,10 @@ async function AgentResults({
     staticAgents.map((agent) => agent.id),
   )
   const agents = applyInstallCounts(staticAgents, runtimeState.installCounts)
+  const hasActiveFilter = Boolean(q || (category && category !== 'all'))
+  const resultCountLabel =
+    agents.length === 1 ? '1 agent' : `${agents.length} agents`
+  const resultContext = getResultContext({ category, query: q })
 
   if (agents.length === 0) {
     return (
@@ -202,15 +222,20 @@ async function AgentResults({
   }
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {agents.map((agent) => (
-        <AgentCard
-          agent={agent}
-          isAuthenticated={runtimeState.isAuthenticated}
-          isFavorite={runtimeState.favoriteAgentIdSet.has(agent.id)}
-          key={agent.id}
-        />
-      ))}
+    <div className="grid gap-3">
+      <p className="mono-label text-muted-foreground">
+        {resultCountLabel} {hasActiveFilter ? resultContext : 'available'}
+      </p>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {agents.map((agent) => (
+          <AgentCard
+            agent={agent}
+            isAuthenticated={runtimeState.isAuthenticated}
+            isFavorite={runtimeState.favoriteAgentIdSet.has(agent.id)}
+            key={agent.id}
+          />
+        ))}
+      </div>
     </div>
   )
 }
