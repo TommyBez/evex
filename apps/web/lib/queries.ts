@@ -151,8 +151,12 @@ export async function getInstallCountMap(
 
 interface VerifiedAuthorProfile {
   avatarUrl: string | null
+  bio: string | null
   githubUrl: string
+  linkedinUrl: string | null
   name: string
+  twitterUrl: string | null
+  websiteUrl: string | null
 }
 
 async function getVerifiedAuthorProfileMap(
@@ -177,6 +181,10 @@ async function getVerifiedAuthorProfileMap(
         image: user.image,
         githubUsername: user.githubUsername,
         avatarUrl: profile.avatarUrl,
+        bio: profile.bio,
+        websiteUrl: profile.websiteUrl,
+        twitterUrl: profile.twitterUrl,
+        linkedinUrl: profile.linkedinUrl,
       })
       .from(user)
       .leftJoin(profile, eq(profile.userId, user.id))
@@ -193,8 +201,12 @@ async function getVerifiedAuthorProfileMap(
 
       profileMap.set(githubUsernameKey(githubUsername), {
         avatarUrl: row.avatarUrl ?? row.image ?? null,
+        bio: row.bio ?? null,
         githubUrl: githubProfileUrl(githubUsername),
+        linkedinUrl: row.linkedinUrl ?? null,
         name: row.name,
+        twitterUrl: row.twitterUrl ?? null,
+        websiteUrl: row.websiteUrl ?? null,
       })
     }
 
@@ -345,7 +357,7 @@ export async function getAgentsByAuthorUsername(
   ).sort(compareByInstalls)
 }
 
-export async function getStaticAuthorProfile(
+export async function getAuthorProfile(
   githubUsername: string,
 ): Promise<StaticAuthorProfile | null> {
   'use cache'
@@ -354,7 +366,11 @@ export async function getStaticAuthorProfile(
   cacheTag(getAuthorAgentsTag(githubUsernameKey(githubUsername)))
 
   const catalogAgents = getCatalogAgents()
-  const agents = await getAgentsByAuthorUsername(githubUsername)
+  const authorKey = githubUsernameKey(githubUsername)
+  const agents = catalogAgents.filter(
+    (agent) =>
+      githubUsernameKey(readAuthor(agent).githubUsername) === authorKey,
+  )
   const author = catalogAgents
     .map((agent) => readAuthor(agent))
     .find(
@@ -370,14 +386,28 @@ export async function getStaticAuthorProfile(
   const verifiedAuthor = (
     await getVerifiedAuthorProfileMap([author.githubUsername])
   ).get(githubUsernameKey(author.githubUsername))
+  const installCounts = await getInstallCountMap(
+    agents.map((agent) => readString(readMeta(agent).slug) ?? agent.name),
+  )
 
   return {
     agentCount: agents.length,
     avatarUrl: verifiedAuthor?.avatarUrl ?? author.avatarUrl ?? null,
+    bio: verifiedAuthor?.bio ?? null,
     githubUsername: author.githubUsername,
+    githubUrl: verifiedAuthor
+      ? githubProfileUrl(author.githubUsername)
+      : (author.url ?? null),
+    isVerified: Boolean(verifiedAuthor),
+    linkedinUrl: verifiedAuthor?.linkedinUrl ?? null,
     name: verifiedAuthor?.name ?? author.name,
-    totalInstalls: agents.reduce((sum, agent) => sum + agent.installCount, 0),
-    url: verifiedAuthor?.githubUrl ?? author.url ?? null,
+    totalInstalls: [...installCounts.values()].reduce(
+      (sum, installCount) => sum + installCount,
+      0,
+    ),
+    twitterUrl: verifiedAuthor?.twitterUrl ?? null,
+    url: verifiedAuthor?.websiteUrl ?? author.url ?? null,
+    websiteUrl: verifiedAuthor?.websiteUrl ?? null,
   }
 }
 

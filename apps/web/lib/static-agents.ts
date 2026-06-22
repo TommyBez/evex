@@ -195,10 +195,16 @@ export function getStaticAuthorProfile(
   return {
     agentCount: agents.length,
     avatarUrl: author.avatarUrl ?? null,
+    bio: null,
     githubUsername: author.githubUsername,
+    githubUrl: author.url ?? null,
+    isVerified: false,
+    linkedinUrl: null,
     name: author.name,
     totalInstalls: 0,
+    twitterUrl: null,
     url: author.url ?? null,
+    websiteUrl: null,
   }
 }
 

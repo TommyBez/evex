@@ -32,8 +32,14 @@ export interface AgentRegistryFile {
 export interface StaticAuthorProfile {
   agentCount: number
   avatarUrl: string | null
+  bio: string | null
+  githubUrl: string | null
   githubUsername: string
+  isVerified: boolean
+  linkedinUrl: string | null
   name: string
   totalInstalls: number
+  twitterUrl: string | null
   url: string | null
+  websiteUrl: string | null
 }

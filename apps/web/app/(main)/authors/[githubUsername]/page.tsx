@@ -2,21 +2,18 @@ import { ArrowLeft, Globe } from 'lucide-react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { Suspense } from 'react'
+import { type ReactNode, Suspense } from 'react'
 import { AgentCard } from '@/components/agent-card'
 import { AuthorAvatar } from '@/components/author-avatar'
+import { GitHubIcon, LinkedInIcon, XIcon } from '@/components/social-icons'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import {
-  applyInstallCounts,
-  getAgentRuntimeState,
-  sumInstallCounts,
-} from '@/lib/agent-runtime'
-import type { AgentWithAuthor } from '@/lib/agent-types'
+import { applyInstallCounts, getAgentRuntimeState } from '@/lib/agent-runtime'
+import type { AgentWithAuthor, StaticAuthorProfile } from '@/lib/agent-types'
 import { createPageMetadata, siteConfig } from '@/lib/metadata'
+import { getAuthorProfile } from '@/lib/queries'
 import {
   getStaticAgentsByAuthorUsername,
-  getStaticAuthorProfile,
   listStaticAgents,
 } from '@/lib/static-agents'
 
@@ -39,7 +36,7 @@ export async function generateMetadata({
   params: Promise<{ githubUsername: string }>
 }): Promise<Metadata> {
   const { githubUsername } = await params
-  const author = getStaticAuthorProfile(githubUsername)
+  const author = await getAuthorProfile(githubUsername)
   if (!author) {
     return createPageMetadata({
       title: 'Author not found',
@@ -49,7 +46,7 @@ export async function generateMetadata({
     })
   }
 
-  const description = `${author.name}'s eve agents on evex`
+  const description = author.bio || `${author.name}'s eve agents on evex`
   const path = `/authors/${author.githubUsername}`
 
   return {
@@ -74,22 +71,22 @@ export async function generateMetadata({
   }
 }
 
-export default function AuthorPage({
+export default async function AuthorPage({
   params,
 }: {
   params: Promise<{ githubUsername: string }>
 }) {
+  const { githubUsername } = await params
+
   return (
     <Suspense fallback={<AuthorSkeleton />}>
-      {params.then(({ githubUsername }) => (
-        <AuthorContent githubUsername={githubUsername} />
-      ))}
+      <AuthorContent githubUsername={githubUsername} />
     </Suspense>
   )
 }
 
-function AuthorContent({ githubUsername }: { githubUsername: string }) {
-  const author = getStaticAuthorProfile(githubUsername)
+async function AuthorContent({ githubUsername }: { githubUsername: string }) {
+  const author = await getAuthorProfile(githubUsername)
   const agents = getStaticAgentsByAuthorUsername(githubUsername)
   if (!author) {
     notFound()
@@ -115,26 +112,19 @@ function AuthorContent({ githubUsername }: { githubUsername: string }) {
           <h1 className="text-balance font-semibold text-2xl text-foreground">
             {author.name}
           </h1>
-          <p className="mt-2 max-w-xl text-pretty text-muted-foreground leading-relaxed">
-            {author.agentCount} {author.agentCount === 1 ? 'agent' : 'agents'}{' '}
-            published on evex
-            <Suspense fallback={<span>.</span>}>
-              <AuthorInstallSummary agents={agents} />
-            </Suspense>
+          <p className="mt-1 text-muted-foreground text-sm">
+            @{author.githubUsername}
           </p>
-          {author.url ? (
-            <Button
-              className="mt-4"
-              render={
-                <a href={author.url} rel="noreferrer noopener" target="_blank">
-                  <Globe aria-hidden="true" className="size-4" />
-                  Website
-                </a>
-              }
-              size="sm"
-              variant="outline"
-            />
+          {author.bio ? (
+            <p className="mt-3 max-w-xl whitespace-pre-wrap text-pretty text-muted-foreground leading-relaxed">
+              {author.bio}
+            </p>
           ) : null}
+          <p className="mt-3 max-w-xl text-pretty text-muted-foreground leading-relaxed">
+            {author.agentCount} {author.agentCount === 1 ? 'agent' : 'agents'}{' '}
+            published on evex with {author.totalInstalls} total installs.
+          </p>
+          <AuthorProfileLinks author={author} />
         </div>
       </header>
 
@@ -152,19 +142,6 @@ function AuthorContent({ githubUsername }: { githubUsername: string }) {
         </div>
       </section>
     </main>
-  )
-}
-
-async function AuthorInstallSummary({
-  agents,
-}: {
-  agents: readonly AgentWithAuthor[]
-}) {
-  const runtimeState = await getAgentRuntimeState(
-    agents.map((agent) => agent.id),
-  )
-  return (
-    <> with {sumInstallCounts(runtimeState.installCounts)} total installs.</>
   )
 }
 
@@ -192,6 +169,64 @@ async function AuthorAgentGrid({
         />
       ))}
     </>
+  )
+}
+
+function AuthorProfileLinks({ author }: { author: StaticAuthorProfile }) {
+  const links: { href: string; icon: ReactNode; label: string }[] = []
+
+  if (author.githubUrl) {
+    links.push({
+      href: author.githubUrl,
+      icon: <GitHubIcon className="size-4" />,
+      label: 'GitHub',
+    })
+  }
+
+  if (author.websiteUrl) {
+    links.push({
+      href: author.websiteUrl,
+      icon: <Globe aria-hidden="true" className="size-4" />,
+      label: 'Website',
+    })
+  }
+
+  if (author.twitterUrl) {
+    links.push({
+      href: author.twitterUrl,
+      icon: <XIcon className="size-4" />,
+      label: 'X',
+    })
+  }
+
+  if (author.linkedinUrl) {
+    links.push({
+      href: author.linkedinUrl,
+      icon: <LinkedInIcon className="size-4" />,
+      label: 'LinkedIn',
+    })
+  }
+
+  if (links.length === 0) {
+    return null
+  }
+
+  return (
+    <div className="mt-4 flex flex-wrap gap-2">
+      {links.map((link) => (
+        <Button
+          key={link.label}
+          render={
+            <a href={link.href} rel="noreferrer noopener" target="_blank">
+              {link.icon}
+              {link.label}
+            </a>
+          }
+          size="sm"
+          variant="outline"
+        />
+      ))}
+    </div>
   )
 }
 
