@@ -19,6 +19,7 @@ import { useRouter } from 'next/navigation'
 import { useTheme } from 'next-themes'
 import { useCallback, useEffect, useState } from 'react'
 import { GitHubIcon } from '@/components/social-icons'
+import { Button } from '@/components/ui/button'
 import {
   CommandEmpty,
   CommandGroup,
@@ -29,6 +30,7 @@ import {
 } from '@/components/ui/command'
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogTitle,
@@ -116,7 +118,7 @@ export function CommandMenu({
   return (
     <Dialog onOpenChange={handleOpenChange} open={open}>
       <DialogContent
-        className="top-[12vh] max-w-xl translate-y-0 overflow-hidden p-0 sm:max-w-xl"
+        className="top-0 left-0 flex h-dvh max-w-none translate-x-0 translate-y-0 flex-col overflow-hidden rounded-none p-0 ring-0 sm:top-[12vh] sm:left-1/2 sm:h-auto sm:max-w-xl sm:-translate-x-1/2 sm:rounded-xl sm:ring-1"
         showCloseButton={false}
       >
         <DialogTitle className="sr-only">Command menu</DialogTitle>
@@ -124,16 +126,31 @@ export function CommandMenu({
           Search agents and jump anywhere on evex.
         </DialogDescription>
         <CommandPrimitive
-          className="flex size-full flex-col overflow-hidden bg-popover text-popover-foreground"
+          className="flex size-full flex-col overflow-hidden bg-popover pt-[env(safe-area-inset-top)] text-popover-foreground sm:pt-0"
           loop
         >
-          <CommandInput
-            autoFocus
-            onValueChange={setSearch}
-            placeholder="Search agents, categories, and pages..."
-            value={search}
-          />
-          <CommandList className="max-h-[60vh] px-1 pb-1">
+          <div className="flex items-center">
+            <div className="min-w-0 flex-1">
+              <CommandInput
+                autoFocus
+                onValueChange={setSearch}
+                placeholder="Search agents, categories, and pages..."
+                value={search}
+              />
+            </div>
+            <DialogClose
+              render={
+                <Button
+                  className="mr-2 shrink-0 sm:hidden"
+                  size="sm"
+                  variant="ghost"
+                />
+              }
+            >
+              Cancel
+            </DialogClose>
+          </div>
+          <CommandList className="max-h-none min-h-0 flex-1 px-1 pb-1 sm:max-h-[60vh] sm:flex-initial">
             <CommandEmpty>No results found.</CommandEmpty>
 
             {agents.length > 0 ? (
