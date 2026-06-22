@@ -11,9 +11,11 @@ export const metadata = createPageMetadata({
 })
 
 const steps = [
-  'Create a new app under apps/agents/<slug>.',
+  'Create a new package source under packages/agent-registry/agents/<slug>.',
   'Add registry.json with metadata, static author info, files, and targets.',
-  'Keep the Eve source inside that app, including agent/ and optional evals/.',
+  'Keep runtime packages in package.json dependencies; dev tooling stays in devDependencies.',
+  'Keep the Eve source inside that folder, including agent/ and optional evals/.',
+  'Run pnpm --filter @evex-new/agent-registry generate.',
   'Run pnpm check and pnpm build before opening the PR.',
 ] as const
 

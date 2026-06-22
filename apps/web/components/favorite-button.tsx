@@ -2,7 +2,7 @@
 
 import { Heart } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { useState, useTransition } from 'react'
+import { useEffect, useState, useTransition } from 'react'
 import { toast } from 'sonner'
 import { toggleFavorite } from '@/app/actions/favorites'
 import { Button } from '@/components/ui/button'
@@ -24,6 +24,10 @@ export function FavoriteButton({
   const router = useRouter()
   const [isFavorite, setIsFavorite] = useState(initialIsFavorite)
   const [isPending, startTransition] = useTransition()
+
+  useEffect(() => {
+    setIsFavorite(initialIsFavorite)
+  }, [initialIsFavorite])
 
   const label = isFavorite ? 'Remove from favorites' : 'Save to favorites'
 

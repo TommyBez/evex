@@ -64,7 +64,7 @@ export const verification = pgTable('verification', {
 // --- App tables ------------------------------------------------------------
 
 // Install counts remain dynamic, but the canonical agent metadata and files
-// now live in source under apps/agents/*.
+// live in source under packages/agent-registry/agents/*.
 export const agentInstallMetric = pgTable('agent_install_metric', {
   slug: text('slug').primaryKey(),
   installCount: integer('installCount').notNull().default(0),

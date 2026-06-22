@@ -7,16 +7,21 @@ import { AgentCard } from '@/components/agent-card'
 import { AuthorAvatar } from '@/components/author-avatar'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { resolveFavoriteState } from '@/lib/favorites-state'
+import {
+  applyInstallCounts,
+  getAgentRuntimeState,
+  sumInstallCounts,
+} from '@/lib/agent-runtime'
+import type { AgentWithAuthor } from '@/lib/agent-types'
 import { createPageMetadata, siteConfig } from '@/lib/metadata'
 import {
-  getAgentsByUser,
+  getStaticAgentsByUser,
   getStaticAuthorProfile,
-  listAgents,
-} from '@/lib/queries'
+  listStaticAgents,
+} from '@/lib/static-agents'
 
-export async function generateStaticParams() {
-  const agents = await listAgents()
+export function generateStaticParams() {
+  const agents = listStaticAgents()
   return [...new Set(agents.map((agent) => agent.userId))].map((authorId) => ({
     authorId,
   }))
@@ -28,7 +33,7 @@ export async function generateMetadata({
   params: Promise<{ authorId: string }>
 }): Promise<Metadata> {
   const { authorId } = await params
-  const author = await getStaticAuthorProfile(authorId)
+  const author = getStaticAuthorProfile(authorId)
   if (!author) {
     return createPageMetadata({
       title: 'Author not found',
@@ -77,18 +82,12 @@ export default function AuthorPage({
   )
 }
 
-async function AuthorContent({ authorId }: { authorId: string }) {
-  const [author, agents] = await Promise.all([
-    getStaticAuthorProfile(authorId),
-    getAgentsByUser(authorId),
-  ])
+function AuthorContent({ authorId }: { authorId: string }) {
+  const author = getStaticAuthorProfile(authorId)
+  const agents = getStaticAgentsByUser(authorId)
   if (!author) {
     notFound()
   }
-
-  const { favoriteAgentIdSet, isAuthenticated } = await resolveFavoriteState(
-    agents.map((agent) => agent.id),
-  )
 
   return (
     <main className="mx-auto w-full min-w-0 max-w-4xl px-4 py-10">
@@ -112,7 +111,10 @@ async function AuthorContent({ authorId }: { authorId: string }) {
           </h1>
           <p className="mt-2 max-w-xl text-pretty text-muted-foreground leading-relaxed">
             {author.agentCount} {author.agentCount === 1 ? 'agent' : 'agents'}{' '}
-            published on evex-new with {author.totalInstalls} total installs.
+            published on evex-new
+            <Suspense fallback={<span>.</span>}>
+              <AuthorInstallSummary agents={agents} />
+            </Suspense>
           </p>
           {author.url ? (
             <Button
@@ -138,17 +140,64 @@ async function AuthorContent({ authorId }: { authorId: string }) {
           </span>
         </h2>
         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {agents.map((agent) => (
-            <AgentCard
-              agent={agent}
-              isAuthenticated={isAuthenticated}
-              isFavorite={favoriteAgentIdSet.has(agent.id)}
-              key={agent.id}
-            />
-          ))}
+          <Suspense fallback={<AuthorAgentGridSkeleton />}>
+            <AuthorAgentGrid agents={agents} />
+          </Suspense>
         </div>
       </section>
     </main>
+  )
+}
+
+async function AuthorInstallSummary({
+  agents,
+}: {
+  agents: readonly AgentWithAuthor[]
+}) {
+  const runtimeState = await getAgentRuntimeState(
+    agents.map((agent) => agent.id),
+  )
+  return (
+    <> with {sumInstallCounts(runtimeState.installCounts)} total installs.</>
+  )
+}
+
+async function AuthorAgentGrid({
+  agents,
+}: {
+  agents: readonly AgentWithAuthor[]
+}) {
+  const runtimeState = await getAgentRuntimeState(
+    agents.map((agent) => agent.id),
+  )
+  const agentsWithInstalls = applyInstallCounts(
+    agents,
+    runtimeState.installCounts,
+  )
+
+  return (
+    <>
+      {agentsWithInstalls.map((agent) => (
+        <AgentCard
+          agent={agent}
+          isAuthenticated={runtimeState.isAuthenticated}
+          isFavorite={runtimeState.favoriteAgentIdSet.has(agent.id)}
+          key={agent.id}
+        />
+      ))}
+    </>
+  )
+}
+
+function AuthorAgentGridSkeleton() {
+  return (
+    <>
+      {(['author-card-a', 'author-card-b', 'author-card-c'] as const).map(
+        (id) => (
+          <Skeleton className="h-44 rounded-md border border-border" key={id} />
+        ),
+      )}
+    </>
   )
 }
 

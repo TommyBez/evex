@@ -1,4 +1,3 @@
 packages:
   - apps/web
-  - apps/agents/*
   - packages/*

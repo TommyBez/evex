@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { AuthorAvatar } from '@/components/author-avatar'
 import { FavoriteButton } from '@/components/favorite-button'
 import { Card } from '@/components/ui/card'
-import type { AgentWithAuthor } from '@/lib/queries'
+import type { AgentWithAuthor } from '@/lib/agent-types'
 
 export function AgentCard({
   agent,

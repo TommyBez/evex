@@ -1,5 +1,5 @@
+import { EVEX_REGISTRY_NAMESPACE } from '@evex-new/agent-registry'
 import { headers } from 'next/headers'
-import { EVEX_REGISTRY_NAMESPACE } from '@/lib/registry'
 
 // Resolve the public base URL of this deployment so we can build absolute
 // registry URLs for the `npx shadcn add` command.

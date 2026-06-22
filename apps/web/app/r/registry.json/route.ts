@@ -1,10 +1,9 @@
+import { getRegistry } from '@evex-new/agent-registry'
 import { NextResponse } from 'next/server'
-import { loadEvexRegistry } from '@/lib/registry'
 
-// Public shadcn registry catalog. The loader resolves root `registry.json`
-// includes without requiring generated files under public/r.
-export async function GET() {
-  const registry = await loadEvexRegistry()
+// Public shadcn registry catalog generated from the agent registry package.
+export function GET() {
+  const registry = getRegistry()
 
   return NextResponse.json(registry, {
     headers: {

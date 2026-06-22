@@ -1,7 +1,9 @@
+import {
+  getRegistryItem,
+  RegistryItemNotFoundError,
+} from '@evex-new/agent-registry'
 import { after, connection, NextResponse } from 'next/server'
-import { RegistryItemNotFoundError } from 'shadcn/registry'
 import { incrementInstallCount } from '@/app/actions/agents'
-import { loadEvexRegistryItem } from '@/lib/registry'
 
 const JSON_EXTENSION = '.json'
 
@@ -20,8 +22,8 @@ function normalizeRegistryItemName(segments: string[]): string | null {
     : segment
 }
 
-// Public shadcn registry item endpoint. It keeps the registry source in
-// registry.json files while preserving best-effort install/download counts.
+// Public shadcn registry item endpoint. The registry package embeds file
+// contents at build time while preserving best-effort install/download counts.
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ name: string[] }> },
@@ -36,7 +38,7 @@ export async function GET(
   await connection()
 
   try {
-    const item = await loadEvexRegistryItem(name)
+    const item = getRegistryItem(name)
 
     after(async () => {
       try {

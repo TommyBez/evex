@@ -6,8 +6,13 @@ import { BrowseFilters } from '@/components/browse-filters'
 import { RegistryEmptyState } from '@/components/registry-empty-state'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { resolveFavoriteState } from '@/lib/favorites-state'
-import { getRegistryStats, listAgents } from '@/lib/queries'
+import {
+  applyInstallCounts,
+  getAgentRuntimeState,
+  sumInstallCounts,
+} from '@/lib/agent-runtime'
+import { getInstallCountMap } from '@/lib/queries'
+import { getStaticRegistryStats, listStaticAgents } from '@/lib/static-agents'
 
 export default function HomePage({
   searchParams,
@@ -76,6 +81,33 @@ function Hero() {
   )
 }
 
+async function Stats() {
+  const stats = getStaticRegistryStats()
+  const agentIds = listStaticAgents().map((agent) => agent.id)
+  const installCounts = await getInstallCountMap(agentIds)
+  const items = [
+    { label: 'Agents', value: stats.total },
+    {
+      label: 'Installs',
+      value: sumInstallCounts(installCounts),
+    },
+    { label: 'Authors', value: stats.authors },
+  ]
+
+  return (
+    <dl className="mt-12 flex items-center gap-10 border-border border-t pt-6">
+      {items.map((item) => (
+        <div className="flex flex-col gap-1" key={item.label}>
+          <dd className="font-semibold text-2xl text-foreground tabular-nums">
+            {item.value}
+          </dd>
+          <dt className="mono-label text-muted-foreground">{item.label}</dt>
+        </div>
+      ))}
+    </dl>
+  )
+}
+
 function HeroDemo() {
   return (
     <div className="graphite-band w-full min-w-0 overflow-hidden rounded-md border border-white/10 shadow-[var(--shadow-card)]">
@@ -124,37 +156,17 @@ function HeroDemo() {
   )
 }
 
-async function Stats() {
-  const stats = await getRegistryStats()
-  const items = [
-    { label: 'Agents', value: stats.total },
-    { label: 'Installs', value: stats.installs },
-    { label: 'Authors', value: stats.authors },
-  ]
-  return (
-    <dl className="mt-12 flex items-center gap-10 border-border border-t pt-6">
-      {items.map((item) => (
-        <div className="flex flex-col gap-1" key={item.label}>
-          <dd className="font-semibold text-2xl text-foreground tabular-nums">
-            {item.value}
-          </dd>
-          <dt className="mono-label text-muted-foreground">{item.label}</dt>
-        </div>
-      ))}
-    </dl>
-  )
-}
-
 async function AgentResults({
   searchParams,
 }: {
   searchParams: Promise<{ q?: string; category?: string }>
 }) {
   const { q, category } = await searchParams
-  const agents = await listAgents({ search: q, category })
-  const { favoriteAgentIdSet, isAuthenticated } = await resolveFavoriteState(
-    agents.map((agent) => agent.id),
+  const staticAgents = listStaticAgents({ search: q, category })
+  const runtimeState = await getAgentRuntimeState(
+    staticAgents.map((agent) => agent.id),
   )
+  const agents = applyInstallCounts(staticAgents, runtimeState.installCounts)
 
   if (agents.length === 0) {
     return (
@@ -177,8 +189,8 @@ async function AgentResults({
       {agents.map((agent) => (
         <AgentCard
           agent={agent}
-          isAuthenticated={isAuthenticated}
-          isFavorite={favoriteAgentIdSet.has(agent.id)}
+          isAuthenticated={runtimeState.isAuthenticated}
+          isFavorite={runtimeState.favoriteAgentIdSet.has(agent.id)}
           key={agent.id}
         />
       ))}

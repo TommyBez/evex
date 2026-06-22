@@ -1,7 +1,18 @@
 import 'server-only'
 
+import {
+  EVEX_REGISTRY_NAME,
+  getRegistry,
+  getRegistryItem,
+} from '@evex-new/agent-registry'
 import { and, desc, eq, inArray } from 'drizzle-orm'
 import { cacheLife, cacheTag } from 'next/cache'
+import type {
+  AgentRegistryFile,
+  AgentWithAuthor,
+  CatalogAgentAuthor,
+  StaticAuthorProfile,
+} from '@/lib/agent-types'
 import {
   cacheTags,
   getAgentTag,
@@ -15,15 +26,8 @@ import {
   profile,
   user,
 } from '@/lib/db/schema'
-import {
-  EVEX_REGISTRY_NAME,
-  loadEvexRegistry,
-  loadEvexRegistryItem,
-} from '@/lib/registry'
 
-type RegistryCatalogItem = Awaited<
-  ReturnType<typeof loadEvexRegistry>
->['items'][number]
+type RegistryCatalogItem = ReturnType<typeof getRegistry>['items'][number]
 
 interface RegistryAuthorMeta {
   avatarUrl?: unknown
@@ -39,46 +43,6 @@ interface RegistryAgentMeta {
   dependencies?: unknown
   slug?: unknown
   updatedAt?: unknown
-}
-
-export interface CatalogAgentAuthor {
-  readonly avatarUrl?: string
-  readonly id: string
-  readonly name: string
-  readonly url?: string
-}
-
-export interface AgentWithAuthor {
-  author: CatalogAgentAuthor
-  authorAvatarUrl: string | null
-  authorName: string
-  category: string
-  createdAt: Date
-  dependencies: string
-  description: string
-  id: string
-  installCount: number
-  name: string
-  slug: string
-  title: string
-  updatedAt: Date
-  userId: string
-}
-
-export interface AgentRegistryFile {
-  content: string
-  id: string
-  path: string
-  type: string
-}
-
-export interface StaticAuthorProfile {
-  agentCount: number
-  avatarUrl: string | null
-  name: string
-  totalInstalls: number
-  url: string | null
-  userId: string
 }
 
 function readString(value: unknown): string | null {
@@ -130,15 +94,13 @@ function readDependencies(item: RegistryCatalogItem): string[] {
     : readStringArray(meta.dependencies)
 }
 
-async function getCatalogAgents(): Promise<RegistryCatalogItem[]> {
-  const registry = await loadEvexRegistry()
+function getCatalogAgents(): readonly RegistryCatalogItem[] {
+  const registry = getRegistry()
   return registry.items
 }
 
-async function getCatalogAgentBySlug(
-  slug: string,
-): Promise<RegistryCatalogItem | null> {
-  const agents = await getCatalogAgents()
+function getCatalogAgentBySlug(slug: string): RegistryCatalogItem | null {
+  const agents = getCatalogAgents()
   return agents.find((agent) => agent.name === slug) ?? null
 }
 
@@ -164,7 +126,7 @@ function matchesSearch(agent: RegistryCatalogItem, search: string): boolean {
   ].some((value) => value.toLowerCase().includes(term))
 }
 
-async function getInstallCountMap(
+export async function getInstallCountMap(
   slugs?: string[],
 ): Promise<Map<string, number>> {
   if (slugs && slugs.length === 0) {
@@ -235,7 +197,7 @@ export async function listAgents(opts?: {
   cacheLife('minutes')
   cacheTag(cacheTags.agents)
 
-  const catalogAgents = await getCatalogAgents()
+  const catalogAgents = getCatalogAgents()
   const filtered = catalogAgents.filter((agent) => {
     if (
       opts?.category &&
@@ -261,7 +223,7 @@ export async function getAgentBySlug(
   cacheTag(cacheTags.agents)
   cacheTag(getAgentTag(slug))
 
-  const agent = await getCatalogAgentBySlug(slug)
+  const agent = getCatalogAgentBySlug(slug)
   if (!agent) {
     return null
   }
@@ -277,11 +239,9 @@ function normalizeRegistryFilePath(file: {
   return rawPath.startsWith('~/') ? rawPath.slice(2) : rawPath
 }
 
-export async function getAgentFiles(
-  slug: string,
-): Promise<AgentRegistryFile[]> {
+export function getAgentFiles(slug: string): AgentRegistryFile[] {
   try {
-    const item = await loadEvexRegistryItem(slug)
+    const item = getRegistryItem(slug)
     return (
       item.files?.map((file) => {
         const path = normalizeRegistryFilePath(file)
@@ -306,7 +266,7 @@ export async function getAgentsByUser(
   cacheTag(cacheTags.agents)
   cacheTag(getAuthorAgentsTag(userId))
 
-  const catalogAgents = await getCatalogAgents()
+  const catalogAgents = getCatalogAgents()
   return (
     await hydrateAgents(
       catalogAgents.filter((agent) => readAuthor(agent).id === userId),
@@ -322,7 +282,7 @@ export async function getStaticAuthorProfile(
   cacheTag(cacheTags.agents)
   cacheTag(getAuthorAgentsTag(authorId))
 
-  const catalogAgents = await getCatalogAgents()
+  const catalogAgents = getCatalogAgents()
   const agents = await getAgentsByUser(authorId)
   const author = catalogAgents
     .map((agent) => readAuthor(agent))
@@ -365,9 +325,7 @@ export async function getFavoriteAgentIds(
         .from(agentFavorite)
         .where(eq(agentFavorite.userId, userId))
 
-  const agentSlugSet = new Set(
-    (await getCatalogAgents()).map((agent) => agent.name),
-  )
+  const agentSlugSet = new Set(getCatalogAgents().map((agent) => agent.name))
 
   return rows
     .map((row) => row.agentSlug)
@@ -384,7 +342,7 @@ export async function getFavoriteAgents(
     .orderBy(desc(agentFavorite.createdAt))
 
   const catalogAgentBySlug = new Map(
-    (await getCatalogAgents()).map((agent) => [agent.name, agent]),
+    getCatalogAgents().map((agent) => [agent.name, agent]),
   )
   const favoriteAgents = rows
     .map((row) => catalogAgentBySlug.get(row.agentSlug))
@@ -449,7 +407,7 @@ export async function getTopAgents(limit = 20): Promise<AgentWithAuthor[]> {
   cacheLife('minutes')
   cacheTag(cacheTags.leaderboard)
 
-  return (await hydrateAgents(await getCatalogAgents()))
+  return (await hydrateAgents(getCatalogAgents()))
     .sort(compareByInstalls)
     .slice(0, limit)
 }
@@ -467,7 +425,7 @@ export async function getTopAuthors(limit = 20): Promise<AuthorRanking[]> {
   cacheLife('minutes')
   cacheTag(cacheTags.leaderboard)
 
-  const agents = await hydrateAgents(await getCatalogAgents())
+  const agents = await hydrateAgents(getCatalogAgents())
   const authorMap = new Map<string, AuthorRanking>()
 
   for (const agent of agents) {
@@ -498,7 +456,7 @@ export async function getRegistryStats() {
   cacheLife('minutes')
   cacheTag(cacheTags.registryStats)
 
-  const agents = await hydrateAgents(await getCatalogAgents())
+  const agents = await hydrateAgents(getCatalogAgents())
   return {
     total: agents.length,
     installs: agents.reduce((sum, agent) => sum + agent.installCount, 0),

@@ -59,12 +59,14 @@ npx shadcn@latest add https://evex-new.sh/r/code-reviewer.json
 | Item template | `https://evex-new.sh/r/{name}.json` |
 
 Registry items install agent files plus npm packages. Put package requirements
-in the item-level `dependencies` field. Do not ship app-level files such as
-`package.json` or `tsconfig.json` in an agent item.
+in the agent package `dependencies`; the registry package generates item-level
+`dependencies` from there. Do not ship app-level files such as `package.json` or
+`tsconfig.json` in an agent item.
 
 ## Agents
 
-Agent source packages live under `apps/agents/<slug>`. The initial catalog contains:
+Agent source packages live under `packages/agent-registry/agents/<slug>`. The
+initial catalog contains:
 
 - `code-reviewer`
 - `linear-sprint-triage`
@@ -72,8 +74,14 @@ Agent source packages live under `apps/agents/<slug>`. The initial catalog conta
 - `github-release-scout`
 - `resend-lifecycle-mailer`
 
-To add an agent, create a new source package with `registry.json`, include it
-from the root `registry.json`, and open a pull request.
+To add an agent, create a new source package with `registry.json`, `package.json`,
+`README.md`, and `agent/`, then run:
+
+```bash
+pnpm --filter @evex-new/agent-registry generate
+```
+
+Open a pull request with the source package and generated registry output.
 
 ## Development
 

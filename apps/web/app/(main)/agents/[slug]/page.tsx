@@ -12,23 +12,24 @@ import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
+import { applyInstallCounts, getAgentRuntimeState } from '@/lib/agent-runtime'
+import type { AgentWithAuthor } from '@/lib/agent-types'
 import { parseDependencies } from '@/lib/agents'
-import { resolveFavoriteState } from '@/lib/favorites-state'
 import { createPageMetadata, getSiteUrl, siteConfig } from '@/lib/metadata'
-import {
-  getAgentBySlug,
-  getAgentFiles,
-  getAgentsByUser,
-  listAgents,
-} from '@/lib/queries'
 import {
   buildInstallCommand,
   buildNamespacedInstallCommand,
   buildNamespaceSetupCommand,
 } from '@/lib/site-url'
+import {
+  getStaticAgentBySlug,
+  getStaticAgentFiles,
+  getStaticAgentsByUser,
+  listStaticAgents,
+} from '@/lib/static-agents'
 
-export async function generateStaticParams() {
-  const agents = await listAgents()
+export function generateStaticParams() {
+  const agents = listStaticAgents()
   return agents.map((agent) => ({ slug: agent.slug }))
 }
 
@@ -38,7 +39,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>
 }): Promise<Metadata> {
   const { slug } = await params
-  const agent = await getAgentBySlug(slug)
+  const agent = getStaticAgentBySlug(slug)
   if (!agent) {
     return createPageMetadata({
       title: 'Agent not found',
@@ -91,26 +92,20 @@ export default function AgentDetailPage({
   )
 }
 
-async function AgentDetailContent({ slug }: { slug: string }) {
-  const agent = await getAgentBySlug(slug)
+function AgentDetailContent({ slug }: { slug: string }) {
+  const agent = getStaticAgentBySlug(slug)
   if (!agent) {
     notFound()
   }
 
-  const [files, baseUrl, authorAgents] = await Promise.all([
-    getAgentFiles(agent.slug),
-    getSiteUrl(),
-    getAgentsByUser(agent.userId),
-  ])
+  const files = getStaticAgentFiles(agent.slug)
+  const baseUrl = getSiteUrl()
+  const authorAgents = getStaticAgentsByUser(agent.userId)
   const directCommand = buildInstallCommand(baseUrl, agent.slug)
   const namespaceSetupCommand = buildNamespaceSetupCommand(baseUrl)
   const namespacedInstallCommand = buildNamespacedInstallCommand(agent.slug)
   const deps = parseDependencies(agent.dependencies)
   const moreFromAuthor = authorAgents.filter((a) => a.id !== agent.id)
-  const { favoriteAgentIdSet, isAuthenticated } = await resolveFavoriteState([
-    agent.id,
-    ...moreFromAuthor.map((authorAgent) => authorAgent.id),
-  ])
 
   return (
     <main className="mx-auto w-full min-w-0 max-w-4xl px-4 py-10">
@@ -134,12 +129,9 @@ async function AgentDetailContent({ slug }: { slug: string }) {
             <Badge className="capitalize" variant="secondary">
               {agent.category}
             </Badge>
-            <FavoriteButton
-              agentId={agent.id}
-              initialIsFavorite={favoriteAgentIdSet.has(agent.id)}
-              isAuthenticated={isAuthenticated}
-              showLabel
-            />
+            <Suspense fallback={<AgentDetailRuntimeFallback />}>
+              <AgentDetailRuntimeControls agentId={agent.id} />
+            </Suspense>
           </div>
           <p className="mt-1 text-pretty text-muted-foreground">
             {agent.title}
@@ -156,10 +148,6 @@ async function AgentDetailContent({ slug }: { slug: string }) {
               />
               by {agent.authorName}
             </Link>
-            <span className="flex items-center gap-1.5">
-              <Download aria-hidden="true" className="size-4" />
-              {agent.installCount} installs
-            </span>
             <span className="flex items-center gap-1.5">
               <Package aria-hidden="true" className="size-4" />
               {files.length} files
@@ -221,34 +209,113 @@ async function AgentDetailContent({ slug }: { slug: string }) {
       </section>
 
       {moreFromAuthor.length > 0 && (
-        <>
-          <Separator className="my-8" />
-          <section>
-            <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
-              <h2 className="font-semibold text-foreground text-lg">
-                More From {agent.authorName}
-              </h2>
-              <Link
-                className="text-muted-foreground text-sm transition-colors hover:text-foreground"
-                href={`/authors/${agent.userId}`}
-              >
-                View Author →
-              </Link>
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              {moreFromAuthor.map((authorAgent) => (
-                <AgentCard
-                  agent={authorAgent}
-                  isAuthenticated={isAuthenticated}
-                  isFavorite={favoriteAgentIdSet.has(authorAgent.id)}
-                  key={authorAgent.id}
-                />
-              ))}
-            </div>
-          </section>
-        </>
+        <Suspense fallback={<MoreFromAuthorSkeleton />}>
+          <MoreFromAuthorSection
+            agents={moreFromAuthor}
+            authorId={agent.userId}
+            authorName={agent.authorName}
+          />
+        </Suspense>
       )}
     </main>
+  )
+}
+
+function AgentDetailRuntimeFallback() {
+  return (
+    <>
+      <Skeleton className="h-8 w-20 rounded-md" />
+      <span className="flex items-center gap-1.5">
+        <Download aria-hidden="true" className="size-4" />
+        <Skeleton className="h-4 w-16" />
+      </span>
+    </>
+  )
+}
+
+async function AgentDetailRuntimeControls({ agentId }: { agentId: string }) {
+  const runtimeState = await getAgentRuntimeState([agentId])
+  const installCount = runtimeState.installCounts.get(agentId) ?? 0
+
+  return (
+    <>
+      <FavoriteButton
+        agentId={agentId}
+        initialIsFavorite={runtimeState.favoriteAgentIdSet.has(agentId)}
+        isAuthenticated={runtimeState.isAuthenticated}
+        showLabel
+      />
+      <span className="flex items-center gap-1.5">
+        <Download aria-hidden="true" className="size-4" />
+        {installCount} installs
+      </span>
+    </>
+  )
+}
+
+function MoreFromAuthorSkeleton() {
+  return (
+    <>
+      <Separator className="my-8" />
+      <section>
+        <Skeleton className="mb-4 h-6 w-48" />
+        <div className="grid gap-4 sm:grid-cols-2">
+          {(['more-from-author-a', 'more-from-author-b'] as const).map((id) => (
+            <Skeleton
+              className="h-44 rounded-md border border-border"
+              key={id}
+            />
+          ))}
+        </div>
+      </section>
+    </>
+  )
+}
+
+async function MoreFromAuthorSection({
+  agents,
+  authorId,
+  authorName,
+}: {
+  agents: readonly AgentWithAuthor[]
+  authorId: string
+  authorName: string
+}) {
+  const runtimeState = await getAgentRuntimeState(
+    agents.map((agent) => agent.id),
+  )
+  const agentsWithInstalls = applyInstallCounts(
+    agents,
+    runtimeState.installCounts,
+  )
+
+  return (
+    <>
+      <Separator className="my-8" />
+      <section>
+        <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+          <h2 className="font-semibold text-foreground text-lg">
+            More From {authorName}
+          </h2>
+          <Link
+            className="text-muted-foreground text-sm transition-colors hover:text-foreground"
+            href={`/authors/${authorId}`}
+          >
+            View Author →
+          </Link>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          {agentsWithInstalls.map((agent) => (
+            <AgentCard
+              agent={agent}
+              isAuthenticated={runtimeState.isAuthenticated}
+              isFavorite={runtimeState.favoriteAgentIdSet.has(agent.id)}
+              key={agent.id}
+            />
+          ))}
+        </div>
+      </section>
+    </>
   )
 }
 

@@ -7,7 +7,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion'
-import type { AgentRegistryFile } from '@/lib/queries'
+import type { AgentRegistryFile } from '@/lib/agent-types'
 
 export function AgentFileViewer({ files }: { files: AgentRegistryFile[] }) {
   if (files.length === 0) {

@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'drizzle-kit'
 
 const projectDirectory = dirname(fileURLToPath(import.meta.url))
+const lineBreakPattern = /\r?\n/u
 
 const loadEnvFile = (filePath: string) => {
   if (!existsSync(filePath)) {
@@ -12,7 +13,7 @@ const loadEnvFile = (filePath: string) => {
 
   const fileContents = readFileSync(filePath, 'utf8')
 
-  for (const rawLine of fileContents.split(/\r?\n/u)) {
+  for (const rawLine of fileContents.split(lineBreakPattern)) {
     const line = rawLine.trim()
 
     if (!line || line.startsWith('#')) {
