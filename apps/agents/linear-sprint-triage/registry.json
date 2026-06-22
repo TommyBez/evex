@@ -8,6 +8,7 @@
       "description": "Fetches Linear team issues, highlights unassigned or high-priority work, and separates delivery risk from simple backlog hygiene.",
       "author": "evex-new",
       "categories": ["productivity"],
+      "dependencies": ["eve@^0.11.4", "@linear/sdk@^86.0.0", "zod@4.3.6"],
       "files": [
         {
           "path": "agent/agent.ts",
@@ -25,19 +26,9 @@
           "target": "~/agent/tools/fetch_team_issues.ts"
         },
         {
-          "path": "package.json",
-          "type": "registry:file",
-          "target": "~/package.json"
-        },
-        {
           "path": "README.md",
           "type": "registry:file",
-          "target": "~/README.md"
-        },
-        {
-          "path": "tsconfig.json",
-          "type": "registry:file",
-          "target": "~/tsconfig.json"
+          "target": "~/agent/README.md"
         }
       ],
       "meta": {
@@ -48,7 +39,6 @@
           "name": "evex-new",
           "url": "https://evex-new.sh"
         },
-        "dependencies": ["@linear/sdk", "zod"],
         "createdAt": "2026-06-20T00:00:00.000Z",
         "updatedAt": "2026-06-20T00:00:00.000Z"
       }

@@ -8,6 +8,7 @@
       "description": "Builds event-driven lifecycle emails, previews exact recipients and HTML, and only sends through Resend when dry-run mode is disabled.",
       "author": "evex-new",
       "categories": ["support"],
+      "dependencies": ["eve@^0.11.4", "resend@^6.14.0", "zod@4.3.6"],
       "files": [
         {
           "path": "agent/agent.ts",
@@ -25,19 +26,9 @@
           "target": "~/agent/tools/send_lifecycle_email.ts"
         },
         {
-          "path": "package.json",
-          "type": "registry:file",
-          "target": "~/package.json"
-        },
-        {
           "path": "README.md",
           "type": "registry:file",
-          "target": "~/README.md"
-        },
-        {
-          "path": "tsconfig.json",
-          "type": "registry:file",
-          "target": "~/tsconfig.json"
+          "target": "~/agent/README.md"
         }
       ],
       "meta": {
@@ -48,7 +39,6 @@
           "name": "evex-new",
           "url": "https://evex-new.sh"
         },
-        "dependencies": ["resend", "zod"],
         "createdAt": "2026-06-20T00:00:00.000Z",
         "updatedAt": "2026-06-20T00:00:00.000Z"
       }

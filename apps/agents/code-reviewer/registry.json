@@ -8,6 +8,7 @@
       "description": "A reviewer tuned for changed behavior rather than style. It ranks hotspots first, then writes terse findings with impact, evidence, and the next thing to verify before merge.",
       "author": "evex-new",
       "categories": ["coding"],
+      "dependencies": ["eve@^0.11.4", "zod@4.3.6"],
       "files": [
         {
           "path": "agent/agent.ts",
@@ -90,19 +91,9 @@
           "target": "~/agent/tools/score_risk.ts"
         },
         {
-          "path": "package.json",
-          "type": "registry:file",
-          "target": "~/package.json"
-        },
-        {
           "path": "README.md",
           "type": "registry:file",
-          "target": "~/README.md"
-        },
-        {
-          "path": "tsconfig.json",
-          "type": "registry:file",
-          "target": "~/tsconfig.json"
+          "target": "~/agent/README.md"
         }
       ],
       "meta": {
@@ -113,7 +104,6 @@
           "name": "evex-new",
           "url": "https://evex-new.sh"
         },
-        "dependencies": ["zod"],
         "createdAt": "2026-06-20T00:00:00.000Z",
         "updatedAt": "2026-06-20T00:00:00.000Z"
       }

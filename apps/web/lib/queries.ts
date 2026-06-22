@@ -124,7 +124,10 @@ function readDate(value: unknown): Date {
 
 function readDependencies(item: RegistryCatalogItem): string[] {
   const meta = readMeta(item)
-  return readStringArray(meta.dependencies)
+  const dependencies = readStringArray(item.dependencies)
+  return dependencies.length > 0
+    ? dependencies
+    : readStringArray(meta.dependencies)
 }
 
 async function getCatalogAgents(): Promise<RegistryCatalogItem[]> {

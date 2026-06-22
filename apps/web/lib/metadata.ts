@@ -7,7 +7,7 @@ export const siteConfig = {
   name: 'evex-new',
   title: 'evex-new - Install eve agents',
   description:
-    'Discover, contribute, and install standalone eve agent apps with a single shadcn command.',
+    'Discover, contribute, and install eve agents with a single shadcn command.',
 }
 
 export const defaultOpenGraphImage = {

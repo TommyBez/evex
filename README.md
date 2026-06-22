@@ -6,7 +6,7 @@
 
 <p align="center">
   <strong>The eve agent registry.</strong><br />
-  Discover, contribute, and install standalone eve agents with a single shadcn command.
+  Discover, contribute, and install eve agents with a single shadcn command.
 </p>
 
 <p align="center">
@@ -25,18 +25,15 @@
 
 ## What is evex-new?
 
-[evex-new](https://evex-new.sh) is a community registry for [eve](https://eve.dev) agents. Browse code-owned agent apps, install one into a project folder in seconds, and add your own through a pull request.
+[evex-new](https://evex-new.sh) is a community registry for [eve](https://eve.dev) agents. Browse code-owned agents, install one into an existing Eve app in seconds, and add your own through a pull request.
 
 ```bash
 # one-time setup
 npx shadcn@latest registry add @evex-new=https://evex-new.sh/r/{name}.json
 
-# install any agent app by slug
-mkdir code-reviewer
-cd code-reviewer
+# run from an existing Eve app
 npx shadcn@latest add @evex-new/code-reviewer
 
-pnpm install
 pnpm dev
 ```
 
@@ -50,7 +47,7 @@ npx shadcn@latest add https://evex-new.sh/r/code-reviewer.json
 
 - **Browse** — search and filter agents by category
 - **Favorites** — save agents to revisit later
-- **Install** — scaffold a standalone eve app via shadcn
+- **Install** — add agent files and npm dependencies via shadcn
 - **Contribute** — add or update agents through pull requests
 - **Leaderboard** — see what's trending in the community
 
@@ -61,9 +58,13 @@ npx shadcn@latest add https://evex-new.sh/r/code-reviewer.json
 | Catalog | `https://evex-new.sh/r/registry.json` |
 | Item template | `https://evex-new.sh/r/{name}.json` |
 
+Registry items install agent files plus npm packages. Put package requirements
+in the item-level `dependencies` field. Do not ship app-level files such as
+`package.json` or `tsconfig.json` in an agent item.
+
 ## Agents
 
-Agent apps live under `apps/agents/<slug>`. The initial catalog contains:
+Agent source packages live under `apps/agents/<slug>`. The initial catalog contains:
 
 - `code-reviewer`
 - `linear-sprint-triage`
@@ -71,8 +72,8 @@ Agent apps live under `apps/agents/<slug>`. The initial catalog contains:
 - `github-release-scout`
 - `resend-lifecycle-mailer`
 
-To add an agent, create a new app folder with `registry.json`, include it from
-the root `registry.json`, and open a pull request.
+To add an agent, create a new source package with `registry.json`, include it
+from the root `registry.json`, and open a pull request.
 
 ## Development
 

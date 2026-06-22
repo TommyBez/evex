@@ -173,8 +173,8 @@ async function AgentDetailContent({ slug }: { slug: string }) {
           Install with @evex-new
         </h2>
         <p className="mt-1 text-muted-foreground text-sm">
-          Set up the namespace once, then add this standalone eve app by name.
-          Run the command from the folder where you want the Eve app files.
+          Set up the namespace once, then add this agent by name. Run the
+          command from the existing Eve app where you want the agent installed.
         </p>
         <div className="mt-3 grid gap-3">
           <div className="grid gap-1.5">

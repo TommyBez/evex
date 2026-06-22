@@ -8,6 +8,7 @@
       "description": "Designed for the first thirty minutes of an outage. It builds a factual timeline, tracks action items, and drafts stakeholder updates without blurring facts and assumptions.",
       "author": "evex-new",
       "categories": ["devops"],
+      "dependencies": ["eve@^0.11.4", "date-fns@^4.4.0", "zod@4.3.6"],
       "files": [
         {
           "path": "agent/agent.ts",
@@ -90,19 +91,9 @@
           "target": "~/agent/tools/track_actions.ts"
         },
         {
-          "path": "package.json",
-          "type": "registry:file",
-          "target": "~/package.json"
-        },
-        {
           "path": "README.md",
           "type": "registry:file",
-          "target": "~/README.md"
-        },
-        {
-          "path": "tsconfig.json",
-          "type": "registry:file",
-          "target": "~/tsconfig.json"
+          "target": "~/agent/README.md"
         }
       ],
       "meta": {
@@ -113,7 +104,6 @@
           "name": "evex-new",
           "url": "https://evex-new.sh"
         },
-        "dependencies": ["date-fns", "zod"],
         "createdAt": "2026-06-20T00:00:00.000Z",
         "updatedAt": "2026-06-20T00:00:00.000Z"
       }
