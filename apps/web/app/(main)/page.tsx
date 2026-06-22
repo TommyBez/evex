@@ -86,7 +86,7 @@ function Hero() {
               Read Docs →
             </a>
           </div>
-          <Suspense>
+          <Suspense fallback={<StatsSkeleton />}>
             <Stats />
           </Suspense>
         </div>
@@ -118,6 +118,25 @@ async function Stats() {
             {item.value}
           </dd>
           <dt className="mono-label text-muted-foreground">{item.label}</dt>
+        </div>
+      ))}
+    </dl>
+  )
+}
+
+function StatsSkeleton() {
+  // Labels are static (not awaited), so render them for real to reserve the
+  // exact same height as <Stats /> and avoid a layout shift on load.
+  const labels = ['Agents', 'Installs', 'Authors'] as const
+
+  return (
+    <dl className="mt-8 flex items-center gap-8 border-border border-t pt-5 sm:mt-12 sm:gap-10 sm:pt-6">
+      {labels.map((label) => (
+        <div className="flex flex-col gap-1" key={label}>
+          <dd className="flex h-8 items-center">
+            <Skeleton className="h-6 w-9" />
+          </dd>
+          <dt className="mono-label text-muted-foreground">{label}</dt>
         </div>
       ))}
     </dl>
