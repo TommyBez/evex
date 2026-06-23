@@ -48,6 +48,7 @@ export function CopyButton({
 
     if (resetTimeoutRef.current !== null) {
       window.clearTimeout(resetTimeoutRef.current)
+      resetTimeoutRef.current = null
     }
 
     try {
@@ -55,6 +56,7 @@ export function CopyButton({
       setCopied(true)
       toast.success(toastMessage)
     } catch {
+      setCopied(false)
       toast.error('Could not copy. Please copy manually.')
       return
     }

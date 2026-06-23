@@ -96,7 +96,7 @@ export function AgentFileViewer({ files }: { files: AgentRegistryFile[] }) {
                     </span>
                     {lineCount > 0 ? (
                       <span className="mono-label shrink-0 whitespace-nowrap pt-0.5 text-muted-foreground/70 tabular-nums">
-                        {lineCount} lines
+                        {lineCount} {lineCount === 1 ? 'line' : 'lines'}
                       </span>
                     ) : null}
                   </AccordionTrigger>
