@@ -34,9 +34,11 @@ const issueMatchesScope = (issue: LinearIssueContext | null | undefined): boolea
 
   const teamAllowed =
     linearOperationsConfig.coveredTeams.length === 0 ||
+    teamCandidates.length === 0 ||
     teamCandidates.some((team) => linearOperationsConfig.coveredTeams.includes(team));
   const projectAllowed =
     linearOperationsConfig.coveredProjects.length === 0 ||
+    projectCandidates.length === 0 ||
     projectCandidates.some((project) => linearOperationsConfig.coveredProjects.includes(project));
 
   return teamAllowed && projectAllowed;
