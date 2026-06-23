@@ -337,7 +337,7 @@ function AgentDetailContent({ slug }: { slug: string }) {
       <section>
         <div className="mb-4 flex items-center gap-2">
           <h2 className="font-semibold text-foreground text-lg">Files</h2>
-          <span className="mono-label text-muted-foreground/70 tabular-nums">
+          <span className="mono-label font-pixel text-muted-foreground/70 tabular-nums">
             {files.length}
           </span>
         </div>
@@ -436,7 +436,7 @@ async function AgentDetailRuntimeControls({ agentId }: { agentId: string }) {
       />
       <span className="flex items-center gap-1.5">
         <Download aria-hidden="true" className="size-4" />
-        {installCount} installs
+        <span className="font-pixel tabular-nums">{installCount}</span> installs
       </span>
     </>
   )

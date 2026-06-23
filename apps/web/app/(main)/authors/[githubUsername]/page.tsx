@@ -131,7 +131,7 @@ async function AuthorContent({ githubUsername }: { githubUsername: string }) {
       <section className="mt-10">
         <h2 className="font-semibold text-foreground text-lg">
           Agents{' '}
-          <span className="font-normal text-muted-foreground tabular-nums">
+          <span className="font-pixel text-muted-foreground tabular-nums">
             ({agents.length})
           </span>
         </h2>

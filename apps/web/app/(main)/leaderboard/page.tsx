@@ -70,7 +70,7 @@ function Rank({ position }: { position: number }) {
     <span
       aria-hidden="true"
       className={[
-        'flex size-8 shrink-0 items-center justify-center rounded-md font-semibold text-sm tabular-nums',
+        'flex size-8 shrink-0 items-center justify-center rounded-md font-pixel text-sm tabular-nums',
         isTop
           ? 'bg-primary text-primary-foreground'
           : 'bg-muted text-muted-foreground',
@@ -110,7 +110,7 @@ async function TopAgents() {
             <ItemActions className="shrink-0">
               <span className="flex items-center gap-1 text-muted-foreground text-sm">
                 <Download aria-hidden="true" className="size-3.5" />
-                <span className="font-medium text-foreground tabular-nums">
+                <span className="font-pixel text-foreground tabular-nums">
                   {agent.installCount}
                 </span>
               </span>
@@ -159,7 +159,7 @@ async function TopAuthors() {
             <ItemActions className="shrink-0">
               <span className="flex items-center gap-1 text-muted-foreground text-sm">
                 <Download aria-hidden="true" className="size-3.5" />
-                <span className="font-medium text-foreground tabular-nums">
+                <span className="font-pixel text-foreground tabular-nums">
                   {author.totalInstalls}
                 </span>
               </span>

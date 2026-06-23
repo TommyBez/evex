@@ -35,7 +35,9 @@ export function AgentCard({
         <div className="flex items-center gap-1.5">
           <span className="mono-label flex items-center gap-1 text-muted-foreground">
             <Download aria-hidden="true" className="size-3" />
-            <span className="tabular-nums">{agent.installCount}</span>
+            <span className="font-pixel tabular-nums">
+              {agent.installCount}
+            </span>
           </span>
           <CopyButton
             className="relative z-10"

@@ -117,7 +117,7 @@ async function Stats() {
     <dl className="mt-8 flex items-center gap-8 border-border border-t pt-5 sm:mt-12 sm:gap-10 sm:pt-6">
       {items.map((item) => (
         <div className="flex flex-col gap-1" key={item.label}>
-          <dd className="font-semibold text-2xl text-foreground tabular-nums">
+          <dd className="font-pixel text-2xl text-foreground tabular-nums">
             <PopInNumber value={item.value} />
           </dd>
           <dt className="mono-label text-muted-foreground">{item.label}</dt>
