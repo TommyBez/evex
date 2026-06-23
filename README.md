@@ -5,8 +5,8 @@
 <h1 align="center">evex</h1>
 
 <p align="center">
-  <strong>The eve agent registry.</strong><br />
-  Discover, contribute, and install eve agents with a single shadcn command.
+  <strong>Install community agents for the eve framework with one command.</strong><br />
+  Discover agents built by the community, drop them into your app with <code>shadcn</code>, and publish your own.
 </p>
 
 <p align="center">
@@ -19,71 +19,68 @@
 <p align="center">
   <a href="https://evex.sh"><strong>Live -> evex.sh</strong></a>
   &nbsp;·&nbsp;
+  <a href="https://evex.sh/leaderboard">leaderboard</a>
+  &nbsp;·&nbsp;
   <a href="https://eve.dev/docs/introduction">eve docs</a>
   &nbsp;·&nbsp;
-  <a href="./CONTRIBUTIONS.md">contributing agents</a>
+  <a href="./CONTRIBUTIONS.md">contributing</a>
 </p>
 
 ---
 
-**evex** is an open registry of [Eve](https://eve.dev) agents — small, code-owned
-automations you install straight into an Eve app with the `shadcn` CLI. Every
-agent is a reviewed, source-owned package: the registry serves its metadata and
-files, while the web app at [evex.sh](https://evex.sh) tracks installs,
-favorites, and author profiles.
+**evex** is the open registry for [Eve](https://eve.dev) agents. Browse agent
+configurations built by the community, add any of them to an existing Eve app
+with a single `shadcn` command, and publish your own by opening a pull request —
+every agent stays code-owned and reviewed.
+
+## Highlights
+
+- **One command to install** — `npx shadcn@latest add @evex/<agent>` drops an agent's files straight into your Eve app.
+- **Code-owned and reviewed** — agents live in source and ship through pull requests; the database only holds runtime state.
+- **Browse and discover** — search the catalog, filter by category, and sort by most installed, newest, or name.
+- **Inspect before you install** — every agent page lists its files, dependencies, author, and install command.
+- **Leaderboard and profiles** — see the most-installed agents and the authors driving them, with profiles tied to a verified GitHub identity.
+- **Favorites and install metrics** — sign in with an email code or GitHub to save agents; installs are counted across the registry.
 
 ## Install an agent
 
 ```bash
-# one-time setup
+# one-time: register the @evex namespace
 npx shadcn@latest registry add @evex=https://evex.sh/r/{name}.json
 
-# run from an existing Eve app
+# add an agent from an existing Eve app
 npx shadcn@latest add @evex/code-reviewer
 ```
 
-Direct URL installs work too:
+Or install straight from a URL:
 
 ```bash
 npx shadcn@latest add https://evex.sh/r/code-reviewer.json
 ```
 
-## Registry
+Agents span categories like **coding**, **devops**, **productivity**, and
+**support** — browse the full catalog at [evex.sh](https://evex.sh).
+
+## Publish an agent
+
+Agents are added and updated by pull request, so authorship and review stay in
+source control. Each agent is a package under
+`packages/agent-registry/agents/<slug>` with its files, dependencies, and
+author identity declared in `registry.json`. The full workflow — scaffolding,
+validation, and the review checklist — is in
+[CONTRIBUTIONS.md](./CONTRIBUTIONS.md).
+
+## Registry API
 
 | Resource | URL |
 | --- | --- |
 | Catalog | `https://evex.sh/r/registry.json` |
-| Item template | `https://evex.sh/r/{name}.json` |
+| Item | `https://evex.sh/r/{name}.json` |
 
-Agent metadata and files are code-owned under
-`packages/agent-registry/agents/<slug>`. Runtime data such as installs,
-favorites, auth, and profiles lives in the web app database.
+The registry serves public agent metadata and files. Runtime data — installs,
+favorites, profiles, and auth — lives in the web app's Postgres database.
 
-## Contributing
-
-Agents are added or changed by pull request. The full workflow is in
-[CONTRIBUTIONS.md](./CONTRIBUTIONS.md), including package structure,
-`registry.json`, dependencies, author identity, and validation commands.
-
-## Development
-
-```bash
-pnpm install
-pnpm dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) to run the app locally.
-
-```bash
-pnpm check   # lint + format check (ultracite / biome)
-pnpm fix     # auto-fix lint and formatting
-pnpm build   # build the web app and agent packages
-```
-
-Requires Node >= 24 and pnpm. See [AGENTS.md](./AGENTS.md) for environment
-variables (database, auth) and other setup notes.
-
-## Stack
+## Built with
 
 <p align="center">
   <img alt="Turborepo" src="https://shieldcn.dev/badge/-Turborepo-EF4444.svg?logo=turborepo&variant=branded" />
@@ -93,9 +90,28 @@ variables (database, auth) and other setup notes.
   <img alt="shadcn/ui" src="https://shieldcn.dev/badge/-shadcn-000000.svg?logo=shadcnui&variant=branded" />
   <img alt="Eve" src="https://shieldcn.dev/badge/-Eve-006bff.svg?variant=branded" />
   <img alt="Drizzle ORM" src="https://shieldcn.dev/badge/-Drizzle-C5F74F.svg?logo=drizzle&variant=branded" />
+  <img alt="PostgreSQL" src="https://shieldcn.dev/badge/-PostgreSQL-4169E1.svg?logo=postgresql&variant=branded" />
   <img alt="Better Auth" src="https://shieldcn.dev/badge/-Better_Auth-000000.svg?logo=betterauth&variant=branded" />
   <img alt="Vercel" src="https://shieldcn.dev/badge/-Vercel-000000.svg?logo=vercel&variant=branded" />
 </p>
+
+## Local development
+
+```bash
+pnpm install
+pnpm dev          # web app on http://localhost:3000
+```
+
+```bash
+pnpm check        # lint + format check (ultracite / biome)
+pnpm fix          # auto-fix lint and formatting
+pnpm build        # build the web app and agent packages
+pnpm db:migrate   # apply database migrations (drizzle)
+```
+
+Requires Node >= 24 and pnpm. The web app reads `DATABASE_URL` (Postgres) and
+better-auth settings; sign-in uses email one-time codes with optional GitHub
+OAuth. See [AGENTS.md](./AGENTS.md) for the full environment and setup notes.
 
 ## Star history
 
