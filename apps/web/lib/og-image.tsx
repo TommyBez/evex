@@ -37,11 +37,10 @@ const colors = {
 }
 
 interface OgImageProps {
+  author?: string
   description?: string
   eyebrow: string
-  footer?: string
-  initials?: string
-  meta?: string[]
+  install?: string
   title: string
 }
 
@@ -93,13 +92,15 @@ const WHITESPACE_SPLIT = /\s+/
 
 function getTitleSize(length: number): number {
   if (length > 70) {
-    return 56
+    return 54
   }
   if (length > 44) {
     return 66
   }
-  return 76
+  return 78
 }
+
+const TAGLINE = 'the eve agent registry'
 
 export function initialsFromName(name: string): string {
   const initials = name
@@ -114,11 +115,11 @@ export function initialsFromName(name: string): string {
 }
 
 export async function createOgImage(
-  { eyebrow, title, description, footer, meta = [], initials }: OgImageProps,
+  { eyebrow, title, description, author, install }: OgImageProps,
   options: { status?: number } = {},
 ) {
-  const safeTitle = truncate(title, 92)
-  const safeDescription = description ? truncate(description, 180) : undefined
+  const safeTitle = truncate(title, 80)
+  const safeDescription = description ? truncate(description, 150) : undefined
   const titleSize = getTitleSize(safeTitle.length)
   const pixelFont = await loadPixelFont()
 
@@ -147,16 +148,8 @@ export async function createOgImage(
           borderRadius: 12,
         }}
       />
-      <div
-        style={{
-          position: 'absolute',
-          left: 28,
-          right: 28,
-          top: 144,
-          height: 1,
-          backgroundColor: colors.border,
-        }}
-      />
+
+      {/* Header: brand lockup + a single category pill. */}
       <div
         style={{
           display: 'flex',
@@ -165,174 +158,120 @@ export async function createOgImage(
           gap: 24,
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
-          <EvexMark />
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 4,
-            }}
-          >
-            <div
-              style={{
-                fontFamily: PIXEL_FONT_FAMILY,
-                fontSize: 30,
-                lineHeight: 1,
-              }}
-            >
-              evex
-            </div>
-            <div
-              style={{
-                color: colors.muted,
-                fontSize: 18,
-                lineHeight: 1.2,
-              }}
-            >
-              the eve agent registry
-            </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <EvexMark size={40} />
+          <div style={{ fontFamily: PIXEL_FONT_FAMILY, fontSize: 26 }}>
+            evex
           </div>
         </div>
         <div
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: 10,
-            border: `1px solid ${colors.border}`,
-            borderRadius: 8,
-            color: colors.muted,
+            borderRadius: 999,
+            backgroundColor: 'rgba(71, 168, 255, 0.12)',
+            color: colors.accent,
             fontSize: 20,
-            padding: '12px 16px',
+            fontWeight: 500,
+            padding: '8px 18px',
             lineHeight: 1,
           }}
         >
-          <span
-            style={{
-              width: 7,
-              height: 7,
-              borderRadius: 7,
-              backgroundColor: colors.accent,
-            }}
-          />
           {eyebrow}
         </div>
       </div>
 
+      {/* Hero: title + the real description. */}
       <div
         style={{
+          minWidth: 0,
           display: 'flex',
-          alignItems: initials ? 'center' : 'flex-start',
-          gap: 34,
+          flexDirection: 'column',
+          gap: 22,
         }}
       >
-        {initials ? (
-          <div
-            style={{
-              width: 128,
-              height: 128,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0,
-              borderRadius: 8,
-              border: `1px solid ${colors.border}`,
-              backgroundColor: colors.card,
-              color: colors.foreground,
-              fontSize: 58,
-              fontWeight: 800,
-              lineHeight: 1,
-            }}
-          >
-            {initials}
-          </div>
-        ) : null}
         <div
           style={{
-            minWidth: 0,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 24,
+            maxWidth: 1000,
+            fontSize: titleSize,
+            fontWeight: 700,
+            lineHeight: 1,
+            letterSpacing: -1,
+            overflowWrap: 'break-word',
           }}
         >
+          {safeTitle}
+        </div>
+        {safeDescription ? (
           <div
             style={{
-              maxWidth: initials ? 820 : 980,
-              fontSize: titleSize,
-              fontWeight: 800,
-              lineHeight: 0.98,
-              letterSpacing: 0,
+              maxWidth: 920,
+              color: colors.muted,
+              fontSize: 32,
+              lineHeight: 1.3,
               overflowWrap: 'break-word',
             }}
           >
-            {safeTitle}
+            {safeDescription}
           </div>
-          {safeDescription ? (
-            <div
-              style={{
-                maxWidth: 880,
-                color: colors.muted,
-                fontSize: 30,
-                lineHeight: 1.25,
-                overflowWrap: 'break-word',
-              }}
-            >
-              {safeDescription}
-            </div>
-          ) : null}
-        </div>
+        ) : null}
       </div>
 
+      {/* Footer: attribution on the left, install hint on the right. */}
       <div
         style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          alignSelf: footer ? 'stretch' : 'flex-start',
           gap: 20,
-          border: `1px solid ${colors.border}`,
-          borderRadius: 8,
-          backgroundColor: colors.panel,
-          padding: 16,
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          {meta.slice(0, 3).map((item) => (
+        {author ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
             <div
-              key={item}
               style={{
+                width: 44,
+                height: 44,
                 display: 'flex',
                 alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+                borderRadius: 999,
                 border: `1px solid ${colors.border}`,
-                borderRadius: 6,
+                backgroundColor: colors.panel,
                 color: colors.foreground,
-                backgroundColor: colors.card,
-                fontSize: 20,
-                padding: '12px 16px',
+                fontSize: 18,
+                fontWeight: 600,
                 lineHeight: 1,
               }}
             >
-              {truncate(item, 42)}
+              {initialsFromName(author)}
             </div>
-          ))}
-        </div>
-        {footer ? (
+            <div style={{ display: 'flex', fontSize: 24 }}>{author}</div>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', color: colors.muted, fontSize: 22 }}>
+            {TAGLINE}
+          </div>
+        )}
+        {install ? (
           <div
             style={{
-              minWidth: 0,
               display: 'flex',
               alignItems: 'center',
               gap: 12,
-              color: colors.muted,
-              fontFamily:
-                'Geist Mono, ui-monospace, SFMono-Regular, Menlo, monospace',
-              fontSize: 20,
-              lineHeight: 1.15,
-              textAlign: 'right',
+              border: `1px solid ${colors.border}`,
+              borderRadius: 10,
+              backgroundColor: colors.card,
+              color: colors.foreground,
+              fontFamily: PIXEL_FONT_FAMILY,
+              fontSize: 22,
+              padding: '14px 18px',
+              lineHeight: 1,
             }}
           >
             <span style={{ color: colors.accent }}>$</span>
-            {truncate(footer, 64)}
+            {install}
           </div>
         ) : null}
       </div>

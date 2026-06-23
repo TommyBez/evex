@@ -1,3 +1,4 @@
+import { getSiteHost } from '@/lib/metadata'
 import { createOgImage, ogImageContentType, ogImageSize } from '@/lib/og-image'
 import { getAgentBySlug } from '@/lib/queries'
 
@@ -25,14 +26,10 @@ export default async function Image({
   }
 
   return createOgImage({
-    eyebrow: `${agent.category} agent`,
+    eyebrow: agent.category,
     title: agent.name,
-    description: agent.title || agent.description,
-    footer: `npx shadcn@latest add @evex/${agent.slug}`,
-    meta: [
-      `by ${agent.authorName}`,
-      `${agent.installCount} installs`,
-      `@evex/${agent.slug}`,
-    ],
+    description: agent.description,
+    author: agent.authorName,
+    install: `${getSiteHost()}/r/${agent.slug}`,
   })
 }

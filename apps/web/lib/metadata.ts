@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 
 const DEFAULT_SITE_URL = 'https://evex.sh'
 const TRAILING_SLASHES = /\/+$/
+const URL_PROTOCOL = /^https?:\/\//
 
 export const siteConfig = {
   name: 'evex',
@@ -55,6 +56,11 @@ export function getSiteUrl(): string {
 
 export function getMetadataBase(): URL {
   return new URL(getSiteUrl())
+}
+
+// Bare host (no protocol) for compact display, e.g. OG install hints.
+export function getSiteHost(): string {
+  return getSiteUrl().replace(URL_PROTOCOL, '')
 }
 
 export function createPageMetadata({
