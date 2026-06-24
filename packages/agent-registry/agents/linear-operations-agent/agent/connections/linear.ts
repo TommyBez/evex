@@ -39,6 +39,16 @@ const getStringField = (input: Record<string, unknown>, field: string): string |
   return typeof value === "string" && value.trim() ? value : undefined;
 };
 
+const getRequiredEnv = (name: string): string => {
+  const value = process.env[name]?.trim();
+  if (!value) {
+    throw new Error(
+      `${name} is required. Create a Vercel Connect Linear connector and set this to the returned connector UID.`,
+    );
+  }
+  return value;
+};
+
 const needsSaveIssueApproval = (toolInput: unknown): boolean => {
   const input = asRecord(toolInput);
   if (!getStringField(input, "id")) return true;
@@ -72,7 +82,7 @@ export default defineMcpClientConnection({
   url: "https://mcp.linear.app/mcp",
   description:
     "Linear workspace operations: read issues, comments, projects, cycles, labels, statuses, status updates, and create approved operational updates.",
-  auth: connect(process.env.LINEAR_CONNECT_UID ?? "oauth/linear"),
+  auth: connect(getRequiredEnv("LINEAR_CONNECT_UID")),
   tools: {
     allow: [...READ_TOOLS, ...WRITE_TOOLS],
   },

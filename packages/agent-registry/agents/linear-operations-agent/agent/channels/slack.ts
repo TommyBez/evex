@@ -8,8 +8,18 @@ const SLACK_OPERATING_CONTEXT = [
   "Before sensitive Linear changes, ask for approval in the originating Slack thread or move the final confirmation to Linear.",
 ].join("\n");
 
+const getRequiredEnv = (name: string): string => {
+  const value = process.env[name]?.trim();
+  if (!value) {
+    throw new Error(
+      `${name} is required. Create a Vercel Connect Slack connector and set this to the returned connector UID.`,
+    );
+  }
+  return value;
+};
+
 export default slackChannel({
-  credentials: connectSlackCredentials(process.env.SLACK_CONNECT_UID ?? "slack/linear-operations-agent"),
+  credentials: connectSlackCredentials(getRequiredEnv("SLACK_CONNECT_UID")),
   async onAppMention(ctx, message) {
     const auth = defaultSlackAuth(message, ctx);
     try {

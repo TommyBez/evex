@@ -52,6 +52,8 @@ pnpm info
 pnpm build
 ```
 
+Run these after setting `LINEAR_CONNECT_UID` and `SLACK_CONNECT_UID`; the agent intentionally fails fast if either connector UID is missing.
+
 `pnpm info` should show:
 
 - channels: `linear` at `/eve/v1/linear` and `slack` at `/eve/v1/slack`;
@@ -81,8 +83,8 @@ Start from `.env.example`:
 ```bash
 LINEAR_AGENT_ACCESS_TOKEN=
 LINEAR_WEBHOOK_SECRET=
-LINEAR_CONNECT_UID=oauth/linear
-SLACK_CONNECT_UID=slack/linear-operations-agent
+LINEAR_CONNECT_UID=
+SLACK_CONNECT_UID=
 
 LINEAR_OPS_DEFAULT_SLACK_CHANNEL_ID=
 LINEAR_OPS_TRIAGE_SLACK_CHANNEL_ID=
@@ -91,10 +93,11 @@ LINEAR_OPS_BACKLOG_SLACK_CHANNEL_ID=
 LINEAR_OPS_P1_SLACK_CHANNEL_ID=
 ```
 
-The two Linear values at the top do different jobs:
+The top-level credentials do different jobs:
 
 - `LINEAR_AGENT_ACCESS_TOKEN` lets the Linear channel post Agent Activities and create proactive Agent Sessions.
-- `LINEAR_CONNECT_UID` points to the Vercel Connect OAuth connector used by the Linear MCP connection.
+- `LINEAR_CONNECT_UID` is the `uid` returned by `vercel connect create linear`.
+- `SLACK_CONNECT_UID` is the `uid` returned by `vercel connect create slack`.
 
 Setting `LINEAR_AGENT_ACCESS_TOKEN` does not authorize the MCP connection. If the agent needs to call Linear MCP tools, the caller still needs the Connect-backed Linear OAuth grant.
 
@@ -133,12 +136,12 @@ The Slack channel uses Vercel Connect. You do not configure `SLACK_BOT_TOKEN` or
 
 This setup is only for Slack delivery and intake. It does not authorize Linear MCP tools.
 
-Create a Slack Connect client and attach its trigger to Eve's Slack route. The Eve Slack docs use this CLI flow:
+Create a Slack Connect client and attach its trigger to Eve's Slack route. Capture the returned `uid`; the CLI lets you choose the connector name, not the final UID.
 
 ```bash
 npm install -g vercel@latest
 export FF_CONNECT_ENABLED=1
-vercel connect create slack --triggers
+vercel connect create slack --name linear-operations-agent --triggers --format=json
 vercel connect detach <slack-connect-uid> --yes
 vercel connect attach <slack-connect-uid> --triggers --trigger-path /eve/v1/slack --yes
 ```
@@ -149,13 +152,7 @@ Then set:
 SLACK_CONNECT_UID=<slack-connect-uid>
 ```
 
-This agent defaults to:
-
-```bash
-SLACK_CONNECT_UID=slack/linear-operations-agent
-```
-
-Use the UID you actually created if it is different.
+There is no fallback UID in the agent. Use the exact `uid` returned by Vercel.
 
 The `--triggers` flag is required because Slack must deliver `app_mention` and direct message events to `/eve/v1/slack`. The channel loads recent thread context on app mentions with `since: "last-agent-reply"`, then tells the model that Slack is intake and delivery while Linear remains the operational source of truth.
 
@@ -175,25 +172,23 @@ The MCP connection is defined in `agent/connections/linear.ts`:
 ```ts
 defineMcpClientConnection({
   url: "https://mcp.linear.app/mcp",
-  auth: connect(process.env.LINEAR_CONNECT_UID ?? "oauth/linear"),
+  auth: connect(getRequiredEnv("LINEAR_CONNECT_UID")),
 });
 ```
 
-Create a Vercel Connect OAuth connector for Linear MCP and give it the UID used by `LINEAR_CONNECT_UID`.
-
-Recommended default:
+Create a Vercel Connect connector of type `linear`, then copy the returned `uid`:
 
 ```bash
-LINEAR_CONNECT_UID=oauth/linear
+vercel connect create linear --name linear-operations-agent --format=json
 ```
 
-If your Connect connector has another UID, keep the code unchanged and set:
+Set:
 
 ```bash
-LINEAR_CONNECT_UID=<your-linear-connect-uid>
+LINEAR_CONNECT_UID=<uid returned by Vercel>
 ```
 
-The connector UID is the string passed to `connect(...)`; it is not a Linear team key, not a Slack connector UID, and not the Linear Agent app access token.
+There is no fallback UID in the agent. The connector UID is the string passed to `connect(...)`; it is not a Linear team key, not a Slack connector UID, and not the Linear Agent app access token.
 
 The first tool call that needs the Linear MCP connection can trigger an Eve authorization challenge. The user follows the sign-in URL, Vercel Connect stores and refreshes the Linear OAuth credential, and Eve retries the tool call. The token is not shown to the model or serialized into conversation history.
 
