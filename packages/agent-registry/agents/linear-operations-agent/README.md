@@ -4,6 +4,20 @@ An Eve agent for Linear operations across Linear, Slack, and scheduled runs.
 
 Linear is the source of truth. Slack is used for intake, coordination, notification, and scheduled report delivery. Scheduled initiative updates are written directly to Linear for explicitly configured initiatives.
 
+## What You Are Setting Up
+
+This agent has three different integration points. They are intentionally separate:
+
+| Part | File | Runtime route or server | Credentials |
+| --- | --- | --- | --- |
+| Linear channel | `agent/channels/linear.ts` | `POST /eve/v1/linear` | `LINEAR_AGENT_ACCESS_TOKEN`, `LINEAR_WEBHOOK_SECRET` |
+| Slack channel | `agent/channels/slack.ts` | `POST /eve/v1/slack` | Vercel Connect Slack UID in `SLACK_CONNECT_UID` |
+| Linear MCP connection | `agent/connections/linear.ts` | `https://mcp.linear.app/mcp` | Vercel Connect Linear OAuth UID in `LINEAR_CONNECT_UID` |
+
+The Linear channel is how users mention or delegate work to the agent inside Linear. The Slack channel is how users mention or DM the agent in Slack. The Linear MCP connection is how the agent reads and writes Linear data from any surface, including Slack and schedules.
+
+Do not replace the Linear MCP connection with custom Linear SDK tools for this agent. The connection exposes the allowed Linear MCP tools and applies the dynamic approval policy in one place.
+
 ## Capabilities
 
 - Linear issue triage, clarification, decomposition, duplicate detection, and incident support.
@@ -11,46 +25,210 @@ Linear is the source of truth. Slack is used for intake, coordination, notificat
 - Scheduled daily triage, cycle health, backlog hygiene, project summaries, P0/P1 monitoring, and weekly initiative updates.
 - One Linear MCP connection with dynamic approval policy. No custom Linear SDK tools are included.
 
-## Linear Agent App Setup
+## Prerequisites
 
-Create a Linear OAuth app for the agent surface:
+- Node.js 24 or newer.
+- An Eve deployment URL that Linear and Slack can reach over HTTPS.
+- Access to create or configure a Linear Agent app.
+- Access to Vercel Connect for the Slack channel and the Linear MCP OAuth connection.
+- A Slack workspace where the agent app can be installed.
+- A Linear workspace where the MCP-authenticated user has access to the teams, projects, issues, and initiatives the agent should operate on.
 
-- Use the authorize URL with `actor=app`.
-- Grant app scopes including `app:assignable` and `app:mentionable`.
-- Subscribe to `AgentSessionEvent`.
-- Configure the webhook URL as `/eve/v1/linear`.
-- Set `LINEAR_AGENT_ACCESS_TOKEN` for Agent Activities and proactive sessions.
-- Set `LINEAR_WEBHOOK_SECRET` for webhook verification.
+For local webhook testing, expose the local Eve server through a public HTTPS tunnel and use that public URL in Linear and Slack.
 
-The Linear channel accepts only `created` and `prompted` Agent Session events.
+## Install And Verify The Agent
 
-## Linear MCP OAuth Setup
+Install the registry item into an existing Eve app:
 
-The agent uses one MCP client connection:
+```bash
+npx shadcn@latest add https://evex.sh/r/linear-operations-agent
+pnpm install
+```
 
-- URL: `https://mcp.linear.app/mcp`
-- Auth: Vercel Connect via `connect(process.env.LINEAR_CONNECT_UID ?? "oauth/linear")`
-- Default Connect UID: `oauth/linear`
+Then run the equivalent Eve checks for your app. In this packaged example the scripts are:
 
-Configure a Vercel Connect client for Linear and ensure the authenticated user has access to the workspace data the agent should read or update.
+```bash
+pnpm info
+pnpm build
+```
 
-## Slack Setup
+`pnpm info` should show:
 
-The Slack channel uses Vercel Connect:
+- channels: `linear` at `/eve/v1/linear` and `slack` at `/eve/v1/slack`;
+- one MCP connection named `linear`;
+- the scheduled jobs and skills included with the agent;
+- no custom Linear SDK tools.
 
-- Default Connect UID: `slack/linear-operations-agent`
-- Trigger path: `/eve/v1/slack`
-- Configure `SLACK_CONNECT_UID` if you use a different Connect UID.
+## Deploy Or Expose The Eve App
 
-Slack is not the final system of record. For operational work, the agent should create or update Linear after approval, then reply in Slack with the result.
+Both inbound channels need an HTTPS URL:
 
-## Configuration
+- Linear sends `AgentSessionEvent` webhooks to `/eve/v1/linear`.
+- Slack sends Connect-triggered Slack events to `/eve/v1/slack`.
 
-Use `.env.example` as the configuration contract.
+For production on Vercel, Eve's Slack channel docs use:
 
-`LINEAR_OPS_COVERED_TEAMS` and `LINEAR_OPS_COVERED_PROJECTS` are comma-separated allow-lists. Empty values mean all teams or all projects.
+```bash
+VERCEL_USE_EXPERIMENTAL_FRAMEWORKS=1 vercel deploy --prod
+```
 
-`LINEAR_OPS_COVERED_INITIATIVES` is comma-separated and supports:
+For local testing, expose the Eve dev server through a public HTTPS tunnel and use that tunnel URL in Linear and Slack. Do not configure Linear or Slack with a plain `localhost` URL.
+
+## Environment Variables
+
+Start from `.env.example`:
+
+```bash
+LINEAR_AGENT_ACCESS_TOKEN=
+LINEAR_WEBHOOK_SECRET=
+LINEAR_CONNECT_UID=oauth/linear
+SLACK_CONNECT_UID=slack/linear-operations-agent
+
+LINEAR_OPS_DEFAULT_SLACK_CHANNEL_ID=
+LINEAR_OPS_TRIAGE_SLACK_CHANNEL_ID=
+LINEAR_OPS_CYCLE_SLACK_CHANNEL_ID=
+LINEAR_OPS_BACKLOG_SLACK_CHANNEL_ID=
+LINEAR_OPS_P1_SLACK_CHANNEL_ID=
+```
+
+The two Linear values at the top do different jobs:
+
+- `LINEAR_AGENT_ACCESS_TOKEN` lets the Linear channel post Agent Activities and create proactive Agent Sessions.
+- `LINEAR_CONNECT_UID` points to the Vercel Connect OAuth connector used by the Linear MCP connection.
+
+Setting `LINEAR_AGENT_ACCESS_TOKEN` does not authorize the MCP connection. If the agent needs to call Linear MCP tools, the caller still needs the Connect-backed Linear OAuth grant.
+
+## 1. Configure The Linear Channel
+
+Create or configure the Linear Agent app that represents this agent inside Linear.
+
+This setup is only for the Linear channel. It does not authorize the Linear MCP connection.
+
+In Linear:
+
+1. Configure the app authorize URL with `actor=app`.
+2. Grant the app agent scopes, including `app:assignable` and `app:mentionable`.
+3. Subscribe the app webhook to `AgentSessionEvent`.
+4. Set the webhook URL to:
+
+```text
+https://<your-eve-deployment>/eve/v1/linear
+```
+
+5. Copy the Linear webhook secret into `LINEAR_WEBHOOK_SECRET`.
+6. Create or copy the app access token into `LINEAR_AGENT_ACCESS_TOKEN`.
+
+The channel accepts only Linear Agent Session events with action `created` or `prompted`. It ignores other Linear webhook events. If `LINEAR_OPS_COVERED_TEAMS` or `LINEAR_OPS_COVERED_PROJECTS` is configured, the channel also filters events by the issue team or project before waking the agent.
+
+Use this surface for:
+
+- `@agent fai triage di questa issue`;
+- `@agent trova duplicati`;
+- delegating a Linear issue to the agent;
+- continuing a Linear Agent Session after the agent asks a question.
+
+## 2. Configure The Slack Channel
+
+The Slack channel uses Vercel Connect. You do not configure `SLACK_BOT_TOKEN` or `SLACK_SIGNING_SECRET` directly in this agent.
+
+This setup is only for Slack delivery and intake. It does not authorize Linear MCP tools.
+
+Create a Slack Connect client and attach its trigger to Eve's Slack route. The Eve Slack docs use this CLI flow:
+
+```bash
+npm install -g vercel@latest
+export FF_CONNECT_ENABLED=1
+vercel connect create slack --triggers
+vercel connect detach <slack-connect-uid> --yes
+vercel connect attach <slack-connect-uid> --triggers --trigger-path /eve/v1/slack --yes
+```
+
+Then set:
+
+```bash
+SLACK_CONNECT_UID=<slack-connect-uid>
+```
+
+This agent defaults to:
+
+```bash
+SLACK_CONNECT_UID=slack/linear-operations-agent
+```
+
+Use the UID you actually created if it is different.
+
+The `--triggers` flag is required because Slack must deliver `app_mention` and direct message events to `/eve/v1/slack`. The channel loads recent thread context on app mentions with `since: "last-agent-reply"`, then tells the model that Slack is intake and delivery while Linear remains the operational source of truth.
+
+Use this surface for:
+
+- `@agent crea una issue Linear da questo thread`;
+- `@agent collega questa discussione a ENG-123`;
+- `@agent mostrami le issue P1 senza update`;
+- scheduled digest delivery into configured Slack channels.
+
+## 3. Configure The Linear MCP Connection
+
+This setup is for reading and writing Linear data through MCP tools. It is separate from the Linear Agent app webhook and separate from the Slack Connect client.
+
+The MCP connection is defined in `agent/connections/linear.ts`:
+
+```ts
+defineMcpClientConnection({
+  url: "https://mcp.linear.app/mcp",
+  auth: connect(process.env.LINEAR_CONNECT_UID ?? "oauth/linear"),
+});
+```
+
+Create a Vercel Connect OAuth connector for Linear MCP and give it the UID used by `LINEAR_CONNECT_UID`.
+
+Recommended default:
+
+```bash
+LINEAR_CONNECT_UID=oauth/linear
+```
+
+If your Connect connector has another UID, keep the code unchanged and set:
+
+```bash
+LINEAR_CONNECT_UID=<your-linear-connect-uid>
+```
+
+The connector UID is the string passed to `connect(...)`; it is not a Linear team key, not a Slack connector UID, and not the Linear Agent app access token.
+
+The first tool call that needs the Linear MCP connection can trigger an Eve authorization challenge. The user follows the sign-in URL, Vercel Connect stores and refreshes the Linear OAuth credential, and Eve retries the tool call. The token is not shown to the model or serialized into conversation history.
+
+The connection allow-list is:
+
+- read tools: `list_issues`, `get_issue`, `list_comments`, `list_projects`, `get_status_updates`, `list_cycles`, `list_issue_labels`, `list_issue_statuses`, `get_issue_status`, `extract_images`, `search_documentation`;
+- write tools: `save_issue`, `save_comment`, `save_project`, `save_document`, `save_status_update`, `delete_status_update`.
+
+## 4. Configure Scope, Slack Delivery, And Schedules
+
+Team and project filters are comma-separated. Empty values mean all teams or all projects:
+
+```bash
+LINEAR_OPS_COVERED_TEAMS=ENG,Web
+LINEAR_OPS_COVERED_PROJECTS=Payments Revamp,Mobile Foundations
+LINEAR_OPS_READ_ONLY_TEAMS=Platform
+```
+
+Slack schedule delivery uses channel IDs:
+
+```bash
+LINEAR_OPS_DEFAULT_SLACK_CHANNEL_ID=C0123DEFAULT
+LINEAR_OPS_TRIAGE_SLACK_CHANNEL_ID=C0123TRIAGE
+LINEAR_OPS_CYCLE_SLACK_CHANNEL_ID=C0123CYCLE
+LINEAR_OPS_BACKLOG_SLACK_CHANNEL_ID=C0123BACKLOG
+LINEAR_OPS_P1_SLACK_CHANNEL_ID=C0123P1
+```
+
+Project-specific Slack delivery uses `project-or-id:channel-id` pairs:
+
+```bash
+LINEAR_OPS_PROJECT_CHANNELS=Payments Revamp:C0123PAY,Mobile Foundations:C0456MOB
+```
+
+Explicit initiative configuration uses:
 
 ```text
 initiative-id-or-name|optional-slack-channel-id|optional-enabled-flag
@@ -58,46 +236,98 @@ initiative-id-or-name|optional-slack-channel-id|optional-enabled-flag
 
 Example:
 
-```text
-Payments Revamp|C0123ABC|true,Mobile Foundations||false
+```bash
+LINEAR_OPS_COVERED_INITIATIVES="Payments Revamp|C0123PAY|true,Mobile Foundations||false"
 ```
 
-Weekly initiative updates are automatic only when the initiative is explicitly configured and `weeklyUpdateEnabled` is not `false`. If the Linear workspace does not have roadmaps or initiatives enabled, the schedule should publish a clear Slack error instead of a generic digest.
+Weekly initiative updates are automatic only when:
 
-Project-to-channel mappings use:
+- `LINEAR_OPS_AUTO_INITIATIVE_UPDATES` is not `false`;
+- the initiative is listed in `LINEAR_OPS_COVERED_INITIATIVES`;
+- that initiative's enabled flag is omitted or set to `true`;
+- Linear MCP supports initiative status updates in the workspace.
 
-```text
-LINEAR_OPS_PROJECT_CHANNELS=Payments Revamp:C0123ABC,Mobile:C0456DEF
+The default cron values are UTC:
+
+```bash
+LINEAR_OPS_DAILY_TRIAGE_CRON="0 7 * * 1-5"
+LINEAR_OPS_CYCLE_HEALTH_CRON="30 7 * * 1-5"
+LINEAR_OPS_WEEKLY_BACKLOG_CRON="0 8 * * 1"
+LINEAR_OPS_WEEKLY_PROJECT_CRON="30 8 * * 1"
+LINEAR_OPS_WEEKLY_INITIATIVE_CRON="0 9 * * 1"
+LINEAR_OPS_P1_MONITORING_CRON="0 13 * * 1-5"
 ```
+
+Scheduled operational digests are delivered to Slack. Weekly initiative updates are created directly in Linear with `save_status_update({ type: "initiative" })`; Slack is used only for delivery errors or configured notification context.
 
 ## Approval Policy
 
-Read tools do not require approval. Non-destructive comments do not require approval. Initiative status updates do not require approval only when `type === "initiative"` and the initiative is explicitly configured.
+The approval policy is implemented on the single Linear MCP connection.
+
+No approval is required for:
+
+- read tools;
+- `save_comment` for non-destructive summaries or proposals;
+- `save_status_update` only when `type === "initiative"` and the initiative is explicitly configured for weekly updates.
 
 Approval is required for:
 
-- Creating issues.
-- Changing issue state, priority, assignee, delegate, project, cycle, duplicate, parent, blocker, or related relationships.
-- High-priority issue writes where priority is `1` or `2`.
-- Project writes.
-- Document writes.
-- Status update deletes.
-- Bulk or irreversible actions.
+- issue creation;
+- issue changes to state, priority, assignee, delegate, project, cycle, duplicate, parent, blocker, or related relationships;
+- high-priority issue writes where priority is `1` or `2`;
+- project writes;
+- document writes;
+- status update deletes;
+- bulk or irreversible actions.
 
-The approval predicate is synchronous and input-based. If deciding safely requires reading current Linear state, the agent must read with MCP first, then ask for approval before the sensitive write.
+The approval predicate is synchronous and input-based. If deciding safely requires the current Linear state, the agent must first read with MCP, then ask for approval before the sensitive write.
 
-## Commands
+## Smoke Tests
 
-```bash
-pnpm install
-pnpm info
-pnpm build
+After deployment and env setup:
+
+1. In Linear, mention or delegate an issue:
+
+```text
+@agent fai triage di questa issue
 ```
 
-During development, trigger a schedule with:
+Expected: the agent replies in the Linear Agent Session and attaches proposals to the Linear context.
+
+2. In Slack, mention the agent in a thread:
+
+```text
+@agent riassumi il thread e proponi una issue Linear
+```
+
+Expected: the agent reads recent thread context, proposes Linear work, and asks for approval before sensitive changes.
+
+3. From Slack or Linear, ask for a read-only Linear query:
+
+```text
+@agent mostrami le issue P1 senza update
+```
+
+Expected: if the caller has not authorized the Linear MCP connection yet, Eve surfaces a Linear Connect authorization challenge. After authorization, the agent can call the allowed Linear MCP read tools.
+
+4. Trigger a development schedule:
 
 ```bash
 curl -X POST http://localhost:3000/eve/v1/dev/schedules/daily-triage-digest
 ```
 
 Other schedule ids are `cycle-health`, `weekly-backlog-hygiene`, `weekly-project-summary`, `weekly-initiative-updates`, and `p1-monitoring`.
+
+## Troubleshooting
+
+If Linear mentions do nothing, check that the Linear app webhook points to `/eve/v1/linear`, subscribes to `AgentSessionEvent`, and sends a valid `Linear-Signature` matching `LINEAR_WEBHOOK_SECRET`.
+
+If Linear replies fail, check `LINEAR_AGENT_ACCESS_TOKEN`. This token is for Agent Activities, not for MCP data access.
+
+If Slack mentions do nothing, check that the Slack Connect client is attached with `--triggers` and `--trigger-path /eve/v1/slack`, and that `SLACK_CONNECT_UID` matches the created connector UID.
+
+If Slack-triggered Linear reads or writes fail with authorization required, complete the Linear MCP Connect sign-in flow for the caller. `LINEAR_CONNECT_UID` must match the Linear Connect OAuth connector, not the Slack connector.
+
+If scheduled jobs do not post, set the relevant Slack channel ID env var. The schedule handlers return without posting when no target channel ID is configured.
+
+If weekly initiative updates do not write to Linear, confirm the initiative is explicitly listed in `LINEAR_OPS_COVERED_INITIATIVES` and that the workspace supports Linear initiatives or roadmaps.
