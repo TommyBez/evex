@@ -31,8 +31,11 @@ async function SignInContent({
 }: {
   searchParams: Promise<{ redirect?: string }>
 }) {
-  const session = await auth.api.getSession({ headers: await headers() })
-  const { redirect: redirectParam } = await searchParams
+  const [requestHeaders, { redirect: redirectParam }] = await Promise.all([
+    headers(),
+    searchParams,
+  ])
+  const session = await auth.api.getSession({ headers: requestHeaders })
   const redirectTo = getSafeRedirectPath(redirectParam)
   if (session?.user) {
     redirect(redirectTo)

@@ -2,11 +2,12 @@
 
 import { Globe, Upload } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { useEffect, useRef, useState, useTransition } from 'react'
+import { useReducer, useRef, useTransition } from 'react'
 import { toast } from 'sonner'
 import { type ProfileData, saveProfile } from '@/app/actions/profile'
 import { AuthorAvatar } from '@/components/author-avatar'
-import { GitHubIcon, LinkedInIcon, XIcon } from '@/components/social-icons'
+import { GitHubIcon } from '@/components/github-icon'
+import { LinkedInIcon } from '@/components/linkedin-icon'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -23,8 +24,51 @@ import {
 } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import { XIcon } from '@/components/x-icon'
 
 const MAX_AVATAR_BYTES = 4 * 1024 * 1024
+
+interface ProfileFormState {
+  bio: string
+  githubUrl: string
+  linkedinUrl: string
+  preview: string | null
+  twitterUrl: string
+  websiteUrl: string
+}
+
+type ProfileFormAction =
+  | {
+      field: Exclude<keyof ProfileFormState, 'preview'>
+      type: 'fieldChanged'
+      value: string
+    }
+  | { type: 'previewChanged'; value: string | null }
+
+function getInitialProfileFormState(profile: ProfileData): ProfileFormState {
+  return {
+    bio: profile.bio,
+    githubUrl: profile.githubUrl ?? '',
+    linkedinUrl: profile.linkedinUrl ?? '',
+    preview: profile.avatarUrl,
+    twitterUrl: profile.twitterUrl ?? '',
+    websiteUrl: profile.websiteUrl ?? '',
+  }
+}
+
+function profileFormReducer(
+  state: ProfileFormState,
+  action: ProfileFormAction,
+): ProfileFormState {
+  switch (action.type) {
+    case 'fieldChanged':
+      return { ...state, [action.field]: action.value }
+    case 'previewChanged':
+      return { ...state, preview: action.value }
+    default:
+      return state
+  }
+}
 
 export function ProfileForm({
   profile,
@@ -39,22 +83,14 @@ export function ProfileForm({
   const [isPending, startTransition] = useTransition()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const [preview, setPreview] = useState<string | null>(profile.avatarUrl)
-  const [bio, setBio] = useState(profile.bio)
-  const [websiteUrl, setWebsiteUrl] = useState(profile.websiteUrl ?? '')
-  const [githubUrl, setGithubUrl] = useState(profile.githubUrl ?? '')
-  const [twitterUrl, setTwitterUrl] = useState(profile.twitterUrl ?? '')
-  const [linkedinUrl, setLinkedinUrl] = useState(profile.linkedinUrl ?? '')
+  const [formState, dispatch] = useReducer(
+    profileFormReducer,
+    profile,
+    getInitialProfileFormState,
+  )
   const hasVerifiedGithub = Boolean(profile.githubUsername)
-
-  useEffect(() => {
-    setPreview(profile.avatarUrl)
-    setBio(profile.bio)
-    setWebsiteUrl(profile.websiteUrl ?? '')
-    setGithubUrl(profile.githubUrl ?? '')
-    setTwitterUrl(profile.twitterUrl ?? '')
-    setLinkedinUrl(profile.linkedinUrl ?? '')
-  }, [profile])
+  const { bio, githubUrl, linkedinUrl, preview, twitterUrl, websiteUrl } =
+    formState
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -66,7 +102,7 @@ export function ProfileForm({
       e.target.value = ''
       return
     }
-    setPreview(URL.createObjectURL(file))
+    dispatch({ type: 'previewChanged', value: URL.createObjectURL(file) })
   }
 
   const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
@@ -136,7 +172,13 @@ export function ProfileForm({
               id="bio"
               maxLength={500}
               name="bio"
-              onChange={(e) => setBio(e.target.value)}
+              onChange={(e) =>
+                dispatch({
+                  field: 'bio',
+                  type: 'fieldChanged',
+                  value: e.target.value,
+                })
+              }
               placeholder="Tell people a little about yourself and the agents you build."
               rows={4}
               value={bio}
@@ -169,7 +211,13 @@ export function ProfileForm({
                 id="websiteUrl"
                 inputMode="url"
                 name="websiteUrl"
-                onChange={(e) => setWebsiteUrl(e.target.value)}
+                onChange={(e) =>
+                  dispatch({
+                    field: 'websiteUrl',
+                    type: 'fieldChanged',
+                    value: e.target.value,
+                  })
+                }
                 placeholder="yoursite.com"
                 type="text"
                 value={websiteUrl}
@@ -187,7 +235,13 @@ export function ProfileForm({
                 disabled={hasVerifiedGithub}
                 id="githubUrl"
                 name={hasVerifiedGithub ? undefined : 'githubUrl'}
-                onChange={(e) => setGithubUrl(e.target.value)}
+                onChange={(e) =>
+                  dispatch({
+                    field: 'githubUrl',
+                    type: 'fieldChanged',
+                    value: e.target.value,
+                  })
+                }
                 placeholder="https://github.com/username"
                 readOnly={hasVerifiedGithub}
                 value={githubUrl}
@@ -208,7 +262,13 @@ export function ProfileForm({
               <Input
                 id="twitterUrl"
                 name="twitterUrl"
-                onChange={(e) => setTwitterUrl(e.target.value)}
+                onChange={(e) =>
+                  dispatch({
+                    field: 'twitterUrl',
+                    type: 'fieldChanged',
+                    value: e.target.value,
+                  })
+                }
                 placeholder="https://x.com/username"
                 value={twitterUrl}
               />
@@ -224,7 +284,13 @@ export function ProfileForm({
               <Input
                 id="linkedinUrl"
                 name="linkedinUrl"
-                onChange={(e) => setLinkedinUrl(e.target.value)}
+                onChange={(e) =>
+                  dispatch({
+                    field: 'linkedinUrl',
+                    type: 'fieldChanged',
+                    value: e.target.value,
+                  })
+                }
                 placeholder="https://linkedin.com/in/username"
                 value={linkedinUrl}
               />

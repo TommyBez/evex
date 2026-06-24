@@ -1,6 +1,7 @@
 import { readFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import { ImageResponse } from 'next/og'
+import { EvexMark } from '@/lib/og-image-mark'
 
 export const ogImageSize = {
   width: 1200,
@@ -36,57 +37,12 @@ const colors = {
   accent: '#47a8ff',
 }
 
-const EVEX_MARK_CELLS = [
-  { color: colors.accent, x: 43, y: 42 },
-  { color: colors.foreground, x: 76, y: 42 },
-  { color: colors.accent, x: 109, y: 42 },
-  { color: colors.foreground, x: 43, y: 76 },
-  { color: colors.accent, x: 76, y: 76 },
-  { color: colors.accent, x: 43, y: 110 },
-  { color: colors.foreground, x: 76, y: 110 },
-  { color: colors.accent, x: 109, y: 110 },
-] as const
-
 interface OgImageProps {
   author?: string
   description?: string
   eyebrow: string
   install?: string
   title: string
-}
-
-function EvexMark({ size = 54 }: { size?: number }) {
-  const scale = size / 180
-
-  return (
-    <div
-      style={{
-        width: size,
-        height: size,
-        display: 'flex',
-        position: 'relative',
-        flexShrink: 0,
-        borderRadius: 8,
-        border: `1px solid ${colors.border}`,
-        backgroundColor: colors.background,
-      }}
-    >
-      {EVEX_MARK_CELLS.map((cell) => (
-        <div
-          key={`${cell.x}-${cell.y}`}
-          style={{
-            position: 'absolute',
-            left: cell.x * scale,
-            top: cell.y * scale,
-            width: 28 * scale,
-            height: 28 * scale,
-            borderRadius: 4 * scale,
-            backgroundColor: cell.color,
-          }}
-        />
-      ))}
-    </div>
-  )
 }
 
 const WHITESPACE_SPLIT = /\s+/
@@ -103,7 +59,7 @@ function getTitleSize(length: number): number {
 
 const TAGLINE = 'the eve agent registry'
 
-export function initialsFromName(name: string): string {
+function initialsFromName(name: string): string {
   const initials = name
     .split(WHITESPACE_SPLIT)
     .filter(Boolean)

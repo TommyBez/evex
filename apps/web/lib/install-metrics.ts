@@ -1,5 +1,3 @@
-'use server'
-
 import { sql } from 'drizzle-orm'
 import { revalidateTag } from 'next/cache'
 import { cacheTags, getAgentTag, getAuthorAgentsTag } from '@/lib/cache-tags'
@@ -17,8 +15,8 @@ function revalidateRegistryCaches(slug: string, authorUsername: string | null) {
   }
 }
 
-// Increment install count. Called from the public registry endpoint, so it is
-// intentionally not user-scoped.
+// Called from the public registry endpoint, so install tracking is intentionally
+// not user-scoped.
 export async function incrementInstallCount(slug: string): Promise<void> {
   const agent = await getAgentBySlug(slug)
   if (!agent) {

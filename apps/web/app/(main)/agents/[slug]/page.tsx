@@ -435,6 +435,7 @@ async function AgentDetailRuntimeControls({ agentId }: { agentId: string }) {
         agentId={agentId}
         initialIsFavorite={runtimeState.favoriteAgentIdSet.has(agentId)}
         isAuthenticated={runtimeState.isAuthenticated}
+        key={`${agentId}:${runtimeState.favoriteAgentIdSet.has(agentId)}`}
         showLabel
       />
       <span className="flex items-center gap-1.5">

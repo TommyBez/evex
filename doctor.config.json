@@ -1,0 +1,17 @@
+{
+  "$schema": "https://react.doctor/schema.json",
+  "rootDir": "apps/web",
+  "ignore": {
+    "files": ["components/ui/**", "hooks/use-mobile.ts"],
+    "overrides": [
+      {
+        "files": ["emails/**/*.tsx"],
+        "rules": ["deslop/unused-export"]
+      },
+      {
+        "files": ["package.json"],
+        "rules": ["deslop/unused-dev-dependency"]
+      }
+    ]
+  }
+}

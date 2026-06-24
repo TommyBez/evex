@@ -43,6 +43,7 @@ async function ProfileContent() {
       </div>
       <ProfileForm
         email={session.user.email}
+        key={JSON.stringify(profile)}
         name={session.user.name || session.user.email}
         profile={profile}
       />

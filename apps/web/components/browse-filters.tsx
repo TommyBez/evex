@@ -2,7 +2,7 @@
 
 import { Search, X } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useCallback, useEffect, useState, useTransition } from 'react'
+import { useCallback, useRef, useTransition } from 'react'
 import {
   InputGroup,
   InputGroupAddon,
@@ -68,14 +68,14 @@ export function BrowseFilters() {
   const router = useRouter()
   const params = useSearchParams()
   const [isPending, startTransition] = useTransition()
+  const searchInputRef = useRef<HTMLInputElement>(null)
+  const searchTimeoutRef = useRef<number | null>(null)
 
   const activeCategory = params.get('category') ?? DEFAULT_CATEGORY
   const activeSearch = params.get('q') ?? ''
   const activeSort = parseSort(params.get('sort') ?? undefined)
-  const [searchValue, setSearchValue] = useState(activeSearch)
-  const [selectedCategory, setSelectedCategory] = useState(activeCategory)
-  const [selectedSort, setSelectedSort] = useState<AgentSort>(activeSort)
-  const [isSearchFocused, setIsSearchFocused] = useState(false)
+  const selectedCategory = activeCategory
+  const selectedSort = activeSort
 
   const replaceFilters = useCallback(
     (nextSearch: string, nextCategory: string, nextSort: AgentSort) => {
@@ -88,72 +88,65 @@ export function BrowseFilters() {
     [router],
   )
 
-  useEffect(() => {
-    if (isSearchFocused) {
+  const getSearchValue = useCallback(
+    () => searchInputRef.current?.value ?? activeSearch,
+    [activeSearch],
+  )
+
+  const clearPendingSearchSync = useCallback(() => {
+    if (searchTimeoutRef.current === null) {
       return
     }
-    setSearchValue(activeSearch)
-  }, [activeSearch, isSearchFocused])
+    window.clearTimeout(searchTimeoutRef.current)
+    searchTimeoutRef.current = null
+  }, [])
 
-  useEffect(() => {
-    if (isPending) {
-      return
-    }
-    setSelectedCategory(activeCategory)
-    setSelectedSort(activeSort)
-  }, [activeCategory, activeSort, isPending])
-
-  useEffect(() => {
-    if (searchValue === activeSearch) {
-      return
-    }
-
-    const timeoutId = window.setTimeout(() => {
-      replaceFilters(searchValue, selectedCategory, selectedSort)
-    }, SEARCH_URL_SYNC_DELAY_MS)
-
-    return () => window.clearTimeout(timeoutId)
-  }, [
-    activeSearch,
-    replaceFilters,
-    searchValue,
-    selectedCategory,
-    selectedSort,
-  ])
+  const scheduleSearchSync = useCallback(
+    (nextSearch: string) => {
+      clearPendingSearchSync()
+      searchTimeoutRef.current = window.setTimeout(() => {
+        replaceFilters(nextSearch, selectedCategory, selectedSort)
+        searchTimeoutRef.current = null
+      }, SEARCH_URL_SYNC_DELAY_MS)
+    },
+    [clearPendingSearchSync, replaceFilters, selectedCategory, selectedSort],
+  )
 
   const clearSearch = useCallback(() => {
-    setSearchValue('')
+    clearPendingSearchSync()
+    if (searchInputRef.current) {
+      searchInputRef.current.value = ''
+    }
     replaceFilters('', selectedCategory, selectedSort)
-  }, [replaceFilters, selectedCategory, selectedSort])
+  }, [clearPendingSearchSync, replaceFilters, selectedCategory, selectedSort])
 
   const changeCategory = useCallback(
     (nextCategory: string) => {
-      setSelectedCategory(nextCategory)
-      replaceFilters(searchValue, nextCategory, selectedSort)
+      replaceFilters(getSearchValue(), nextCategory, selectedSort)
     },
-    [replaceFilters, searchValue, selectedSort],
+    [getSearchValue, replaceFilters, selectedSort],
   )
 
   const changeSort = useCallback(
     (nextSort: AgentSort) => {
-      setSelectedSort(nextSort)
-      replaceFilters(searchValue, selectedCategory, nextSort)
+      replaceFilters(getSearchValue(), selectedCategory, nextSort)
     },
-    [replaceFilters, searchValue, selectedCategory],
+    [getSearchValue, replaceFilters, selectedCategory],
   )
 
   const clearAll = useCallback(() => {
-    setSearchValue('')
-    setSelectedCategory(DEFAULT_CATEGORY)
-    setSelectedSort(DEFAULT_AGENT_SORT)
+    clearPendingSearchSync()
+    if (searchInputRef.current) {
+      searchInputRef.current.value = ''
+    }
     startTransition(() => {
       router.replace('/', { scroll: false })
     })
-  }, [router])
+  }, [clearPendingSearchSync, router])
 
   const hasCategory = selectedCategory !== DEFAULT_CATEGORY
   const hasSort = selectedSort !== DEFAULT_AGENT_SORT
-  const hasActiveFilters = Boolean(searchValue) || hasCategory || hasSort
+  const hasActiveFilters = Boolean(activeSearch) || hasCategory || hasSort
 
   return (
     <div className="flex flex-col gap-4">
@@ -164,14 +157,14 @@ export function BrowseFilters() {
           </InputGroupAddon>
           <InputGroupInput
             aria-label="Search agents"
-            onBlur={() => setIsSearchFocused(false)}
-            onChange={(e) => setSearchValue(e.target.value)}
-            onFocus={() => setIsSearchFocused(true)}
+            defaultValue={activeSearch}
+            key={activeSearch}
+            onChange={(e) => scheduleSearchSync(e.target.value)}
             placeholder="Search agents..."
+            ref={searchInputRef}
             type="search"
-            value={searchValue}
           />
-          {searchValue ? (
+          {activeSearch ? (
             <InputGroupAddon align="inline-end">
               <InputGroupButton
                 aria-label="Clear search"
@@ -227,8 +220,8 @@ export function BrowseFilters() {
       {hasActiveFilters ? (
         <div className="flex flex-wrap items-center gap-2">
           <span className="mono-label text-muted-foreground/70">Filters</span>
-          {searchValue ? (
-            <FilterChip label={`“${searchValue}”`} onRemove={clearSearch} />
+          {activeSearch ? (
+            <FilterChip label={`“${activeSearch}”`} onRemove={clearSearch} />
           ) : null}
           {hasCategory ? (
             <FilterChip

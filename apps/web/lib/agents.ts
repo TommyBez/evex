@@ -18,10 +18,10 @@ const DEPENDENCY_SPLIT = /[\s,]+/
 
 // Parse the comma/space separated dependency string into a clean array.
 export function parseDependencies(raw: string): string[] {
-  return raw
-    .split(DEPENDENCY_SPLIT)
-    .map((dependency) => dependency.trim())
-    .filter(Boolean)
+  return raw.split(DEPENDENCY_SPLIT).flatMap((dependency) => {
+    const trimmed = dependency.trim()
+    return trimmed ? [trimmed] : []
+  })
 }
 
 // Ways to order the browse grid. Kept here so the client filter UI and the

@@ -53,12 +53,10 @@ function groupFiles(files: readonly AgentRegistryFile[]): FileGroup[] {
   }
 
   const order = ['Core', 'Skills', 'Subagents', 'Tools'] as const
-  return order
-    .map((label) => ({
-      files: groups.get(label) ?? [],
-      label,
-    }))
-    .filter((group) => group.files.length > 0)
+  return order.flatMap((label) => {
+    const groupFiles = groups.get(label)
+    return groupFiles ? [{ files: groupFiles, label }] : []
+  })
 }
 
 export function AgentFileViewer({ files }: { files: AgentRegistryFile[] }) {

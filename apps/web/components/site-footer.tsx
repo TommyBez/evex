@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { BrandMark } from '@/components/brand-mark'
-import { GitHubIcon, XIcon } from '@/components/social-icons'
+import { GitHubIcon } from '@/components/github-icon'
+import { XIcon } from '@/components/x-icon'
 
 const REPO_URL = 'https://github.com/TommyBez/evex'
 const X_PROFILE_URL = 'https://x.com/TommyBez85'

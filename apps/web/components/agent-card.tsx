@@ -51,6 +51,7 @@ export function AgentCard({
             className="relative z-10"
             initialIsFavorite={isFavorite}
             isAuthenticated={isAuthenticated}
+            key={`${agent.id}:${isFavorite}`}
           />
         </div>
       </div>

@@ -2,9 +2,9 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { type FormEvent, useState } from 'react'
+import { type FormEvent, useReducer } from 'react'
 import { BrandMark } from '@/components/brand-mark'
-import { GitHubIcon } from '@/components/social-icons'
+import { GitHubIcon } from '@/components/github-icon'
 import { TextSwap } from '@/components/transitions/text-swap'
 import { useShake } from '@/components/transitions/use-shake'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -39,6 +39,47 @@ const OTP_SLOT_IDS = [
   'otp-slot-5',
   'otp-slot-6',
 ] as const
+
+interface AuthFormState {
+  email: string
+  error: string | null
+  githubLoading: boolean
+  isOtpSent: boolean
+  loading: boolean
+  name: string
+  otp: string
+}
+
+type AuthFormAction =
+  | { type: 'patch'; value: Partial<AuthFormState> }
+  | { type: 'otpSent' }
+  | { type: 'resetOtp' }
+
+const initialAuthFormState: AuthFormState = {
+  email: '',
+  error: null,
+  githubLoading: false,
+  isOtpSent: false,
+  loading: false,
+  name: '',
+  otp: '',
+}
+
+function authFormReducer(
+  state: AuthFormState,
+  action: AuthFormAction,
+): AuthFormState {
+  switch (action.type) {
+    case 'patch':
+      return { ...state, ...action.value }
+    case 'otpSent':
+      return { ...state, error: null, isOtpSent: true, otp: '' }
+    case 'resetOtp':
+      return { ...state, error: null, isOtpSent: false, otp: '' }
+    default:
+      return state
+  }
+}
 
 function getSubmitLabel({
   isOtpSent,
@@ -76,15 +117,10 @@ export function AuthForm({
   redirectTo?: string
 }) {
   const router = useRouter()
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
-  const [isOtpSent, setIsOtpSent] = useState(false)
-  const [otp, setOtp] = useState('')
-  const [error, setError] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [githubLoading, setGithubLoading] = useState(false)
+  const [state, dispatch] = useReducer(authFormReducer, initialAuthFormState)
   const { ref: otpShakeRef, trigger: shakeOtp } = useShake<HTMLDivElement>()
 
+  const { email, error, githubLoading, isOtpSent, loading, name, otp } = state
   const isSignUp = mode === 'sign-up'
   const switchPath = isSignUp ? '/sign-in' : '/sign-up'
   const switchHref =
@@ -93,20 +129,26 @@ export function AuthForm({
       : `${switchPath}?redirect=${encodeURIComponent(redirectTo)}`
 
   const handleGitHub = async (): Promise<void> => {
-    setError(null)
-    setGithubLoading(true)
+    dispatch({ type: 'patch', value: { error: null, githubLoading: true } })
     try {
       const { error } = await authClient.signIn.social({
         provider: 'github',
         callbackURL: redirectTo,
       })
       if (error) {
-        setError(error.message ?? 'Something went wrong')
-        setGithubLoading(false)
+        dispatch({
+          type: 'patch',
+          value: {
+            error: error.message ?? 'Something went wrong',
+            githubLoading: false,
+          },
+        })
       }
     } catch (error) {
-      setError(getErrorMessage(error))
-      setGithubLoading(false)
+      dispatch({
+        type: 'patch',
+        value: { error: getErrorMessage(error), githubLoading: false },
+      })
     }
   }
 
@@ -118,28 +160,29 @@ export function AuthForm({
       })
 
       if (error) {
-        setError(error.message ?? 'Something went wrong')
+        dispatch({
+          type: 'patch',
+          value: { error: error.message ?? 'Something went wrong' },
+        })
         return false
       }
 
-      setIsOtpSent(true)
-      setOtp('')
+      dispatch({ type: 'otpSent' })
       return true
     } catch (error) {
-      setError(getErrorMessage(error))
+      dispatch({ type: 'patch', value: { error: getErrorMessage(error) } })
       return false
     }
   }
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault()
-    setError(null)
-    setLoading(true)
+    dispatch({ type: 'patch', value: { error: null, loading: true } })
 
     try {
       const displayName = name.trim()
       if (isSignUp && !displayName) {
-        setError('Enter your name')
+        dispatch({ type: 'patch', value: { error: 'Enter your name' } })
         return
       }
 
@@ -149,7 +192,12 @@ export function AuthForm({
       }
 
       if (otp.length !== OTP_LENGTH) {
-        setError(`Enter the ${OTP_LENGTH}-digit code from your email`)
+        dispatch({
+          type: 'patch',
+          value: {
+            error: `Enter the ${OTP_LENGTH}-digit code from your email`,
+          },
+        })
         shakeOtp()
         return
       }
@@ -161,7 +209,10 @@ export function AuthForm({
       })
 
       if (error) {
-        setError(error.message ?? 'Something went wrong')
+        dispatch({
+          type: 'patch',
+          value: { error: error.message ?? 'Something went wrong' },
+        })
         shakeOtp()
         return
       }
@@ -169,12 +220,12 @@ export function AuthForm({
       router.push(redirectTo)
       router.refresh()
     } catch (error) {
-      setError(getErrorMessage(error))
+      dispatch({ type: 'patch', value: { error: getErrorMessage(error) } })
       if (isOtpSent) {
         shakeOtp()
       }
     } finally {
-      setLoading(false)
+      dispatch({ type: 'patch', value: { loading: false } })
     }
   }
 
@@ -225,7 +276,12 @@ export function AuthForm({
                       autoFocus
                       disabled={loading || isOtpSent}
                       id="name"
-                      onChange={(e) => setName(e.target.value)}
+                      onChange={(e) =>
+                        dispatch({
+                          type: 'patch',
+                          value: { name: e.target.value },
+                        })
+                      }
                       required
                       value={name}
                     />
@@ -238,7 +294,12 @@ export function AuthForm({
                     autoFocus={!isSignUp}
                     disabled={loading || isOtpSent}
                     id="email"
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) =>
+                      dispatch({
+                        type: 'patch',
+                        value: { email: e.target.value },
+                      })
+                    }
                     required
                     type="email"
                     value={email}
@@ -255,7 +316,9 @@ export function AuthForm({
                         containerClassName="justify-center"
                         id="otp"
                         maxLength={OTP_LENGTH}
-                        onChange={setOtp}
+                        onChange={(value) =>
+                          dispatch({ type: 'patch', value: { otp: value } })
+                        }
                         value={otp}
                       >
                         <InputOTPGroup>
@@ -293,12 +356,17 @@ export function AuthForm({
                       className="h-auto px-0"
                       disabled={loading}
                       onClick={async () => {
-                        setError(null)
-                        setLoading(true)
+                        dispatch({
+                          type: 'patch',
+                          value: { error: null, loading: true },
+                        })
                         try {
                           await requestOtp()
                         } finally {
-                          setLoading(false)
+                          dispatch({
+                            type: 'patch',
+                            value: { loading: false },
+                          })
                         }
                       }}
                       type="button"
@@ -309,11 +377,7 @@ export function AuthForm({
                     <Button
                       className="h-auto px-0"
                       disabled={loading}
-                      onClick={() => {
-                        setError(null)
-                        setIsOtpSent(false)
-                        setOtp('')
-                      }}
+                      onClick={() => dispatch({ type: 'resetOtp' })}
                       type="button"
                       variant="link"
                     >

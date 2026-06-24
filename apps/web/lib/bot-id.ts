@@ -11,10 +11,3 @@ export async function checkHuman(): Promise<BotCheckResult> {
 
   return { ok: true }
 }
-
-export async function requireHuman(): Promise<void> {
-  const result = await checkHuman()
-  if (!result.ok) {
-    throw new Error(result.error)
-  }
-}

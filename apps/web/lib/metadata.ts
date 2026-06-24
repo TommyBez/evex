@@ -10,14 +10,14 @@ export const siteConfig = {
   description: 'Discover and install eve agents with a single shadcn command.',
 }
 
-export const defaultOpenGraphImage = {
+const defaultOpenGraphImage = {
   url: '/opengraph-image',
   width: 1200,
   height: 630,
   alt: 'evex - the eve agent registry',
 }
 
-export const defaultTwitterImage = {
+const defaultTwitterImage = {
   url: '/twitter-image',
   alt: 'evex - the eve agent registry',
 }

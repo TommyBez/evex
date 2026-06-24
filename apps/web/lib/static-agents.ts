@@ -9,7 +9,6 @@ import type {
   AgentRegistryFile,
   AgentWithAuthor,
   CatalogAgentAuthor,
-  StaticAuthorProfile,
 } from '@/lib/agent-types'
 import { githubProfileUrl, githubUsernameKey } from '@/lib/github'
 
@@ -182,37 +181,12 @@ export function getStaticAgentsByAuthorUsername(
     .sort(compareByCreatedAt)
 }
 
-export function getStaticAuthorProfile(
-  githubUsername: string,
-): StaticAuthorProfile | null {
-  const agents = getStaticAgentsByAuthorUsername(githubUsername)
-  const author = agents.at(0)?.author
-
-  if (!author?.githubUsername) {
-    return null
-  }
-
-  return {
-    agentCount: agents.length,
-    avatarUrl: author.avatarUrl ?? null,
-    bio: null,
-    githubUsername: author.githubUsername,
-    githubUrl: author.url ?? null,
-    isVerified: false,
-    linkedinUrl: null,
-    name: author.name,
-    totalInstalls: 0,
-    twitterUrl: null,
-    url: author.url ?? null,
-    websiteUrl: null,
-  }
-}
-
 export function getStaticRegistryStats() {
   const agents = listStaticAgents()
-  const authorKeys = agents
-    .map((agent) => githubUsernameKey(agent.authorUsername))
-    .filter((authorKey) => authorKey.length > 0)
+  const authorKeys = agents.flatMap((agent) => {
+    const authorKey = githubUsernameKey(agent.authorUsername)
+    return authorKey ? [authorKey] : []
+  })
 
   return {
     total: agents.length,

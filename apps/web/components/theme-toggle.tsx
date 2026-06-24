@@ -2,7 +2,6 @@
 
 import { Monitor, Moon, Sun } from 'lucide-react'
 import { useTheme } from 'next-themes'
-import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -20,14 +19,9 @@ const themeOptions = [
 
 export function ThemeToggle() {
   const { resolvedTheme, setTheme, theme } = useTheme()
-  const [mounted, setMounted] = useState(false)
 
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  const ActiveIcon = mounted && resolvedTheme === 'dark' ? Moon : Sun
-  const currentTheme = mounted ? (theme ?? 'system') : 'system'
+  const ActiveIcon = resolvedTheme === 'dark' ? Moon : Sun
+  const currentTheme = theme ?? 'system'
 
   return (
     <DropdownMenu>
@@ -36,8 +30,8 @@ export function ThemeToggle() {
           <Button
             aria-label="Change Theme"
             className="rounded-md"
-            disabled={!mounted}
             size="icon-sm"
+            suppressHydrationWarning
             variant="ghost"
           >
             <ActiveIcon aria-hidden="true" className="size-4" />

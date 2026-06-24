@@ -41,12 +41,16 @@ export interface ProfileData {
 
 const MAX_AVATAR_BYTES = 4 * 1024 * 1024 // 4MB
 const HTTP_URL_PREFIX = /^https?:\/\//i
-const ALLOWED_AVATAR_TYPES = [
-  'image/png',
-  'image/jpeg',
-  'image/webp',
-  'image/gif',
-]
+type AllowedAvatarType = 'image/gif' | 'image/jpeg' | 'image/png' | 'image/webp'
+
+function isAllowedAvatarType(value: string): value is AllowedAvatarType {
+  return (
+    value === 'image/png' ||
+    value === 'image/jpeg' ||
+    value === 'image/webp' ||
+    value === 'image/gif'
+  )
+}
 
 // Normalize an optional URL: trim, drop empties, and ensure a protocol.
 function normalizeUrl(value: FormDataEntryValue | null): string | null {
@@ -126,7 +130,7 @@ export async function saveProfile(
 
   const file = formData.get('avatar')
   if (file instanceof File && file.size > 0) {
-    if (!ALLOWED_AVATAR_TYPES.includes(file.type)) {
+    if (!isAllowedAvatarType(file.type)) {
       return { ok: false, error: 'Avatar must be a PNG, JPEG, WEBP, or GIF.' }
     }
     if (file.size > MAX_AVATAR_BYTES) {

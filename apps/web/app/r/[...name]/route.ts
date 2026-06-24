@@ -3,7 +3,7 @@ import {
   RegistryItemNotFoundError,
 } from '@evex/agent-registry'
 import { after, connection, NextResponse } from 'next/server'
-import { incrementInstallCount } from '@/app/actions/agents'
+import { incrementInstallCount } from '@/lib/install-metrics'
 
 const JSON_EXTENSION = '.json'
 
