@@ -78,10 +78,6 @@ connection string as `DATA_ANALYST_DATABASE_URL`.
 
 ## Runtime contract
 
-The v1 agent intentionally uses authored Eve tools instead of provider MCP
-tools. The public capability is narrow: describe allowed Postgres schema
-metadata and run one bounded read-only analytical query.
-
 Read-only access can still expose sensitive data. Do not grant this agent
 access to PII tables unless the Slack workspace and channel audience are allowed
 to see that data.
