@@ -31,7 +31,6 @@ Create the Slack Connect client from the Vercel project used by the Eve app:
 
 ```bash
 npm install -g vercel@latest
-export FF_CONNECT_ENABLED=1
 vercel connect create slack --triggers
 ```
 
