@@ -131,11 +131,11 @@ Most formatting and common issues are automatically fixed by Biome. Run `pnpm dl
 ### Running / lint / build (commands live in `package.json`)
 - Dev server: `pnpm dev` (runs `@evex/web` through Turborepo on port 3000).
 - Lint/format check: `pnpm run check` (ultracite/biome through Turborepo). Use `pnpm run fix` for auto-fixes.
-- Agent catalog: agents live in `packages/agent-registry/agents/<slug>` with a per-agent `registry.json`. After editing one, run `pnpm --filter @evex/agent-registry generate` to rebuild the embedded `src/generated/registry.ts`. The web app serves the catalog at `/r/registry.json` and items at `/r/{name}.json` via `getRegistry` / `getRegistryItem` from `@evex/agent-registry`.
+- Agent catalog: agents live in `packages/agent-registry/agents/<slug>` with a per-agent `registry.json`. After editing one, run `pnpm --filter @evex/agent-registry generate` to rebuild the embedded `src/generated/registry.ts`. The web app serves the catalog at `/r/registry.json` and items at `/r/{name}` via `getRegistry` / `getRegistryItem` from `@evex/agent-registry`.
 - Build: `pnpm build` (builds `@evex/web` and the `@evex/agent-registry` package; the registry build re-checks that `src/generated/registry.ts` is in sync with the agent sources).
 
 ### Install command
-- The public, product-facing install command is `npx shadcn@latest add https://evex.sh/r/{slug}.json`, built by `buildInstallCommand` in `apps/web/lib/site-url.ts` and shown on every agent page and the home hero. There is no root `registry.json` and the catalog is generated from the agent sources; the `@evex` entry in `apps/web/components.json` is the app's own registry config, not the documented end-user install path.
+- The public, product-facing install command is `npx shadcn@latest add https://evex.sh/r/{slug}`, built by `buildInstallCommand` in `apps/web/lib/site-url.ts` and shown on every agent page and the home hero. There is no root `registry.json` and the catalog is generated from the agent sources; the `@evex` entry in `apps/web/components.json` is the app's own registry config, not the documented end-user install path.
 
 ### Database (required to run the app)
 - `apps/web` reads `DATABASE_URL` for auth, profiles, favorites, and install metrics. Public agent metadata/files come from the source-owned shadcn registry files.
