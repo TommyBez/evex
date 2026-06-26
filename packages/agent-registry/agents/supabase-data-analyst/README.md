@@ -32,7 +32,9 @@ URL/key helpers, and docs search are all excluded.
 
 The connection URL is built from env vars and always sets:
 
-- `project_ref` to scope the server to one Supabase project,
+- `project_ref` to scope the server to one Supabase project (required for the
+  hosted endpoint; optional only for a local Supabase CLI MCP server where the
+  project is implicit),
 - `read_only=true` so the server executes every query as a read-only Postgres
   user,
 - `features=database` so the server only publishes the database tool group.
@@ -43,6 +45,11 @@ advertises other database tools (such as `apply_migration`, `list_extensions`,
 `list_migrations`) the model never sees them. `SUPABASE_DATA_ANALYST_READ_ONLY`
 cannot be set to `false` and `SUPABASE_DATA_ANALYST_FEATURES` only accepts
 `database`; the config loader rejects anything else at startup.
+`SUPABASE_DATA_ANALYST_PROJECT_REF` is required when
+`SUPABASE_DATA_ANALYST_MCP_URL` points at the hosted Supabase MCP server (or any
+non-localhost host); without it the config loader fails startup because the
+account-level access token would otherwise be able to reach every project in the
+Supabase account, breaking the single-project promise.
 
 ## Start using it in Slack
 
@@ -120,7 +127,9 @@ If the agent does not answer, verify:
 - the app was redeployed after setting env vars;
 - `SUPABASE_DATA_ANALYST_ACCESS_TOKEN` is a valid Supabase personal access
   token;
-- `SUPABASE_DATA_ANALYST_PROJECT_REF` matches the project the token can access.
+- `SUPABASE_DATA_ANALYST_PROJECT_REF` matches the project the token can access
+  and is set (the config loader fails startup if it is missing while
+  `SUPABASE_DATA_ANALYST_MCP_URL` points at the hosted endpoint).
 
 ## Supabase setup
 
@@ -146,6 +155,14 @@ SUPABASE_DATA_ANALYST_MCP_URL=https://mcp.supabase.com/mcp
 SUPABASE_DATA_ANALYST_SLACK_CONNECT_UID=slack/supabase-data-analyst
 ```
 
+`SUPABASE_DATA_ANALYST_PROJECT_REF` is required for the hosted Supabase MCP
+server. It scopes the connection to a single project so the account-level PAT
+cannot reach other projects in the same Supabase account. The config loader
+fails startup if it is missing while `SUPABASE_DATA_ANALYST_MCP_URL` points at a
+non-localhost host. It may be omitted only when
+`SUPABASE_DATA_ANALYST_MCP_URL` points at a local Supabase CLI MCP server
+(`http://localhost:54321/mcp`), where the project is implicit.
+
 `SUPABASE_DATA_ANALYST_READ_ONLY` must be `true` (the default). The config
 loader rejects `false` at startup because this agent only runs read-only SQL
 queries.
@@ -160,7 +177,8 @@ further narrows that to `list_tables` and `execute_sql`.
 
 `SUPABASE_DATA_ANALYST_MCP_URL` defaults to the hosted endpoint. Override it to
 point at a local Supabase CLI MCP server (`http://localhost:54321/mcp`) during
-local development.
+local development; in that case `SUPABASE_DATA_ANALYST_PROJECT_REF` may be
+omitted.
 
 ## Runtime contract
 

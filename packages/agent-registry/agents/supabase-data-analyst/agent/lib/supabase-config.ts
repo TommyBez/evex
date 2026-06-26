@@ -72,6 +72,28 @@ const parseMcpBaseUrl = (value: string | undefined): string => {
   return url
 }
 
+const isLocalMcpHost = (baseUrl: string): boolean => {
+  const hostname = new URL(baseUrl).hostname
+  return (
+    hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1'
+  )
+}
+
+const assertProjectRefForHost = (
+  projectRef: string | null,
+  baseUrl: string,
+): void => {
+  if (projectRef) {
+    return
+  }
+  if (isLocalMcpHost(baseUrl)) {
+    return
+  }
+  throw new Error(
+    'SUPABASE_DATA_ANALYST_PROJECT_REF is required for the hosted Supabase MCP server. It scopes the connection to a single project so the account-level access token cannot reach other projects in the same Supabase account. Set it to the target project ref, or point SUPABASE_DATA_ANALYST_MCP_URL at a local Supabase CLI MCP server (http://localhost:54321/mcp) where project scoping is implicit.',
+  )
+}
+
 const buildMcpUrl = (
   baseUrl: string,
   config: Omit<SupabaseDataAnalystConfig, 'mcpUrl' | 'accessToken'>,
@@ -101,6 +123,8 @@ export function getSupabaseDataAnalystConfig(): SupabaseDataAnalystConfig {
       'SUPABASE_DATA_ANALYST_READ_ONLY cannot be false. This agent only runs read-only SQL queries.',
     )
   }
+
+  assertProjectRefForHost(projectRef, baseUrl)
 
   const baseConfig = { features, projectRef, readOnly }
   const mcpUrl = buildMcpUrl(baseUrl, baseConfig)
