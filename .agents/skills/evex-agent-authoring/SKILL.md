@@ -116,6 +116,26 @@ Include:
 Do not describe installing a full app from scratch. Do not rely on the app's
 `components.json` or any root registry path as the public install command.
 
+## Generated Registry
+
+The catalog is embedded in `packages/agent-registry/src/generated/registry.ts`,
+generated from the agent sources by `scripts/generate-registry.mjs`. The
+`@evex/agent-registry` build runs the generator with `--check`, so any change
+to an agent's `registry.json`, installed files, or dependency list leaves the
+generated file out of date and **fails the build**:
+
+```text
+src/generated/registry.ts is out of date. Run "pnpm --filter @evex/agent-registry generate".
+```
+
+After editing an agent, regenerate before committing:
+
+```bash
+pnpm --filter @evex/agent-registry generate
+```
+
+Do not hand-edit `src/generated/registry.ts`; regenerate it from sources.
+
 ## Evals And Tests
 
 Add evals when behavior is easy to regress or when the agent publishes external
@@ -124,7 +144,7 @@ artifacts. Follow `code-reviewer/evals/` for structure.
 At minimum, validate a new or changed agent with:
 
 ```bash
-pnpm --filter @evex/agent-registry generate
+pnpm --filter @evex/agent-registry generate   # required: build --check fails otherwise
 pnpm --filter @evex/agent-registry run check
 pnpm --dir packages/agent-registry/agents/<slug> typecheck
 pnpm --dir packages/agent-registry/agents/<slug> info
