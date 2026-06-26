@@ -1,4 +1,4 @@
-import { cn } from '@/lib/utils'
+import { cn } from '@evex/ui/lib/utils'
 
 export function BrandMark({ className }: { className?: string }) {
   return (

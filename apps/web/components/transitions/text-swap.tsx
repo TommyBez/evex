@@ -1,8 +1,8 @@
 'use client'
 
+import { cn } from '@evex/ui/lib/utils'
 import { useEffect, useRef } from 'react'
 import { forceReflow } from '@/components/transitions/force-reflow'
-import { cn } from '@/lib/utils'
 
 const DEFAULT_SWAP_DURATION_MS = 200
 

@@ -1,9 +1,9 @@
+import { Skeleton } from '@evex/ui/skeleton'
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { Suspense } from 'react'
 import { getProfile } from '@/app/actions/profile'
 import { ProfileForm } from '@/components/profile-form'
-import { Skeleton } from '@/components/ui/skeleton'
 import { auth } from '@/lib/auth'
 import { createPageMetadata } from '@/lib/metadata'
 

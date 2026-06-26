@@ -1,13 +1,13 @@
 'use client'
 
-import { CodeEditor } from '@/components/code-editor'
-import { CopyButton } from '@/components/copy-button'
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from '@/components/ui/accordion'
+} from '@evex/ui/accordion'
+import { CodeEditor } from '@/components/code-editor'
+import { CopyButton } from '@/components/copy-button'
 import type { AgentRegistryFile } from '@/lib/agent-types'
 
 function getLineCount(content: string): number {

@@ -1,10 +1,10 @@
+import { Toaster } from '@evex/ui/sonner'
 import { Analytics } from '@vercel/analytics/next'
 import { GeistMono } from 'geist/font/mono'
 import { GeistPixelSquare } from 'geist/font/pixel'
 import { GeistSans } from 'geist/font/sans'
 import type { Metadata, Viewport } from 'next'
 import { ThemeProvider } from '@/components/theme-provider'
-import { Toaster } from '@/components/ui/sonner'
 import { getMetadataBase, siteConfig } from '@/lib/metadata'
 import './globals.css'
 

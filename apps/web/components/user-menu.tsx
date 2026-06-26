@@ -1,9 +1,6 @@
 'use client'
 
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { AuthorAvatar } from '@/components/author-avatar'
-import { Button } from '@/components/ui/button'
+import { Button } from '@evex/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,7 +9,10 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+} from '@evex/ui/dropdown-menu'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { AuthorAvatar } from '@/components/author-avatar'
 import { authClient } from '@/lib/auth-client'
 
 export function UserMenu({ name, email }: { name: string; email: string }) {

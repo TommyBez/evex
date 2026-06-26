@@ -1,10 +1,10 @@
 'use client'
 
+import { Button } from '@evex/ui/button'
+import { cn } from '@evex/ui/lib/utils'
 import { Check, Copy } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
-import { Button } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
 
 const RESET_DELAY_MS = 2000
 

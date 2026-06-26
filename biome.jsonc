@@ -18,7 +18,7 @@
       "!apps/agents/*/.eve",
       "!apps/agents/*/.output",
       "!apps/agents/*/.vercel",
-      "!apps/web/components/ui/*",
+      "!packages/ui/src/components/*",
       "!apps/web/.next"
     ]
   }

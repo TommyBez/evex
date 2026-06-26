@@ -1,4 +1,3 @@
-import type { LucideIcon } from 'lucide-react'
 import {
   Empty,
   EmptyContent,
@@ -6,8 +5,9 @@ import {
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
-} from '@/components/ui/empty'
-import { cn } from '@/lib/utils'
+} from '@evex/ui/empty'
+import { cn } from '@evex/ui/lib/utils'
+import type { LucideIcon } from 'lucide-react'
 
 export function RegistryEmptyState({
   icon: Icon,

@@ -1,3 +1,5 @@
+import { Button } from '@evex/ui/button'
+import { Skeleton } from '@evex/ui/skeleton'
 import { PackageSearch } from 'lucide-react'
 import Link from 'next/link'
 import { Suspense } from 'react'
@@ -5,8 +7,6 @@ import { AgentCard } from '@/components/agent-card'
 import { BrowseFilters } from '@/components/browse-filters'
 import { RegistryEmptyState } from '@/components/registry-empty-state'
 import { PopInNumber } from '@/components/transitions/pop-in-number'
-import { Button } from '@/components/ui/button'
-import { Skeleton } from '@/components/ui/skeleton'
 import {
   applyInstallCounts,
   getAgentRuntimeState,

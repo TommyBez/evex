@@ -1,5 +1,16 @@
 'use client'
 
+import { Button } from '@evex/ui/button'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@evex/ui/card'
+import { Field, FieldDescription, FieldGroup, FieldLabel } from '@evex/ui/field'
+import { Input } from '@evex/ui/input'
+import { Textarea } from '@evex/ui/textarea'
 import { Globe, Upload } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useReducer, useRef, useTransition } from 'react'
@@ -8,22 +19,6 @@ import { type ProfileData, saveProfile } from '@/app/actions/profile'
 import { AuthorAvatar } from '@/components/author-avatar'
 import { GitHubIcon } from '@/components/github-icon'
 import { LinkedInIcon } from '@/components/linkedin-icon'
-import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
-import {
-  Field,
-  FieldDescription,
-  FieldGroup,
-  FieldLabel,
-} from '@/components/ui/field'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
 import { XIcon } from '@/components/x-icon'
 
 const MAX_AVATAR_BYTES = 4 * 1024 * 1024

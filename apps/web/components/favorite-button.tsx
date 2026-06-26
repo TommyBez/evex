@@ -1,12 +1,12 @@
 'use client'
 
+import { Button } from '@evex/ui/button'
+import { cn } from '@evex/ui/lib/utils'
 import { Heart } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
 import { toast } from 'sonner'
 import { toggleFavorite } from '@/app/actions/favorites'
-import { Button } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
 
 export function FavoriteButton({
   agentId,

@@ -1,9 +1,3 @@
-import { Download, Trophy } from 'lucide-react'
-import type { Metadata } from 'next'
-import Link from 'next/link'
-import { Suspense } from 'react'
-import { AuthorAvatar } from '@/components/author-avatar'
-import { RegistryEmptyMessage } from '@/components/registry-empty-state'
 import {
   Item,
   ItemActions,
@@ -12,8 +6,14 @@ import {
   ItemGroup,
   ItemMedia,
   ItemTitle,
-} from '@/components/ui/item'
-import { Skeleton } from '@/components/ui/skeleton'
+} from '@evex/ui/item'
+import { Skeleton } from '@evex/ui/skeleton'
+import { Download, Trophy } from 'lucide-react'
+import type { Metadata } from 'next'
+import Link from 'next/link'
+import { Suspense } from 'react'
+import { AuthorAvatar } from '@/components/author-avatar'
+import { RegistryEmptyMessage } from '@/components/registry-empty-state'
 import { createPageMetadata } from '@/lib/metadata'
 import { getTopAgents, getTopAuthors } from '@/lib/queries'
 
