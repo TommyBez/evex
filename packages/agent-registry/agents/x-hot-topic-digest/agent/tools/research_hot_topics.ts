@@ -4,17 +4,6 @@ import { z } from "zod";
 
 import { hotTopicConfig } from "../lib/hot-topic-config.js";
 
-type ParallelSearchResult = {
-  readonly url: string;
-  readonly title?: string | null;
-  readonly publish_date?: string | null;
-  readonly excerpts: readonly string[];
-};
-
-type ParallelSearchResponse = {
-  readonly results: readonly ParallelSearchResult[];
-};
-
 export default defineTool({
   description:
     "Research a hot topic with the Parallel web search API and return ranked excerpts with provenance.",
@@ -40,22 +29,24 @@ export default defineTool({
     }
 
     const client = new Parallel({ apiKey });
-    const result = (await client.search({
+    const { results } = await client.search({
       objective: `Research the following hot topic surfaced from X: ${topic}`,
       search_queries: searchQueries,
       mode: hotTopicConfig.searchMode,
       advanced_settings: {
         max_results: maxResults ?? hotTopicConfig.searchMaxResults,
       },
-    })) as ParallelSearchResponse;
+    });
 
-    const results = result.results.map((entry) => ({
-      url: entry.url,
-      title: entry.title ?? null,
-      publishDate: entry.publish_date ?? null,
-      excerpts: entry.excerpts,
-    }));
-
-    return { topic, resultCount: results.length, results };
+    return {
+      topic,
+      resultCount: results.length,
+      results: results.map((entry) => ({
+        url: entry.url,
+        title: entry.title ?? null,
+        publishDate: entry.publish_date ?? null,
+        excerpts: entry.excerpts,
+      })),
+    };
   },
 });

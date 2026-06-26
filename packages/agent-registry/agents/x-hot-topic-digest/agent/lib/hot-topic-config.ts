@@ -79,17 +79,3 @@ export const hotTopicConfig = {
     subject: optional(process.env.X_HOT_TOPIC_DIGEST_SUBJECT) ?? DEFAULT_SUBJECT,
   },
 } satisfies HotTopicConfig;
-
-export const formatConfigSummary = (): string => {
-  const handles = hotTopicConfig.handles.join(", ") || "none configured";
-  const recipients = hotTopicConfig.digest.to.join(", ") || "none configured";
-  return [
-    `Watched handles: ${handles}`,
-    `Daily cron: ${hotTopicConfig.dailyCron}`,
-    `Lookback window: last ${hotTopicConfig.lookbackHours} hours`,
-    `Max tweets per profile: ${hotTopicConfig.maxTweetsPerProfile}`,
-    `Max hot topics: ${hotTopicConfig.maxHotTopics}`,
-    `Search mode: ${hotTopicConfig.searchMode}`,
-    `Digest recipients: ${recipients}`,
-  ].join("\n");
-};

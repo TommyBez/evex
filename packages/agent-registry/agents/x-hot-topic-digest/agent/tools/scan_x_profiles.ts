@@ -86,7 +86,7 @@ async function fetchUserTweets(handle: string, startTime: string): Promise<reado
 }
 
 function withinLookback(tweet: XTweet, startTimeMs: number): boolean {
-  if (!tweet.created_at) return true;
+  if (!tweet.created_at) return false;
   const createdAt = Date.parse(tweet.created_at);
   return Number.isFinite(createdAt) && createdAt >= startTimeMs;
 }
@@ -155,9 +155,10 @@ export default defineTool({
       }
     }
 
-    const totalTweets = profiles
-      .filter((profile) => profile.ok)
-      .reduce((sum, profile) => sum + (profile.tweetCount ?? 0), 0);
+    const totalTweets = profiles.reduce(
+      (sum, profile) => sum + (profile.ok ? (profile.tweetCount ?? 0) : 0),
+      0,
+    );
 
     return {
       scannedProfiles: profiles.length,

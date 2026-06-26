@@ -4,19 +4,13 @@ import { z } from "zod";
 
 import { hotTopicConfig } from "../lib/hot-topic-config.js";
 
-// Eve replays a tool step that did not complete. The Resend Idempotency-Key
-// header makes a retried send safe, and this in-process map lets a replayed
-// step return the recorded success instead of issuing a second send. Only
-// successful sends are cached, so a failed send can be retried.
+// Successful sends are cached so a replayed Eve step returns the recorded
+// result instead of issuing a second send. Failures are not cached so they
+// can be retried with the same idempotency key.
 const sentKeys = new Map<
   string,
-  { readonly to: readonly string[]; readonly messageId?: string }
+  { readonly to: readonly string[]; readonly messageId: string }
 >();
-
-type ResendSendResponse = {
-  readonly data?: { readonly id?: string } | null;
-  readonly error?: { readonly message?: string; readonly name?: string } | null;
-};
 
 const payloadSchema = z.object({
   subject: z.string().min(1).optional(),
@@ -52,8 +46,6 @@ export default defineTool({
       };
     }
 
-    // Recipients and sender are configuration-only to avoid the untrusted X
-    // post content becoming an exfiltration path through crafted tool input.
     const resolvedFrom = hotTopicConfig.digest.from;
     if (!resolvedFrom) {
       return { notConfigured: true, missingEnv: "X_HOT_TOPIC_DIGEST_FROM" };
@@ -70,7 +62,7 @@ export default defineTool({
     }
 
     const resend = new Resend(apiKey);
-    const response = (await resend.emails.send(
+    const { data, error } = await resend.emails.send(
       {
         from: resolvedFrom,
         to: resolvedTo,
@@ -78,21 +70,18 @@ export default defineTool({
         html,
       },
       { idempotencyKey },
-    )) as ResendSendResponse;
+    );
 
-    if (response.error) {
+    if (error) {
       return {
         sent: false,
         idempotencyKey,
         to: resolvedTo,
-        error: {
-          message: response.error.message ?? "Resend send failed.",
-          name: response.error.name,
-        },
+        error: { message: error.message, name: error.name },
       };
     }
 
-    const messageId = response.data?.id;
+    const messageId = data.id;
     sentKeys.set(idempotencyKey, { to: resolvedTo, messageId });
     return { sent: true, idempotencyKey, to: resolvedTo, messageId };
   },
