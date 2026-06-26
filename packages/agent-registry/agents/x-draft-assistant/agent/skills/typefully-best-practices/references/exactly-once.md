@@ -13,6 +13,25 @@ The Typefully v2 API does not accept a server-side idempotency key, so the
 defense is in-process: a per-draft `idempotencyKey` plus a cache of successful
 creates keyed by that key.
 
+### Scope of the in-process cache
+
+The cache lives in the Node process that ran the create. It protects against
+Eve step replays inside that process (the common case: a step interrupted
+mid-execution re-runs in the same session). It does **not** protect against
+replays that cross a process boundary — a serverless cold start, a redeploy,
+or a process restart will see an empty cache and issue a second POST if Eve
+replays the step there. A durable store (Redis, Postgres, or another
+shared-state backend) would be needed to close that gap, and is out of scope
+for this agent. The mitigations in place are:
+
+- The recommended `idempotencyKey` is derived from the run's lookback window
+  start, so a re-triggered run with the same window reuses the same key — but
+  only the in-process cache can short-circuit it.
+- `confirmCreate` must be `true` before any POST goes out, so accidental
+  creates are gated.
+- The agent never publishes or schedules drafts, so a duplicate draft is
+  reviewable noise in Typefully, not a public double-post.
+
 ## Solution: per-draft idempotency keys
 
 Each draft in a `create_x_drafts` call carries a stable `idempotencyKey`. Before
@@ -27,13 +46,17 @@ issuing a POST, the tool checks the cache:
 
 | Strategy | Example | Use when |
 |----------|---------|----------|
-| Run-indexed (recommended) | `x-draft-assistant-2026-06-26-1` | One draft per candidate per run |
-| Run + topic slug | `x-draft-assistant-2026-06-26-ai-sdk-5` | Stable across topic reordering |
+| Lookback window start (recommended) | `x-draft-assistant-2026-06-26T08:00:00Z-1` | One draft per candidate per run; unique per run even sub-daily |
+| Run + topic slug | `x-draft-assistant-2026-06-26T08:00:00Z-ai-sdk-5` | Stable across topic reordering within a run |
 | UUID | `crypto.randomUUID()` | No natural key (generate once, reuse on retry) |
 
-**Best practice:** use deterministic keys based on the run date and the candidate
-index. If the same logical create is retried, the same key must be regenerated.
-Avoid `Date.now()` or random values generated fresh on each attempt.
+**Best practice:** use deterministic keys based on the run's lookback window
+start (returned by `scan_x_profiles` as `windowStart`) and the candidate index.
+The window start is unique per run even when the schedule fires more than once
+a day, and is stable across retries of the same run. If the same logical create
+is retried, the same key must be regenerated. Avoid `Date.now()` or random
+values generated fresh on each attempt — a fresh value per attempt breaks
+exactly-once.
 
 ### Duplicate keys inside one call
 

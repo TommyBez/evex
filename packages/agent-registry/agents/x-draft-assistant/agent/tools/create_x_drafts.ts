@@ -97,9 +97,12 @@ type CreateXDraftsOutput = {
 };
 
 // Successful creates are cached so a replayed Eve step returns the recorded
-// result instead of issuing a second POST. The Typefully v2 API does not
-// accept a server-side idempotency key, so the cache is in-process and
-// keyed by the caller-provided idempotencyKey. Failures are not cached so
+// result instead of issuing a second POST, as long as the replay happens in
+// the same Node process. The Typefully v2 API does not accept a server-side
+// idempotency key, so the cache is in-process and keyed by the caller-provided
+// idempotencyKey. A replay that crosses a process boundary (serverless cold
+// start, redeploy, restart) sees an empty cache and will POST again — a
+// durable store would be needed to close that gap. Failures are not cached so
 // they can be retried with the same key.
 const createdCache = new Map<
   string,

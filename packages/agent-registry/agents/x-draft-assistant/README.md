@@ -31,7 +31,7 @@ Copy `.env.example` into your Eve app environment and fill in the values.
 - `X_HOT_TOPIC_HANDLES` — comma-separated X handles to scan (with or without `@`). Example: `vercel,parallel_ai,anthropicai`.
 - `X_HOT_TOPIC_DAILY_CRON` — 5-field cron expression (UTC on Vercel). Defaults to `0 8 * * *` (daily at 08:00 UTC).
 - `X_HOT_TOPIC_LOOKBACK_HOURS` — lookback window in hours for posts to scan. Defaults to `24`, so each daily run only sees posts from the last 24 hours and does not repeat the same topics day over day. Set it lower for more frequent runs or higher for low-volume handles.
-- `X_HOT_TOPIC_MAX_TWEETS_PER_PROFILE` — max posts fetched per profile. Defaults to `20`.
+- `X_HOT_TOPIC_MAX_TWEETS_PER_PROFILE` — max posts fetched per profile. Defaults to `20`. Clamped to the X API maximum of 100 and the minimum of 5; values above 100 are silently lowered to 100 rather than rejected, so a misconfigured run still returns posts instead of a 400.
 - `X_HOT_TOPIC_MAX_TOPICS` — max hot topics surfaced per run. Defaults to `5`.
 - `X_HOT_TOPIC_SEARCH_MAX_RESULTS` — max Parallel search results per topic. Defaults to `5`.
 - `X_HOT_TOPIC_SEARCH_MODE` — Parallel search mode: `turbo`, `basic`, or `advanced`. Defaults to `basic`.
@@ -47,7 +47,7 @@ Copy `.env.example` into your Eve app environment and fill in the values.
 - `TYPEFULLY_API_KEY` — Typefully API key from [typefully.com/?settings=api](https://typefully.com/?settings=api).
 - `TYPEFULLY_SOCIAL_SET_ID` — the Typefully social set id (the account) to create drafts under. Find it by listing your social sets via the Typefully API, or copy it from the Typefully URL for the account you want to post to.
 
-Creating drafts is a two-step, exactly-once-safe operation by design: the agent calls `preview_x_draft` first, then `create_x_drafts` with `confirmCreate: true` and a unique `idempotencyKey` per draft. The Typefully v2 API does not accept a server-side idempotency key, so the agent holds an in-process cache of successful creates keyed by the caller-provided idempotency key. A replayed Eve step with the same key returns the recorded response with `replayed: true` instead of issuing a second POST, so a retried create never duplicates a draft.
+Creating drafts is a two-step, exactly-once-safe operation by design: the agent calls `preview_x_draft` first, then `create_x_drafts` with `confirmCreate: true` and a unique `idempotencyKey` per draft. The Typefully v2 API does not accept a server-side idempotency key, so the agent holds an in-process cache of successful creates keyed by the caller-provided idempotency key. A replayed Eve step with the same key returns the recorded response with `replayed: true` instead of issuing a second POST, so a retried create never duplicates a draft — as long as the replay happens in the same Node process. A replay that crosses a process boundary (serverless cold start, redeploy, restart) sees an empty cache and will POST again; a durable store (Redis, Postgres) would be needed to close that gap and is out of scope here. The recommended key is derived from the run's lookback window start (`scan_x_profiles` `windowStart`), so it is unique per run even when the schedule fires more than once a day, and stable across retries of the same run.
 
 When `X_HOT_TOPIC_DRAFT_MADE_WITH_AI` is `true` (the default), every X post in every created draft is labeled with the X "made with AI" content disclosure, since the agent drafts posts with an LLM. Set it to `false` only if a human rewrites the posts before publishing.
 
@@ -75,7 +75,7 @@ When `X_HOT_TOPIC_DRAFT_MADE_WITH_AI` is `true` (the default), every X post in e
 - **`authRequired: missingEnv TYPEFULLY_API_KEY`** — the Typefully API key is missing.
 - **`notConfigured: missingEnv TYPEFULLY_SOCIAL_SET_ID`** — no social set configured. Set `TYPEFULLY_SOCIAL_SET_ID` to the Typefully account id you want to create drafts under.
 - **`notConfirmed: true`** — `create_x_drafts` was called without `confirmCreate: true`. Review the preview first, then call it with the flag set.
-- **`Duplicate idempotencyKey`** — two drafts in one `create_x_drafts` call shared a key. Each draft needs its own key (e.g. `x-draft-assistant-YYYY-MM-DD-1`, `-2`, `-3`).
+- **`Duplicate idempotencyKey`** — two drafts in one `create_x_drafts` call shared a key. Each draft needs its own key (e.g. `x-draft-assistant-2026-06-26T08:00:00Z-1`, `-2`, `-3`).
 - **`Typefully API 404` for the social set** — `TYPEFULLY_SOCIAL_SET_ID` points at a social set the API key cannot access. Confirm the id and that the key belongs to the same user or team.
 - **`Typefully API 429`** — draft creation rate limit hit. Do not retry inside the same step; defer to a later run and reuse the same idempotency keys so a successful retry does not duplicate the drafts.
 - **No drafts appear in Typefully** — the agent only creates drafts when `create_x_drafts` is called with `confirmCreate: true` and a unique `idempotencyKey` per draft. Confirm the run reached the create step and that `TYPEFULLY_SOCIAL_SET_ID` matches the account you are looking at.

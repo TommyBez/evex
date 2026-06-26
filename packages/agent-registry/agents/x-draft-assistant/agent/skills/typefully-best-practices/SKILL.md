@@ -42,8 +42,12 @@ with a per-draft `idempotencyKey` plus an in-process cache of successful
 creates:
 
 - Derive each key from the run, not from `Date.now()` or a fresh random value.
-  A stable scheme is `x-draft-assistant-<run-date>-<n>`, where `n` is the
-  1-based index of the draft candidate within the run.
+  A stable scheme is `x-draft-assistant-<windowStartUtc>-<n>`, where
+  `<windowStartUtc>` is the `windowStart` value returned by `scan_x_profiles`
+  (RFC3339 UTC start of this run's lookback window) and `n` is the 1-based index
+  of the draft candidate within the run. Anchoring to the lookback window start
+  makes the key unique per run even when the schedule fires more than once a
+  day, and stable across retries of the same run.
 - Each draft in a single `create_x_drafts` call must have a unique key. Duplicate
   keys inside one call are rejected before any POST is issued.
 - A replayed step with the same key returns the recorded response instead of

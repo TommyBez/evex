@@ -7,6 +7,7 @@ const X_API_BASE = "https://api.x.com/2";
 const TWEET_FIELDS = "created_at,public_metrics,entities,lang";
 const EXCLUDE = "retweets";
 const MIN_MAX_RESULTS = 5;
+const MAX_MAX_RESULTS = 100;
 
 type XPublicMetrics = {
   readonly impression_count?: number;
@@ -73,7 +74,10 @@ async function resolveUserId(handle: string): Promise<string> {
 
 async function fetchUserTweets(handle: string, startTime: string): Promise<readonly XTweet[]> {
   const userId = await resolveUserId(handle);
-  const maxResults = Math.max(hotTopicConfig.maxTweetsPerProfile, MIN_MAX_RESULTS);
+  const maxResults = Math.min(
+    Math.max(hotTopicConfig.maxTweetsPerProfile, MIN_MAX_RESULTS),
+    MAX_MAX_RESULTS,
+  );
   const params = new URLSearchParams({
     max_results: maxResults.toString(),
     "tweet.fields": TWEET_FIELDS,

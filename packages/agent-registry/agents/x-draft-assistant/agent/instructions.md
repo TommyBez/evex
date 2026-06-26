@@ -35,9 +35,13 @@ as drafts in Typefully for a human to review and publish.
    by an LLM; only disable it if a human rewrites the posts before publishing.
 7. To create the drafts in Typefully, call create_x_drafts with `confirmCreate:
    true` and a stable, unique `idempotencyKey` per draft. The recommended scheme
-   is `x-draft-assistant-YYYY-MM-DD-<n>`, where `<n>` is the 1-based index of
-   the draft candidate within the run. Reuse the same key if the step is retried
-   so a replayed create does not duplicate the draft. Never call create_x_drafts
+   is `x-draft-assistant-<windowStartUtc>-<n>`, where `<windowStartUtc>` is the
+   `windowStart` value returned by scan_x_profiles (the RFC3339 UTC start of
+   this run's lookback window) and `<n>` is the 1-based index of the draft
+   candidate within the run. Using the lookback window start makes the key
+   unique per run even when the schedule fires more than once a day, and stable
+   across retries of the same run. Reuse the same key if the step is retried so
+   a replayed create does not duplicate the draft. Never call create_x_drafts
    without an idempotencyKey per draft, and never reuse the same key across two
    drafts in one call. If create_x_drafts returns a draft with `created: false`
    and an `error`, report the error and do not retry inside the same step.
