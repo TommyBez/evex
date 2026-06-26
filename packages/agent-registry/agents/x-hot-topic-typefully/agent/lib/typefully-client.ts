@@ -116,37 +116,3 @@ export async function createTypefullyDraft(
     draft_title: data.draft_title ?? input.draftTitle ?? null,
   };
 }
-
-export type TypefullySocialSet = {
-  readonly id: number;
-  readonly name: string;
-  readonly username: string;
-};
-
-type TypefullySocialSetsResponse = {
-  readonly count: number;
-  readonly limit: number;
-  readonly offset: number;
-  readonly results: readonly TypefullySocialSet[];
-};
-
-export async function listTypefullySocialSets(
-  apiKey: string,
-): Promise<readonly TypefullySocialSet[]> {
-  const response = await fetch(`${TYPEFULLY_API_BASE}/v2/social-sets?limit=50`, {
-    method: "GET",
-    headers: { Authorization: `Bearer ${apiKey}` },
-  });
-
-  const responseText = await response.text();
-  if (!response.ok) {
-    throw new TypefullyApiError({
-      message: summarizeErrorBody(responseText, response.status),
-      status: response.status,
-      body: responseText,
-    });
-  }
-
-  const data = JSON.parse(responseText) as TypefullySocialSetsResponse;
-  return data.results;
-}
