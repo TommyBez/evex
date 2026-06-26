@@ -1,0 +1,26 @@
+{
+  "name": "supabase-data-analyst",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "build": "eve build",
+    "check": "eve info --json",
+    "dev": "eve dev",
+    "info": "eve info --json",
+    "start": "eve start",
+    "typecheck": "tsc --noEmit --pretty false"
+  },
+  "dependencies": {
+    "@vercel/connect": "^0.2.6",
+    "eve": "^0.15.1"
+  },
+  "devDependencies": {
+    "@types/node": "^24",
+    "typescript": "5.7.3"
+  },
+  "author": "TommyBez"
+}

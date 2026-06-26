@@ -512,6 +512,63 @@ export const generatedRegistry = {
       ]
     },
     {
+      "name": "supabase-data-analyst",
+      "type": "registry:item",
+      "title": "Supabase Data Analyst",
+      "description": "A Slack-native Eve analyst for a single Supabase project. It answers Slack mentions and DMs with schema inspection and read-only SQL served by the hosted Supabase MCP server, replacing custom query tools with an MCP client connection.",
+      "author": "TommyBez",
+      "categories": [
+        "data"
+      ],
+      "dependencies": [
+        "@vercel/connect@^0.2.6",
+        "eve@^0.11.10"
+      ],
+      "meta": {
+        "slug": "supabase-data-analyst",
+        "category": "data",
+        "createdAt": "2026-06-26T00:00:00.000Z",
+        "updatedAt": "2026-06-26T00:00:00.000Z"
+      },
+      "files": [
+        {
+          "path": "agent/agent.ts",
+          "type": "registry:file",
+          "target": "~/agent/agent.ts"
+        },
+        {
+          "path": "agent/channels/slack.ts",
+          "type": "registry:file",
+          "target": "~/agent/channels/slack.ts"
+        },
+        {
+          "path": "agent/connections/supabase.ts",
+          "type": "registry:file",
+          "target": "~/agent/connections/supabase.ts"
+        },
+        {
+          "path": "agent/instructions.md",
+          "type": "registry:file",
+          "target": "~/agent/instructions.md"
+        },
+        {
+          "path": "agent/lib/supabase-config.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/supabase-config.ts"
+        },
+        {
+          "path": "README.md",
+          "type": "registry:file",
+          "target": "~/agent/README.md"
+        },
+        {
+          "path": ".env.example",
+          "type": "registry:file",
+          "target": "~/.env.example"
+        }
+      ]
+    },
+    {
       "name": "x-hot-topic-digest",
       "type": "registry:item",
       "title": "X Hot Topic Digest",
@@ -1206,6 +1263,71 @@ export const generatedRegistryItems = {
         "type": "registry:file",
         "target": "~/.env.example",
         "content": "RESEND_API_KEY=\n"
+      }
+    ]
+  },
+  "supabase-data-analyst": {
+    "$schema": "https://ui.shadcn.com/schema/registry.json",
+    "name": "supabase-data-analyst",
+    "type": "registry:item",
+    "title": "Supabase Data Analyst",
+    "description": "A Slack-native Eve analyst for a single Supabase project. It answers Slack mentions and DMs with schema inspection and read-only SQL served by the hosted Supabase MCP server, replacing custom query tools with an MCP client connection.",
+    "author": "TommyBez",
+    "categories": [
+      "data"
+    ],
+    "dependencies": [
+      "@vercel/connect@^0.2.6",
+      "eve@^0.11.10"
+    ],
+    "meta": {
+      "slug": "supabase-data-analyst",
+      "category": "data",
+      "createdAt": "2026-06-26T00:00:00.000Z",
+      "updatedAt": "2026-06-26T00:00:00.000Z"
+    },
+    "files": [
+      {
+        "path": "agent/agent.ts",
+        "type": "registry:file",
+        "target": "~/agent/agent.ts",
+        "content": "import { defineAgent } from 'eve'\n\nexport default defineAgent({\n  model: 'zai/glm-5.2',\n})\n"
+      },
+      {
+        "path": "agent/channels/slack.ts",
+        "type": "registry:file",
+        "target": "~/agent/channels/slack.ts",
+        "content": "import { connectSlackCredentials } from '@vercel/connect/eve'\nimport { slackChannel } from 'eve/channels/slack'\n\nconst SLACK_CONNECT_UID =\n  process.env.SUPABASE_DATA_ANALYST_SLACK_CONNECT_UID ||\n  'slack/supabase-data-analyst'\n\nexport default slackChannel({\n  credentials: connectSlackCredentials(SLACK_CONNECT_UID),\n})\n"
+      },
+      {
+        "path": "agent/connections/supabase.ts",
+        "type": "registry:file",
+        "target": "~/agent/connections/supabase.ts",
+        "content": "import { defineMcpClientConnection } from 'eve/connections'\n\nimport {\n  getRequiredAccessToken,\n  getSupabaseDataAnalystConfig,\n  READ_ONLY_ALLOWED_TOOLS,\n} from '../lib/supabase-config.js'\n\nconst connectionConfig = getSupabaseDataAnalystConfig()\n\nexport default defineMcpClientConnection({\n  url: connectionConfig.mcpUrl,\n  description:\n    'Supabase project analytics: list tables and extensions, execute read-only SQL, inspect migrations, logs, advisors, Edge Functions, project URLs and publishable keys, and search Supabase docs. Use connection_search to discover supabase__ tools, then call them by qualified name (e.g. supabase__list_tables, supabase__execute_sql).',\n  auth: {\n    principalType: 'app',\n    getToken: async () => ({\n      token: getRequiredAccessToken(getSupabaseDataAnalystConfig()),\n    }),\n  },\n  tools: {\n    allow: [...READ_ONLY_ALLOWED_TOOLS],\n  },\n})\n"
+      },
+      {
+        "path": "agent/instructions.md",
+        "type": "registry:file",
+        "target": "~/agent/instructions.md",
+        "content": "# Mission\nYou are a careful Supabase data analyst in Slack. You help people understand a\nsingle configured Supabase project through schema inspection and read-only\nanalytical SQL served by the Supabase MCP connection.\n\n# Operating rules\n- Treat the Supabase project as read-only. Never claim write access and never\n  attempt to mutate data, schema, Edge Functions, branches, or storage config.\n- The Supabase MCP connection is configured with `read_only=true` and a tool\n  allow-list. If a tool call is rejected, do not retry with a different write\n  tool; revise the request into a simpler read-only question.\n- Inspect schema metadata before querying unfamiliar tables.\n- Ask a clarifying question when the metric definition, time range, table\n  choice, or grain is ambiguous.\n- Prefer aggregate answers and concise explanations over raw row dumps.\n- Explain assumptions, filters, units, date windows, and caveats in the final\n  answer.\n- Return only the rows needed to answer the question. Do not expose credentials,\n  API keys, service tokens, or unnecessary sensitive row-level data. Never\n  paste publishable keys, service role keys, or personal access tokens into\n  Slack, even if a tool returns them.\n- If a query is rejected, revise it into a simpler read-only SELECT over allowed\n  tables.\n\n# Workflow\n1. Use `connection_search` to discover the Supabase MCP connection's tools when\n   you do not already know the qualified name. Remote tools appear as\n   `supabase__<tool>`.\n2. Use `supabase__list_tables` when you need table context before querying.\n3. Write one read-only SQL query that answers the question directly, then run it\n   with `supabase__execute_sql`.\n4. Interpret the result in plain language for Slack.\n5. If the result is incomplete or truncated, say so and narrow the question\n   before issuing broader SQL.\n"
+      },
+      {
+        "path": "agent/lib/supabase-config.ts",
+        "type": "registry:file",
+        "target": "~/agent/lib/supabase-config.ts",
+        "content": "const DEFAULT_SUPABASE_MCP_URL = 'https://mcp.supabase.com/mcp'\nconst DEFAULT_FEATURES: readonly string[] = ['database', 'docs']\nconst ALLOWED_FEATURES = new Set([\n  'account-management',\n  'branching',\n  'database',\n  'debugging',\n  'development',\n  'edge-functions',\n  'storage',\n  'docs',\n])\nconst PROJECT_REF_PATTERN = /^[A-Za-z0-9_-]{6,}$/\nconst READ_ONLY_FEATURES = new Set([\n  'database',\n  'docs',\n  'development',\n  'debugging',\n])\n\nexport interface SupabaseDataAnalystConfig {\n  readonly accessToken: string | null\n  readonly features: readonly string[]\n  readonly mcpUrl: string\n  readonly projectRef: string | null\n  readonly readOnly: boolean\n}\n\nconst trim = (value: string | undefined): string | undefined => {\n  const trimmed = value?.trim()\n  return trimmed ? trimmed : undefined\n}\n\nconst parseFeatures = (raw: string | undefined): readonly string[] => {\n  const requested = (raw ?? '')\n    .split(',')\n    .map((part) => part.trim())\n    .filter((part) => part.length > 0)\n\n  if (requested.length === 0) {\n    return DEFAULT_FEATURES\n  }\n\n  const unique = [...new Set(requested.map((feature) => feature.toLowerCase()))]\n  for (const feature of unique) {\n    if (!ALLOWED_FEATURES.has(feature)) {\n      throw new Error(\n        `SUPABASE_DATA_ANALYST_FEATURES contains unknown feature \"${feature}\". Allowed: ${[\n          ...ALLOWED_FEATURES,\n        ].join(', ')}.`,\n      )\n    }\n  }\n\n  return unique\n}\n\nconst parseBoolean = (\n  value: string | undefined,\n  fallback: boolean,\n): boolean => {\n  if (value === undefined) {\n    return fallback\n  }\n  return value.trim().toLowerCase() !== 'false'\n}\n\nconst parseProjectRef = (value: string | undefined): string | null => {\n  const ref = trim(value)\n  if (!ref) {\n    return null\n  }\n  if (!PROJECT_REF_PATTERN.test(ref)) {\n    throw new Error(\n      'SUPABASE_DATA_ANALYST_PROJECT_REF must be a Supabase project ref (alphanumeric, hyphens, underscores).',\n    )\n  }\n  return ref\n}\n\nconst parseMcpBaseUrl = (value: string | undefined): string => {\n  const url = trim(value) ?? DEFAULT_SUPABASE_MCP_URL\n  try {\n    new URL(url)\n  } catch {\n    throw new Error(\n      `SUPABASE_DATA_ANALYST_MCP_URL must be a valid URL. Received \"${url}\".`,\n    )\n  }\n  return url\n}\n\nconst buildMcpUrl = (\n  baseUrl: string,\n  config: Omit<SupabaseDataAnalystConfig, 'mcpUrl' | 'accessToken'>,\n): string => {\n  const url = new URL(baseUrl)\n  if (config.projectRef) {\n    url.searchParams.set('project_ref', config.projectRef)\n  }\n  if (config.readOnly) {\n    url.searchParams.set('read_only', 'true')\n  }\n  if (config.features.length > 0) {\n    url.searchParams.set('features', config.features.join(','))\n  }\n  return url.toString()\n}\n\nexport function getSupabaseDataAnalystConfig(): SupabaseDataAnalystConfig {\n  const baseUrl = parseMcpBaseUrl(process.env.SUPABASE_DATA_ANALYST_MCP_URL)\n  const features = parseFeatures(process.env.SUPABASE_DATA_ANALYST_FEATURES)\n  const projectRef = parseProjectRef(\n    process.env.SUPABASE_DATA_ANALYST_PROJECT_REF,\n  )\n  const readOnly = parseBoolean(\n    process.env.SUPABASE_DATA_ANALYST_READ_ONLY,\n    true,\n  )\n\n  const baseConfig = { features, projectRef, readOnly }\n  const mcpUrl = buildMcpUrl(baseUrl, baseConfig)\n\n  return {\n    ...baseConfig,\n    accessToken: trim(process.env.SUPABASE_DATA_ANALYST_ACCESS_TOKEN) ?? null,\n    mcpUrl,\n  }\n}\n\nexport function getRequiredAccessToken(\n  config: SupabaseDataAnalystConfig,\n): string {\n  if (!config.accessToken) {\n    throw new Error(\n      'SUPABASE_DATA_ANALYST_ACCESS_TOKEN is required. Generate a Supabase personal access token and set it here.',\n    )\n  }\n  return config.accessToken\n}\n\nexport const READ_ONLY_ALLOWED_TOOLS = [\n  'list_tables',\n  'list_extensions',\n  'list_migrations',\n  'execute_sql',\n  'get_logs',\n  'get_advisors',\n  'generate_typescript_types',\n  'list_edge_functions',\n  'get_edge_function',\n  'list_branches',\n  'list_storage_buckets',\n  'get_storage_config',\n  'search_docs',\n] as const\n\nexport const READ_ONLY_BLOCKED_TOOLS = [\n  'apply_migration',\n  'deploy_edge_function',\n  'create_project',\n  'pause_project',\n  'restore_project',\n  'create_branch',\n  'delete_branch',\n  'merge_branch',\n  'reset_branch',\n  'rebase_branch',\n  'update_storage_config',\n] as const\n\nexport const assertReadOnlyFeatureSurface = (\n  features: readonly string[],\n): void => {\n  const disallowed = features.filter(\n    (feature) => !READ_ONLY_FEATURES.has(feature),\n  )\n  if (disallowed.length > 0) {\n    throw new Error(\n      `SUPABASE_DATA_ANALYST_FEATURES includes write-capable feature groups (${disallowed.join(\n        ', ',\n      )}). Remove them or set SUPABASE_DATA_ANALYST_READ_ONLY=true with features limited to ${[\n        ...READ_ONLY_FEATURES,\n      ].join(', ')}.`,\n    )\n  }\n}\n"
+      },
+      {
+        "path": "README.md",
+        "type": "registry:file",
+        "target": "~/agent/README.md",
+        "content": "# Supabase Data Analyst\n\nAn Eve-native Slack analyst for a single Supabase project. It answers Slack\nmentions and DMs, inspects schema metadata, and runs read-only SQL through the\nhosted Supabase MCP server. There is no custom query tool: every database\noperation flows through Eve's MCP client connection to\n`https://mcp.supabase.com/mcp`.\n\n## Install\n\nInstall this registry item into an existing Eve app:\n\n```bash\nnpx shadcn@latest add https://evex.sh/r/supabase-data-analyst\n```\n\nThen install the public runtime dependencies listed by the registry item.\n\n## How it answers\n\nThe agent uses Eve's MCP client connection (`agent/connections/supabase.ts`) to\ntalk to the Supabase remote MCP server. The model discovers Supabase tools\nthrough the built-in `connection_search` and calls them by their qualified name,\nsuch as `supabase__list_tables` or `supabase__execute_sql`.\n\nThe connection URL is built from env vars and always sets:\n\n- `project_ref` to scope the server to one Supabase project,\n- `read_only=true` so the server executes every query as a read-only Postgres\n  user,\n- `features=database,docs` (override with `SUPABASE_DATA_ANALYST_FEATURES`) to\n  limit which tool groups the server exposes.\n\nA client-side `tools.allow` list in `agent/connections/supabase.ts` drops any\nwrite tool the server still advertises, so the model never sees\n`apply_migration`, `deploy_edge_function`, `create_project`, `create_branch`,\n`update_storage_config`, and similar mutating tools.\n\n## Start using it in Slack\n\nThis agent uses Eve's documented Slack channel path through Vercel Connect. Do\nnot create or manage `SLACK_BOT_TOKEN` or `SLACK_SIGNING_SECRET` variables.\n\nBefore connecting Slack, make sure the Eve app that installed this registry item\nis deployed on Vercel or otherwise reachable through HTTPS. Slack events must be\nable to reach the Eve Slack route:\n\n```text\n/eve/v1/slack\n```\n\nCreate the Slack Connect client from the Vercel project used by the Eve app:\n\n```bash\nnpm install -g vercel@latest\nvercel connect create slack --triggers\n```\n\nThis command is the Slack installation step. It creates the Vercel Connect\nconnector and opens the Slack authorization flow. Choose the Slack workspace\nwhere the agent should live and approve the app installation there. If the CLI\nprints an authorization URL instead of opening a browser, open that URL and\ncomplete the Slack install.\n\nAfter authorization succeeds, copy the UID printed by the command. Then attach\nthat Slack client to Eve's Slack route:\n\n```bash\nvercel connect detach <uid> --yes\nvercel connect attach <uid> --triggers --trigger-path /eve/v1/slack --yes\n```\n\nSet the same UID in the Eve app environment and redeploy the app:\n\n```env\nSUPABASE_DATA_ANALYST_SLACK_CONNECT_UID=<uid>\n```\n\nThe default UID used by the agent is `slack/supabase-data-analyst`.\n\nAfter the app is deployed:\n\n1. Open the same Slack workspace that you authorized during\n   `vercel connect create slack --triggers`.\n2. Find the Slack app that was installed during that authorization flow.\n3. Add the app to every channel where it should answer.\n4. In a channel, mention the app and ask a database question.\n5. In a DM, message the app directly.\n\nIf you cannot find the app in Slack, the Slack authorization step was not\ncompleted for that workspace. Run `vercel connect create slack --triggers`\nagain from the Vercel project, authorize the correct workspace, attach the new\nUID to `/eve/v1/slack`, update `SUPABASE_DATA_ANALYST_SLACK_CONNECT_UID`, and\nredeploy.\n\nGood first prompts:\n\n```text\nWhat tables are there in the database? Use the Supabase MCP tools.\n```\n\n```text\nShow total signups by month for the last 6 months.\n```\n\nIf the agent does not answer, verify:\n\n- `eve info --json` lists a Slack channel with `urlPath: \"/eve/v1/slack\"`;\n- `SUPABASE_DATA_ANALYST_SLACK_CONNECT_UID` exactly matches the Vercel Connect\n  UID;\n- the Connect trigger is attached with `--trigger-path /eve/v1/slack`;\n- the app was redeployed after setting env vars;\n- `SUPABASE_DATA_ANALYST_ACCESS_TOKEN` is a valid Supabase personal access\n  token;\n- `SUPABASE_DATA_ANALYST_PROJECT_REF` matches the project the token can access.\n\n## Supabase setup\n\nThe agent talks to the hosted Supabase MCP server at\n`https://mcp.supabase.com/mcp`. It authenticates with a Supabase personal\naccess token (PAT) sent as `Authorization: Bearer <token>` on every MCP request.\n\n1. Do not connect the agent to production data. Supabase MCP is designed for\n   development and testing. Use a development project, a preview branch, or a\n   project with obfuscated data.\n2. In your Supabase account, generate a personal access token. Name it for this\n   agent, e.g. `Supabase Data Analyst MCP token`.\n3. Copy the target project's ref from the Supabase dashboard URL or project\n   settings.\n4. Set the runtime environment:\n\n```env\nSUPABASE_DATA_ANALYST_ACCESS_TOKEN=<supabase-pat>\nSUPABASE_DATA_ANALYST_PROJECT_REF=<project-ref>\nSUPABASE_DATA_ANALYST_READ_ONLY=true\nSUPABASE_DATA_ANALYST_FEATURES=database,docs\nSUPABASE_DATA_ANALYST_MCP_URL=https://mcp.supabase.com/mcp\nSUPABASE_DATA_ANALYST_SLACK_CONNECT_UID=slack/supabase-data-analyst\n```\n\n`SUPABASE_DATA_ANALYST_READ_ONLY=true` is the enforcement boundary: the Supabase\nMCP server runs every query as a read-only Postgres user. The client-side\n`tools.allow` list in `agent/connections/supabase.ts` is defense in depth; keep\nboth.\n\n`SUPABASE_DATA_ANALYST_FEATURES` accepts a comma-separated subset of\n`account-management`, `branching`, `database`, `debugging`, `development`,\n`edge-functions`, `storage`, `docs`. The default `database,docs` keeps the\nsurface small. Add `debugging` to let the agent read service logs and advisors,\nor `development` to allow `generate_typescript_types`. Avoid\n`account-management`, `branching`, `edge-functions`, and `storage` unless the\nSlack audience is allowed to see that surface; even in read-only mode those\ngroups expose non-analytical metadata.\n\n`SUPABASE_DATA_ANALYST_MCP_URL` defaults to the hosted endpoint. Override it to\npoint at a local Supabase CLI MCP server (`http://localhost:54321/mcp`) during\nlocal development.\n\n## Runtime contract\n\nRead-only access can still expose sensitive data. Do not point this agent at a\nproject with PII unless the Slack workspace and channel audience are allowed to\nsee that data. The agent's instructions tell the model never to paste\npublishable keys, service role keys, or personal access tokens into Slack, even\nif a tool returns them.\n"
+      },
+      {
+        "path": ".env.example",
+        "type": "registry:file",
+        "target": "~/.env.example",
+        "content": "SUPABASE_DATA_ANALYST_ACCESS_TOKEN=\nSUPABASE_DATA_ANALYST_PROJECT_REF=\nSUPABASE_DATA_ANALYST_READ_ONLY=true\nSUPABASE_DATA_ANALYST_FEATURES=database,docs\nSUPABASE_DATA_ANALYST_MCP_URL=https://mcp.supabase.com/mcp\nSUPABASE_DATA_ANALYST_SLACK_CONNECT_UID=slack/supabase-data-analyst\n"
       }
     ]
   },

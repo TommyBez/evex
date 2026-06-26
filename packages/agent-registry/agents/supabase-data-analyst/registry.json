@@ -1,0 +1,57 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "items": [
+    {
+      "name": "supabase-data-analyst",
+      "type": "registry:item",
+      "title": "Supabase Data Analyst",
+      "description": "A Slack-native Eve analyst for a single Supabase project. It answers Slack mentions and DMs with schema inspection and read-only SQL served by the hosted Supabase MCP server, replacing custom query tools with an MCP client connection.",
+      "author": "TommyBez",
+      "categories": ["data"],
+      "dependencies": ["@vercel/connect@^0.2.6", "eve@^0.11.10"],
+      "files": [
+        {
+          "path": "agent/agent.ts",
+          "type": "registry:file",
+          "target": "~/agent/agent.ts"
+        },
+        {
+          "path": "agent/channels/slack.ts",
+          "type": "registry:file",
+          "target": "~/agent/channels/slack.ts"
+        },
+        {
+          "path": "agent/connections/supabase.ts",
+          "type": "registry:file",
+          "target": "~/agent/connections/supabase.ts"
+        },
+        {
+          "path": "agent/instructions.md",
+          "type": "registry:file",
+          "target": "~/agent/instructions.md"
+        },
+        {
+          "path": "agent/lib/supabase-config.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/supabase-config.ts"
+        },
+        {
+          "path": "README.md",
+          "type": "registry:file",
+          "target": "~/agent/README.md"
+        },
+        {
+          "path": ".env.example",
+          "type": "registry:file",
+          "target": "~/.env.example"
+        }
+      ],
+      "meta": {
+        "slug": "supabase-data-analyst",
+        "category": "data",
+        "createdAt": "2026-06-26T00:00:00.000Z",
+        "updatedAt": "2026-06-26T00:00:00.000Z"
+      }
+    }
+  ]
+}
