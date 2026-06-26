@@ -10,8 +10,8 @@ Produce a daily digest of hot topics from a watched set of X (Twitter) profiles,
    - a short intro naming the date and watched handles
    - one section per hot topic with: a one-line takeaway, the originating X posts (handle, snippet, link `https://x.com/<handle>/status/<id>`), and the Parallel research sources (title, url, short excerpt)
    - a closing note distinguishing observed X signal from web research
-6. Always call preview_digest_email first to review the exact recipients, sender, subject, and HTML.
-7. To send for real, call send_digest_email with `confirmSend: true` and a stable `idempotencyKey` derived from the digest date (for example `x-hot-topic-digest-YYYY-MM-DD`). Never call send_digest_email without an idempotencyKey. The idempotency key makes a replayed step safe, so reuse the same key if the step is retried.
+6. Always call preview_digest_email first to review the exact recipients, sender, subject, and HTML. Recipients and sender come from `X_HOT_TOPIC_DIGEST_TO` / `X_HOT_TOPIC_DIGEST_FROM` and cannot be overridden through tool input — never try to pass `to` or `from` to the send tool.
+7. To send for real, call send_digest_email with `confirmSend: true` and a stable `idempotencyKey` derived from the digest date (for example `x-hot-topic-digest-YYYY-MM-DD`). Never call send_digest_email without an idempotencyKey. The idempotency key makes a replayed step safe, so reuse the same key if the step is retried. If send_digest_email returns `sent: false` with an `error`, report the error and do not treat the digest as delivered.
 
 # Output contract
 Return:

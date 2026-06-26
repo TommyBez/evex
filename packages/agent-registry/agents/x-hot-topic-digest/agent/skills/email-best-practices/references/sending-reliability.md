@@ -51,19 +51,31 @@ idempotency key.
 
 ## Error handling
 
-Common Resend error codes when sending:
+Resend resolves `send` with `{ data, error }` rather than throwing. When `error` is
+present, `send_digest_email` returns:
 
-| Code | Meaning | Action |
-|------|---------|--------|
-| 400 | Bad request | Fix the payload (invalid email, missing field) |
-| 401 | Unauthorized | Check `RESEND_API_KEY` |
-| 403 | Forbidden | Check permissions and domain verification |
-| 422 | Validation error | Fix request data |
-| 429 | Rate limited | Back off and retry |
-| 500 / 503 | Server error | Retry with backoff; the idempotency key makes retry safe |
+```json
+{ "sent": false, "idempotencyKey": "...", "to": [...], "error": { "message": "...", "name": "..." } }
+```
+
+Failed sends are **not** cached, so the same `idempotencyKey` can be retried and will
+issue a new send once the underlying issue is fixed. Only successful sends are cached and
+short-circuited on replay.
+
+Common Resend error cases:
+
+| Cause | Action |
+|------|---------|
+| Invalid email / missing field | Fix the payload |
+| Unauthorized (`RESEND_API_KEY`) | Check the API key |
+| Forbidden / unverified domain | Verify the sender domain in Resend |
+| Validation error | Fix request data |
+| Rate limited | Back off and retry |
+| Server error (5xx) | Retry with backoff; the idempotency key makes retry safe |
 
 If `send_digest_email` returns `authRequired: missingEnv RESEND_API_KEY`, stop and
-report the missing configuration instead of retrying.
+report the missing configuration instead of retrying. Treat `sent: false` as not
+delivered and surface the error in the digest output.
 
 ## Related
 

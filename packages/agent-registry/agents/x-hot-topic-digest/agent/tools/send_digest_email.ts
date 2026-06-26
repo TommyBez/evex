@@ -6,12 +6,19 @@ import { hotTopicConfig } from "../lib/hot-topic-config.js";
 
 // Eve replays a tool step that did not complete. The Resend Idempotency-Key
 // header makes a retried send safe, and this in-process map lets a replayed
-// step return the recorded result instead of issuing a second send.
-const sentKeys = new Map<string, unknown>();
+// step return the recorded success instead of issuing a second send. Only
+// successful sends are cached, so a failed send can be retried.
+const sentKeys = new Map<
+  string,
+  { readonly to: readonly string[]; readonly messageId?: string }
+>();
+
+type ResendSendResponse = {
+  readonly data?: { readonly id?: string } | null;
+  readonly error?: { readonly message?: string; readonly name?: string } | null;
+};
 
 const payloadSchema = z.object({
-  from: z.email().optional(),
-  to: z.array(z.email()).min(1).max(50).optional(),
   subject: z.string().min(1).optional(),
   html: z.string().min(1),
   confirmSend: z
@@ -30,9 +37,9 @@ const payloadSchema = z.object({
 
 export default defineTool({
   description:
-    "Send the X hot topic digest email through Resend. Requires an explicit confirmSend flag and a stable idempotencyKey so a replayed step never duplicates the email. Always call preview_digest_email first.",
+    "Send the X hot topic digest email through Resend to the configured recipients. Requires an explicit confirmSend flag and a stable idempotencyKey so a replayed step never duplicates the email. Recipients and sender come from configuration and cannot be overridden via input. Always call preview_digest_email first.",
   inputSchema: payloadSchema,
-  async execute({ from, to, subject, html, confirmSend, idempotencyKey }) {
+  async execute({ subject, html, confirmSend, idempotencyKey }) {
     const apiKey = process.env.RESEND_API_KEY;
     if (!apiKey) {
       return { authRequired: true, missingEnv: "RESEND_API_KEY" };
@@ -45,23 +52,25 @@ export default defineTool({
       };
     }
 
-    const resolvedFrom = from ?? hotTopicConfig.digest.from;
+    // Recipients and sender are configuration-only to avoid the untrusted X
+    // post content becoming an exfiltration path through crafted tool input.
+    const resolvedFrom = hotTopicConfig.digest.from;
     if (!resolvedFrom) {
       return { notConfigured: true, missingEnv: "X_HOT_TOPIC_DIGEST_FROM" };
     }
 
-    const resolvedTo = to?.length ? to : hotTopicConfig.digest.to;
+    const resolvedTo = hotTopicConfig.digest.to;
     if (resolvedTo.length === 0) {
       return { notConfigured: true, missingEnv: "X_HOT_TOPIC_DIGEST_TO" };
     }
 
     const cached = sentKeys.get(idempotencyKey);
     if (cached) {
-      return { replayed: true, idempotencyKey, result: cached };
+      return { replayed: true, idempotencyKey, to: cached.to, messageId: cached.messageId };
     }
 
     const resend = new Resend(apiKey);
-    const result = await resend.emails.send(
+    const response = (await resend.emails.send(
       {
         from: resolvedFrom,
         to: resolvedTo,
@@ -69,9 +78,22 @@ export default defineTool({
         html,
       },
       { idempotencyKey },
-    );
+    )) as ResendSendResponse;
 
-    sentKeys.set(idempotencyKey, result);
-    return { sent: true, idempotencyKey, result };
+    if (response.error) {
+      return {
+        sent: false,
+        idempotencyKey,
+        to: resolvedTo,
+        error: {
+          message: response.error.message ?? "Resend send failed.",
+          name: response.error.name,
+        },
+      };
+    }
+
+    const messageId = response.data?.id;
+    sentKeys.set(idempotencyKey, { to: resolvedTo, messageId });
+    return { sent: true, idempotencyKey, to: resolvedTo, messageId };
   },
 });

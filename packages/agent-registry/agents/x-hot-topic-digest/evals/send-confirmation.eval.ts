@@ -17,6 +17,8 @@ Now send the digest with send_digest_email. Use today's date to build a stable i
       typeof call.input.idempotencyKey === "string" && call.input.idempotencyKey.length > 0,
       equals(true).gate(),
     );
+    t.check(call.input.to === undefined, equals(true).gate());
+    t.check(call.input.from === undefined, equals(true).gate());
     t.check(t.reply, includes("x-hot-topic-digest-2026-06-26").soft());
   },
 });

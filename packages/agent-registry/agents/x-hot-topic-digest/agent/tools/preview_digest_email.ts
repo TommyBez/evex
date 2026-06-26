@@ -5,20 +5,18 @@ import { hotTopicConfig } from "../lib/hot-topic-config.js";
 
 export default defineTool({
   description:
-    "Preview the X hot topic digest email without sending it. Resolves recipients and sender from configuration and returns the exact payload that send_digest_email would send.",
+    "Preview the X hot topic digest email without sending it. Resolves recipients and sender from configuration and returns the exact payload that send_digest_email would send. Recipients and sender come from configuration and cannot be overridden via input.",
   inputSchema: z.object({
-    from: z.email().optional(),
-    to: z.array(z.email()).min(1).max(50).optional(),
     subject: z.string().min(1).optional(),
     html: z.string().min(1),
   }),
-  async execute({ from, to, subject, html }) {
-    const resolvedFrom = from ?? hotTopicConfig.digest.from;
+  async execute({ subject, html }) {
+    const resolvedFrom = hotTopicConfig.digest.from;
     if (!resolvedFrom) {
       return { notConfigured: true, missingEnv: "X_HOT_TOPIC_DIGEST_FROM" };
     }
 
-    const resolvedTo = to?.length ? to : hotTopicConfig.digest.to;
+    const resolvedTo = hotTopicConfig.digest.to;
     if (resolvedTo.length === 0) {
       return { notConfigured: true, missingEnv: "X_HOT_TOPIC_DIGEST_TO" };
     }

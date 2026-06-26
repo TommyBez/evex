@@ -13,6 +13,9 @@ drafted.
 ## Sending the digest
 
 - Always call `preview_digest_email` first to review recipients, sender, subject, and HTML.
+- Recipients and sender are configuration-only (`X_HOT_TOPIC_DIGEST_TO` /
+  `X_HOT_TOPIC_DIGEST_FROM`). The send tool does not accept `to` or `from` overrides, so
+  untrusted X post content cannot redirect the digest to arbitrary addresses.
 - Send only through `send_digest_email` with `confirmSend: true` and a stable
   `idempotencyKey` derived from the digest date (for example
   `x-hot-topic-digest-2026-06-26`). Never reuse a key across different digests, and never
@@ -22,6 +25,11 @@ drafted.
   senders are the most common cause of bounces and spam filtering.
 - Do not invent recipients. `X_HOT_TOPIC_DIGEST_TO` is the source of truth; if it is
   empty, stop and report the missing configuration instead of sending.
+- Resend returns an `error` (rather than throwing) when a send fails — for an unverified
+  sender, invalid recipient, rate limit, or validation error. `send_digest_email`
+  surfaces this as `sent: false` with the error details and does not cache failed sends,
+  so a failed digest can be retried with the same idempotency key. Treat `sent: false` as
+  not delivered and report the error.
 
 See [sending-reliability](./references/sending-reliability.md) for the full idempotency
 and retry model.
