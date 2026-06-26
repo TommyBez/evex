@@ -44,7 +44,16 @@ const parseBoolean = (
   if (value === undefined) {
     return fallback
   }
-  return value.trim().toLowerCase() !== 'false'
+  const normalized = value.trim().toLowerCase()
+  if (normalized === 'true') {
+    return true
+  }
+  if (normalized === 'false') {
+    return false
+  }
+  throw new Error(
+    'SUPABASE_DATA_ANALYST_READ_ONLY must be set to "true" or "false".',
+  )
 }
 
 const parseProjectRef = (value: string | undefined): string | null => {

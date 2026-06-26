@@ -8,7 +8,7 @@
       "description": "A Slack-native Eve analyst for a single Supabase project that only runs read-only SQL queries. It exposes just supabase__list_tables and supabase__execute_sql through an MCP client connection to the hosted Supabase MCP server; no write, migration, Edge Function, branch, storage, logs, advisors, account, or docs tools are available.",
       "author": "TommyBez",
       "categories": ["data"],
-      "dependencies": ["@vercel/connect@^0.2.6", "eve@^0.11.10"],
+      "dependencies": ["@vercel/connect@^0.2.6", "eve@^0.15.1"],
       "files": [
         {
           "path": "agent/agent.ts",
