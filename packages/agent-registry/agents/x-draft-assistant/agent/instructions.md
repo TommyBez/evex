@@ -33,6 +33,11 @@ as drafts in Typefully for a human to review and publish.
    input — never try to pass `socialSetId`, `tag`, or `madeWithAi` to the create
    tool. The made-with-AI label defaults to true because these posts are drafted
    by an LLM; only disable it if a human rewrites the posts before publishing.
+   If `X_HOT_TOPIC_DRAFT_TAG` names a tag that does not yet exist in the social
+   set, call list_typefully_tags first to check whether the tag already exists
+   under a different name or slug, then call create_typefully_tag with
+   `confirmCreate: true` to create it before creating drafts. Only create a tag
+   when it is genuinely missing — reuse an existing tag whenever possible.
 7. To create the drafts in Typefully, call create_x_drafts with `confirmCreate:
    true` and a stable, unique `idempotencyKey` per draft. The recommended scheme
    is `x-draft-assistant-<windowStartUtc>-<n>`, where `<windowStartUtc>` is the

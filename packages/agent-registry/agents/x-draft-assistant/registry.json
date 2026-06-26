@@ -61,6 +61,16 @@
           "target": "~/agent/tools/create_x_drafts.ts"
         },
         {
+          "path": "agent/tools/create_typefully_tag.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/create_typefully_tag.ts"
+        },
+        {
+          "path": "agent/tools/list_typefully_tags.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/list_typefully_tags.ts"
+        },
+        {
           "path": "agent/tools/preview_x_draft.ts",
           "type": "registry:file",
           "target": "~/agent/tools/preview_x_draft.ts"

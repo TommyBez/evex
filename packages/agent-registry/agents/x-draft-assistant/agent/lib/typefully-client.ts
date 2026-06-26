@@ -28,6 +28,25 @@ export type TypefullyCreateDraftResponse = {
   readonly created_at: string;
 };
 
+export type TypefullyTagResponse = {
+  readonly id: number;
+  readonly name: string;
+  readonly slug?: string | null;
+  readonly social_set_id?: number | null;
+};
+
+export type TypefullyCreateTagInput = {
+  readonly socialSetId: string;
+  readonly name: string;
+};
+
+export type TypefullyListTagsResponse = {
+  readonly total?: number;
+  readonly results?: readonly TypefullyTagResponse[];
+  readonly items?: readonly TypefullyTagResponse[];
+  readonly data?: readonly TypefullyTagResponse[];
+};
+
 export type TypefullyError = {
   readonly message: string;
   readonly status: number;
@@ -119,4 +138,63 @@ export async function createTypefullyDraft(
     ...data,
     draft_title: data.draft_title ?? input.draftTitle ?? null,
   };
+}
+
+export async function createTypefullyTag(
+  input: TypefullyCreateTagInput,
+  apiKey: string,
+): Promise<TypefullyTagResponse> {
+  const response = await fetch(
+    `${TYPEFULLY_API_BASE}/v2/social-sets/${encodeURIComponent(input.socialSetId)}/tags`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ name: input.name }),
+    },
+  );
+
+  const responseText = await response.text();
+  if (!response.ok) {
+    throw new TypefullyApiError({
+      message: summarizeErrorBody(responseText, response.status),
+      status: response.status,
+      body: responseText,
+    });
+  }
+
+  return JSON.parse(responseText) as TypefullyTagResponse;
+}
+
+export async function listTypefullyTags(
+  socialSetId: string,
+  apiKey: string,
+): Promise<readonly TypefullyTagResponse[]> {
+  const response = await fetch(
+    `${TYPEFULLY_API_BASE}/v2/social-sets/${encodeURIComponent(socialSetId)}/tags?limit=50`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+    },
+  );
+
+  const responseText = await response.text();
+  if (!response.ok) {
+    throw new TypefullyApiError({
+      message: summarizeErrorBody(responseText, response.status),
+      status: response.status,
+      body: responseText,
+    });
+  }
+
+  const parsed = JSON.parse(responseText) as TypefullyListTagsResponse | readonly TypefullyTagResponse[];
+  if (Array.isArray(parsed)) {
+    return parsed;
+  }
+  return parsed.results ?? parsed.items ?? parsed.data ?? [];
 }

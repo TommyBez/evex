@@ -10,7 +10,7 @@ It runs on a cron schedule, reads only public posts via the X API v2, previews e
 2. **Surface hot topics** — clusters the posts into up to `X_HOT_TOPIC_MAX_TOPICS` themes based on recurrence and engagement.
 3. **Research with Parallel** — for each topic, calls the Parallel Search API with focused keyword queries and returns ranked web sources with provenance.
 4. **Draft three X post candidates** — writes exactly `X_HOT_TOPIC_DRAFT_COUNT` (default 3) distinct candidates from the researched topics. Each candidate is either a single tweet or a short thread (1-5 posts), each post at most 280 characters, each candidate a different angle on the same signal.
-5. **Create drafts in Typefully** — previews every candidate with `preview_x_draft`, then creates them in Typefully through `create_x_drafts` only when `confirmCreate: true` and a stable, unique `idempotencyKey` per draft are provided. The idempotency key is held in an in-process cache and reused if Eve replays the step, so a retried create never produces a duplicate draft.
+5. **Create drafts in Typefully** — previews every candidate with `preview_x_draft`, then creates them in Typefully through `create_x_drafts` only when `confirmCreate: true` and a stable, unique `idempotencyKey` per draft are provided. The idempotency key is held in an in-process cache and reused if Eve replays the step, so a retried create never produces a duplicate draft. If `X_HOT_TOPIC_DRAFT_TAG` references a tag that does not exist in the social set, the agent can list tags with `list_typefully_tags` and create it first with `create_typefully_tag` (gated on `confirmCreate: true`).
 
 ## Installation
 
@@ -40,7 +40,7 @@ Copy `.env.example` into your Eve app environment and fill in the values.
 
 - `X_HOT_TOPIC_DRAFT_COUNT` — number of distinct X draft candidates to produce per run. Defaults to `3`.
 - `X_HOT_TOPIC_DRAFT_MADE_WITH_AI` — whether to label every X post with the X "made with AI" content disclosure. Defaults to `true` because the agent drafts posts with an LLM. Set to `false` only if a human rewrites the posts before publishing.
-- `X_HOT_TOPIC_DRAFT_TAG` — optional Typefully tag slug to attach to every created draft. Tags must already exist in the social set; the agent does not create tags. Leave empty to skip tagging.
+- `X_HOT_TOPIC_DRAFT_TAG` — optional Typefully tag slug to attach to every created draft. The tag must already exist in the social set, or the agent can list tags with `list_typefully_tags` and create it on demand with `create_typefully_tag`. Leave empty to skip tagging.
 
 ### Typefully credentials
 
