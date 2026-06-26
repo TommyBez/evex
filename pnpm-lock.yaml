@@ -139,8 +139,8 @@ importers:
         specifier: ^0.31.10
         version: 0.31.10
       eve:
-        specifier: ^0.13.8
-        version: 0.13.8(@upstash/redis@1.38.0)(@vercel/blob@2.4.0)(ai@7.0.0-beta.178(zod@4.3.6))(chokidar@4.0.3)(dotenv@17.4.2)(drizzle-orm@0.45.2(@types/pg@8.20.0)(@upstash/redis@1.38.0)(kysely@0.29.2)(pg@8.21.0))(lru-cache@11.5.1)(next@16.2.6(@babel/core@7.29.7)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4)
+        specifier: ^0.15.1
+        version: 0.15.1(@upstash/redis@1.38.0)(@vercel/blob@2.4.0)(ai@7.0.0-beta.178(zod@4.3.6))(chokidar@4.0.3)(dotenv@17.4.2)(drizzle-orm@0.45.2(@types/pg@8.20.0)(@upstash/redis@1.38.0)(kysely@0.29.2)(pg@8.21.0))(lru-cache@11.5.1)(next@16.2.6(@babel/core@7.29.7)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4)
       postcss:
         specifier: ^8.5
         version: 8.5.6
@@ -2991,14 +2991,14 @@ packages:
     resolution: {integrity: sha512-aIL5Fx7mawVa300al2BnEE4iNvo1qETxLrPI/o05L7z6go7fCw1J6EQmbK4FmJ2AS7kgVF/KEZWufBfdClMcPg==}
     engines: {node: '>= 0.6'}
 
-  eve@0.13.8:
-    resolution: {integrity: sha512-2WT9ME+5pKhLVGX5YQ8IDTqp074dUOt8dceYQSRij7MxdE7Lfiw+rrbfPoejZkPCIfOO2h6Pnf+lDupdpiEx4A==}
+  eve@0.15.1:
+    resolution: {integrity: sha512-hqy+4+lOn6K3EZQy4ueibWZc//zZYgEutg6BC2eHcAWEWmqgKs1hBH9Caw2zulEiI9NwCB7XMFyz2bYZM2YpjA==}
     engines: {node: '>=24'}
     hasBin: true
     peerDependencies:
       '@opentelemetry/api': ^1.0.0
       '@sveltejs/kit': ^2.0.0
-      ai: 7.0.0-beta.178
+      ai: ^7.0.0
       braintrust: ^3.0.0
       just-bash: ^3.0.0
       microsandbox: ^0.5.0
@@ -7086,7 +7086,7 @@ snapshots:
 
   etag@1.8.1: {}
 
-  eve@0.13.8(@upstash/redis@1.38.0)(@vercel/blob@2.4.0)(ai@7.0.0-beta.178(zod@4.3.6))(chokidar@4.0.3)(dotenv@17.4.2)(drizzle-orm@0.45.2(@types/pg@8.20.0)(@upstash/redis@1.38.0)(kysely@0.29.2)(pg@8.21.0))(lru-cache@11.5.1)(next@16.2.6(@babel/core@7.29.7)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4):
+  eve@0.15.1(@upstash/redis@1.38.0)(@vercel/blob@2.4.0)(ai@7.0.0-beta.178(zod@4.3.6))(chokidar@4.0.3)(dotenv@17.4.2)(drizzle-orm@0.45.2(@types/pg@8.20.0)(@upstash/redis@1.38.0)(kysely@0.29.2)(pg@8.21.0))(lru-cache@11.5.1)(next@16.2.6(@babel/core@7.29.7)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4):
     dependencies:
       ai: 7.0.0-beta.178(zod@4.3.6)
       nitro: 3.0.260610-beta(@upstash/redis@1.38.0)(@vercel/blob@2.4.0)(chokidar@4.0.3)(dotenv@17.4.2)(drizzle-orm@0.45.2(@types/pg@8.20.0)(@upstash/redis@1.38.0)(kysely@0.29.2)(pg@8.21.0))(lru-cache@11.5.1)

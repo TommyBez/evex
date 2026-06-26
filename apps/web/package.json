@@ -42,7 +42,7 @@
     "@types/react-dom": "^19",
     "@types/react-syntax-highlighter": "^15.5.13",
     "drizzle-kit": "^0.31.10",
-    "eve": "^0.13.8",
+    "eve": "^0.15.1",
     "postcss": "^8.5",
     "postcss-loader": "^8.2.1",
     "tailwindcss": "^4.2.0",

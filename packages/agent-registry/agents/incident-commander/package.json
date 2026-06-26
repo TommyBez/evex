@@ -15,7 +15,7 @@
     "typecheck": "tsc --noEmit --pretty false"
   },
   "dependencies": {
-    "eve": "^0.13.8",
+    "eve": "^0.15.1",
     "date-fns": "^4.4.0",
     "zod": "4.3.6"
   },
