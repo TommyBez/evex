@@ -1,0 +1,91 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "items": [
+    {
+      "name": "branded-seo-page-builder",
+      "type": "registry:item",
+      "title": "Branded SEO Page Builder",
+      "description": "Generate an on-brand, SEO-optimized HTML page from a domain using Context.dev brand, content, and styleguide data.",
+      "categories": [
+        "marketing"
+      ],
+      "dependencies": [
+        "eve@^0.15.1"
+      ],
+      "files": [
+        {
+          "path": "agent/agent.ts",
+          "type": "registry:file",
+          "target": "~/agent/agent.ts"
+        },
+        {
+          "path": "agent/connections/context-dev.ts",
+          "type": "registry:file",
+          "target": "~/agent/connections/context-dev.ts"
+        },
+        {
+          "path": "agent/instructions.md",
+          "type": "registry:file",
+          "target": "~/agent/instructions.md"
+        },
+        {
+          "path": "agent/skills/ai-seo/references/content-patterns.md",
+          "type": "registry:file",
+          "target": "~/agent/skills/ai-seo/references/content-patterns.md"
+        },
+        {
+          "path": "agent/skills/ai-seo/references/content-types.md",
+          "type": "registry:file",
+          "target": "~/agent/skills/ai-seo/references/content-types.md"
+        },
+        {
+          "path": "agent/skills/ai-seo/references/okf.md",
+          "type": "registry:file",
+          "target": "~/agent/skills/ai-seo/references/okf.md"
+        },
+        {
+          "path": "agent/skills/ai-seo/references/platform-ranking-factors.md",
+          "type": "registry:file",
+          "target": "~/agent/skills/ai-seo/references/platform-ranking-factors.md"
+        },
+        {
+          "path": "agent/skills/ai-seo/SKILL.md",
+          "type": "registry:file",
+          "target": "~/agent/skills/ai-seo/SKILL.md"
+        },
+        {
+          "path": "agent/skills/seo-audit/references/ai-writing-detection.md",
+          "type": "registry:file",
+          "target": "~/agent/skills/seo-audit/references/ai-writing-detection.md"
+        },
+        {
+          "path": "agent/skills/seo-audit/references/international-seo.md",
+          "type": "registry:file",
+          "target": "~/agent/skills/seo-audit/references/international-seo.md"
+        },
+        {
+          "path": "agent/skills/seo-audit/SKILL.md",
+          "type": "registry:file",
+          "target": "~/agent/skills/seo-audit/SKILL.md"
+        },
+        {
+          "path": "README.md",
+          "type": "registry:file",
+          "target": "~/agent/README.md"
+        },
+        {
+          "path": ".env.example",
+          "type": "registry:file",
+          "target": "~/.env.example"
+        }
+      ],
+      "meta": {
+        "slug": "branded-seo-page-builder",
+        "category": "marketing",
+        "createdAt": "2026-06-27T07:44:00.000Z",
+        "updatedAt": "2026-06-27T08:08:00.000Z"
+      },
+      "author": "TommyBez"
+    }
+  ]
+}
