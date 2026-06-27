@@ -135,7 +135,7 @@ Most formatting and common issues are automatically fixed by Biome. Run `pnpm dl
 - Build: `pnpm build` (builds `@evex/web` and the `@evex/agent-registry` package; the registry build re-checks that `src/generated/registry.ts` is in sync with the agent sources).
 
 ### Install command
-- The public, product-facing install command is `npx shadcn@latest add https://evex.sh/r/{slug}`, built by `buildInstallCommand` in `apps/web/lib/site-url.ts` and shown on every agent page and the home hero. There is no root `registry.json` and the catalog is generated from the agent sources; the `@evex` entry in `apps/web/components.json` is the app's own registry config, not the documented end-user install path.
+- The public, product-facing install command is `npx shadcn@latest add @evex/{slug}`, built by `buildInstallCommand` in `apps/web/lib/site-url.ts` and shown on every agent page and the home hero. evex is part of the official shadcn community registry; the `@evex` entry in `apps/web/components.json` points at the hosted registry items.
 
 ### Database (required to run the app)
 - `apps/web` reads `DATABASE_URL` for auth, profiles, favorites, and install metrics. Public agent metadata/files come from the source-owned shadcn registry files.

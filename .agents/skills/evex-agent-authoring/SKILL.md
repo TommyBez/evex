@@ -104,7 +104,7 @@ The README is installed into the consumer's Eve app, so write it for the user
 who ran:
 
 ```bash
-npx shadcn@latest add https://evex.sh/r/<slug>
+npx shadcn@latest add @evex/<slug>
 ```
 
 Include:
@@ -220,5 +220,5 @@ or build succeeded when it did not.
 - Run the [mandatory validation sequence](#mandatory-sequence-after-registry-changes);
   `pnpm build` must pass before merge.
 - Verify README setup steps match the actual channel/connection code.
-- Keep user-facing install copy on the `https://evex.sh/r/<slug>` path.
+- Keep user-facing install copy on the `@evex/<slug>` shadcn registry path.
 - Preserve unrelated working-tree changes.

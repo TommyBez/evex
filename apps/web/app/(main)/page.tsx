@@ -182,7 +182,7 @@ function HeroDemo() {
         <code>
           <span className="text-brand">$</span>{' '}
           <span className="text-graphite-foreground">
-            {buildInstallCommand('https://evex.sh', 'code-reviewer')}
+            {buildInstallCommand('code-reviewer')}
           </span>
           {'\n'}
           <span className="text-graphite-foreground/50">

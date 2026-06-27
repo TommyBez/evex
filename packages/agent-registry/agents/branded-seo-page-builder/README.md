@@ -35,7 +35,7 @@ Both skills are vendored from
 ## Installation
 
 ```bash
-npx shadcn@latest add https://evex.sh/r/branded-seo-page-builder
+npx shadcn@latest add @evex/branded-seo-page-builder
 ```
 
 Install the public runtime dependencies listed by the registry item if your Eve

@@ -10,7 +10,7 @@ just `supabase__list_tables` and `supabase__execute_sql`, and nothing else.
 Install this registry item into an existing Eve app:
 
 ```bash
-npx shadcn@latest add https://evex.sh/r/supabase-data-analyst
+npx shadcn@latest add @evex/supabase-data-analyst
 ```
 
 Then install the public runtime dependencies listed by the registry item.

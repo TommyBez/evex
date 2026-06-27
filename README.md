@@ -48,7 +48,7 @@ Every agent has a one-line install. Add one to your project with the `shadcn`
 CLI — the same command shown on each agent's page:
 
 ```bash
-npx shadcn@latest add https://evex.sh/r/code-reviewer
+npx shadcn@latest add @evex/code-reviewer
 ```
 
 Swap `code-reviewer` for any agent slug from the catalog. Agents span categories
