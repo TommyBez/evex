@@ -6,7 +6,6 @@ import { CopyButton } from '@/components/copy-button'
 import { FavoriteButton } from '@/components/favorite-button'
 import { Card } from '@/components/ui/card'
 import type { AgentWithAuthor } from '@/lib/agent-types'
-import { getSiteUrl } from '@/lib/metadata'
 import { buildInstallCommand } from '@/lib/site-url'
 
 export function AgentCard({
@@ -18,7 +17,7 @@ export function AgentCard({
   isAuthenticated?: boolean
   isFavorite?: boolean
 }) {
-  const installCommand = buildInstallCommand(getSiteUrl(), agent.slug)
+  const installCommand = buildInstallCommand(agent.slug)
 
   return (
     <Card className="group relative flex h-full w-full min-w-0 flex-col gap-4 rounded-md border border-border p-5 shadow-[var(--shadow-card)] ring-0 transition-[background-color,border-color,box-shadow] focus-within:border-input focus-within:bg-muted/40 focus-within:ring-2 focus-within:ring-ring/20 hover:border-input hover:bg-muted/40">

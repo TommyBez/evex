@@ -16,7 +16,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { applyInstallCounts, getAgentRuntimeState } from '@/lib/agent-runtime'
 import type { AgentRegistryFile, AgentWithAuthor } from '@/lib/agent-types'
 import { parseDependencies } from '@/lib/agents'
-import { createPageMetadata, getSiteUrl, siteConfig } from '@/lib/metadata'
+import { createPageMetadata, siteConfig } from '@/lib/metadata'
 import { buildInstallCommand } from '@/lib/site-url'
 import {
   getStaticAgentBySlug,
@@ -216,12 +216,11 @@ function AgentDetailContent({ slug }: { slug: string }) {
   }
 
   const files = getStaticAgentFiles(agent.slug)
-  const baseUrl = getSiteUrl()
   const authorAgents = agent.authorUsername
     ? getStaticAgentsByAuthorUsername(agent.authorUsername)
     : []
   const relatedCandidates = listStaticAgents().filter((a) => a.id !== agent.id)
-  const installCommand = buildInstallCommand(baseUrl, agent.slug)
+  const installCommand = buildInstallCommand(agent.slug)
   const deps = parseDependencies(agent.dependencies)
   const fileKinds = countFilesByKind(files)
   const moreFromAuthorCount = authorAgents.filter(

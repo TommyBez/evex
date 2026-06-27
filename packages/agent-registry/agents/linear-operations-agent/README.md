@@ -41,7 +41,7 @@ For local webhook testing, expose the local Eve server through a public HTTPS tu
 Install the registry item into an existing Eve app:
 
 ```bash
-npx shadcn@latest add https://evex.sh/r/linear-operations-agent
+npx shadcn@latest add @evex/linear-operations-agent
 pnpm install
 ```
 

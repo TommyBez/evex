@@ -14,7 +14,7 @@ It runs on a cron schedule, reads only public posts via the X API v2, and previe
 ## Installation
 
 ```bash
-npx shadcn@latest add https://evex.sh/r/x-hot-topic-digest
+npx shadcn@latest add @evex/x-hot-topic-digest
 ```
 
 ## Configuration
