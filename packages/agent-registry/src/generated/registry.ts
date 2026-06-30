@@ -420,6 +420,90 @@ export const generatedRegistry = {
       ]
     },
     {
+      "name": "openui-assistant",
+      "type": "registry:item",
+      "title": "OpenUI Assistant",
+      "description": "An Eve agent that streams OpenUI Lang generative UI using the official openuiChatLibrary, with demo weather, stock, and search tools from the openui-chat example.",
+      "categories": [
+        "general"
+      ],
+      "dependencies": [
+        "@openuidev/react-lang@^0.2.8",
+        "@openuidev/react-ui@^0.12.1",
+        "eve@^0.15.1",
+        "zod@^4.4.3"
+      ],
+      "meta": {
+        "slug": "openui-assistant",
+        "category": "general",
+        "createdAt": "2026-06-30T21:52:44.748Z",
+        "updatedAt": "2026-06-30T22:00:00.000Z"
+      },
+      "author": "TommyBez",
+      "files": [
+        {
+          "path": "agent/agent.ts",
+          "type": "registry:file",
+          "target": "~/agent/agent.ts"
+        },
+        {
+          "path": "agent/frontend/openui-eve-chat.tsx",
+          "type": "registry:file",
+          "target": "~/agent/frontend/openui-eve-chat.tsx"
+        },
+        {
+          "path": "agent/frontend/README.md",
+          "type": "registry:file",
+          "target": "~/agent/frontend/README.md"
+        },
+        {
+          "path": "agent/instructions/openui-prompt.ts",
+          "type": "registry:file",
+          "target": "~/agent/instructions/openui-prompt.ts"
+        },
+        {
+          "path": "agent/instructions.md",
+          "type": "registry:file",
+          "target": "~/agent/instructions.md"
+        },
+        {
+          "path": "agent/lib/openui-library.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/openui-library.ts"
+        },
+        {
+          "path": "agent/skills/openui/SKILL.md",
+          "type": "registry:file",
+          "target": "~/agent/skills/openui/SKILL.md"
+        },
+        {
+          "path": "agent/tools/get_stock_price.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/get_stock_price.ts"
+        },
+        {
+          "path": "agent/tools/get_weather.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/get_weather.ts"
+        },
+        {
+          "path": "agent/tools/search_web.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/search_web.ts"
+        },
+        {
+          "path": "README.md",
+          "type": "registry:file",
+          "target": "~/agent/README.md"
+        },
+        {
+          "path": ".env.example",
+          "type": "registry:file",
+          "target": "~/.env.example"
+        }
+      ]
+    },
+    {
       "name": "postgres-data-analyst",
       "type": "registry:item",
       "title": "Postgres Data Analyst",
@@ -1277,6 +1361,103 @@ export const generatedRegistryItems = {
         "type": "registry:file",
         "target": "~/.env.example",
         "content": "LINEAR_AGENT_ACCESS_TOKEN=\nLINEAR_WEBHOOK_SECRET=\nLINEAR_CONNECT_UID=\nSLACK_CONNECT_UID=\n\nLINEAR_OPS_COVERED_TEAMS=\nLINEAR_OPS_COVERED_PROJECTS=\nLINEAR_OPS_COVERED_INITIATIVES=\nLINEAR_OPS_READ_ONLY_TEAMS=\nLINEAR_OPS_MAX_BULK_ISSUE_COUNT=10\nLINEAR_OPS_AUTO_INITIATIVE_UPDATES=true\n\nLINEAR_OPS_DEFAULT_SLACK_CHANNEL_ID=\nLINEAR_OPS_TRIAGE_SLACK_CHANNEL_ID=\nLINEAR_OPS_CYCLE_SLACK_CHANNEL_ID=\nLINEAR_OPS_BACKLOG_SLACK_CHANNEL_ID=\nLINEAR_OPS_P1_SLACK_CHANNEL_ID=\nLINEAR_OPS_PROJECT_CHANNELS=\n\nLINEAR_OPS_DAILY_TRIAGE_CRON=\"0 7 * * 1-5\"\nLINEAR_OPS_CYCLE_HEALTH_CRON=\"30 7 * * 1-5\"\nLINEAR_OPS_WEEKLY_BACKLOG_CRON=\"0 8 * * 1\"\nLINEAR_OPS_WEEKLY_PROJECT_CRON=\"30 8 * * 1\"\nLINEAR_OPS_WEEKLY_INITIATIVE_CRON=\"0 9 * * 1\"\nLINEAR_OPS_P1_MONITORING_CRON=\"0 13 * * 1-5\"\n"
+      }
+    ]
+  },
+  "openui-assistant": {
+    "$schema": "https://ui.shadcn.com/schema/registry.json",
+    "name": "openui-assistant",
+    "type": "registry:item",
+    "title": "OpenUI Assistant",
+    "description": "An Eve agent that streams OpenUI Lang generative UI using the official openuiChatLibrary, with demo weather, stock, and search tools from the openui-chat example.",
+    "categories": [
+      "general"
+    ],
+    "dependencies": [
+      "@openuidev/react-lang@^0.2.8",
+      "@openuidev/react-ui@^0.12.1",
+      "eve@^0.15.1",
+      "zod@^4.4.3"
+    ],
+    "meta": {
+      "slug": "openui-assistant",
+      "category": "general",
+      "createdAt": "2026-06-30T21:52:44.748Z",
+      "updatedAt": "2026-06-30T22:00:00.000Z"
+    },
+    "author": "TommyBez",
+    "files": [
+      {
+        "path": "agent/agent.ts",
+        "type": "registry:file",
+        "target": "~/agent/agent.ts",
+        "content": "import { defineAgent } from \"eve\";\n\nexport default defineAgent({\n  model: \"openai/gpt-5-mini\",\n});\n"
+      },
+      {
+        "path": "agent/frontend/openui-eve-chat.tsx",
+        "type": "registry:file",
+        "target": "~/agent/frontend/openui-eve-chat.tsx",
+        "content": "\"use client\";\n\nimport { Renderer } from \"@openuidev/react-lang\";\nimport { openuiChatLibrary } from \"@openuidev/react-ui/genui-lib\";\nimport { useEveAgent } from \"eve/react\";\nimport { useMemo } from \"react\";\n\nfunction getLatestAssistantText(\n  messages: ReturnType<typeof useEveAgent>[\"data\"][\"messages\"],\n): string {\n  for (let index = messages.length - 1; index >= 0; index -= 1) {\n    const message = messages[index];\n\n    if (message?.role !== \"assistant\") {\n      continue;\n    }\n\n    return message.parts\n      .filter((part) => part.type === \"text\")\n      .map((part) => part.text)\n      .join(\"\\n\");\n  }\n\n  return \"\";\n}\n\n/**\n * Reference chat surface that streams Eve assistant text into the OpenUI\n * Renderer. Copy this component into a Next.js app that already uses\n * `withEve()` from `eve/next`.\n */\nexport function OpenUIEveChat() {\n  const agent = useEveAgent();\n  const isBusy =\n    agent.status === \"submitted\" || agent.status === \"streaming\";\n\n  const assistantProgram = useMemo(\n    () => getLatestAssistantText(agent.data.messages),\n    [agent.data.messages],\n  );\n\n  return (\n    <div className=\"mx-auto flex h-dvh max-w-3xl flex-col gap-4 p-4\">\n      <section className=\"min-h-0 flex-1 overflow-auto rounded-xl border p-4\">\n        {assistantProgram.length > 0 ? (\n          <Renderer\n            isStreaming={agent.status === \"streaming\"}\n            library={openuiChatLibrary}\n            response={assistantProgram}\n          />\n        ) : (\n          <p className=\"text-sm text-muted-foreground\">\n            Ask for weather, a stock quote, or a web search to see generative UI.\n          </p>\n        )}\n      </section>\n\n      <form\n        className=\"flex gap-2\"\n        onSubmit={(event) => {\n          event.preventDefault();\n          const form = new FormData(event.currentTarget);\n          const message = String(form.get(\"message\") ?? \"\").trim();\n\n          if (message.length > 0) {\n            void agent.send({ message });\n            event.currentTarget.reset();\n          }\n        }}\n      >\n        <input\n          className=\"flex-1 rounded-md border px-3 py-2 text-sm\"\n          disabled={isBusy}\n          name=\"message\"\n          placeholder=\"Show me the weather in Tokyo\"\n        />\n        <button\n          className=\"rounded-md bg-foreground px-4 py-2 text-sm text-background disabled:opacity-50\"\n          disabled={isBusy}\n          type=\"submit\"\n        >\n          Send\n        </button>\n      </form>\n    </div>\n  );\n}\n"
+      },
+      {
+        "path": "agent/frontend/README.md",
+        "type": "registry:file",
+        "target": "~/agent/frontend/README.md",
+        "content": "# Frontend wiring\n\nThese files are reference implementations for a Next.js app that already hosts\nan Eve agent. They mirror the official OpenUI\n[`openui-chat`](https://github.com/thesysdev/openui/tree/main/examples/openui-chat)\nexample, but route turns through Eve's built-in HTTP channel instead of a custom\n`/api/chat` route.\n\n## Required app dependencies\n\n```bash\nnpm install @openuidev/react-lang @openuidev/react-ui eve\n```\n\n## Next.js setup\n\n1. Wrap `next.config.ts` with `withEve()` from `eve/next`.\n2. Copy `openui-eve-chat.tsx` into your app, for example\n   `app/_components/openui-eve-chat.tsx`.\n3. Render it from `app/page.tsx`.\n\nThe component uses `useEveAgent()` for session streaming and `@openuidev/react-lang`\n`Renderer` with `openuiChatLibrary` to turn assistant text into live UI.\n\n## Alternative: AgentInterface\n\nFor the full OpenUI chat chrome (history rail, tool-call cards, theming), follow\nthe upstream `openui-chat` page and point its `ChatLLM.send` handler at Eve's\nsession routes. The Eve + Renderer path in `openui-eve-chat.tsx` is the minimal\nintegration when you already manage chat state with `useEveAgent`.\n\n## Smoke test\n\n1. Start the Eve app with this agent installed.\n2. Open the page that renders `OpenUIEveChat`.\n3. Ask: `What's the weather in Tokyo?`\n4. Confirm the assistant streams OpenUI Lang and the renderer shows cards instead\n   of raw text.\n"
+      },
+      {
+        "path": "agent/instructions/openui-prompt.ts",
+        "type": "registry:file",
+        "target": "~/agent/instructions/openui-prompt.ts",
+        "content": "import {\n  openuiChatLibrary,\n  openuiChatPromptOptions,\n} from \"@openuidev/react-ui/genui-lib\";\nimport { defineInstructions } from \"eve/instructions\";\n\nconst openuiSystemPrompt = openuiChatLibrary.prompt(openuiChatPromptOptions);\n\nexport default defineInstructions({\n  markdown: openuiSystemPrompt,\n});\n"
+      },
+      {
+        "path": "agent/instructions.md",
+        "type": "registry:file",
+        "target": "~/agent/instructions.md",
+        "content": "# Mission\nYou are a generative UI assistant. Every assistant reply must be valid OpenUI\nLang that renders through the bundled `openuiChatLibrary` component set.\n\n# Non-negotiable output rules\n- Respond with OpenUI Lang only. Do not wrap output in markdown fences or add\n  prose before or after the program.\n- The first statement must assign to `root`.\n- Generate top-down: layout first, then nested components, then leaf data.\n- Use tools to fetch live data before rendering charts, stats, weather, or stock\n  tiles. Never invent tool-backed numbers.\n- When a tool fails, render a `Card` with a concise error message and a recovery\n  action button instead of plain text.\n\n# Workflow\n1. Load the `openui` skill when you need component syntax, library constraints,\n   or debugging help for OpenUI Lang output.\n2. Parse the user request and decide whether you need `get_weather`,\n   `get_stock_price`, or `search_web`.\n3. Call the relevant tools, wait for structured JSON results, then compose the\n   UI program from those facts.\n4. Prefer rich layouts: `Stack`, `Grid`, `Card`, charts, tables, and `Buttons`\n   for follow-up actions.\n5. For greetings or help requests, render a welcome `Card` with suggested action\n   buttons such as weather lookup, stock quote, or web search.\n\n# Interaction patterns\n- Weather: show location, current conditions, temperature, humidity, wind, and a\n  short forecast list.\n- Stocks: show symbol, price, change, volume, day range, and a clear up/down\n  indicator.\n- Search: show the query and ranked results with title and snippet fields.\n- Comparisons: use `Grid` or `Table` to place metrics side by side.\n\n# Guardrails\n- Do not expose environment variables or internal tool errors verbatim to users.\n- Do not output HTML, markdown, or JSON when OpenUI Lang is expected.\n- Keep button actions descriptive (`action:check_weather_tokyo`) so the client\n  can map them to follow-up prompts.\n"
+      },
+      {
+        "path": "agent/lib/openui-library.ts",
+        "type": "registry:file",
+        "target": "~/agent/lib/openui-library.ts",
+        "content": "export {\n  openuiChatLibrary,\n  openuiChatPromptOptions,\n} from \"@openuidev/react-ui/genui-lib\";\n"
+      },
+      {
+        "path": "agent/skills/openui/SKILL.md",
+        "type": "registry:file",
+        "target": "~/agent/skills/openui/SKILL.md",
+        "content": "---\nname: openui\ndescription: Build generative UI with OpenUI Lang and the bundled openuiChatLibrary. Use when choosing components, debugging OpenUI Lang syntax, extending the library, or wiring the Eve frontend reference.\n---\n\n# OpenUI generative UI\n\nOpenUI Lang is a compact, line-oriented DSL for model-generated interfaces. This\nagent ships with the `openuiChatLibrary` from `@openuidev/react-ui/genui-lib`,\nthe same library used by the official\n[`openui-chat`](https://github.com/thesysdev/openui/tree/main/examples/openui-chat)\nexample.\n\n## Pipeline\n\n```\nComponent library \u2192 system prompt \u2192 LLM \u2192 OpenUI Lang stream \u2192 Renderer \u2192 UI\n```\n\nThe build-time prompt in `agent/instructions/openui-prompt.ts` is generated from\n`openuiChatLibrary.prompt(openuiChatPromptOptions)`.\n\n## Syntax rules\n\n1. One statement per line: `identifier = Expression`\n2. The first statement must assign to `root`\n3. Write top-down: layout \u2192 nested components \u2192 leaf values\n4. Positional arguments map to Zod prop order\n5. Forward references are allowed; the renderer shows placeholders until defined\n\nExample:\n\n```\nroot = Stack([header, stats], \"column\", \"m\")\nheader = TextContent(\"Q4 Dashboard\", \"large-heavy\")\nstats = Grid([revenue, users])\nrevenue = StatCard(\"Revenue\", \"$1.2M\", \"up\")\nusers = StatCard(\"Users\", \"450k\", \"flat\")\n```\n\n## When to load this skill\n\n- The user asks for a new component pattern or layout\n- OpenUI Lang fails to parse or render\n- You need to confirm which built-in components are available\n- You are extending the library with custom components\n\n## Built-in library\n\nThis agent uses `openuiChatLibrary`, which includes chat-oriented layouts,\ncontent blocks, charts, forms, tables, and buttons. Prefer those primitives over\ninventing raw text responses.\n\n## References\n\n- OpenUI docs: https://www.openui.com/docs/openui-lang/overview\n- Language spec: https://www.openui.com/docs/openui-lang/specification\n- Example app: https://github.com/thesysdev/openui/tree/main/examples/openui-chat\n\n## Debugging checklist\n\n1. Confirm the reply starts with `root = ...`\n2. Confirm every referenced identifier is defined\n3. Confirm tool-backed values match the latest tool JSON\n4. Remove markdown fences or prose around the program\n5. Re-run with a smaller layout if the stream was truncated\n"
+      },
+      {
+        "path": "agent/tools/get_stock_price.ts",
+        "type": "registry:file",
+        "target": "~/agent/tools/get_stock_price.ts",
+        "content": "import { defineTool } from \"eve/tools\";\nimport { z } from \"zod\";\n\nconst knownPrices: Record<string, number> = {\n  AAPL: 189.84,\n  AMZN: 178.25,\n  GOOGL: 141.8,\n  META: 485.58,\n  MSFT: 378.91,\n  NVDA: 875.28,\n  TSLA: 248.42,\n};\n\nconst getStockPriceInput = z.object({\n  symbol: z\n    .string()\n    .min(1)\n    .describe(\"Ticker symbol, for example AAPL or NVDA\"),\n});\n\nexport type GetStockPriceInput = z.infer<typeof getStockPriceInput>;\n\nexport type GetStockPriceOutput = {\n  change: number;\n  change_percent: number;\n  day_high: number;\n  day_low: number;\n  price: number;\n  symbol: string;\n  volume: string;\n};\n\nfunction resolveBasePrice(symbol: string): number {\n  const known = knownPrices[symbol];\n\n  if (known !== undefined) {\n    return known;\n  }\n\n  let hash = 0;\n\n  for (const character of symbol) {\n    hash = (hash + character.charCodeAt(0)) % 480;\n  }\n\n  return 20 + hash;\n}\n\nexport default defineTool({\n  description:\n    \"Get the latest stock quote for a ticker symbol. Use before rendering price or market cards.\",\n  inputSchema: getStockPriceInput,\n  execute({ symbol }): GetStockPriceOutput {\n    const normalizedSymbol = symbol.trim().toUpperCase();\n    const basePrice = resolveBasePrice(normalizedSymbol);\n    const change = Number.parseFloat(\n      ((normalizedSymbol.length % 8) - 4).toFixed(2),\n    );\n    const price = Number.parseFloat((basePrice + change).toFixed(2));\n    const changePercent = Number.parseFloat(\n      ((change / basePrice) * 100).toFixed(2),\n    );\n    const volumeMillions = 10 + (normalizedSymbol.length % 50);\n\n    return {\n      symbol: normalizedSymbol,\n      price,\n      change,\n      change_percent: changePercent,\n      volume: `${volumeMillions.toFixed(1)}M`,\n      day_high: Number.parseFloat(\n        (price + Math.abs(change) + 1.5).toFixed(2),\n      ),\n      day_low: Number.parseFloat(\n        (price - Math.abs(change) - 1.2).toFixed(2),\n      ),\n    };\n  },\n  toModelOutput(output) {\n    return {\n      type: \"json\",\n      value: output,\n    };\n  },\n});\n"
+      },
+      {
+        "path": "agent/tools/get_weather.ts",
+        "type": "registry:file",
+        "target": "~/agent/tools/get_weather.ts",
+        "content": "import { defineTool } from \"eve/tools\";\nimport { z } from \"zod\";\n\nconst knownTemperaturesCelsius: Record<string, number> = {\n  berlin: 16,\n  london: 14,\n  mumbai: 33,\n  \"new york\": 25,\n  paris: 19,\n  \"san francisco\": 18,\n  sydney: 27,\n  tokyo: 22,\n};\n\nconst weatherConditions = [\n  \"Clear Skies\",\n  \"Cloudy\",\n  \"Light Rain\",\n  \"Partly Cloudy\",\n  \"Sunny\",\n] as const;\n\nconst getWeatherInput = z.object({\n  location: z.string().min(1).describe(\"City name, for example Tokyo\"),\n});\n\nexport type GetWeatherInput = z.infer<typeof getWeatherInput>;\n\nexport type GetWeatherOutput = {\n  condition: string;\n  forecast: Array<{\n    condition: string;\n    day: string;\n    high: number;\n    low: number;\n  }>;\n  humidity_percent: number;\n  location: string;\n  temperature_celsius: number;\n  temperature_fahrenheit: number;\n  wind_speed_kmh: number;\n};\n\nfunction pickCondition(index: number): string {\n  return weatherConditions[index % weatherConditions.length] ?? \"Partly Cloudy\";\n}\n\nfunction resolveTemperatureCelsius(location: string): number {\n  const normalized = location.trim().toLowerCase();\n  const known = knownTemperaturesCelsius[normalized];\n\n  if (known !== undefined) {\n    return known;\n  }\n\n  let hash = 0;\n\n  for (const character of normalized) {\n    hash = (hash + character.charCodeAt(0)) % 30;\n  }\n\n  return 5 + hash;\n}\n\nexport default defineTool({\n  description:\n    \"Get current weather and a short forecast for a city. Use before rendering weather cards or charts.\",\n  inputSchema: getWeatherInput,\n  execute({ location }): GetWeatherOutput {\n    const temperatureCelsius = resolveTemperatureCelsius(location);\n    const condition = pickCondition(location.length);\n\n    return {\n      location,\n      temperature_celsius: temperatureCelsius,\n      temperature_fahrenheit: Math.round(temperatureCelsius * 1.8 + 32),\n      condition,\n      humidity_percent: 40 + (location.length % 40),\n      wind_speed_kmh: 5 + (location.length % 25),\n      forecast: [\n        {\n          day: \"Tomorrow\",\n          high: temperatureCelsius + 2,\n          low: temperatureCelsius - 4,\n          condition: \"Partly Cloudy\",\n        },\n        {\n          day: \"Day After\",\n          high: temperatureCelsius + 1,\n          low: temperatureCelsius - 3,\n          condition: \"Sunny\",\n        },\n      ],\n    };\n  },\n  toModelOutput(output) {\n    return {\n      type: \"json\",\n      value: output,\n    };\n  },\n});\n"
+      },
+      {
+        "path": "agent/tools/search_web.ts",
+        "type": "registry:file",
+        "target": "~/agent/tools/search_web.ts",
+        "content": "import { defineTool } from \"eve/tools\";\nimport { z } from \"zod\";\n\nconst searchWebInput = z.object({\n  query: z.string().min(1).describe(\"Search query\"),\n});\n\nexport type SearchWebInput = z.infer<typeof searchWebInput>;\n\nexport type SearchWebOutput = {\n  query: string;\n  results: Array<{\n    snippet: string;\n    title: string;\n  }>;\n};\n\nexport default defineTool({\n  description:\n    \"Search the web for topical information. Use before rendering result lists or research summaries.\",\n  inputSchema: searchWebInput,\n  execute({ query }): SearchWebOutput {\n    return {\n      query,\n      results: [\n        {\n          title: `Top result for \"${query}\"`,\n          snippet: `Comprehensive overview of ${query} with the latest information.`,\n        },\n        {\n          title: `${query} - Latest News`,\n          snippet: `Recent developments and updates related to ${query}.`,\n        },\n        {\n          title: `Understanding ${query}`,\n          snippet: `An in-depth guide explaining everything about ${query}.`,\n        },\n      ],\n    };\n  },\n  toModelOutput(output) {\n    return {\n      type: \"json\",\n      value: output,\n    };\n  },\n});\n"
+      },
+      {
+        "path": "README.md",
+        "type": "registry:file",
+        "target": "~/agent/README.md",
+        "content": "# OpenUI Assistant\n\nAn Eve agent that responds with **OpenUI Lang** and renders rich generative UI\nthrough the official `openuiChatLibrary`. It follows the\n[`openui-chat`](https://github.com/thesysdev/openui/tree/main/examples/openui-chat)\nreference app: the model streams structured UI instead of markdown, and a React\n`Renderer` turns that stream into live components.\n\n## What it does\n\n1. **Injects the OpenUI system prompt** \u2014 `agent/instructions/openui-prompt.ts`\n   calls `openuiChatLibrary.prompt(openuiChatPromptOptions)` at build time, the\n   same library and prompt options used by the GitHub example.\n2. **Answers with OpenUI Lang only** \u2014 cards, grids, charts, tables, and buttons\n   instead of plain text replies.\n3. **Calls demo data tools** \u2014 `get_weather`, `get_stock_price`, and `search_web`\n   mirror the sample tools from `examples/openui-chat/src/app/api/chat/route.ts`.\n4. **Ships a frontend reference** \u2014 `agent/frontend/openui-eve-chat.tsx` shows\n   how to connect `useEveAgent()` to `@openuidev/react-lang` `Renderer`.\n\n## Installation\n\n```bash\nnpx shadcn@latest add @evex/openui-assistant\n```\n\nInstall the registry dependencies in your Eve app if they are not already present:\n\n```bash\nnpm install @openuidev/react-ui @openuidev/react-lang eve zod\n```\n\n## Configuration\n\nThis agent does not require agent-specific environment variables. The host Eve\napp still needs a model credential (`AI_GATEWAY_API_KEY`, `VERCEL_OIDC_TOKEN`, or\nyour provider's equivalent).\n\nSee `.env.example` for optional notes.\n\n## Usage\n\nAsk for structured UI backed by the demo tools:\n\n```text\nShow me the weather in Tokyo with a short forecast.\n```\n\n```text\nQuote NVDA and render the move as a dashboard card.\n```\n\n```text\nSearch the web for \"generative UI frameworks\" and list the top results.\n```\n\nThe assistant should return OpenUI Lang starting with `root = ...` and use tool\nresults for factual values.\n\n## Web UI setup\n\nTo render generative UI in the browser:\n\n1. Ensure your Next.js app uses `withEve()` from `eve/next`.\n2. Copy `agent/frontend/openui-eve-chat.tsx` into your app components folder.\n3. Render `<OpenUIEveChat />` on a page.\n\nSee `agent/frontend/README.md` for the full wiring guide and an\n`AgentInterface` alternative that matches the upstream OpenUI chat shell.\n\n## Smoke test\n\n1. Install the agent into an Eve app and run `pnpm dev` (or `eve dev`).\n2. In the terminal UI or your web chat, send:\n\n   ```text\n   What's the weather in San Francisco?\n   ```\n\n3. Confirm the agent calls `get_weather`, then streams OpenUI Lang with weather\n   cards rather than markdown prose.\n4. If you mounted the frontend reference, confirm `Renderer` paints the UI while\n   the stream is active.\n\n## Troubleshooting\n\n- **Plain text instead of UI** \u2014 the model ignored the OpenUI contract. Reload the\n  `openui` skill and retry with an explicit layout request.\n- **Parser errors in the browser** \u2014 an assistant reply included markdown fences or\n  prose around the program. The agent should output raw OpenUI Lang only.\n- **Missing tool data** \u2014 verify the turn includes a `get_weather`,\n  `get_stock_price`, or `search_web` tool call before the UI references numbers.\n- **Renderer shows nothing** \u2014 confirm `@openuidev/react-lang` and\n  `@openuidev/react-ui` are installed in the host app and that you passed\n  `openuiChatLibrary` to `Renderer`.\n\n## Development\n\n```bash\npnpm install\npnpm --dir packages/agent-registry/agents/openui-assistant typecheck\npnpm --dir packages/agent-registry/agents/openui-assistant build\npnpm --dir packages/agent-registry/agents/openui-assistant check\n```\n\nAfter editing `registry.json`, regenerate the embedded catalog:\n\n```bash\npnpm --filter @evex/agent-registry generate\n```\n"
+      },
+      {
+        "path": ".env.example",
+        "type": "registry:file",
+        "target": "~/.env.example",
+        "content": "# No environment variables are required for the bundled demo tools.\n\n# Optional: set a model gateway credential in the host Eve app if your deployment\n# does not already provide one through Vercel OIDC or AI Gateway.\n# AI_GATEWAY_API_KEY=\n"
       }
     ]
   },

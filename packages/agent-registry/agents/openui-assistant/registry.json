@@ -1,0 +1,89 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "items": [
+    {
+      "name": "openui-assistant",
+      "type": "registry:item",
+      "title": "OpenUI Assistant",
+      "description": "An Eve agent that streams OpenUI Lang generative UI using the official openuiChatLibrary, with demo weather, stock, and search tools from the openui-chat example.",
+      "categories": [
+        "general"
+      ],
+      "dependencies": [
+        "@openuidev/react-lang@^0.2.8",
+        "@openuidev/react-ui@^0.12.1",
+        "eve@^0.15.1",
+        "zod@^4.4.3"
+      ],
+      "files": [
+        {
+          "path": "agent/agent.ts",
+          "type": "registry:file",
+          "target": "~/agent/agent.ts"
+        },
+        {
+          "path": "agent/frontend/openui-eve-chat.tsx",
+          "type": "registry:file",
+          "target": "~/agent/frontend/openui-eve-chat.tsx"
+        },
+        {
+          "path": "agent/frontend/README.md",
+          "type": "registry:file",
+          "target": "~/agent/frontend/README.md"
+        },
+        {
+          "path": "agent/instructions/openui-prompt.ts",
+          "type": "registry:file",
+          "target": "~/agent/instructions/openui-prompt.ts"
+        },
+        {
+          "path": "agent/instructions.md",
+          "type": "registry:file",
+          "target": "~/agent/instructions.md"
+        },
+        {
+          "path": "agent/lib/openui-library.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/openui-library.ts"
+        },
+        {
+          "path": "agent/skills/openui/SKILL.md",
+          "type": "registry:file",
+          "target": "~/agent/skills/openui/SKILL.md"
+        },
+        {
+          "path": "agent/tools/get_stock_price.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/get_stock_price.ts"
+        },
+        {
+          "path": "agent/tools/get_weather.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/get_weather.ts"
+        },
+        {
+          "path": "agent/tools/search_web.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/search_web.ts"
+        },
+        {
+          "path": "README.md",
+          "type": "registry:file",
+          "target": "~/agent/README.md"
+        },
+        {
+          "path": ".env.example",
+          "type": "registry:file",
+          "target": "~/.env.example"
+        }
+      ],
+      "meta": {
+        "slug": "openui-assistant",
+        "category": "general",
+        "createdAt": "2026-06-30T21:52:44.748Z",
+        "updatedAt": "2026-06-30T22:00:00.000Z"
+      },
+      "author": "TommyBez"
+    }
+  ]
+}
