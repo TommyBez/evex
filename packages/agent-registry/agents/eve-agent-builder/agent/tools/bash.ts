@@ -16,9 +16,9 @@ const BLOCKED_COMMANDS = [
       "Use run_vercel_cli for Vercel CLI operations so approval and brokered authentication are applied.",
   },
   {
-    pattern: /\bVERCEL_(?:BROKER_TOKEN|TOKEN)\s*=/i,
+    pattern: /\bVERCEL_TOKEN\s*=/i,
     reason:
-      "Do not pass Vercel tokens through shell commands. Configure VERCEL_BROKER_TOKEN in the app runtime and use run_vercel_cli.",
+      "Do not pass Vercel tokens through shell commands. Configure VERCEL_TOKEN in the app runtime and use run_vercel_cli.",
   },
 ] as const;
 

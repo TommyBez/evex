@@ -2,7 +2,6 @@ import type { SandboxCommandResult, SandboxSession } from "eve/sandbox";
 import type { SandboxNetworkPolicy } from "eve/sandbox";
 import type { ToolContext } from "eve/tools";
 
-const VERCEL_TOKEN_ENV_VARS = ["VERCEL_BROKER_TOKEN", "VERCEL_TOKEN"] as const;
 export const BROKERED_VERCEL_TOKEN_PLACEHOLDER = "brokeredverceltoken";
 const OUTPUT_PREVIEW_LENGTH = 6000;
 
@@ -98,7 +97,7 @@ async function applyVercelCredentialBroker(
 
   if (!token) {
     throw new Error(
-      "VERCEL_TOKEN or VERCEL_BROKER_TOKEN is required in the app runtime to broker Vercel CLI authentication.",
+      "VERCEL_TOKEN is required in the app runtime to broker Vercel CLI authentication.",
     );
   }
 
@@ -139,14 +138,7 @@ async function applyVercelCredentialBroker(
 }
 
 function readVercelToken(): string | undefined {
-  for (const envVar of VERCEL_TOKEN_ENV_VARS) {
-    const token = process.env[envVar];
-    if (token) {
-      return token;
-    }
-  }
-
-  return undefined;
+  return process.env.VERCEL_TOKEN;
 }
 
 function tail(value: string): string {

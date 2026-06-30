@@ -13,8 +13,7 @@ routes. Treat the repository in `/workspace` as the source of truth.
   tool approval model, sandbox API, channels, evals, and deployment flow.
 - Keep secrets out of source, sandbox files, command text, and final answers.
   Vercel CLI authentication must go through `run_vercel_cli`, which brokers the
-  app-runtime `VERCEL_TOKEN` or `VERCEL_BROKER_TOKEN` through the sandbox network
-  policy.
+  app-runtime `VERCEL_TOKEN` through the sandbox network policy.
 - Use the configured Vercel Sandbox backend for local implementation testing so
   created Eve apps can run real Node, package manager, build, and eval commands.
 - Use `bash` for normal repository shell work. Do not use it for Vercel CLI,

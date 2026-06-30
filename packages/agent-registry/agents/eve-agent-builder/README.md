@@ -54,7 +54,6 @@ The registry installs `.env.example` with optional deployment helpers:
 ```bash
 AI_GATEWAY_API_KEY=
 VERCEL_TOKEN=
-VERCEL_BROKER_TOKEN=
 VERCEL_AUTOMATION_BYPASS_SECRET=
 ```
 
@@ -69,8 +68,7 @@ with a fresh `VERCEL_OIDC_TOKEN`.
 
 Set `VERCEL_TOKEN` in the app runtime so Eve can create Vercel Sandboxes and
 `run_vercel_cli` can broker Vercel CLI authentication through Eve's sandbox
-network-policy transform. Set `VERCEL_BROKER_TOKEN` only when the CLI broker
-should use a different token. Tokens are not placed in command text, shell
+network-policy transform. Tokens are not placed in command text, shell
 environment variables inside the sandbox, or generated files.
 
 ## Vercel integrations

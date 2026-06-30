@@ -74,9 +74,9 @@ Before deployment, confirm:
 - route auth is not left as a placeholder for production browser traffic
 
 `run_vercel_cli` is approval-gated. Before calling it, state the exact operation
-and target. It brokers app-runtime `VERCEL_TOKEN` or `VERCEL_BROKER_TOKEN`
-through Eve's sandbox network policy, so do not write Vercel tokens into
-generated source, command arguments, or sandbox files.
+and target. It brokers app-runtime `VERCEL_TOKEN` through Eve's sandbox network
+policy, so do not write Vercel tokens into generated source, command arguments,
+or sandbox files.
 
 When a Slack channel is needed, use the Eve Slack docs workflow:
 1. Add the Slack channel and `@vercel/connect` dependency.
