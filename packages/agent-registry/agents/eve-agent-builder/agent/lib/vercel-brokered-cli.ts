@@ -82,13 +82,26 @@ export async function runBrokeredVercelCommand(
 ): Promise<CliCommandResult> {
   const sandbox = await ctx.getSandbox();
   await applyVercelCredentialBroker(sandbox);
-  const result = await sandbox.run({ command });
-  return toCliCommandResult({
-    brokeredVercelAuth: true,
-    command,
-    result,
-  });
+  try {
+    const result = await sandbox.run({ command });
+    return toCliCommandResult({
+      brokeredVercelAuth: true,
+      command,
+      result,
+    });
+  } finally {
+    await clearVercelCredentialBroker(sandbox);
+  }
 }
+
+const NON_BROKERED_NETWORK_POLICY = {
+  allow: {
+    "*": [],
+  },
+  subnets: {
+    deny: ["10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"],
+  },
+} satisfies SandboxNetworkPolicy;
 
 async function applyVercelCredentialBroker(
   sandbox: SandboxSession,
@@ -135,6 +148,12 @@ async function applyVercelCredentialBroker(
   } satisfies SandboxNetworkPolicy;
 
   await sandbox.setNetworkPolicy(policy);
+}
+
+async function clearVercelCredentialBroker(
+  sandbox: SandboxSession,
+): Promise<void> {
+  await sandbox.setNetworkPolicy(NON_BROKERED_NETWORK_POLICY);
 }
 
 function readVercelToken(): string | undefined {
