@@ -1,24 +1,24 @@
 ---
+name: backlog-hygiene
 description: Find stale, obsolete, duplicate, under-specified, ownerless, and priorityless Linear backlog issues.
 ---
 
-# Backlog Hygiene Skill
+# Backlog hygiene
 
-Use this skill for backlog cleanup requests or weekly backlog hygiene schedules.
+Use for backlog cleanup requests or weekly backlog hygiene schedules.
 
-Process:
+## Process
 
-1. Read configured team and project backlogs.
-2. Identify stale, obsolete, duplicate, ownerless, priorityless, and unclear issues.
+1. Read configured team and project backlogs. **Done when** each configured
+   backlog has been scanned.
+2. Identify stale, obsolete, duplicate, ownerless, priorityless, and unclear
+   issues.
 3. Group findings by recommended action.
-4. Keep bulk recommendations under the configured max bulk issue count unless asked otherwise.
+4. Keep bulk recommendations under the configured max bulk issue count unless
+   asked otherwise.
 5. Propose cleanup actions instead of applying them automatically.
-6. Ask approval before closing, archiving, reprioritizing, moving, or bulk updating issues.
 
-Output sections:
+## Output
 
-- Backlog findings
-- Suggested cleanup actions
-- Duplicates or obsolete issues
-- Clarification candidates
-- Approval request for any write
+Use the agent default response shape, plus backlog findings, suggested cleanup
+actions, duplicates or obsolete issues, and clarification candidates.

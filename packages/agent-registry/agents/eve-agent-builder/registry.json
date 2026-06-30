@@ -25,6 +25,21 @@
           "target": "~/agent/instructions.md"
         },
         {
+          "path": "agent/skills/eve-agent-delivery/references/channel-routes.md",
+          "type": "registry:file",
+          "target": "~/agent/skills/eve-agent-delivery/references/channel-routes.md"
+        },
+        {
+          "path": "agent/skills/eve-agent-delivery/references/slack-channel-setup.md",
+          "type": "registry:file",
+          "target": "~/agent/skills/eve-agent-delivery/references/slack-channel-setup.md"
+        },
+        {
+          "path": "agent/skills/eve-agent-delivery/references/testing-sequence.md",
+          "type": "registry:file",
+          "target": "~/agent/skills/eve-agent-delivery/references/testing-sequence.md"
+        },
+        {
           "path": "agent/skills/eve-agent-delivery/SKILL.md",
           "type": "registry:file",
           "target": "~/agent/skills/eve-agent-delivery/SKILL.md"
@@ -84,7 +99,7 @@
         "slug": "eve-agent-builder",
         "category": "coding",
         "createdAt": "2026-06-30T10:23:00.000Z",
-        "updatedAt": "2026-06-30T12:05:00.000Z"
+        "updatedAt": "2026-06-30T18:00:00.000Z"
       },
       "author": "TommyBez"
     }

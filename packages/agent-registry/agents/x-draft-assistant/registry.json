@@ -41,39 +41,14 @@
           "target": "~/agent/schedules/daily-x-drafts.ts"
         },
         {
-          "path": "agent/skills/social/references/listening-sources-template.md",
-          "type": "registry:file",
-          "target": "~/agent/skills/social/references/listening-sources-template.md"
-        },
-        {
-          "path": "agent/skills/social/references/listening.md",
-          "type": "registry:file",
-          "target": "~/agent/skills/social/references/listening.md"
-        },
-        {
           "path": "agent/skills/social/references/platform-limits.md",
           "type": "registry:file",
           "target": "~/agent/skills/social/references/platform-limits.md"
         },
         {
-          "path": "agent/skills/social/references/platforms.md",
-          "type": "registry:file",
-          "target": "~/agent/skills/social/references/platforms.md"
-        },
-        {
           "path": "agent/skills/social/references/post-templates.md",
           "type": "registry:file",
           "target": "~/agent/skills/social/references/post-templates.md"
-        },
-        {
-          "path": "agent/skills/social/references/reverse-engineering.md",
-          "type": "registry:file",
-          "target": "~/agent/skills/social/references/reverse-engineering.md"
-        },
-        {
-          "path": "agent/skills/social/references/short-form-video.md",
-          "type": "registry:file",
-          "target": "~/agent/skills/social/references/short-form-video.md"
         },
         {
           "path": "agent/skills/social/SKILL.md",
@@ -160,7 +135,7 @@
         "slug": "x-draft-assistant",
         "category": "general",
         "createdAt": "2026-06-26T16:19:57.402Z",
-        "updatedAt": "2026-06-26T17:16:52.009Z"
+        "updatedAt": "2026-06-30T18:00:00.000Z"
       },
       "author": "TommyBez"
     }

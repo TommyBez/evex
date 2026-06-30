@@ -1,24 +1,26 @@
 ---
+name: duplicate-detection
 description: Find likely duplicate Linear issues, compare evidence, and propose link, merge, or closure actions.
 ---
 
-# Duplicate Detection Skill
+# Duplicate detection
 
-Use this skill when a user asks whether an issue is duplicated or related.
+Use when a user asks whether an issue is duplicated or related.
 
-Process:
+## Process
 
-1. Extract search terms from title, description, error messages, product area, labels, and comments.
-2. Use `list_issues` with targeted queries.
-3. Use `get_issue` on the strongest candidates before making a recommendation.
-4. Compare scope, symptoms, environment, impacted user flow, and current status.
-5. Recommend the canonical issue to keep open.
-6. Ask approval before writing duplicate links, changing status, or closing anything.
+1. Extract search terms from title, description, error messages, product area,
+   labels, and comments.
+2. Use `list_issues` with targeted queries. **Done when** at least one search
+   has run.
+3. Use `get_issue` on the strongest candidates before recommending. **Done when**
+   each candidate's scope, symptoms, environment, impacted user flow, and status
+   are compared.
+4. Recommend the canonical issue to keep open.
+5. Propose duplicate links, status changes, or closures only after comparison is
+   complete.
 
-Output sections:
+## Output
 
-- Candidate duplicates
-- Why they match or do not match
-- Recommended canonical issue
-- Proposed Linear action
-- Approval request
+Use the agent default response shape, plus candidate duplicates, why they match
+or do not match, recommended canonical issue, and proposed Linear action.

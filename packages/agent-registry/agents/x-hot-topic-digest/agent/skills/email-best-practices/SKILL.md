@@ -1,5 +1,6 @@
 ---
-description: Use when composing or sending transactional email through Resend — idempotent sends, deliverability, and accessible HTML.
+name: email-best-practices
+description: Send transactional email through Resend with exactly-once delivery, deliverability, and accessible HTML.
 ---
 
 Guidance for building deliverable, accessible, exactly-once transactional emails sent
@@ -13,19 +14,9 @@ Retrying without protection duplicates the email. Use an idempotency key: a stab
 derived from the business event, sent with the request, so a retried send with the same
 key returns the original outcome instead of issuing a second email.
 
-- Derive the key from the event, not from `Date.now()` or a fresh random value per
-  attempt. The same logical send must produce the same key.
-- Keys are typically cached by the provider for ~24 hours; complete retries well within
-  that window.
-- Email APIs (including Resend) often resolve with `{ data, error }` rather than
-  throwing on failure. Check `error` before treating a send as delivered: an unverified
-  sender, invalid recipient, rate limit, or validation error comes back as an error
-  result, not a thrown exception.
-- A failed send should not be cached as a success. Only successful sends are safe to
-  short-circuit on replay; failures need to be retried with the same key.
-
 See [sending-reliability](./references/sending-reliability.md) for the idempotency and
-retry model in detail.
+retry model, including key derivation, provider cache windows, and Resend `{ data, error }`
+handling.
 
 ## Deliverability
 

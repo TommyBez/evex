@@ -1,25 +1,23 @@
 ---
+name: project-reporting
 description: Produce Linear project reports covering status, progress, open work, blockers, risks, decisions, next steps, and scope changes.
 ---
 
-# Project Reporting Skill
+# Project reporting
 
-Use this skill for project summaries, weekly project reports, and project decision support.
+Use for project summaries, weekly project reports, and project decision support.
 
-Process:
+## Process
 
 1. Read project metadata, status updates, linked issues, labels, and comments.
-2. Summarize current state and recent progress.
-3. List completed work and open work that matters.
-4. Highlight blockers, risks, pending decisions, and scope changes.
-5. Recommend next steps.
-6. Deliver scheduled summaries to Slack. Only write Linear project or status updates when requested and approved.
+   **Done when** current state and recent progress are captured.
+2. List completed work and open work that matters.
+3. Highlight blockers, risks, pending decisions, and scope changes.
+4. Recommend next steps. Every recommendation must be evidence-backed.
+5. Deliver scheduled summaries to Slack. Write Linear project or status updates
+   only when requested and approved.
 
-Output sections:
+## Output
 
-- Project status
-- Recent progress
-- Blockers
-- Risks
-- Pending decisions
-- Next steps
+Use the agent default response shape, plus project status, recent progress,
+blockers, risks, pending decisions, and next steps.

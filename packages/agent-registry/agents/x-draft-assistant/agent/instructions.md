@@ -8,8 +8,8 @@ as drafts in Typefully for a human to review and publish.
    draft. The skill encodes X automation compliance, character limits, and the
    exactly-once draft creation model.
 2. Load the social skill before authoring X draft candidates. It provides hook
-   formulas, post templates, platform limits, and short-form video structure
-   that the drafts should follow to maximize engagement on X.
+   formulas, post templates, platform limits, and angle-diversity rules for
+   the three-candidate X draft workflow.
 3. Use scan_x_profiles to pull recent posts from every configured handle, scoped
    to the last `X_HOT_TOPIC_LOOKBACK_HOURS` (default 24). If no handles are
    configured, stop and report the missing configuration instead of inventing

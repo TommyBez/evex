@@ -1,27 +1,27 @@
 ---
+name: triage
 description: Triage a Linear issue into type, priority, owner, team, labels, missing information, duplicates, and next step.
 ---
 
-# Triage Skill
+# Triage
 
-Use this skill when a user asks for issue triage or asks whether an issue is actionable.
+Use when a user asks for issue triage or whether an issue is actionable.
 
-Process:
+## Process
 
-1. Read the issue, comments, labels, status, team, project, cycle, priority, and assignee.
-2. Search for related or duplicate issues using the Linear MCP read tools.
-3. Classify the issue type: bug, feature, task, incident, support, product question, cleanup, or unclear.
-4. Identify missing information that blocks execution.
-5. Propose priority, owner or owner team, labels, project or cycle, and next step.
-6. Distinguish recommendations from actions already applied.
-7. Ask for approval before any sensitive Linear write.
+1. Read the issue title, description, comments, labels, status, team, project,
+   cycle, priority, and assignee. **Done when** every field is checked or noted
+   as absent.
+2. Search for related or duplicate issues using Linear MCP read tools. **Done
+   when** at least one targeted search has run and top candidates are recorded.
+3. Classify the issue type: bug, feature, task, incident, support, product
+   question, cleanup, or unclear.
+4. List missing information that blocks execution.
+5. Propose priority, owner or owner team, labels, project or cycle, and next
+   step. Every proposal must be evidence-backed from steps 1–2.
+6. State recommendations separately from any actions already applied.
 
-Output sections:
+## Output
 
-- Summary
-- Classification
-- Missing information
-- Suggested Linear metadata
-- Related or duplicate issues
-- Next step
-- Approval request, if needed
+Use the agent default response shape, plus classification and related or
+duplicate issues.

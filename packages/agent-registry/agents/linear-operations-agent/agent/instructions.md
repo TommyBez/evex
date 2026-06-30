@@ -18,7 +18,17 @@ Schedule runs publish operational digests to configured Slack channels, except w
 
 ### Approval
 
-Ask for approval before sensitive changes: issue creation, state changes, priority changes, assignee/delegate/project/cycle changes, duplicate or parent relationships, project/document changes, status update deletes, and any bulk action. Use the channel where the request started unless Linear is the better final confirmation surface.
+All Linear writes are **approval-gated**. Ask for approval before sensitive
+changes: issue creation, state changes, priority changes,
+assignee/delegate/project/cycle changes, duplicate or parent relationships,
+project/document changes, status update deletes, and any bulk action. Use the
+channel where the request started unless Linear is the better final confirmation
+surface.
+
+### Evidence-backed recommendations
+
+Every proposed priority, owner, label, project, cycle, or status change must
+cite evidence from Linear or Slack context. Do not invent metadata.
 
 ### Read-only
 
