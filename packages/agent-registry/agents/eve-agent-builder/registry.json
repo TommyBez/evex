@@ -25,24 +25,9 @@
           "target": "~/agent/instructions.md"
         },
         {
-          "path": "agent/skills/eve-agent-delivery/references/channel-routes.md",
+          "path": "agent/skills/eve-agent-delivery/references/channel-setup.md",
           "type": "registry:file",
-          "target": "~/agent/skills/eve-agent-delivery/references/channel-routes.md"
-        },
-        {
-          "path": "agent/skills/eve-agent-delivery/references/github-channel-setup.md",
-          "type": "registry:file",
-          "target": "~/agent/skills/eve-agent-delivery/references/github-channel-setup.md"
-        },
-        {
-          "path": "agent/skills/eve-agent-delivery/references/linear-channel-setup.md",
-          "type": "registry:file",
-          "target": "~/agent/skills/eve-agent-delivery/references/linear-channel-setup.md"
-        },
-        {
-          "path": "agent/skills/eve-agent-delivery/references/slack-channel-setup.md",
-          "type": "registry:file",
-          "target": "~/agent/skills/eve-agent-delivery/references/slack-channel-setup.md"
+          "target": "~/agent/skills/eve-agent-delivery/references/channel-setup.md"
         },
         {
           "path": "agent/skills/eve-agent-delivery/references/testing-sequence.md",
@@ -109,7 +94,7 @@
         "slug": "eve-agent-builder",
         "category": "coding",
         "createdAt": "2026-06-30T10:23:00.000Z",
-        "updatedAt": "2026-06-30T19:30:00.000Z"
+        "updatedAt": "2026-06-30T20:15:00.000Z"
       },
       "author": "TommyBez"
     }

@@ -5,8 +5,9 @@ description: Deliver Eve agents end to end. Use when creating, modifying, testin
 
 # Eve agent delivery
 
-Use this procedure whenever the user asks for a new Eve agent, a change to an
-existing Eve agent, tests for an agent, or a Vercel deployment.
+Agent-specific delivery procedure. Framework semantics live in
+`node_modules/eve/docs/` — load the `eve` skill and read the bundled docs before
+using this skill. Do not restate Eve docs here.
 
 ## Discovery
 
@@ -14,10 +15,8 @@ existing Eve agent, tests for an agent, or a Vercel deployment.
 2. Read `package.json`, `tsconfig.json`, existing `agent/` files, `evals/`, env
    examples, Vercel config, and README setup notes. **Done when** you can list
    every slot the change touches.
-3. Read `node_modules/eve/docs/README.md`, then the pages for those slots.
-   **Done when** you have read project layout, `agent.ts`, instructions, tools,
-   human-in-the-loop, sandbox credential brokering, channels, evals, CLI, and
-   deployment guidance for the slots in scope.
+3. Read `node_modules/eve/docs/README.md`, then only the doc pages for those
+   slots. **Done when** you have identified the guide for each slot in scope.
 4. Identify required credentials, channel routes, webhook URLs, Vercel Connect
    clients, model routing, route auth, and whether deploy should be preview or
    production.
@@ -48,11 +47,7 @@ existing Eve agent, tests for an agent, or a Vercel deployment.
 - Prefer the Vercel MCP connection for read-only project/deployment/log work.
   Keep Vercel CLI for local `vercel link` and Connect commands that MCP does
   not expose.
-- For channels, read [channel-routes](./references/channel-routes.md) and the
-  matching setup reference for every channel you add:
-  - [GitHub](./references/github-channel-setup.md)
-  - [Linear](./references/linear-channel-setup.md)
-  - [Slack](./references/slack-channel-setup.md)
+- For channels, follow [channel-setup](./references/channel-setup.md).
 
 ## Testing
 
@@ -60,14 +55,9 @@ Follow [testing-sequence](./references/testing-sequence.md).
 
 ## Vercel deployment
 
-Before deployment, confirm:
-
-- the target Vercel project or team
-- preview vs production
-- required model credentials, usually Vercel AI Gateway OIDC on Vercel or
-  `AI_GATEWAY_API_KEY` elsewhere
-- channel credentials and webhook destinations
-- route auth is not left as a placeholder for production browser traffic
+Read `node_modules/eve/docs/guides/deployment.md` for build, env, sandbox,
+auth, deploy, and verify. Before deploying, confirm the target project or team,
+preview vs production, model credentials, channel webhooks, and route auth.
 
 `run_vercel_cli` uses input-aware approval. `whoami` is read-only and runs
 without approval. Before calling Vercel Connect setup, project linking, preview
@@ -76,11 +66,8 @@ tool brokers app-runtime `VERCEL_TOKEN` through Eve's sandbox network policy, so
 do not write Vercel tokens into generated source, command arguments, or sandbox
 files.
 
-For channel setup, see [channel-routes](./references/channel-routes.md) and the
-per-channel references for GitHub, Linear, and Slack.
-
 Use `run_vercel_cli` for preview or production deploys. After deployment, verify
-using [channel-routes](./references/channel-routes.md).
+per [channel-setup](./references/channel-setup.md) and the deployment doc.
 
 ## Final report
 
