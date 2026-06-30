@@ -2,6 +2,7 @@ import { defineTool } from "eve/tools";
 import { always } from "eve/tools/approval";
 import { z } from "zod";
 import {
+  BROKERED_VERCEL_TOKEN_PLACEHOLDER,
   inAppRoot,
   runBrokeredVercelCommand,
   shellQuote,
@@ -102,5 +103,7 @@ function requiredConnectUid(input: z.infer<typeof inputSchema>): string {
 }
 
 function withVercelFlags(command: string): string {
-  return `FF_CONNECT_ENABLED=1 VERCEL_USE_EXPERIMENTAL_FRAMEWORKS=1 ${command}`;
+  return `FF_CONNECT_ENABLED=1 VERCEL_USE_EXPERIMENTAL_FRAMEWORKS=1 ${command} --token ${shellQuote(
+    BROKERED_VERCEL_TOKEN_PLACEHOLDER,
+  )}`;
 }

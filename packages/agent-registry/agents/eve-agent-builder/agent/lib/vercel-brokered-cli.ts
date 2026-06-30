@@ -3,6 +3,7 @@ import type { SandboxNetworkPolicy } from "eve/sandbox";
 import type { ToolContext } from "eve/tools";
 
 const VERCEL_TOKEN_ENV_VARS = ["VERCEL_BROKER_TOKEN", "VERCEL_TOKEN"] as const;
+export const BROKERED_VERCEL_TOKEN_PLACEHOLDER = "brokeredverceltoken";
 const OUTPUT_PREVIEW_LENGTH = 6000;
 
 export interface CliCommandResult {
@@ -104,6 +105,14 @@ async function applyVercelCredentialBroker(
   const authorization = `Bearer ${token}`;
   const vercelAuthRule = [
     {
+      match: {
+        headers: [
+          {
+            key: { exact: "authorization" },
+            value: { exact: `Bearer ${BROKERED_VERCEL_TOKEN_PLACEHOLDER}` },
+          },
+        ],
+      },
       transform: [
         {
           headers: {
