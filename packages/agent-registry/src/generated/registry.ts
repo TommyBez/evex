@@ -196,7 +196,7 @@ export const generatedRegistry = {
         "slug": "eve-agent-builder",
         "category": "coding",
         "createdAt": "2026-06-30T10:23:00.000Z",
-        "updatedAt": "2026-06-30T19:30:00.000Z"
+        "updatedAt": "2026-06-30T20:15:00.000Z"
       },
       "author": "TommyBez",
       "files": [
@@ -1017,7 +1017,7 @@ export const generatedRegistryItems = {
       "slug": "eve-agent-builder",
       "category": "coding",
       "createdAt": "2026-06-30T10:23:00.000Z",
-      "updatedAt": "2026-06-30T19:30:00.000Z"
+      "updatedAt": "2026-06-30T20:15:00.000Z"
     },
     "author": "TommyBez",
     "files": [
