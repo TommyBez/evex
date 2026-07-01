@@ -528,7 +528,7 @@ export const generatedRegistry = {
         "slug": "postgres-data-analyst",
         "category": "data",
         "createdAt": "2026-06-23T00:00:00.000Z",
-        "updatedAt": "2026-06-26T17:16:51.823Z"
+        "updatedAt": "2026-07-01T00:00:00.000Z"
       },
       "author": "TommyBez",
       "files": [
@@ -1494,7 +1494,7 @@ export const generatedRegistryItems = {
       "slug": "postgres-data-analyst",
       "category": "data",
       "createdAt": "2026-06-23T00:00:00.000Z",
-      "updatedAt": "2026-06-26T17:16:51.823Z"
+      "updatedAt": "2026-07-01T00:00:00.000Z"
     },
     "author": "TommyBez",
     "files": [
