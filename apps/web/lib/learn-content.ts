@@ -94,7 +94,7 @@ export const LEARN_PAGES: readonly LearnPage[] = [
     relatedKeywords: ['AI agent tools', 'agent skills', 'subagents'],
     audience: 'Developers designing agent capabilities',
     summary:
-      'The useful distinction is control. A tool executes a narrow action. A skill changes how the model approaches a task. A subagent gets its own reasoning loop and returns a result. If you blur those lines, the agent may still demo well, but it becomes harder to review, test, and recover.',
+      'The useful distinction is control. A tool executes a narrow action. A skill changes how the model approaches a task. A subagent gets its own reasoning loop and returns a result. If you blur those lines, the agent may still look convincing in a demo, but it becomes harder to review, test, and recover.',
     sections: [
       {
         heading: 'The wrong abstraction makes agents feel haunted',
@@ -118,7 +118,7 @@ export const LEARN_PAGES: readonly LearnPage[] = [
       {
         heading: 'How Eve makes the decision visible',
         body: [
-          'Eve is useful as a case study because the decision appears in the file tree. `agent/tools/` contains callable TypeScript actions. `agent/skills/` contains procedures and references. `agent/subagents/` contains specialist agents with their own instructions and possible tools.',
+          'In Eve, the decision appears in the file tree. `agent/tools/` contains callable TypeScript actions. `agent/skills/` contains procedures and references. `agent/subagents/` contains specialist agents with their own instructions and possible tools.',
           'That file layout does not magically make the design good. It does make a bad design easier to spot. If a pull request adds a giant tool that contains strategy, policy, network access, and formatting, the shape is suspicious before you read every line.',
         ],
       },
@@ -421,7 +421,7 @@ export const LEARN_PAGES: readonly LearnPage[] = [
       {
         heading: 'Why this matters for registries',
         body: [
-          'A registry that distributes filesystem-first agents can show users the install surface before they run it. That is the connection between Eve and evex: the files are not an implementation detail hidden behind a package. They are the thing being evaluated.',
+          'A registry that distributes filesystem-first agents can show users the install surface before they run it. With Eve and evex, the files are not an implementation detail hidden behind a package. They are the artifact being evaluated.',
         ],
       },
     ],
@@ -465,7 +465,7 @@ export const LEARN_PAGES: readonly LearnPage[] = [
           'No. The broader idea is that important capabilities deserve predictable homes. Eve is one clear implementation of that idea.',
       },
       {
-        question: 'Does file layout replace documentation?',
+        question: 'Does file layout replace setup documentation?',
         answer:
           'No. It reduces the amount of documentation needed to answer basic review questions, but authors still need README guidance and examples.',
       },
@@ -516,9 +516,9 @@ export const LEARN_PAGES: readonly LearnPage[] = [
         ],
       },
       {
-        heading: 'The content warning',
+        heading: 'Keep bundles reviewable',
         body: [
-          'Do not abuse this model by shipping giant bundles nobody can review. Source-owned distribution only builds trust when the source is organized, small enough to inspect, and honest about dependencies and credentials.',
+          'Source-owned distribution only builds trust when the source is organized, small enough to inspect, and honest about dependencies and credentials. A bundle that installs too many unrelated files creates the same problem as an opaque package: users cannot tell what they are accepting.',
         ],
       },
     ],
@@ -662,9 +662,9 @@ export const LEARN_PAGES: readonly LearnPage[] = [
           'Eve is more naturally TypeScript-first. LangGraph has a broader ecosystem, especially around Python and LangChain.',
       },
       {
-        question: 'Which one should evex content recommend?',
+        question: 'Which one is better for source-owned agents?',
         answer:
-          'Recommend neither universally. evex should explain when Eve’s file-owned model is the right tradeoff.',
+          'Eve is stronger when file ownership and capability review matter. LangGraph is stronger when explicit graph control is the center of the workflow.',
       },
     ],
   },
@@ -710,7 +710,7 @@ export const LEARN_PAGES: readonly LearnPage[] = [
       {
         heading: 'Eve and evex angle',
         body: [
-          'Eve provides a useful environment for agents that pause and resume. evex adds a distribution concern: if an installable agent includes approval behavior, users should be able to inspect the files that implement the gate before trusting it.',
+          'Eve provides a useful environment for agents that pause and resume. evex makes the distribution side inspectable: if an installable agent includes approval behavior, users can review the files that implement the gate before trusting it.',
         ],
       },
     ],
@@ -792,7 +792,7 @@ export const LEARN_PAGES: readonly LearnPage[] = [
         heading: 'Marketplace, catalog, registry',
         body: [
           'These words are often used interchangeably, but they imply different jobs. A marketplace helps people choose between vendors. A catalog helps people browse inventory. A registry should provide enough structured metadata for installation, automation, and governance.',
-          'evex should lean into registry language. It is not selling agents today. It is making reusable Eve agent configurations discoverable, inspectable, and installable.',
+          'evex fits the registry category: reusable Eve agent configurations are discoverable, inspectable, and installable without hiding the source files.',
         ],
       },
       {

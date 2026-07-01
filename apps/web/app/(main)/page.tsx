@@ -315,8 +315,8 @@ function LearnPreview() {
           </h2>
           <p className="mt-2 max-w-2xl text-muted-foreground text-sm leading-relaxed">
             Decision guides for Eve, AI agent architecture, MCP, shadcn
-            registries, and framework tradeoffs. Written to complement the
-            official docs, not clone them.
+            registries, and framework tradeoffs. Start with the architecture
+            choice, then inspect installable source when you are ready to build.
           </p>
         </div>
         <Button render={<Link href="/learn">View all guides</Link>} />

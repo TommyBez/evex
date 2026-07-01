@@ -2,7 +2,7 @@ import { Badge } from '@evex/ui/badge'
 import { Button } from '@evex/ui/button'
 import { Card } from '@evex/ui/card'
 import { Separator } from '@evex/ui/separator'
-import { ArrowLeft, BookOpen, CheckCircle2, TriangleAlert } from 'lucide-react'
+import { ArrowLeft, BookOpen, CheckCircle2 } from 'lucide-react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -85,9 +85,6 @@ export default async function LearnDetailPage({
           <header>
             <div className="flex flex-wrap items-center gap-2">
               <Badge variant="secondary">{cluster.label}</Badge>
-              <span className="mono-label text-muted-foreground">
-                {page.audience}
-              </span>
             </div>
             <h1 className="mt-4 text-balance font-semibold text-3xl text-foreground sm:text-4xl">
               {page.title}
@@ -180,20 +177,6 @@ export default async function LearnDetailPage({
                 value={example.body}
               />
             ))}
-          </section>
-
-          <section className="mt-10 rounded-md border border-border bg-muted/25 p-5">
-            <div className="flex items-center gap-2">
-              <TriangleAlert aria-hidden="true" className="size-4 text-brand" />
-              <h2 className="font-display font-semibold text-foreground text-lg">
-                Editorial guardrail
-              </h2>
-            </div>
-            <p className="mt-3 text-muted-foreground text-sm leading-relaxed">
-              This guide is not a substitute for the official Eve API reference.
-              It is meant to help developers decide which architecture tradeoff
-              they are making before they reach for a framework primitive.
-            </p>
           </section>
 
           <section className="mt-10">

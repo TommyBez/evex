@@ -36,8 +36,8 @@ export default function LearnPage() {
           </h1>
           <p className="mt-4 max-w-2xl text-pretty text-muted-foreground leading-relaxed">
             Practical pages on Eve, MCP, tools, skills, subagents, durable runs,
-            shadcn registries, and framework tradeoffs. These are decision
-            guides, not rewritten API docs.
+            shadcn registries, and framework tradeoffs. Start with the decision,
+            then inspect installable source when you are ready to build.
           </p>
         </header>
 
