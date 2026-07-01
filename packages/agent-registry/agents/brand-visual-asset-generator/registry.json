@@ -29,6 +29,26 @@
           "target": "~/agent/instructions.md"
         },
         {
+          "path": "agent/skills/brand-visual-assets/references/brief-template.md",
+          "type": "registry:file",
+          "target": "~/agent/skills/brand-visual-assets/references/brief-template.md"
+        },
+        {
+          "path": "agent/skills/brand-visual-assets/references/consistency.md",
+          "type": "registry:file",
+          "target": "~/agent/skills/brand-visual-assets/references/consistency.md"
+        },
+        {
+          "path": "agent/skills/brand-visual-assets/references/default-pack.md",
+          "type": "registry:file",
+          "target": "~/agent/skills/brand-visual-assets/references/default-pack.md"
+        },
+        {
+          "path": "agent/skills/brand-visual-assets/references/quality-bar.md",
+          "type": "registry:file",
+          "target": "~/agent/skills/brand-visual-assets/references/quality-bar.md"
+        },
+        {
           "path": "agent/skills/brand-visual-assets/SKILL.md",
           "type": "registry:file",
           "target": "~/agent/skills/brand-visual-assets/SKILL.md"
@@ -58,7 +78,7 @@
         "slug": "brand-visual-asset-generator",
         "category": "marketing",
         "createdAt": "2026-07-01T21:16:30.433Z",
-        "updatedAt": "2026-07-01T21:16:30.433Z"
+        "updatedAt": "2026-07-01T21:21:04.427Z"
       },
       "author": "TommyBez"
     }

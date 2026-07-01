@@ -1,66 +1,53 @@
 ---
 name: brand-visual-assets
-description: Plan and coordinate brand-aligned SVG asset packs for SaaS and digital products. Use when scoping icons, empty states, hero illustrations, badges, feature graphics, onboarding visuals, changelog art, or dashboard/modal visuals from brand context.
+description: Scope and ship a brand-aligned pack of SVG assets for SaaS products. Use when the user wants a visual pack, feature launch assets, icons, empty states, hero illustrations, badges, feature graphics, onboarding visuals, changelog art, or dashboard/modal graphics.
 ---
 
-# Brand visual asset packs
+# Pack workflow
 
-## When to load
-Load before planning or scoping an asset pack from a domain, product description,
-or brand profile.
+Run these steps in order. A **pack** is one coherent set of SVG assets that share
+palette, stroke language, and illustration metaphors.
 
-## Default pack for a feature launch
-When the user asks for a "visual pack" or "feature launch assets" without listing
-items, propose:
-1. One hero illustration for the feature page
-2. Three matching feature icons
-3. One dashboard empty state
-4. One "new feature" badge
-5. One onboarding visual for the in-app flow
+## 1. Scope the pack
 
-Adjust the pack when the user names specific asset types or channels.
+List every asset the run will produce: type, filename, purpose, and channel
+(marketing page, in-app empty state, onboarding, and so on).
 
-## Brand extraction checklist
-From Context.dev (or the user's brand profile), capture:
-- Primary and secondary colors (hex)
-- Neutral/background tones
-- Typography personality (geometric, humanist, monospace accents)
-- Logo treatment constraints (wordmark only, symbol allowed, do-not-distort rules)
-- Product category and audience (B2B SaaS, developer tools, consumer app)
-- Tone adjectives (friendly, precise, enterprise, playful)
+**Done when:** every requested asset has a named slot; no orphan types remain.
 
-## Per-asset brief template
-For each asset delegated to `svg-generator`, include:
-- `assetType`: icon | empty-state | hero | badge | feature-graphic | onboarding |
-  changelog | dashboard-modal
-- `filename`: kebab-case suggestion ending in `.svg`
-- `purpose`: one sentence on where it ships
-- `dimensions`: viewBox or aspect ratio (for example 1200x630 hero, 24x24 icon)
-- `palette`: named colors with hex values from brand data
-- `subject`: what to depict
-- `text`: exact copy if the SVG includes text
-- `styleNotes`: stroke weight, corner radius, illustration density, metaphors to
-  use or avoid
-- `constraints`: must use `currentColor`, no gradients, dark-mode safe, and so on
+If the user gave no item list, load `references/default-pack.md` and adopt that
+pack unless they named specific types or channels.
 
-## Consistency rules across a pack
-- Reuse the same stroke width scale and corner radius family across icons.
-- Limit palette to brand primaries plus one accent and neutrals.
-- Keep character or device metaphors consistent between hero, onboarding, and empty
-  states.
-- Badge and icon geometry should feel like the same design system.
+## 2. Lock the brand profile
 
-## Delegation pattern
-1. Finish brand extraction and pack planning first.
-2. Call `svg-generator` once per asset with a self-contained brief in `message`.
-3. Parallelize independent assets (for example three icons) in one turn.
-4. Regenerate individual assets that drift from the pack; do not regenerate the
-   whole pack unless the brand brief changed.
+Capture the palette and tone the pack will obey — from Context.dev output or the
+user's explicit brand profile.
 
-## Output quality bar
-Reject subagent output that:
-- is not valid SVG;
-- uses raster embeds without approval;
-- introduces off-brand colors;
-- includes invented logos or claims;
-- omits `viewBox` or accessibility labels on meaningful graphics.
+**Done when:** primary and secondary hex colors, neutral/background tones,
+typography personality, logo constraints, product category, audience, and tone
+adjectives are all recorded before any brief is written.
+
+## 3. Write a brief per asset
+
+For each pack slot, compose one self-contained **brief** for `svg-generator`.
+
+**Done when:** every slot has a brief containing every field in
+`references/brief-template.md`.
+
+## 4. Delegate
+
+Call `svg-generator` once per brief. Pass the full brief in `message`; the
+subagent does not see parent history.
+
+**Done when:** every brief has a matching `svg-generator` call; independent assets
+(for example three icons) are delegated in parallel when possible.
+
+## 5. Hunt drift
+
+Compare returned SVGs against the locked brand profile and pack consistency
+rules.
+
+**Done when:** every asset passes `references/quality-bar.md`; any asset that
+**drifts** (off-palette color, mismatched stroke language, or broken metaphor) is
+regenerated individually with a tighter brief — not the whole pack unless the
+brand profile changed.
