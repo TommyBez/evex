@@ -57,6 +57,11 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   colorScheme: 'light dark',
+  width: 'device-width',
+  initialScale: 1,
+  // Let content extend under the notch/home indicator so `env(safe-area-inset-*)`
+  // padding can position sticky mobile UI correctly.
+  viewportFit: 'cover',
   themeColor: [
     { media: '(prefers-color-scheme: light)', color: 'white' },
     { media: '(prefers-color-scheme: dark)', color: 'black' },

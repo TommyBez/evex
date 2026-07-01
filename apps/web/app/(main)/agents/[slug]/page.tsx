@@ -13,6 +13,7 @@ import { AgentFileViewer } from '@/components/agent-file-viewer'
 import { AuthorAvatar } from '@/components/author-avatar'
 import { FavoriteButton } from '@/components/favorite-button'
 import { InstallCommand } from '@/components/install-command'
+import { MobileInstallBar } from '@/components/mobile-install-bar'
 import { applyInstallCounts, getAgentRuntimeState } from '@/lib/agent-runtime'
 import type { AgentRegistryFile, AgentWithAuthor } from '@/lib/agent-types'
 import { parseDependencies } from '@/lib/agents'
@@ -228,9 +229,9 @@ function AgentDetailContent({ slug }: { slug: string }) {
   ).length
 
   return (
-    <main className="mx-auto w-full min-w-0 max-w-4xl px-4 py-10">
+    <main className="mx-auto w-full min-w-0 max-w-4xl px-4 pt-10 pb-28 sm:pb-10">
       <Link
-        className="inline-flex items-center gap-1.5 text-muted-foreground text-sm hover:text-foreground"
+        className="inline-flex min-h-9 items-center gap-1.5 text-muted-foreground text-sm hover:text-foreground"
         href="/"
       >
         <ArrowLeft aria-hidden="true" className="size-4" />
@@ -358,6 +359,11 @@ function AgentDetailContent({ slug }: { slug: string }) {
           />
         </Suspense>
       )}
+
+      <MobileInstallBar
+        command={installCommand}
+        label={`${agent.name} install command`}
+      />
     </main>
   )
 }

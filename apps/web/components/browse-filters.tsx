@@ -212,7 +212,9 @@ export function BrowseFilters() {
 
       <ToggleGroup
         className={cn(
-          'flex-wrap transition-opacity',
+          // Mobile: a single edge-to-edge swipeable strip so the categories
+          // never wrap into 3 stacked rows. sm+: wrap normally.
+          'scrollbar-hide edge-fade-x -mx-4 w-full flex-nowrap overflow-x-auto px-4 transition-opacity sm:mx-0 sm:w-fit sm:flex-wrap sm:overflow-visible sm:px-0',
           isPending && 'opacity-60',
         )}
         onValueChange={(values) =>
@@ -222,7 +224,7 @@ export function BrowseFilters() {
       >
         {FILTER_CATEGORIES.map((c) => (
           <ToggleGroupItem
-            className="mono-label rounded-md capitalize data-[state=on]:border-primary data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+            className="mono-label h-9 rounded-md capitalize data-[state=on]:border-primary data-[state=on]:bg-primary data-[state=on]:text-primary-foreground sm:h-8"
             key={c}
             size="sm"
             value={c}

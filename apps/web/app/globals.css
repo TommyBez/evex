@@ -207,6 +207,8 @@
   * {
     letter-spacing: 0 !important;
     @apply border-border outline-ring/50;
+    /* Remove the grey flash when tapping links/buttons on touch devices. */
+    -webkit-tap-highlight-color: transparent;
   }
   body {
     @apply bg-background text-foreground;
@@ -214,9 +216,16 @@
   html {
     overflow-x: clip;
     @apply font-sans;
+    /* Stop iOS from inflating font sizes in landscape and keep smooth
+       momentum scrolling on touch devices. */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    -webkit-overflow-scrolling: touch;
   }
   body {
     overflow-x: clip;
+    /* Prevent horizontal rubber-banding on small screens. */
+    overscroll-behavior-x: none;
   }
   h1,
   h2,
@@ -242,6 +251,33 @@
 }
 
 @layer components {
+  /* Hide the scrollbar on horizontally-swipeable strips (mobile filter rows,
+     etc.) while keeping the element scrollable. */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  /* Fade the trailing edge of a horizontal scroll strip so it reads as
+     "swipe for more" on touch. Only applied below the sm breakpoint. */
+  @media (max-width: 639px) {
+    .edge-fade-x {
+      -webkit-mask-image: linear-gradient(
+        to right,
+        #000 0,
+        #000 calc(100% - 1.5rem),
+        transparent 100%
+      );
+      mask-image: linear-gradient(
+        to right,
+        #000 0,
+        #000 calc(100% - 1.5rem),
+        transparent 100%
+      );
+    }
+  }
   /* Compact metadata label. */
   .mono-label {
     font-family: var(--font-mono);
