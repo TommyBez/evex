@@ -2,10 +2,7 @@
 
 import { Button } from '@evex/ui/button'
 import { Check, Copy } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
-import { toast } from 'sonner'
-
-const COPY_RESET_MS = 2000
+import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard'
 
 /**
  * Thumb-reachable install action pinned to the bottom of the viewport on
@@ -20,34 +17,10 @@ export function MobileInstallBar({
   command: string
   label?: string
 }) {
-  const [copied, setCopied] = useState(false)
-  const resetTimeoutRef = useRef<number | null>(null)
+  const { copied, copy } = useCopyToClipboard()
 
-  useEffect(
-    () => () => {
-      if (resetTimeoutRef.current !== null) {
-        window.clearTimeout(resetTimeoutRef.current)
-      }
-    },
-    [],
-  )
-
-  const copy = async () => {
-    if (resetTimeoutRef.current !== null) {
-      window.clearTimeout(resetTimeoutRef.current)
-    }
-
-    try {
-      await navigator.clipboard.writeText(command)
-      setCopied(true)
-      toast.success('Copied install command')
-      resetTimeoutRef.current = window.setTimeout(() => {
-        setCopied(false)
-        resetTimeoutRef.current = null
-      }, COPY_RESET_MS)
-    } catch {
-      toast.error('Could not copy. Please copy manually.')
-    }
+  const handleCopy = () => {
+    copy(command, { successMessage: 'Copied install command' })
   }
 
   return (
@@ -59,7 +32,7 @@ export function MobileInstallBar({
         <Button
           aria-label={copied ? `Copied ${label}` : `Copy ${label}`}
           className="h-11 shrink-0 px-5"
-          onClick={copy}
+          onClick={handleCopy}
           type="button"
         >
           <span className="t-icon-swap" data-state={copied ? 'b' : 'a'}>

@@ -216,11 +216,9 @@
   html {
     overflow-x: clip;
     @apply font-sans;
-    /* Stop iOS from inflating font sizes in landscape and keep smooth
-       momentum scrolling on touch devices. */
+    /* Stop iOS from inflating font sizes in landscape. */
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
-    -webkit-overflow-scrolling: touch;
   }
   body {
     overflow-x: clip;
@@ -256,13 +254,17 @@
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
+    /* Momentum scrolling on the actual horizontal scroll containers (filter
+       strip, etc.) — meaningful here, unlike on the root document. */
+    -webkit-overflow-scrolling: touch;
   }
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
   /* Fade the trailing edge of a horizontal scroll strip so it reads as
-     "swipe for more" on touch. Only applied below the sm breakpoint. */
-  @media (max-width: 639px) {
+     "swipe for more" on touch. Only applied below Tailwind's `sm` breakpoint
+     (40rem), expressed in rem so it tracks the theme scale. */
+  @media (width < 40rem) {
     .edge-fade-x {
       -webkit-mask-image: linear-gradient(
         to right,

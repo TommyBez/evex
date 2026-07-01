@@ -362,7 +362,7 @@ function AgentDetailContent({ slug }: { slug: string }) {
 
       <MobileInstallBar
         command={installCommand}
-        label={`${agent.name} install command`}
+        label={`${agent.name} install command (quick copy)`}
       />
     </main>
   )

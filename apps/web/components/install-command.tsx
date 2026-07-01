@@ -3,8 +3,7 @@
 import { Button } from '@evex/ui/button'
 import { cn } from '@evex/ui/lib/utils'
 import { Check, Copy } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
-import { toast } from 'sonner'
+import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard'
 
 function getCopyLabel({
   copyState,
@@ -31,40 +30,16 @@ export function InstallCommand({
   className?: string
   label?: string
 }) {
-  const [copyState, setCopyState] = useState<'copied' | 'failed' | 'idle'>(
-    'idle',
-  )
-  const resetTimeoutRef = useRef<number | null>(null)
+  const {
+    status: copyState,
+    copied,
+    copy: copyToClipboard,
+  } = useCopyToClipboard()
 
-  useEffect(
-    () => () => {
-      if (resetTimeoutRef.current !== null) {
-        window.clearTimeout(resetTimeoutRef.current)
-      }
-    },
-    [],
-  )
-
-  const copy = async () => {
-    if (resetTimeoutRef.current !== null) {
-      window.clearTimeout(resetTimeoutRef.current)
-    }
-
-    try {
-      await navigator.clipboard.writeText(command)
-      setCopyState('copied')
-      toast.success('Copied install command')
-    } catch {
-      setCopyState('failed')
-      toast.error('Could not copy. Please copy manually.')
-    }
-    resetTimeoutRef.current = window.setTimeout(() => {
-      setCopyState('idle')
-      resetTimeoutRef.current = null
-    }, 2000)
+  const copy = () => {
+    copyToClipboard(command, { successMessage: 'Copied install command' })
   }
 
-  const copied = copyState === 'copied'
   const copyLabel = getCopyLabel({ copyState, label })
 
   return (
