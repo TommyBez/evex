@@ -95,7 +95,7 @@ export const generatedRegistry = {
       "name": "code-reviewer",
       "type": "registry:item",
       "title": "Code Reviewer",
-      "description": "Review GitHub pull requests from a native GitHub App channel. Mention",
+      "description": "Review GitHub pull requests from a native GitHub App channel. Mention `@code-reviewer` on a pull request to publish a GitHub review with inline comments, optional suggestion blocks, and Upstash-backed rate limiting for public repositories.",
       "categories": [
         "coding"
       ],
@@ -109,7 +109,7 @@ export const generatedRegistry = {
         "slug": "code-reviewer",
         "category": "coding",
         "createdAt": "2026-06-20T00:00:00.000Z",
-        "updatedAt": "2026-06-30T18:00:00.000Z"
+        "updatedAt": "2026-07-01T00:00:00.000Z"
       },
       "author": "TommyBez",
       "files": [
@@ -513,7 +513,7 @@ export const generatedRegistry = {
       "name": "postgres-data-analyst",
       "type": "registry:item",
       "title": "Postgres Data Analyst",
-      "description": "An Eve-native Slack analyst for a single Postgres database. It answers Slack",
+      "description": "An Eve-native Slack analyst for a single Postgres database. It answers Slack mentions and DMs, inspects schema metadata, and runs bounded read-only SQL through authored tools.",
       "categories": [
         "data"
       ],
@@ -992,7 +992,7 @@ export const generatedRegistryItems = {
     "name": "code-reviewer",
     "type": "registry:item",
     "title": "Code Reviewer",
-    "description": "Review GitHub pull requests from a native GitHub App channel. Mention",
+    "description": "Review GitHub pull requests from a native GitHub App channel. Mention `@code-reviewer` on a pull request to publish a GitHub review with inline comments, optional suggestion blocks, and Upstash-backed rate limiting for public repositories.",
     "categories": [
       "coding"
     ],
@@ -1006,7 +1006,7 @@ export const generatedRegistryItems = {
       "slug": "code-reviewer",
       "category": "coding",
       "createdAt": "2026-06-20T00:00:00.000Z",
-      "updatedAt": "2026-06-30T18:00:00.000Z"
+      "updatedAt": "2026-07-01T00:00:00.000Z"
     },
     "author": "TommyBez",
     "files": [
@@ -1479,7 +1479,7 @@ export const generatedRegistryItems = {
     "name": "postgres-data-analyst",
     "type": "registry:item",
     "title": "Postgres Data Analyst",
-    "description": "An Eve-native Slack analyst for a single Postgres database. It answers Slack",
+    "description": "An Eve-native Slack analyst for a single Postgres database. It answers Slack mentions and DMs, inspects schema metadata, and runs bounded read-only SQL through authored tools.",
     "categories": [
       "data"
     ],

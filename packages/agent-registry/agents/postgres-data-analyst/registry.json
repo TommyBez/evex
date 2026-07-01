@@ -5,7 +5,7 @@
       "name": "postgres-data-analyst",
       "type": "registry:item",
       "title": "Postgres Data Analyst",
-      "description": "An Eve-native Slack analyst for a single Postgres database. It answers Slack",
+      "description": "An Eve-native Slack analyst for a single Postgres database. It answers Slack mentions and DMs, inspects schema metadata, and runs bounded read-only SQL through authored tools.",
       "categories": [
         "data"
       ],
@@ -67,7 +67,7 @@
         "slug": "postgres-data-analyst",
         "category": "data",
         "createdAt": "2026-06-23T00:00:00.000Z",
-        "updatedAt": "2026-06-26T17:16:51.823Z"
+        "updatedAt": "2026-07-01T00:00:00.000Z"
       },
       "author": "TommyBez"
     }

@@ -60,13 +60,32 @@ function readReadmeTitle(readme, slug) {
 }
 
 function readReadmeDescription(readme) {
-  return (
-    readme
-      .split(LINE_SPLIT_PATTERN)
-      .map((line) => line.trim())
-      .find((line) => line && !line.startsWith('#')) ??
-    'Describe what this agent does.'
-  )
+  const paragraphLines = []
+  let started = false
+
+  for (const line of readme.split(LINE_SPLIT_PATTERN)) {
+    const trimmed = line.trim()
+
+    if (trimmed.startsWith('#')) {
+      if (started) {
+        break
+      }
+      continue
+    }
+
+    if (!trimmed) {
+      if (started) {
+        break
+      }
+      continue
+    }
+
+    started = true
+    paragraphLines.push(trimmed)
+  }
+
+  const description = paragraphLines.join(' ')
+  return description || 'Describe what this agent does.'
 }
 
 function readDependencies(packageJson) {
