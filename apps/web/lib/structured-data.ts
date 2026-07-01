@@ -61,7 +61,7 @@ export function createHomeFaqSchema(): JsonLdObject {
         name: 'How do I install an eve agent from evex?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'Configure the @evex namespace in your project once, then run npx shadcn@latest add @evex/{slug} from your eve app root. The command writes the agent files under agent/ in the layout expected by eve.',
+          text: 'Run npx shadcn@latest add @evex/{slug} from your eve app root. The command writes the agent files under agent/ in the layout expected by eve.',
         },
       },
       {

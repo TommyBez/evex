@@ -24,9 +24,8 @@ evex is a shadcn-compatible registry for eve agents. Each registry item packages
 
 ## How to install an agent
 
-1. Configure the @evex namespace once in your project's \`components.json\`.
-2. Run \`npx shadcn@latest add @evex/{slug}\` from your eve app root.
-3. Review the generated files and configure any required credentials before running the agent.
+1. Run \`npx shadcn@latest add @evex/{slug}\` from your eve app root.
+2. Review the generated files and configure any required credentials before running the agent.
 
 ## Key pages
 
