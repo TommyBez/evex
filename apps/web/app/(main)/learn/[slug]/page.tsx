@@ -62,7 +62,6 @@ export default async function LearnDetailPage({
 
   const cluster = getLearnCluster(page.cluster)
   const relatedPages = getRelatedLearnPages(page, RELATED_PAGE_LIMIT)
-  const searchIntent = `This guide targets "${page.primaryKeyword}" and related questions like ${page.relatedKeywords.join(', ')}.`
 
   return (
     <>
@@ -104,51 +103,96 @@ export default async function LearnDetailPage({
               the short version
             </span>
             <p className="mt-3 text-pretty font-medium text-foreground leading-relaxed">
-              {page.thesis}
+              {page.summary}
             </p>
           </Card>
 
-          <section className="mt-8 grid gap-4 sm:grid-cols-2">
-            <InfoBlock title="The problem" value={page.problem} />
-            <InfoBlock title="Search intent" value={searchIntent} />
-          </section>
+          <div className="mt-10 grid gap-10">
+            {page.sections.map((section) => (
+              <section key={section.heading}>
+                <h2 className="font-display font-semibold text-foreground text-xl">
+                  {section.heading}
+                </h2>
+                <div className="mt-3 grid gap-3 text-muted-foreground leading-relaxed">
+                  {section.body.map((paragraph) => (
+                    <p key={paragraph}>{paragraph}</p>
+                  ))}
+                </div>
+                {section.bullets ? (
+                  <div className="mt-4 grid gap-2">
+                    {section.bullets.map((bullet) => (
+                      <div
+                        className="flex items-start gap-4 rounded-md border border-border bg-background p-3"
+                        key={bullet}
+                      >
+                        <CheckCircle2
+                          aria-hidden="true"
+                          className="mt-0.5 size-4 shrink-0 text-brand"
+                        />
+                        <p className="text-muted-foreground text-sm leading-relaxed">
+                          {bullet}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
+              </section>
+            ))}
+          </div>
 
           <section className="mt-10">
             <h2 className="font-display font-semibold text-foreground text-xl">
-              Decision rules
+              Decision table
             </h2>
-            <div className="mt-4 grid gap-3">
-              {page.decisionRules.map((rule) => (
+            <div className="mt-4 overflow-hidden rounded-md border border-border">
+              {page.decisionRows.map((row) => (
                 <div
-                  className="flex gap-3 rounded-md border border-border bg-background p-4"
-                  key={rule}
+                  className="grid gap-px border-border border-b bg-border last:border-b-0 md:grid-cols-[0.7fr_1fr_1fr]"
+                  key={row.choice}
                 >
-                  <CheckCircle2
-                    aria-hidden="true"
-                    className="mt-0.5 size-4 shrink-0 text-brand"
-                  />
-                  <p className="text-muted-foreground text-sm leading-relaxed">
-                    {rule}
-                  </p>
+                  <div className="bg-background p-4">
+                    <p className="font-medium text-foreground">{row.choice}</p>
+                  </div>
+                  <div className="bg-background p-4">
+                    <p className="mono-label text-muted-foreground">Use when</p>
+                    <p className="mt-2 text-muted-foreground text-sm leading-relaxed">
+                      {row.useWhen}
+                    </p>
+                  </div>
+                  <div className="bg-background p-4">
+                    <p className="mono-label text-muted-foreground">
+                      Avoid when
+                    </p>
+                    <p className="mt-2 text-muted-foreground text-sm leading-relaxed">
+                      {row.avoidWhen}
+                    </p>
+                  </div>
                 </div>
               ))}
             </div>
           </section>
 
           <section className="mt-10 grid gap-4 sm:grid-cols-2">
-            <InfoBlock title="Eve angle" value={page.eveAngle} />
-            <InfoBlock title="Outside Eve" value={page.nonEveExample} />
+            {page.examples.map((example) => (
+              <InfoBlock
+                key={example.label}
+                title={example.label}
+                value={example.body}
+              />
+            ))}
           </section>
 
           <section className="mt-10 rounded-md border border-border bg-muted/25 p-5">
             <div className="flex items-center gap-2">
               <TriangleAlert aria-hidden="true" className="size-4 text-brand" />
               <h2 className="font-display font-semibold text-foreground text-lg">
-                What not to do
+                Editorial guardrail
               </h2>
             </div>
             <p className="mt-3 text-muted-foreground text-sm leading-relaxed">
-              {page.antiPattern}
+              This guide is not a substitute for the official Eve API reference.
+              It is meant to help developers decide which architecture tradeoff
+              they are making before they reach for a framework primitive.
             </p>
           </section>
 
@@ -185,10 +229,10 @@ export default async function LearnDetailPage({
             </div>
             <Button render={<Link href="/">Browse installable agents</Link>} />
           </div>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <div className="mt-4 grid gap-x-4 gap-y-5 sm:grid-cols-2">
             {relatedPages.map((relatedPage) => (
               <Link
-                className="rounded-md border border-border p-4 transition-colors hover:border-input hover:bg-muted/40"
+                className="flex h-full flex-col rounded-md border border-border p-4 transition-colors hover:border-input hover:bg-muted/40"
                 href={`/learn/${relatedPage.slug}`}
                 key={relatedPage.slug}
               >

@@ -41,7 +41,7 @@ export default function LearnPage() {
           </p>
         </header>
 
-        <section className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <section className="mt-10 grid gap-x-4 gap-y-6 sm:grid-cols-2 lg:grid-cols-3">
           {LEARN_CLUSTERS.map((cluster) => {
             const clusterPages = getLearnPagesByCluster(cluster.id)
 
@@ -59,10 +59,10 @@ export default function LearnPage() {
                 <p className="mt-2 text-muted-foreground text-sm leading-relaxed">
                   {cluster.description}
                 </p>
-                <div className="mt-4 grid gap-2">
+                <div className="mt-4 grid gap-3">
                   {clusterPages.slice(0, 5).map((page) => (
                     <Link
-                      className="rounded-md border border-border px-3 py-2 text-sm transition-colors hover:border-input hover:bg-muted/50"
+                      className="flex h-full flex-col rounded-md border border-border px-3 py-2 text-sm transition-colors hover:border-input hover:bg-muted/50"
                       href={`/learn/${page.slug}`}
                       key={page.slug}
                     >
@@ -92,10 +92,10 @@ export default function LearnPage() {
               </p>
             </div>
           </div>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-x-4 gap-y-5 sm:grid-cols-2 lg:grid-cols-3">
             {pages.map((page) => (
               <Link
-                className="group rounded-md border border-border p-4 transition-colors hover:border-input hover:bg-muted/40"
+                className="group flex h-full flex-col rounded-md border border-border p-4 transition-colors hover:border-input hover:bg-muted/40"
                 href={`/learn/${page.slug}`}
                 key={page.slug}
               >
@@ -108,7 +108,7 @@ export default function LearnPage() {
                 <p className="mt-2 line-clamp-3 text-muted-foreground text-sm leading-relaxed">
                   {page.description}
                 </p>
-                <span className="mt-3 inline-flex text-brand text-sm opacity-0 transition-opacity group-hover:opacity-100">
+                <span className="mt-auto inline-flex pt-3 text-brand text-sm opacity-0 transition-opacity group-hover:opacity-100">
                   Read guide →
                 </span>
               </Link>

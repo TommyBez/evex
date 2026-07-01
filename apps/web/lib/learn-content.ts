@@ -10,21 +10,36 @@ export interface LearnFaq {
   question: string
 }
 
+export interface LearnSection {
+  body: readonly string[]
+  bullets?: readonly string[]
+  heading: string
+}
+
+export interface LearnDecisionRow {
+  avoidWhen: string
+  choice: string
+  useWhen: string
+}
+
+export interface LearnExample {
+  body: string
+  label: string
+}
+
 export interface LearnPage {
-  antiPattern: string
   audience: string
   cluster: LearnClusterId
-  decisionRules: readonly string[]
+  decisionRows: readonly LearnDecisionRow[]
   description: string
-  eveAngle: string
+  examples: readonly LearnExample[]
   faqs: readonly LearnFaq[]
-  nonEveExample: string
   primaryKeyword: string
-  problem: string
   relatedKeywords: readonly string[]
+  sections: readonly LearnSection[]
   shortTitle: string
   slug: string
-  thesis: string
+  summary: string
   title: string
 }
 
@@ -39,824 +54,530 @@ export const LEARN_CLUSTERS: readonly LearnCluster[] = [
     id: 'agent-engineering',
     label: 'Agent engineering',
     description:
-      'Concepts developers need before they turn a chat loop into production software.',
+      'Production decisions behind tools, skills, subagents, approval, state, and recovery.',
   },
   {
     id: 'eve-architecture',
     label: 'Eve architecture',
     description:
-      'Eve as a case study for filesystem-first, durable TypeScript agents.',
+      'Eve used as a concrete example of filesystem-first agent design.',
   },
   {
     id: 'protocols',
     label: 'Protocols and integrations',
     description:
-      'How MCP, channels, tools, skills, and connections fit into agent systems.',
+      'Where MCP, native tools, resources, and skills belong in agent systems.',
   },
   {
     id: 'comparisons',
     label: 'Comparisons',
     description:
-      'Plain-English tradeoffs between Eve and adjacent agent frameworks or distribution models.',
+      'Framework tradeoffs written for builders, not leaderboard shoppers.',
   },
   {
     id: 'distribution',
     label: 'Distribution',
     description:
-      'How reusable agent files move across teams without becoming opaque packages.',
+      'How reusable agent files move between projects without becoming black boxes.',
   },
 ] as const
-
-const COMMON_FAQ = {
-  copyDocs: {
-    question: 'Is this a replacement for the official Eve docs?',
-    answer:
-      'No. The official docs explain the API and project model. This page focuses on architecture decisions, tradeoffs, and when a pattern is useful.',
-  },
-  evexRole: {
-    question: 'Where does evex fit?',
-    answer:
-      'evex is the distribution layer for reusable Eve agent configurations. Use it when you want to inspect and install working agent files instead of rebuilding the same layout by hand.',
-  },
-} as const
-
-function makeFaq(topic: string, answer: string): readonly LearnFaq[] {
-  return [
-    {
-      question: `What is the main decision behind ${topic}?`,
-      answer,
-    },
-    COMMON_FAQ.copyDocs,
-    COMMON_FAQ.evexRole,
-  ]
-}
 
 export const LEARN_PAGES: readonly LearnPage[] = [
   {
     slug: 'tools-vs-skills-vs-subagents',
-    title: 'Tools vs skills vs subagents: how to choose the right abstraction',
+    title: 'Tools vs skills vs subagents: the control boundary that matters',
     shortTitle: 'Tools vs skills vs subagents',
     description:
-      'A practical decision guide for choosing between callable tools, loaded skills, and delegated subagents in AI agent systems.',
+      'A practical guide to choosing between executable tools, procedural skills, and delegated subagents without turning every capability into a confusing blob.',
     cluster: 'agent-engineering',
     primaryKeyword: 'tools vs skills vs subagents',
     relatedKeywords: ['AI agent tools', 'agent skills', 'subagents'],
     audience: 'Developers designing agent capabilities',
-    thesis:
-      'Use a tool when the agent needs an action, a skill when it needs a playbook, and a subagent when another reasoning loop should own the work.',
-    problem:
-      'Teams often turn every capability into a tool because tools feel concrete. That makes agents brittle. Some work needs procedure, some work needs data access, and some work needs a separate context window.',
-    eveAngle:
-      'Eve makes the distinction visible in the file tree: `tools/` holds typed actions, `skills/` holds loaded guidance, and `subagents/` holds specialists. The shape of the directory becomes an architecture review.',
-    nonEveExample:
-      'In LangGraph, this maps to nodes and callable functions. In Claude Code, it maps to tool calls, skills, and subagents. The names vary, but the control question is the same.',
-    antiPattern:
-      'Do not turn a multi-step judgment into a single mega-tool. The model loses visibility into the intermediate choices, and failures become harder to debug.',
-    decisionRules: [
-      'Choose a tool for deterministic input/output work such as querying an API.',
-      'Choose a skill for repeatable judgment such as reviewing a pull request.',
-      'Choose a subagent when a task needs its own memory, tools, or acceptance criteria.',
+    summary:
+      'The useful distinction is control. A tool executes a narrow action. A skill changes how the model approaches a task. A subagent gets its own reasoning loop and returns a result. If you blur those lines, the agent may still demo well, but it becomes harder to review, test, and recover.',
+    sections: [
+      {
+        heading: 'The wrong abstraction makes agents feel haunted',
+        body: [
+          'Most weak agent designs do not fail because the model is bad. They fail because everything is shoved into the same bucket. A database query, a review checklist, a security policy, and a separate research pass all become “tools” because tools are the first extension point people learn.',
+          'That works until something breaks. The model calls the wrong broad tool. The prompt contains too many procedural rules. A task that deserved isolated context pollutes the main run. The debugging question becomes vague: did the agent lack an action, lack a playbook, or need a specialist?',
+        ],
+      },
+      {
+        heading: 'Use the control test',
+        body: [
+          'Ask who controls the next step. If software should execute a known operation, use a tool. If the model should apply a method while staying in the same conversation, use a skill. If another reasoning process should own the task and report back, use a subagent.',
+          'This is why the boundary matters more than the name. Different frameworks use different labels, but the same design axis keeps showing up: action, procedure, delegation.',
+        ],
+        bullets: [
+          'Tool: “Run this bounded operation with validated inputs.”',
+          'Skill: “Follow this playbook when the task matches.”',
+          'Subagent: “Work this problem in your own context and return a judged result.”',
+        ],
+      },
+      {
+        heading: 'How Eve makes the decision visible',
+        body: [
+          'Eve is useful as a case study because the decision appears in the file tree. `agent/tools/` contains callable TypeScript actions. `agent/skills/` contains procedures and references. `agent/subagents/` contains specialist agents with their own instructions and possible tools.',
+          'That file layout does not magically make the design good. It does make a bad design easier to spot. If a pull request adds a giant tool that contains strategy, policy, network access, and formatting, the shape is suspicious before you read every line.',
+        ],
+      },
+      {
+        heading: 'What belongs where',
+        body: [
+          'Put deterministic side effects behind tools: fetch a pull request diff, post a review, run a read-only query, create a draft. Give those tools narrow names and explicit schemas. The model should not need to invent how the operation works.',
+          'Put reusable judgment in skills: a review rubric, a content editing pass, an incident triage checklist, a query safety policy. Skills are not enforcement. They guide the model, so anything safety-critical still needs code or runtime checks.',
+          'Use subagents when isolation is valuable: a security reviewer that should not share the main agent’s assumptions, a research worker that needs its own search loop, or a database analyst that should return a bounded answer instead of dragging a large schema into the parent context.',
+        ],
+      },
+      {
+        heading: 'The review smell',
+        body: [
+          'A good agent extension should be explainable in one sentence. “This tool posts a GitHub review.” “This skill teaches severity calibration.” “This subagent performs independent security review.” If the sentence needs three commas, the abstraction probably does too much.',
+        ],
+      },
     ],
-    faqs: makeFaq(
-      'tools vs skills vs subagents',
-      'The decision is about control. Tools execute, skills instruct, and subagents reason independently before returning a result.',
-    ),
+    decisionRows: [
+      {
+        choice: 'Tool',
+        useWhen:
+          'The agent needs a bounded action with typed inputs, observable output, and clear side effects.',
+        avoidWhen:
+          'The task mainly needs judgment, examples, or a multi-step reasoning strategy.',
+      },
+      {
+        choice: 'Skill',
+        useWhen:
+          'The model needs reusable procedure, checklists, writing rules, or domain context loaded only when relevant.',
+        avoidWhen:
+          'The procedure must enforce permissions or perform live system access.',
+      },
+      {
+        choice: 'Subagent',
+        useWhen:
+          'The task needs independent context, specialist instructions, or a separate acceptance bar.',
+        avoidWhen:
+          'A deterministic function or a short checklist would solve the problem with less cost and latency.',
+      },
+    ],
+    examples: [
+      {
+        label: 'Eve example',
+        body: 'A code review agent can use a `submit_pr_review` tool for the final GitHub write, a review-calibration skill for severity rules, and a security subagent only when the diff touches auth, secrets, or data access.',
+      },
+      {
+        label: 'Outside Eve',
+        body: 'In LangGraph, the same split might become a graph node that calls a function, a prompt/rubric loaded into the node, and a separate reviewer branch whose output is merged before final response.',
+      },
+    ],
+    faqs: [
+      {
+        question: 'Can a tool include judgment?',
+        answer:
+          'It can include deterministic policy checks, but open-ended judgment usually belongs in the model path. Keep the tool narrow and let the agent decide when to call it.',
+      },
+      {
+        question: 'Are skills safer than tools?',
+        answer:
+          'No. Skills are instructions. They can improve behavior, but they do not enforce authority boundaries. Use code, schemas, permissions, and approvals for enforcement.',
+      },
+      {
+        question: 'When is a subagent worth the overhead?',
+        answer:
+          'Use one when separate context improves the result enough to justify latency, cost, and coordination complexity.',
+      },
+    ],
   },
   {
     slug: 'durable-ai-agents',
-    title: 'Durable AI agents: why saving chat history is not enough',
+    title: 'Durable AI agents: saving chat history is not recovery',
     shortTitle: 'Durable AI agents',
     description:
-      'A guide to durable execution, checkpoints, retries, approval pauses, and why production agents need more than conversation memory.',
+      'Why production agents need execution history, side-effect boundaries, and resumable pauses rather than just conversation memory.',
     cluster: 'agent-engineering',
     primaryKeyword: 'durable AI agents',
-    relatedKeywords: ['durable execution', 'agent checkpoints', 'AI workflows'],
+    relatedKeywords: [
+      'durable execution',
+      'agent recovery',
+      'agent checkpoints',
+    ],
     audience: 'Engineers shipping long-running agent workflows',
-    thesis:
-      'Durability means the run can survive failures without repeating expensive or dangerous side effects.',
-    problem:
-      'A chat transcript can tell you what the model said, but it cannot prove which tool already ran, which approval was granted, or whether a retry would send the same email twice.',
-    eveAngle:
-      'Eve treats sessions as durable work rather than disposable requests. That matters when an agent pauses for a human, calls tools, or resumes after a deployment.',
-    nonEveExample:
-      'Temporal, LangGraph checkpointing, and workflow engines solve similar problems with event histories, resumable steps, and explicit retry boundaries.',
-    antiPattern:
-      'Do not rely on an LLM to remember that a side effect already happened. Persist the boundary where the side effect completed.',
-    decisionRules: [
-      'Use durable execution when runs can outlive a single request.',
-      'Persist approvals with the exact artifact that was approved.',
-      'Test recovery by crashing after tool calls, not only before them.',
+    summary:
+      'Durability is not “the model remembers what happened.” Durability is the system knowing which steps completed, which side effects were committed, and where a run can resume without duplicating work.',
+    sections: [
+      {
+        heading: 'The failure mode is duplicate action, not forgotten chat',
+        body: [
+          'A production agent does not only produce text. It reads systems, calls tools, waits for humans, sends messages, creates drafts, updates tickets, and sometimes deploys code. When the process dies halfway through, replaying the transcript is not enough.',
+          'The system needs to know whether the email was sent, whether the GitHub comment was posted, whether the approval applied to the exact payload being executed, and whether the next retry is allowed to call the same tool again.',
+        ],
+      },
+      {
+        heading: 'Memory and durability solve different problems',
+        body: [
+          'Memory helps a model preserve useful context across turns. Durable execution helps software preserve the truth of a run across crashes, deploys, timeouts, and human delays.',
+          'If an agent asks for approval on Monday and resumes on Wednesday, the important artifact is not a vague memory that someone approved something. The important artifact is the exact reviewed patch, message, command, or query plus the reviewer and timestamp.',
+        ],
+      },
+      {
+        heading: 'Why Eve is interesting here',
+        body: [
+          'Eve positions agents as durable backend software, not single request handlers. That matters because many useful agents are slow by nature: they wait for Slack replies, background schedules, external APIs, or human review.',
+          'The implementation detail belongs in the framework, but the design responsibility still belongs to the agent author. Tools should be idempotent where possible. Approval gates should store artifacts. Output delivery should tolerate retries without spamming users.',
+        ],
+      },
+      {
+        heading: 'A practical recovery checklist',
+        body: [
+          'Before calling a workflow durable, test ugly points. Crash after a tool returns but before the final answer. Crash after a human approval but before the write. Replay a run after a deployment. Send the same webhook twice. These are the places where demos become systems.',
+        ],
+        bullets: [
+          'Persist completed tool results, not just attempts.',
+          'Give external writes idempotency keys or dedupe rules.',
+          'Store the exact artifact attached to an approval.',
+          'Make retries visible in logs and traces.',
+        ],
+      },
     ],
-    faqs: makeFaq(
-      'durable AI agents',
-      'The main decision is whether a failed run may safely restart from scratch. If not, the agent needs durable execution boundaries.',
-    ),
-  },
-  {
-    slug: 'human-in-the-loop-agents',
-    title: 'Human-in-the-loop agents: approval gates without unsafe replay',
-    shortTitle: 'Human-in-the-loop agents',
-    description:
-      'How to design human approval flows for AI agents without losing auditability or replay safety.',
-    cluster: 'agent-engineering',
-    primaryKeyword: 'human in the loop agents',
-    relatedKeywords: ['agent approvals', 'AI approval workflow', 'HITL agents'],
-    audience: 'Teams adding approval gates to agent workflows',
-    thesis:
-      'Human review is not just UX. It is a state transition that must survive retries, timeouts, and changed artifacts.',
-    problem:
-      'Many agents ask for approval in chat, then continue with mutable context. That is fine for drafts and dangerous for writes, deploys, billing changes, or customer messages.',
-    eveAngle:
-      'Eve agents can model approval as part of the runtime flow, while evex-distributed agents can include the exact instructions and files that enforce review points.',
-    nonEveExample:
-      'Workflow engines often treat approval as a callback or signal. The common pattern is to pause compute, persist the pending state, and resume only with a valid response.',
-    antiPattern:
-      'Do not approve a summary while executing a different payload. The reviewed object and the executed object must match.',
-    decisionRules: [
-      'Require approval for external writes, irreversible actions, and user-visible messages.',
-      'Store the approved payload, reviewer, timestamp, and next action.',
-      'Timeout approvals deliberately instead of letting stale runs linger silently.',
+    decisionRows: [
+      {
+        choice: 'Simple request/response',
+        useWhen:
+          'The agent only answers from context and can safely restart from scratch.',
+        avoidWhen:
+          'A run includes external writes, approvals, schedules, or expensive multi-step work.',
+      },
+      {
+        choice: 'Durable workflow',
+        useWhen:
+          'The agent must resume after failure without repeating completed side effects.',
+        avoidWhen:
+          'The added persistence would not change correctness or user experience.',
+      },
+      {
+        choice: 'Human approval pause',
+        useWhen:
+          'A user needs to inspect a specific artifact before the agent proceeds.',
+        avoidWhen:
+          'The approval is only a vague “continue?” prompt with no durable object attached.',
+      },
     ],
-    faqs: makeFaq(
-      'human-in-the-loop agents',
-      'The core decision is which actions deserve a durable pause because a mistaken retry or changed payload would create risk.',
-    ),
-  },
-  {
-    slug: 'scheduled-ai-agents',
-    title: 'Scheduled AI agents: when cron is not enough',
-    shortTitle: 'Scheduled AI agents',
-    description:
-      'How scheduled agents differ from cron jobs, and how to design recurring AI work that can recover, report, and stay useful.',
-    cluster: 'agent-engineering',
-    primaryKeyword: 'scheduled AI agents',
-    relatedKeywords: ['AI cron jobs', 'recurring agents', 'agent schedules'],
-    audience: 'Developers building recurring AI workflows',
-    thesis:
-      'A scheduled agent is a recurring judgment loop, not just a timer that wakes up code.',
-    problem:
-      'Cron can trigger work, but it does not decide what changed, what deserves attention, how to summarize it, or how to recover from a half-finished run.',
-    eveAngle:
-      'Eve has a `schedules/` home for recurring work. That makes scheduled behavior inspectable next to tools, instructions, and delivery channels.',
-    nonEveExample:
-      'n8n, GitHub Actions, and managed workflow platforms can trigger scheduled AI tasks, but the agent still needs policies for retries, dedupe, and summaries.',
-    antiPattern:
-      'Do not create scheduled noise. If a daily agent posts nothing useful three days in a row, it needs better filtering or a lower cadence.',
-    decisionRules: [
-      'Use schedules for recurring monitoring, digests, hygiene, and reporting.',
-      'Design idempotency before the first production run.',
-      'Make “no meaningful change” a valid output.',
+    examples: [
+      {
+        label: 'Eve example',
+        body: 'A scheduled Linear summary agent should remember which summary window it processed and whether it posted to Slack. If the server restarts, it should not post the same standup report twice.',
+      },
+      {
+        label: 'Outside Eve',
+        body: 'Temporal-style systems solve this with workflow histories and replay. LangGraph-style systems often solve it with checkpointed state. The key idea is the same: completed boundaries must survive process death.',
+      },
     ],
-    faqs: makeFaq(
-      'scheduled AI agents',
-      'The decision is whether the job needs judgment, context, and recovery. If it only runs a deterministic task, cron may be enough.',
-    ),
-  },
-  {
-    slug: 'agent-channels',
-    title:
-      'Agent channels: separating where messages arrive from how work runs',
-    shortTitle: 'Agent channels',
-    description:
-      'A practical explanation of agent channels across Slack, GitHub, HTTP, and other entry points.',
-    cluster: 'agent-engineering',
-    primaryKeyword: 'agent channels',
-    relatedKeywords: ['Slack AI agent', 'GitHub agent channel', 'HTTP agent'],
-    audience: 'Teams connecting agents to real user surfaces',
-    thesis:
-      'A channel should translate platform events into agent work without leaking platform details into every tool.',
-    problem:
-      'Agents often start as a chat endpoint. Then Slack threads, GitHub webhooks, and HTTP clients all get bolted onto the same handler until behavior becomes hard to reason about.',
-    eveAngle:
-      'Eve gives channels their own directory, so Slack delivery, GitHub events, and HTTP routes can feed the same agent runtime without becoming the whole agent.',
-    nonEveExample:
-      'Bot frameworks and webhook handlers solve ingress too, but they often leave the reasoning loop and durable state model to application code.',
-    antiPattern:
-      'Do not put business policy inside Slack formatting code. Keep platform translation separate from the agent’s actual work.',
-    decisionRules: [
-      'Use a channel when the same agent should serve a specific surface.',
-      'Normalize events before they reach tools.',
-      'Keep auth, formatting, and delivery close to the channel.',
+    faqs: [
+      {
+        question: 'Is database-backed chat history enough?',
+        answer:
+          'No. Chat history records conversation. Durable execution records completed steps and side effects. You often need both.',
+      },
+      {
+        question: 'When can I skip durability?',
+        answer:
+          'Skip it for short, read-only, low-cost interactions where retrying from the start is harmless.',
+      },
+      {
+        question: 'What is the first durability test to write?',
+        answer:
+          'Crash immediately after the most important tool call completes. The recovered run should not call that tool again unless the operation is explicitly idempotent.',
+      },
     ],
-    faqs: makeFaq(
-      'agent channels',
-      'The decision is whether a platform deserves its own ingress and delivery rules while sharing the same core agent behavior.',
-    ),
-  },
-  {
-    slug: 'agent-sandboxing',
-    title: 'Agent sandboxing: where autonomous code should be allowed to run',
-    shortTitle: 'Agent sandboxing',
-    description:
-      'How to think about sandboxes for AI agents that read files, run commands, or generate code.',
-    cluster: 'agent-engineering',
-    primaryKeyword: 'AI agent sandbox',
-    relatedKeywords: [
-      'agent security',
-      'sandboxed code execution',
-      'AI code agents',
-    ],
-    audience: 'Developers running agents with filesystem or shell access',
-    thesis:
-      'Sandboxing is the line between useful autonomy and accidental damage.',
-    problem:
-      'A coding agent that can run commands is powerful, but the blast radius changes when it can read secrets, mutate repositories, or call external services.',
-    eveAngle:
-      'Eve includes sandbox concepts in the agent layout, which makes execution boundaries part of the authored agent rather than an afterthought.',
-    nonEveExample:
-      'AutoGen-style code execution, containerized workers, and cloud sandboxes all solve the same trust problem with different ergonomics.',
-    antiPattern:
-      'Do not give broad shell access to compensate for missing tools. Build narrow tools first, and widen the sandbox only when the job requires it.',
-    decisionRules: [
-      'Start with read-only or isolated workspaces for exploratory agents.',
-      'Treat secrets and network access as separate permissions.',
-      'Log commands and file writes for later review.',
-    ],
-    faqs: makeFaq(
-      'agent sandboxing',
-      'The main decision is how much authority the agent needs to complete real work without putting unrelated systems at risk.',
-    ),
-  },
-  {
-    slug: 'agent-observability',
-    title: 'Agent observability: traces, runs, decisions, and cost',
-    shortTitle: 'Agent observability',
-    description:
-      'What to log and inspect when AI agents use tools, delegate work, retry, or run in the background.',
-    cluster: 'agent-engineering',
-    primaryKeyword: 'agent observability',
-    relatedKeywords: [
-      'AI agent tracing',
-      'agent run logs',
-      'LLM observability',
-    ],
-    audience: 'Teams debugging production agents',
-    thesis:
-      'If you cannot replay the decision path, you cannot operate the agent with confidence.',
-    problem:
-      'Traditional logs show function calls. Agent runs also need model prompts, tool choices, approvals, token cost, retries, and final delivery state.',
-    eveAngle:
-      'Eve’s runtime model treats agent runs as inspectable work. evex complements that by making the installed files visible before the run ever starts.',
-    nonEveExample:
-      'LangSmith, OpenTelemetry, vendor dashboards, and custom traces all try to answer the same question: why did the agent do that?',
-    antiPattern:
-      'Do not log only the final answer. The failure usually lives in retrieved context, tool arguments, or a missed guardrail.',
-    decisionRules: [
-      'Trace model calls, tool inputs, tool outputs, approvals, and delivery attempts.',
-      'Capture enough context to debug without exposing secrets.',
-      'Track cost per run type, not only aggregate token spend.',
-    ],
-    faqs: makeFaq(
-      'agent observability',
-      'The decision is which parts of the agent loop must be inspectable to explain failures and control cost.',
-    ),
-  },
-  {
-    slug: 'agent-memory-vs-state',
-    title: 'Agent memory vs state: what should the model remember?',
-    shortTitle: 'Agent memory vs state',
-    description:
-      'A decision guide for separating model memory, durable state, session history, and application data.',
-    cluster: 'agent-engineering',
-    primaryKeyword: 'agent memory vs state',
-    relatedKeywords: ['AI agent memory', 'agent state', 'conversation state'],
-    audience: 'Developers designing long-lived agent products',
-    thesis:
-      'Memory helps the model reason. State tells the system what has happened and what is allowed next.',
-    problem:
-      'Teams overuse memory for facts that belong in a database and underuse state for workflow decisions that must be exact.',
-    eveAngle:
-      'Eve’s durable session model is useful because it keeps runtime state separate from authored instructions and tool code.',
-    nonEveExample:
-      'LangGraph exposes state directly in graph execution, while chat products often hide state behind conversation history.',
-    antiPattern:
-      'Do not store authorization, approvals, or billing status as natural-language memories. Persist those as typed application state.',
-    decisionRules: [
-      'Use memory for preference and context that can tolerate fuzziness.',
-      'Use state for workflow position, permissions, and completed side effects.',
-      'Use retrieval for external knowledge that changes independently of the run.',
-    ],
-    faqs: makeFaq(
-      'agent memory vs state',
-      'The decision is whether the information must be exact. Exact information belongs in state, not model memory.',
-    ),
-  },
-  {
-    slug: 'agent-evals',
-    title: 'Agent evals: testing behavior instead of vibes',
-    shortTitle: 'Agent evals',
-    description:
-      'How to evaluate AI agents with scenarios, tool expectations, and regression checks.',
-    cluster: 'agent-engineering',
-    primaryKeyword: 'agent evals',
-    relatedKeywords: ['AI agent evaluation', 'LLM evals', 'agent tests'],
-    audience: 'Teams reviewing agent quality before release',
-    thesis:
-      'Agent evals should test decisions, tool use, and refusal behavior, not only answer style.',
-    problem:
-      'A demo can look good while the agent fails on edge cases, unsafe actions, or routine workflow changes.',
-    eveAngle:
-      'Eve agents can ship with eval files next to the agent source. evex can distribute those evals with the rest of the agent so users inherit the quality bar.',
-    nonEveExample:
-      'OpenAI evals, LangSmith datasets, and CI checks all serve the same role: make behavior regressions visible before users find them.',
-    antiPattern:
-      'Do not evaluate only happy-path prompts. The bugs that matter are usually ambiguous, adversarial, or boringly repetitive.',
-    decisionRules: [
-      'Write evals for tool calls, approval boundaries, and “do nothing” cases.',
-      'Keep fixtures close to the agent files they test.',
-      'Run evals before publishing reusable agents.',
-    ],
-    faqs: makeFaq(
-      'agent evals',
-      'The main decision is which behaviors would damage trust if they regressed silently.',
-    ),
-  },
-  {
-    slug: 'filesystem-first-agents',
-    title: 'Filesystem-first agents: why agent architecture can live in files',
-    shortTitle: 'Filesystem-first agents',
-    description:
-      'A practical look at filesystem-first agent design, where folders encode capabilities and reviewability.',
-    cluster: 'eve-architecture',
-    primaryKeyword: 'filesystem-first agents',
-    relatedKeywords: ['Eve agent framework', 'agent project structure'],
-    audience: 'Developers comparing agent architecture styles',
-    thesis:
-      'Filesystem-first design makes agent capability visible before the code runs.',
-    problem:
-      'Large configuration objects can hide what an agent can do. A reviewer has to inspect code paths instead of reading the project shape.',
-    eveAngle:
-      'Eve’s core bet is that the `agent/` tree is the authoring interface. Instructions, tools, skills, channels, and schedules each get a predictable home.',
-    nonEveExample:
-      'Graph and code-first frameworks offer more explicit control flow, but the capability inventory often lives inside application code.',
-    antiPattern:
-      'Do not treat the file tree as decoration. If a capability is real, put it where future maintainers expect to find it.',
-    decisionRules: [
-      'Use filesystem-first design when reviewability and ownership matter.',
-      'Use code-first graphs when dynamic routing is the dominant complexity.',
-      'Keep generated files readable enough for human review.',
-    ],
-    faqs: makeFaq(
-      'filesystem-first agents',
-      'The decision is whether visible project structure is more valuable than centralizing all behavior in code.',
-    ),
-  },
-  {
-    slug: 'eve-project-structure',
-    title: 'Eve project structure: reading an agent before you run it',
-    shortTitle: 'Eve project structure',
-    description:
-      'How to inspect an Eve agent project as an architecture document, not just a folder of files.',
-    cluster: 'eve-architecture',
-    primaryKeyword: 'Eve project structure',
-    relatedKeywords: ['Eve agent directory', 'agent folder structure'],
-    audience: 'Developers evaluating or reviewing Eve agents',
-    thesis:
-      'An Eve project tree should answer what the agent knows, what it can do, where it listens, and when it acts.',
-    problem:
-      'Reusable agents are hard to trust when the install surface does not reveal capabilities, dependencies, and entry points.',
-    eveAngle:
-      'The Eve layout gives reviewers a checklist: `instructions.md`, `tools/`, `skills/`, `channels/`, `connections/`, `schedules/`, and shared `lib/` code.',
-    nonEveExample:
-      'In many Python agent stacks, equivalent capabilities may live in decorators, graph nodes, YAML, and runtime wiring spread across files.',
-    antiPattern:
-      'Do not bury external writes or scheduled behavior in generic helpers. A reviewer should see them from the top-level agent layout.',
-    decisionRules: [
-      'Start inspection with channels and schedules because they trigger runs.',
-      'Read tools next because they define the agent’s authority.',
-      'Read skills and instructions to understand judgment and tone.',
-    ],
-    faqs: makeFaq(
-      'Eve project structure',
-      'The main decision is whether the file layout clearly exposes the agent’s capabilities before installation.',
-    ),
-  },
-  {
-    slug: 'eve-tools',
-    title: 'Eve tools as typed authority boundaries',
-    shortTitle: 'Eve tools',
-    description:
-      'How to think about Eve tools as the boundary between model reasoning and executable authority.',
-    cluster: 'eve-architecture',
-    primaryKeyword: 'Eve tools',
-    relatedKeywords: ['defineTool', 'AI agent tools', 'typed agent tools'],
-    audience: 'TypeScript developers building agent actions',
-    thesis:
-      'A tool is not just a helper function. It is a permission the model can request.',
-    problem:
-      'Teams write tools for convenience, then accidentally expose broad authority with vague descriptions and loose inputs.',
-    eveAngle:
-      'Eve tools live as files and use typed schemas, which makes each callable action reviewable as a separate permission boundary.',
-    nonEveExample:
-      'MCP tools and OpenAI function calls use the same broad idea: describe a callable action with validated inputs and observable outputs.',
-    antiPattern:
-      'Do not create a `run_anything` tool unless the sandbox and approvals are strong enough to handle anything.',
-    decisionRules: [
-      'Give every tool one clear action and one clear risk profile.',
-      'Validate inputs at the tool boundary.',
-      'Describe side effects plainly in the tool description.',
-    ],
-    faqs: makeFaq(
-      'Eve tools',
-      'The decision is what authority the model should be able to request through a typed interface.',
-    ),
-  },
-  {
-    slug: 'eve-skills',
-    title: 'Eve skills: keeping procedures out of the always-on prompt',
-    shortTitle: 'Eve skills',
-    description:
-      'Why skills are useful when agents need repeatable domain procedure without bloating the system prompt.',
-    cluster: 'eve-architecture',
-    primaryKeyword: 'Eve skills',
-    relatedKeywords: ['agent skills', 'AI skills', 'SKILL.md'],
-    audience: 'Developers packaging agent knowledge',
-    thesis:
-      'Skills are best for procedures the agent should load only when the task calls for them.',
-    problem:
-      'Stuffing every workflow into the main instructions makes agents harder to steer and more expensive to run.',
-    eveAngle:
-      'Eve gives skills their own directory, so longer playbooks can travel with an agent while staying outside the default prompt.',
-    nonEveExample:
-      'Claude Code skills and portable `SKILL.md` folders solve the same context problem across coding agents.',
-    antiPattern:
-      'Do not put hard authority inside a skill. A skill can guide behavior, but tools and runtime policy still enforce actions.',
-    decisionRules: [
-      'Use a skill for multi-step procedure or domain judgment.',
-      'Keep core identity and safety rules in instructions.',
-      'Link references from the skill instead of copying giant context blocks.',
-    ],
-    faqs: makeFaq(
-      'Eve skills',
-      'The decision is whether the knowledge should load on demand rather than live in every model call.',
-    ),
-  },
-  {
-    slug: 'eve-connections',
-    title: 'Eve connections: integrating external systems without messy tools',
-    shortTitle: 'Eve connections',
-    description:
-      'How connection files keep OAuth, MCP, and external service access separate from agent behavior.',
-    cluster: 'eve-architecture',
-    primaryKeyword: 'Eve connections',
-    relatedKeywords: [
-      'agent connections',
-      'MCP connection',
-      'agent integrations',
-    ],
-    audience: 'Developers wiring agents to external services',
-    thesis:
-      'Connections should own how an agent reaches a system; tools should own what the agent does with it.',
-    problem:
-      'When auth, client setup, retries, and model-facing tool descriptions live together, integrations become hard to review or reuse.',
-    eveAngle:
-      'Eve connections give external services a clear authored home, keeping integration setup separate from skills and channel code.',
-    nonEveExample:
-      'MCP clients, SDK wrappers, and OAuth connection managers all try to isolate integration details from business behavior.',
-    antiPattern:
-      'Do not copy tokens or service clients into every tool. Centralize connection setup and pass narrow capabilities onward.',
-    decisionRules: [
-      'Use connections for shared external access and auth.',
-      'Use tools for task-specific actions against that access.',
-      'Keep credential requirements visible in `.env.example`.',
-    ],
-    faqs: makeFaq(
-      'Eve connections',
-      'The decision is whether integration setup deserves a separate reusable layer from model-facing actions.',
-    ),
-  },
-  {
-    slug: 'eve-schedules',
-    title: 'Eve schedules: recurring agent work that deserves inspection',
-    shortTitle: 'Eve schedules',
-    description:
-      'How to evaluate scheduled Eve agents that run digests, monitors, hygiene checks, and reports.',
-    cluster: 'eve-architecture',
-    primaryKeyword: 'Eve schedules',
-    relatedKeywords: [
-      'agent schedules',
-      'scheduled Eve agent',
-      'AI digest agent',
-    ],
-    audience: 'Teams reviewing recurring Eve agents',
-    thesis:
-      'Scheduled behavior should be visible because it acts when nobody is watching.',
-    problem:
-      'A hidden background trigger can spam channels, duplicate work, or call APIs unexpectedly.',
-    eveAngle:
-      'Eve places recurring work in `schedules/`, so reviewers can see what runs without searching the whole project.',
-    nonEveExample:
-      'Other systems may use cron, queues, workflow schedules, or hosted automation products. The review question stays the same: what wakes up, and what can it do?',
-    antiPattern:
-      'Do not ship a schedule without a clear no-op path, idempotency, and a human-readable output policy.',
-    decisionRules: [
-      'Inspect cadence, target channel, and dedupe behavior together.',
-      'Require explicit configuration for external destinations.',
-      'Prefer summaries over raw event forwarding.',
-    ],
-    faqs: makeFaq(
-      'Eve schedules',
-      'The decision is whether recurring work is inspectable enough to trust when it runs unattended.',
-    ),
-  },
-  {
-    slug: 'eve-channels',
-    title: 'Eve channels: one agent, multiple surfaces',
-    shortTitle: 'Eve channels',
-    description:
-      'How Eve channels let the same agent work across Slack, GitHub, HTTP, and other surfaces.',
-    cluster: 'eve-architecture',
-    primaryKeyword: 'Eve channels',
-    relatedKeywords: [
-      'Eve Slack channel',
-      'Eve GitHub channel',
-      'agent channels',
-    ],
-    audience: 'Developers exposing agents outside a web app',
-    thesis:
-      'Channels should adapt the platform to the agent, not rewrite the agent for each platform.',
-    problem:
-      'A useful agent often starts in one UI and then needs to work in Slack, GitHub, or an HTTP route with consistent behavior.',
-    eveAngle:
-      'Eve channel files make platform ingress explicit while sharing the same instructions, tools, and runtime model.',
-    nonEveExample:
-      'Bot SDKs give you platform primitives, but you still need an agent runtime behind them if the work should be portable.',
-    antiPattern:
-      'Do not fork agent behavior per platform unless the user intent truly differs. Fork formatting, not core judgment.',
-    decisionRules: [
-      'Add a channel when users naturally ask for that workflow in a platform.',
-      'Keep channel auth and delivery policy local to the channel.',
-      'Route platform-specific context into shared agent work.',
-    ],
-    faqs: makeFaq(
-      'Eve channels',
-      'The decision is whether a new surface should reuse the same agent instead of becoming a separate bot.',
-    ),
   },
   {
     slug: 'mcp-vs-skills',
-    title: 'MCP vs skills: external capabilities or procedural knowledge?',
+    title: 'MCP vs skills: do you need a connection or a playbook?',
     shortTitle: 'MCP vs skills',
     description:
-      'A decision guide for choosing MCP servers, skills, or both when extending AI agents.',
+      'A grounded distinction between MCP servers, tools, resources, prompts, and skills for teams extending AI agents.',
     cluster: 'protocols',
     primaryKeyword: 'MCP vs skills',
     relatedKeywords: ['Model Context Protocol', 'AI skills', 'MCP tools'],
     audience: 'Developers extending agents with context and actions',
-    thesis:
-      'Use MCP when the agent needs to reach a system. Use a skill when the agent needs to follow a procedure.',
-    problem:
-      'MCP and skills are often discussed as competing concepts, but they solve different parts of the agent context problem.',
-    eveAngle:
-      'An Eve agent can use connections or tools for external capability and skills for procedural guidance. evex can package both as installable source.',
-    nonEveExample:
-      'Cursor, Claude Desktop, and other clients can connect to MCP servers while also loading local skills for domain workflows.',
-    antiPattern:
-      'Do not put API credentials or live system access inside a skill. Skills are instructions, not secure integration boundaries.',
-    decisionRules: [
-      'Choose MCP for live tools, resources, and server-provided prompts.',
-      'Choose skills for repeatable reasoning patterns and domain rules.',
-      'Use both when a workflow needs external access plus local procedure.',
+    summary:
+      'MCP gives an AI application a standard way to reach external capabilities. Skills give an agent a reusable way to approach a task. They often work together, but they are not substitutes.',
+    sections: [
+      {
+        heading: 'The common confusion',
+        body: [
+          'Both MCP and skills show up when people ask how to “give an agent more context.” That phrase hides two different needs. Sometimes the agent needs access to a system: list tables, read a file, search docs, create an issue. Sometimes the agent needs a method: how to review a migration, write in a brand voice, or triage an incident.',
+          'MCP is strongest for the first need. Skills are strongest for the second.',
+        ],
+      },
+      {
+        heading: 'MCP is an interface to capabilities',
+        body: [
+          'An MCP server exposes tools, resources, and prompts through a standard protocol. The client can discover what is available and call into those capabilities without each agent inventing a custom integration.',
+          'This is useful when the capability should be shared across many clients or agents. A Postgres MCP server, a Linear MCP server, or a docs search MCP server can serve multiple workflows.',
+        ],
+      },
+      {
+        heading: 'Skills are procedural context',
+        body: [
+          'A skill is closer to a field manual. It tells the agent how to perform a class of work: what to check, what to avoid, what output shape to use, what examples matter.',
+          'Skills should not hide credentials or grant authority. They can tell the model to use a read-only SQL tool carefully, but the read-only boundary must still live in the tool, database role, MCP server, or runtime policy.',
+        ],
+      },
+      {
+        heading: 'How they combine in real agents',
+        body: [
+          'A data analyst agent might use MCP to reach a database schema and use a skill to follow your company’s metric definitions. A code review agent might use native GitHub tools and a skill for severity calibration. A research agent might use an MCP search server and a skill for source quality.',
+          'The useful question is not “MCP or skills?” It is “which part is live capability, and which part is judgment?”',
+        ],
+      },
     ],
-    faqs: makeFaq(
-      'MCP vs skills',
-      'The decision is whether the agent needs a connection to an external system or guidance on how to perform a workflow.',
-    ),
+    decisionRows: [
+      {
+        choice: 'MCP server',
+        useWhen:
+          'Multiple agents or clients need a shared external capability with discoverable tools or resources.',
+        avoidWhen:
+          'You only need local instructions, examples, or review criteria.',
+      },
+      {
+        choice: 'Skill',
+        useWhen:
+          'The agent needs repeatable procedure, domain rules, or output standards loaded on demand.',
+        avoidWhen:
+          'The agent needs to execute an external action or hold credentials.',
+      },
+      {
+        choice: 'Both',
+        useWhen:
+          'The workflow needs system access plus domain-specific judgment.',
+        avoidWhen:
+          'Combining them adds indirection without improving safety or reuse.',
+      },
+    ],
+    examples: [
+      {
+        label: 'Eve example',
+        body: 'An Eve agent can keep integration setup in connections, expose narrow tools for actions, and ship skills for domain procedure. evex can distribute all of those files together so users can inspect the whole workflow.',
+      },
+      {
+        label: 'Outside Eve',
+        body: 'Cursor or Claude Desktop can connect to an MCP server for tool access while also loading local skills that teach the assistant project-specific conventions.',
+      },
+    ],
+    faqs: [
+      {
+        question: 'Can MCP transport prompts?',
+        answer:
+          'Yes, MCP includes prompts as a primitive. That still does not make MCP the same thing as a local skill system. The protocol is the transport and discovery layer.',
+      },
+      {
+        question: 'Can a skill call an MCP tool?',
+        answer:
+          'A skill can instruct the agent when and how to use a tool exposed through MCP, but the model and runtime still perform the actual tool call.',
+      },
+      {
+        question: 'Which one is safer?',
+        answer:
+          'Neither by default. Safety comes from narrow capabilities, permissioning, validation, logging, and clear procedures.',
+      },
+    ],
   },
   {
-    slug: 'mcp-tools-vs-native-tools',
-    title: 'MCP tools vs native tools: where should an agent action live?',
-    shortTitle: 'MCP tools vs native tools',
+    slug: 'filesystem-first-agents',
+    title:
+      'Filesystem-first agents: architecture you can review before it runs',
+    shortTitle: 'Filesystem-first agents',
     description:
-      'How to decide whether to expose an action through MCP or implement it as a native agent tool.',
-    cluster: 'protocols',
-    primaryKeyword: 'MCP tools vs native tools',
-    relatedKeywords: ['MCP tools', 'agent tools', 'native tools'],
-    audience: 'Developers designing agent integrations',
-    thesis:
-      'MCP tools are best for reusable external capability. Native tools are best for agent-specific policy and behavior.',
-    problem:
-      'Putting every action behind MCP can hide product-specific rules. Putting every action inside one agent can duplicate integrations across teams.',
-    eveAngle:
-      'Eve lets you author native tools close to the agent while using connections for external systems that should remain shared.',
-    nonEveExample:
-      'Claude Desktop might call the same MCP server from many contexts. A product-specific agent might still wrap that capability with stricter rules.',
-    antiPattern:
-      'Do not expose a broad MCP tool and assume each agent will use it safely. The consuming agent still needs policy.',
-    decisionRules: [
-      'Use MCP when many agents or clients need the same integration.',
-      'Use native tools when behavior is specific to one agent’s job.',
-      'Wrap broad external tools with narrower task tools when risk is high.',
+      'Why placing agent capabilities in predictable files can improve reviewability, distribution, and trust.',
+    cluster: 'eve-architecture',
+    primaryKeyword: 'filesystem-first agents',
+    relatedKeywords: ['Eve agent framework', 'agent project structure'],
+    audience: 'Developers comparing agent architecture styles',
+    summary:
+      'Filesystem-first agent design is not about aesthetics. It is about making capability visible. A reviewer should be able to open the project tree and see where the agent listens, what it can do, what it knows, and when it runs.',
+    sections: [
+      {
+        heading: 'Agents need an inventory, not only code paths',
+        body: [
+          'A normal application can hide complexity behind modules because most code only runs when called by other code. Agents are different. Their capabilities are offered to a model that chooses what to do next. That makes the capability inventory part of the safety surface.',
+          'If tools, prompts, schedules, and channels are scattered across generic application folders, the reviewer has to reconstruct the agent from implementation detail. A filesystem-first layout flips that. The tree tells you what to inspect.',
+        ],
+      },
+      {
+        heading: 'What Eve makes explicit',
+        body: [
+          'Eve uses the `agent/` directory as the authoring boundary. `instructions.md` describes baseline behavior. `tools/` exposes actions. `skills/` carries longer procedures. `channels/` defines where messages arrive. `schedules/` defines unattended work. `connections/` and `lib/` support integrations and shared code.',
+          'This does not remove the need for good design. It gives design mistakes a shape. A scheduled action hidden in a helper looks wrong. A broad tool with too many responsibilities looks wrong. A missing `.env.example` for an external integration looks wrong.',
+        ],
+      },
+      {
+        heading: 'Where file-first loses',
+        body: [
+          'Dynamic workflows can outgrow a simple directory inventory. If the core challenge is conditional graph routing, retries across many branches, or explicit state machines, a graph-first framework may expose the logic more directly.',
+          'That is the tradeoff. Files make capability review easier. Graphs make control-flow review easier. The right choice depends on what will be hardest to debug six months later.',
+        ],
+      },
+      {
+        heading: 'Why this matters for registries',
+        body: [
+          'A registry that distributes filesystem-first agents can show users the install surface before they run it. That is the connection between Eve and evex: the files are not an implementation detail hidden behind a package. They are the thing being evaluated.',
+        ],
+      },
     ],
-    faqs: makeFaq(
-      'MCP tools vs native tools',
-      'The decision is whether the action should be reusable infrastructure or local agent behavior.',
-    ),
-  },
-  {
-    slug: 'agent-resources-vs-tools',
-    title: 'Agent resources vs tools: read context or take action?',
-    shortTitle: 'Resources vs tools',
-    description:
-      'A guide to separating passive context from executable actions in agent systems.',
-    cluster: 'protocols',
-    primaryKeyword: 'agent resources vs tools',
-    relatedKeywords: ['MCP resources', 'agent tools', 'AI context'],
-    audience: 'Developers shaping context access for agents',
-    thesis:
-      'Resources inform the model. Tools let it change or query the world.',
-    problem:
-      'When read-only context and executable actions are mixed together, permissioning and model behavior both get murky.',
-    eveAngle:
-      'Eve projects can keep static references in skills and active operations in tools or connections, making authority easier to inspect.',
-    nonEveExample:
-      'MCP formalizes the distinction with resources and tools. Many frameworks have the same split even if they use different names.',
-    antiPattern:
-      'Do not make a read-only lookup tool mutate state because it was convenient. The name and risk profile should match.',
-    decisionRules: [
-      'Use resources for context that can be attached without model-controlled execution.',
-      'Use tools for actions with arguments, latency, errors, or side effects.',
-      'Document whether returned data is authoritative, cached, or user-provided.',
+    decisionRows: [
+      {
+        choice: 'Filesystem-first',
+        useWhen:
+          'Reviewability, source ownership, and predictable project layout matter.',
+        avoidWhen:
+          'The workflow is mostly a complex state graph and files would hide the routing logic.',
+      },
+      {
+        choice: 'Graph-first',
+        useWhen:
+          'Branching, loops, checkpoints, and explicit transitions are the main complexity.',
+        avoidWhen:
+          'The team mainly needs to inspect installable capabilities and platform entry points.',
+      },
+      {
+        choice: 'Package-first',
+        useWhen:
+          'The behavior is stable library code that users should not customize.',
+        avoidWhen:
+          'Users must audit prompts, tools, schedules, or external writes.',
+      },
     ],
-    faqs: makeFaq(
-      'agent resources vs tools',
-      'The decision is whether the agent is reading information or actively invoking an operation.',
-    ),
-  },
-  {
-    slug: 'agent-registries',
-    title: 'Agent registries: discovery, trust, and reuse for AI agents',
-    shortTitle: 'Agent registries',
-    description:
-      'What agent registries are, how they differ, and why source-visible distribution matters for developer trust.',
-    cluster: 'distribution',
-    primaryKeyword: 'agent registry',
-    relatedKeywords: [
-      'AI agent registry',
-      'agent marketplace',
-      'agent catalog',
+    examples: [
+      {
+        label: 'Eve example',
+        body: 'A reviewer can scan an Eve agent for `channels/github.ts`, `tools/submit_pr_review.ts`, `skills/review-calibration/SKILL.md`, and `.env.example` before deciding whether the agent is safe to install.',
+      },
+      {
+        label: 'Outside Eve',
+        body: 'A LangGraph project may make the execution graph clearer than the capability inventory. That can be the better tradeoff for workflows where transitions are the product.',
+      },
     ],
-    audience: 'Teams evaluating reusable agent distribution',
-    thesis:
-      'An agent registry is useful only if discovery comes with enough context to trust what will run.',
-    problem:
-      'A list of agent names does not solve reuse. Developers need files, dependencies, authorship, permissions, and install paths.',
-    eveAngle:
-      'evex focuses on source-owned Eve agents: registry items map to files users can inspect before install.',
-    nonEveExample:
-      'Enterprise registries often emphasize governance and runtime inventory. Marketplace-style registries emphasize discovery and installability.',
-    antiPattern:
-      'Do not treat an agent registry as a folder of prompts. Real agents include tools, channels, dependencies, and runtime assumptions.',
-    decisionRules: [
-      'Prefer registries that show files and dependencies before install.',
-      'Separate canonical source metadata from runtime metrics.',
-      'Make authorship and update history visible.',
+    faqs: [
+      {
+        question: 'Is filesystem-first only useful for Eve?',
+        answer:
+          'No. The broader idea is that important capabilities deserve predictable homes. Eve is one clear implementation of that idea.',
+      },
+      {
+        question: 'Does file layout replace documentation?',
+        answer:
+          'No. It reduces the amount of documentation needed to answer basic review questions, but authors still need README guidance and examples.',
+      },
+      {
+        question: 'Can file-first and graph-first coexist?',
+        answer:
+          'Yes. A project can use files to expose capabilities and graph logic to orchestrate them. The question is which model owns the main complexity.',
+      },
     ],
-    faqs: makeFaq(
-      'agent registries',
-      'The decision is whether a registry helps developers trust, install, and reuse agents rather than just browse names.',
-    ),
-  },
-  {
-    slug: 'source-owned-agents',
-    title: 'Source-owned agents: why copyable files beat opaque packages',
-    shortTitle: 'Source-owned agents',
-    description:
-      'Why agent distribution often works better when users own the installed source files.',
-    cluster: 'distribution',
-    primaryKeyword: 'source-owned agents',
-    relatedKeywords: [
-      'copy paste agents',
-      'agent source files',
-      'shadcn agents',
-    ],
-    audience: 'Developers deciding how to share agent configurations',
-    thesis:
-      'Agents are easier to trust when installation gives you source you can read, change, and review.',
-    problem:
-      'Opaque packages are convenient until the first policy mismatch. Agents encode judgment, authority, and delivery behavior, so teams often need local ownership.',
-    eveAngle:
-      'evex uses shadcn-compatible registry items to place Eve files directly into the user’s project.',
-    nonEveExample:
-      'shadcn/ui proved this pattern for UI components. Agent workflows have a similar need for ownership and customization.',
-    antiPattern:
-      'Do not hide agent behavior behind a package when the user must audit prompts, tools, or external writes.',
-    decisionRules: [
-      'Use source-owned distribution for workflows teams will customize.',
-      'Use packages for stable libraries and clients.',
-      'Keep generated source small enough for review.',
-    ],
-    faqs: makeFaq(
-      'source-owned agents',
-      'The decision is whether users need to own and modify the behavior rather than call it as a black box.',
-    ),
   },
   {
     slug: 'shadcn-registry-for-agents',
-    title: 'Shadcn registry for agents: distributing workflows as files',
+    title:
+      'Shadcn registry for agents: why workflows want to be installed as files',
     shortTitle: 'Shadcn registry for agents',
     description:
-      'How the shadcn registry model applies to AI agent files, workflows, instructions, and tools.',
+      'How the shadcn registry model applies to AI agent workflows, where users need source files rather than opaque packages.',
     cluster: 'distribution',
     primaryKeyword: 'shadcn registry for agents',
-    relatedKeywords: ['shadcn agent registry', 'registry.json agents'],
-    audience: 'Developers packaging reusable agent workflows',
-    thesis:
-      'The shadcn registry model works for agents because agents are made of files users want to own.',
-    problem:
-      'Agent workflows do not fit cleanly into a single package. They include instructions, tools, env examples, evals, and platform-specific files.',
-    eveAngle:
-      'Eve’s filesystem layout pairs naturally with shadcn registry items because both care about where files land in a project.',
-    nonEveExample:
-      'GitHub registries and custom shadcn registries can distribute rules, docs, templates, and workflows even outside Eve.',
-    antiPattern:
-      'Do not use a registry item as a dumping ground. Files should belong together as one usable workflow.',
-    decisionRules: [
-      'Use registry items for coherent installable workflows.',
-      'Declare target paths explicitly.',
-      'Include env examples and README guidance with the files.',
-    ],
-    faqs: makeFaq(
-      'shadcn registry for agents',
-      'The decision is whether a workflow can be installed as owned files with clear target paths.',
-    ),
-  },
-  {
-    slug: 'registry-json-for-agent-workflows',
-    title: 'registry.json for agent workflows: what belongs in the manifest',
-    shortTitle: 'registry.json for workflows',
-    description:
-      'A practical guide to modeling agent files, dependencies, and metadata in a shadcn registry manifest.',
-    cluster: 'distribution',
-    primaryKeyword: 'registry.json agent workflows',
     relatedKeywords: [
-      'registry.json',
-      'shadcn registry item',
-      'agent manifest',
-    ],
-    audience: 'Agent authors preparing reusable workflow packages',
-    thesis:
-      'A registry manifest should make installation predictable before a file is written.',
-    problem:
-      'If the manifest hides dependencies, targets, or metadata, the user cannot evaluate the install until after it changes their project.',
-    eveAngle:
-      'evex agent manifests declare title, description, category, dependencies, author, files, and target paths for Eve projects.',
-    nonEveExample:
-      'Custom shadcn registries use the same core idea for UI blocks, config files, rules, and docs.',
-    antiPattern:
-      'Do not rely on README text to define what the CLI will install. The manifest should be the source of truth.',
-    decisionRules: [
-      'List every file that belongs to the workflow.',
-      'Keep dependency declarations close to the registry item.',
-      'Use metadata for browsing, filtering, and auditability.',
-    ],
-    faqs: makeFaq(
-      'registry.json for agent workflows',
-      'The decision is whether the manifest gives enough information to preview and trust an install.',
-    ),
-  },
-  {
-    slug: 'ai-agent-marketplace-vs-registry',
-    title:
-      'AI agent marketplace vs registry: discovery is not the same as trust',
-    shortTitle: 'Marketplace vs registry',
-    description:
-      'How marketplaces, registries, catalogs, and source-owned agent libraries differ.',
-    cluster: 'distribution',
-    primaryKeyword: 'AI agent marketplace vs registry',
-    relatedKeywords: [
-      'agent marketplace',
       'agent registry',
-      'AI agent catalog',
+      'registry.json agents',
+      'source-owned agents',
     ],
-    audience: 'Teams choosing a distribution model for agents',
-    thesis:
-      'A marketplace optimizes selection. A registry should also optimize evaluation and installation.',
-    problem:
-      'Agent listings can look impressive while hiding the exact files, permissions, dependencies, and maintenance model.',
-    eveAngle:
-      'evex leans registry-first: installable files, source ownership, and author identity matter more than commerce today.',
-    nonEveExample:
-      'Enterprise catalogs may focus on approval and governance. Public marketplaces may focus on ratings and discovery.',
-    antiPattern:
-      'Do not use marketplace language if the product does not handle payment, licensing, reviews, or support expectations.',
-    decisionRules: [
-      'Use marketplace framing when buyers compare vendors.',
-      'Use registry framing when developers install owned artifacts.',
-      'Expose trust signals before growth mechanics.',
+    audience: 'Developers packaging reusable agent workflows',
+    summary:
+      'The shadcn model fits agents because many agent workflows are not libraries. They are source bundles: instructions, tools, skills, env examples, evals, and integration files users need to inspect and adapt.',
+    sections: [
+      {
+        heading: 'A reusable agent is not just a dependency',
+        body: [
+          'Traditional packages work well when the user wants stable behavior behind an import. Agent workflows often need the opposite. The user wants to see the prompt, adjust the tool, change the channel, remove an integration, or add a stricter approval step.',
+          'That is why source distribution is attractive. Install the files into the project, own them, and change them. The registry is not a runtime service. It is a delivery mechanism for code and instructions.',
+        ],
+      },
+      {
+        heading: 'What the registry must show before install',
+        body: [
+          'A serious agent registry should expose the files, target paths, dependencies, author, category, update date, and install command. Otherwise the user cannot answer the basic question: what will this add to my project?',
+          'This is especially important for agents because the installed files can contain authority: tools that write to APIs, channels that receive webhooks, schedules that run unattended, and skills that shape judgment.',
+        ],
+      },
+      {
+        heading: 'Where evex fits',
+        body: [
+          'evex uses the shadcn registry pattern for Eve agents. The product promise is not “trust this black box.” It is “inspect the files, then install them with one command.” That is a stronger fit for developer trust than a generic marketplace listing.',
+          'The registry also gives authors a standard shape. Instead of sharing a gist, a half-documented folder, or a README snippet, they publish a coherent installable item.',
+        ],
+      },
+      {
+        heading: 'The content warning',
+        body: [
+          'Do not abuse this model by shipping giant bundles nobody can review. Source-owned distribution only builds trust when the source is organized, small enough to inspect, and honest about dependencies and credentials.',
+        ],
+      },
     ],
-    faqs: makeFaq(
-      'AI agent marketplace vs registry',
-      'The decision is whether the site exists mainly to sell choices or to help developers safely reuse artifacts.',
-    ),
+    decisionRows: [
+      {
+        choice: 'Shadcn registry item',
+        useWhen:
+          'Users should own, inspect, and modify the installed agent files.',
+        avoidWhen:
+          'The artifact is a stable library better consumed as a normal package.',
+      },
+      {
+        choice: 'npm package',
+        useWhen:
+          'The behavior is reusable code with a stable API and little need for local editing.',
+        avoidWhen:
+          'Prompts, tools, env files, and workflow policy need project ownership.',
+      },
+      {
+        choice: 'Docs snippet',
+        useWhen: 'The setup is tiny and educational.',
+        avoidWhen:
+          'The workflow has enough files that copy-paste will become unreliable.',
+      },
+    ],
+    examples: [
+      {
+        label: 'Eve example',
+        body: 'An evex item can install `agent/agent.ts`, `agent/instructions.md`, `agent/tools/run_sql.ts`, a skill folder, README, and `.env.example` into the expected Eve layout.',
+      },
+      {
+        label: 'Outside Eve',
+        body: 'The same shadcn registry mechanism can distribute project rules, MCP setup, CI workflows, or framework templates because registry items are not limited to React components.',
+      },
+    ],
+    faqs: [
+      {
+        question: 'Why not publish every agent as an npm package?',
+        answer:
+          'Because users often need to inspect and change prompts, tools, schedules, and channel behavior. Source files make that normal.',
+      },
+      {
+        question: 'What makes a registry item good?',
+        answer:
+          'A good item has a clear job, explicit target paths, dependency declarations, setup docs, and files that belong together.',
+      },
+      {
+        question: 'Is this still useful if users customize the files?',
+        answer:
+          'Yes. Customization is the point. The registry gives them a reviewed starting point instead of a blank folder.',
+      },
+    ],
   },
   {
     slug: 'eve-vs-langgraph',
-    title:
-      'Eve vs LangGraph: filesystem-first agents or explicit workflow graphs?',
+    title: 'Eve vs LangGraph: file inventory or explicit state graph?',
     shortTitle: 'Eve vs LangGraph',
     description:
-      'A balanced comparison of Eve and LangGraph for durable agents, TypeScript teams, and explicit workflow control.',
+      'A builder-focused comparison of Eve and LangGraph across project shape, control flow, durability, and team fit.',
     cluster: 'comparisons',
     primaryKeyword: 'Eve vs LangGraph',
     relatedKeywords: [
@@ -865,427 +586,285 @@ export const LEARN_PAGES: readonly LearnPage[] = [
       'AI agent frameworks',
     ],
     audience: 'Teams choosing an agent framework',
-    thesis:
-      'Choose Eve when the project should read like files. Choose LangGraph when graph control is the central requirement.',
-    problem:
-      'Both frameworks can support serious agent work, but they optimize for different developer mental models.',
-    eveAngle:
-      'Eve emphasizes a filesystem-first TypeScript project with durable sessions and deployable backend agents.',
-    nonEveExample:
-      'LangGraph emphasizes explicit state graphs, nodes, edges, and checkpointing, especially in Python-heavy LangChain ecosystems.',
-    antiPattern:
-      'Do not pick Eve just because it is simpler to browse, or LangGraph just because it is more explicit. Match the workflow shape.',
-    decisionRules: [
-      'Prefer Eve for source-visible agent projects in TypeScript.',
-      'Prefer LangGraph for complex graph routing and explicit state machines.',
-      'Prototype the hardest failure path before choosing.',
+    summary:
+      'Eve and LangGraph are not two skins on the same idea. Eve makes agent capability visible through files. LangGraph makes workflow control visible through graphs. Pick based on which thing will be hardest for your team to reason about.',
+    sections: [
+      {
+        heading: 'The real comparison',
+        body: [
+          'Most framework comparisons collapse into feature bingo: tools, memory, streaming, human-in-the-loop, evals, deployment. That misses the point. Good frameworks make one kind of complexity easier to see.',
+          'Eve’s bet is that an agent is a project whose capabilities should live in predictable places. LangGraph’s bet is that agent workflows are stateful graphs whose transitions should be explicit.',
+        ],
+      },
+      {
+        heading: 'Where Eve is the better fit',
+        body: [
+          'Eve is attractive for TypeScript teams that want an agent to look like a backend project: instructions, tools, skills, channels, schedules, connections, and supporting code. It is especially compelling when the agent will be installed, reviewed, and modified as source.',
+          'If your team cares about “what files will this add?” Eve gives that question a natural answer. That is why it pairs well with evex and the shadcn registry model.',
+        ],
+      },
+      {
+        heading: 'Where LangGraph is the better fit',
+        body: [
+          'LangGraph is attractive when the workflow’s shape is the hard part: branches, loops, retries, checkpointed state, and explicit transitions between steps. If a diagram of the graph is the artifact the team needs to reason about, LangGraph is probably closer to the center of the problem.',
+          'This is not a weakness of Eve. It is a different emphasis. A filesystem can show capability inventory; a graph can show execution topology.',
+        ],
+      },
+      {
+        heading: 'A practical way to choose',
+        body: [
+          'Do not compare hello-world examples. Build the failure path. Include one external write, one approval, one retry, and one deployment or restart. Then ask which framework made the system easier to understand.',
+        ],
+      },
     ],
-    faqs: makeFaq(
-      'Eve vs LangGraph',
-      'The decision is whether filesystem readability or graph-level control matters more for the agent you are building.',
-    ),
+    decisionRows: [
+      {
+        choice: 'Eve',
+        useWhen:
+          'You want a TypeScript, filesystem-first backend agent whose installed files are easy to inspect.',
+        avoidWhen:
+          'Your core complexity is a dense state graph with many dynamic transitions.',
+      },
+      {
+        choice: 'LangGraph',
+        useWhen:
+          'You need explicit graph control, checkpointed state, and detailed routing logic.',
+        avoidWhen:
+          'The team mainly wants source-owned agent bundles and predictable file layout.',
+      },
+      {
+        choice: 'Hybrid thinking',
+        useWhen:
+          'You like Eve’s capability layout but still need to document or implement graph-like control explicitly.',
+        avoidWhen:
+          'The hybrid adds two mental models without clarifying the hard part.',
+      },
+    ],
+    examples: [
+      {
+        label: 'Eve-shaped workflow',
+        body: 'A GitHub PR review agent with a channel, a review tool, a calibration skill, and evals benefits from visible files and source-owned installation.',
+      },
+      {
+        label: 'LangGraph-shaped workflow',
+        body: 'A multi-step claims-processing agent with branching escalation paths and many resumable states may benefit from an explicit graph first.',
+      },
+    ],
+    faqs: [
+      {
+        question: 'Is Eve a LangGraph replacement?',
+        answer:
+          'Not directly. Eve is a filesystem-first agent framework. LangGraph is a graph-first workflow framework. Their overlap depends on the workflow.',
+      },
+      {
+        question: 'Which is better for TypeScript teams?',
+        answer:
+          'Eve is more naturally TypeScript-first. LangGraph has a broader ecosystem, especially around Python and LangChain.',
+      },
+      {
+        question: 'Which one should evex content recommend?',
+        answer:
+          'Recommend neither universally. evex should explain when Eve’s file-owned model is the right tradeoff.',
+      },
+    ],
   },
   {
-    slug: 'eve-vs-crewai',
-    title: 'Eve vs CrewAI: file-based backend agents or role-based crews?',
-    shortTitle: 'Eve vs CrewAI',
+    slug: 'human-in-the-loop-agents',
+    title: 'Human-in-the-loop agents: approval is a state boundary',
+    shortTitle: 'Human-in-the-loop agents',
     description:
-      'A practical comparison of Eve and CrewAI for teams deciding between file-based agents and role-based multi-agent workflows.',
-    cluster: 'comparisons',
-    primaryKeyword: 'Eve vs CrewAI',
-    relatedKeywords: ['CrewAI alternatives', 'AI crew framework', 'Eve agents'],
-    audience: 'Developers comparing agent frameworks',
-    thesis:
-      'Choose CrewAI for quick role-based prototypes. Choose Eve when the agent should become a durable, inspectable backend project.',
-    problem:
-      'Role metaphors are fast to start, but production agents also need file ownership, channels, schedules, tools, and recovery behavior.',
-    eveAngle:
-      'Eve maps capabilities to files and focuses on durable backend agents in TypeScript.',
-    nonEveExample:
-      'CrewAI maps workflows to agents with roles, goals, and tasks, which can be intuitive for research and content pipelines.',
-    antiPattern:
-      'Do not model every technical workflow as a pretend human team. Sometimes a typed tool and a clear instruction are enough.',
-    decisionRules: [
-      'Prefer CrewAI when the workflow naturally maps to role collaboration.',
-      'Prefer Eve when deployment, file review, and platform channels matter.',
-      'Avoid extra agents when one agent with good tools is clearer.',
+      'How to design approval flows that survive retries, changed payloads, and real production delays.',
+    cluster: 'agent-engineering',
+    primaryKeyword: 'human in the loop agents',
+    relatedKeywords: ['agent approvals', 'AI approval workflow', 'HITL agents'],
+    audience: 'Teams adding approval gates to agent workflows',
+    summary:
+      'Human-in-the-loop is not a chat UX pattern. It is a correctness boundary. The system must know exactly what was reviewed, who reviewed it, and what may happen next.',
+    sections: [
+      {
+        heading: 'The dangerous version of approval',
+        body: [
+          'The weak pattern is familiar: the agent says “Should I proceed?” The user says yes. The agent continues from whatever mutable context it has at that moment. That is fine for brainstorming and dangerous for writes, deploys, customer messages, billing changes, or data access.',
+          'Approval needs an object. A patch. A SQL query. A message body. A set of issues to update. If the approved object changes, the approval should not silently transfer.',
+        ],
+      },
+      {
+        heading: 'Approval should pause the run',
+        body: [
+          'A real approval gate pauses execution, stores the reviewed artifact, records the reviewer, and resumes only when the response is valid. That pause may last minutes or days. It should survive reloads, deploys, and worker restarts.',
+          'This is where durable execution and human-in-the-loop design meet. The UX is the button. The system design is the state boundary behind it.',
+        ],
+      },
+      {
+        heading: 'What to approve',
+        body: [
+          'Approve high-risk external writes, irreversible actions, public messages, expensive operations, and actions whose correctness depends on human context. Do not require approval for every harmless read or the agent becomes unusable.',
+        ],
+        bullets: [
+          'Approve the exact payload, not a summary of it.',
+          'Show why the agent wants to proceed.',
+          'Make rejection and revision first-class outcomes.',
+          'Expire stale approvals instead of treating them as permanent consent.',
+        ],
+      },
+      {
+        heading: 'Eve and evex angle',
+        body: [
+          'Eve provides a useful environment for agents that pause and resume. evex adds a distribution concern: if an installable agent includes approval behavior, users should be able to inspect the files that implement the gate before trusting it.',
+        ],
+      },
     ],
-    faqs: makeFaq(
-      'Eve vs CrewAI',
-      'The decision is whether the system benefits from role-based collaboration or from a source-owned backend agent layout.',
-    ),
+    decisionRows: [
+      {
+        choice: 'No approval',
+        useWhen:
+          'The action is read-only, reversible, low-cost, and easy to audit after the fact.',
+        avoidWhen:
+          'The action writes to external systems or users will blame the product for mistakes.',
+      },
+      {
+        choice: 'Inline confirmation',
+        useWhen:
+          'The action is low risk but benefits from user confirmation in the moment.',
+        avoidWhen: 'The approval must survive long delays or process restarts.',
+      },
+      {
+        choice: 'Durable approval gate',
+        useWhen:
+          'The reviewed artifact and approval record must be exact and recoverable.',
+        avoidWhen:
+          'The overhead would slow a harmless workflow without reducing risk.',
+      },
+    ],
+    examples: [
+      {
+        label: 'Good approval',
+        body: 'A support agent drafts a refund email, shows the exact text and refund amount, records the manager approval, then sends that exact payload.',
+      },
+      {
+        label: 'Bad approval',
+        body: 'An agent asks “send the update?” then regenerates the message after approval and sends a different version.',
+      },
+    ],
+    faqs: [
+      {
+        question: 'Should every agent have human approval?',
+        answer:
+          'No. Approval is for risk. Overusing it makes agents slow and trains users to click through without reading.',
+      },
+      {
+        question: 'What should an approval record contain?',
+        answer:
+          'At minimum: the artifact, reviewer, timestamp, decision, and next action. For sensitive actions, include policy checks and tool arguments.',
+      },
+      {
+        question: 'Can approval be delegated to another agent?',
+        answer:
+          'Another agent can review, but that is not the same as human authorization unless your policy explicitly allows it.',
+      },
+    ],
   },
   {
-    slug: 'eve-vs-autogen',
-    title: 'Eve vs AutoGen: durable backend agents or conversational teams?',
-    shortTitle: 'Eve vs AutoGen',
+    slug: 'agent-registries',
+    title: 'Agent registries: discovery without trust is just a list',
+    shortTitle: 'Agent registries',
     description:
-      'How Eve and AutoGen differ across durability, conversation loops, code execution, and production ownership.',
-    cluster: 'comparisons',
-    primaryKeyword: 'Eve vs AutoGen',
+      'What an AI agent registry must expose before developers can reuse agents safely.',
+    cluster: 'distribution',
+    primaryKeyword: 'agent registry',
     relatedKeywords: [
-      'AutoGen alternatives',
-      'multi-agent conversations',
-      'Eve framework',
+      'AI agent registry',
+      'agent catalog',
+      'agent marketplace',
     ],
-    audience: 'Teams evaluating conversational multi-agent systems',
-    thesis:
-      'Choose AutoGen-style systems for conversational collaboration. Choose Eve when the agent is a backend service with files, channels, and schedules.',
-    problem:
-      'Conversation among agents can be useful, but it can also hide control flow and make operational behavior harder to inspect.',
-    eveAngle:
-      'Eve’s file layout gives each capability a stable home, which helps teams review and ship agents as software projects.',
-    nonEveExample:
-      'AutoGen’s strength is agent-to-agent conversation, debate, and code execution loops, especially for exploratory tasks.',
-    antiPattern:
-      'Do not add multiple conversational agents when the real need is a deterministic workflow with one approval gate.',
-    decisionRules: [
-      'Prefer AutoGen-style patterns for debate, research, and code iteration loops.',
-      'Prefer Eve for platform-connected backend agents.',
-      'Keep conversational loops bounded by explicit stop conditions.',
+    audience: 'Teams evaluating reusable agent distribution',
+    summary:
+      'An agent registry should not stop at discovery. It should help a developer answer whether an agent is safe, maintained, installable, and worth adapting.',
+    sections: [
+      {
+        heading: 'The registry problem is not “find me an agent”',
+        body: [
+          'Search is the easy part. Trust is the hard part. Agents carry instructions, tools, external access, schedules, and sometimes public-facing channels. A card with a name and a nice description does not give a developer enough to install anything.',
+          'A useful registry shows the operational surface: what files are installed, what dependencies are needed, who authored it, when it changed, what permissions it implies, and how to inspect it before running it.',
+        ],
+      },
+      {
+        heading: 'Marketplace, catalog, registry',
+        body: [
+          'These words are often used interchangeably, but they imply different jobs. A marketplace helps people choose between vendors. A catalog helps people browse inventory. A registry should provide enough structured metadata for installation, automation, and governance.',
+          'evex should lean into registry language. It is not selling agents today. It is making reusable Eve agent configurations discoverable, inspectable, and installable.',
+        ],
+      },
+      {
+        heading: 'What a registry item needs',
+        body: [
+          'A real registry item should have a clear job, source files, target paths, dependencies, setup instructions, author identity, and update metadata. Install counts and favorites are useful signals, but they are secondary to inspectability.',
+        ],
+        bullets: [
+          'Files and target paths',
+          'Dependencies and environment variables',
+          'Author and source review path',
+          'Install command and previewable output',
+          'Runtime metrics separated from canonical metadata',
+        ],
+      },
+      {
+        heading: 'Why source ownership matters',
+        body: [
+          'Agent behavior often needs local policy. A company may want a stricter review rubric, a different Slack channel, a narrower SQL policy, or a custom approval step. Source-owned installation makes those changes normal instead of a fork of an opaque tool.',
+        ],
+      },
     ],
-    faqs: makeFaq(
-      'Eve vs AutoGen',
-      'The decision is whether the work needs multi-agent conversation or a durable service-like agent.',
-    ),
-  },
-  {
-    slug: 'eve-vs-mastra',
-    title: 'Eve vs Mastra: agent project layout or TypeScript agent platform',
-    shortTitle: 'Eve vs Mastra',
-    description:
-      'A comparison of Eve and Mastra for TypeScript teams building AI agents and workflows.',
-    cluster: 'comparisons',
-    primaryKeyword: 'Eve vs Mastra',
-    relatedKeywords: [
-      'Mastra alternatives',
-      'TypeScript agent framework',
-      'Eve framework',
+    decisionRows: [
+      {
+        choice: 'Public registry',
+        useWhen:
+          'The goal is reusable artifacts that developers can inspect and install across projects.',
+        avoidWhen:
+          'The agents depend on private infrastructure or company-only policies.',
+      },
+      {
+        choice: 'Internal registry',
+        useWhen:
+          'The organization needs approved agents, private tools, and governance.',
+        avoidWhen:
+          'The content is meant for community discovery and contribution.',
+      },
+      {
+        choice: 'Marketplace',
+        useWhen:
+          'Commerce, reviews, licensing, and support expectations are part of the product.',
+        avoidWhen:
+          'The product is currently a free source-owned distribution layer.',
+      },
     ],
-    audience: 'TypeScript developers choosing an agent stack',
-    thesis:
-      'Both appeal to TypeScript teams. The key difference is whether you want Eve’s filesystem contract or Mastra’s broader agent application framework.',
-    problem:
-      'TypeScript agent teams often compare feature lists, but the deeper choice is how much structure the framework should impose.',
-    eveAngle:
-      'Eve centers the `agent/` directory and Vercel-native runtime concepts.',
-    nonEveExample:
-      'Mastra offers a TypeScript framework for agents, workflows, RAG, and app-level AI features with its own abstractions.',
-    antiPattern:
-      'Do not choose a framework only because both use TypeScript. Compare deployment model, observability, and how agents are packaged.',
-    decisionRules: [
-      'Prefer Eve if the file layout is a core part of the team’s review process.',
-      'Prefer Mastra if the broader app framework fits your existing AI product surface.',
-      'Compare how each handles tools, memory, workflows, and deployment.',
+    examples: [
+      {
+        label: 'evex-style registry',
+        body: 'An agent page shows files, dependencies, author, install command, and related agents. The database can track installs, but canonical agent content lives in source.',
+      },
+      {
+        label: 'Enterprise-style registry',
+        body: 'A company registry may track approved MCP servers, internal agents, policy status, owners, and runtime deployment state.',
+      },
     ],
-    faqs: makeFaq(
-      'Eve vs Mastra',
-      'The decision is whether your priority is Eve’s filesystem-first agent model or a broader TypeScript AI application framework.',
-    ),
-  },
-  {
-    slug: 'eve-vs-openai-agents-sdk',
-    title: 'Eve vs OpenAI Agents SDK: framework ownership and model surface',
-    shortTitle: 'Eve vs OpenAI Agents SDK',
-    description:
-      'How to compare Eve with the OpenAI Agents SDK when choosing where agent behavior should live.',
-    cluster: 'comparisons',
-    primaryKeyword: 'Eve vs OpenAI Agents SDK',
-    relatedKeywords: ['OpenAI Agents SDK alternatives', 'Eve agents'],
-    audience: 'Developers comparing vendor SDKs and framework projects',
-    thesis:
-      'Choose Eve for a framework-shaped agent project. Choose a vendor SDK when tight model-platform integration matters more.',
-    problem:
-      'Vendor SDKs can move fast and integrate deeply, but teams must decide how much of their agent architecture should depend on one provider surface.',
-    eveAngle:
-      'Eve organizes agent behavior as project files and can route models through platform infrastructure.',
-    nonEveExample:
-      'The OpenAI Agents SDK gives provider-native primitives for agents, tools, handoffs, and tracing in that ecosystem.',
-    antiPattern:
-      'Do not confuse model convenience with architecture portability. They overlap, but they are not the same decision.',
-    decisionRules: [
-      'Prefer vendor SDKs for provider-specific features and fastest access to new primitives.',
-      'Prefer Eve when project layout and framework ownership matter more.',
-      'Keep business policy outside provider-specific glue where possible.',
+    faqs: [
+      {
+        question: 'What makes an agent registry trustworthy?',
+        answer:
+          'Transparent files, clear ownership, dependency disclosure, review history, and install previews matter more than polished listing copy.',
+      },
+      {
+        question: 'Should a registry store runtime state?',
+        answer:
+          'It can store metrics and favorites, but canonical agent metadata should stay close to source when users install source files.',
+      },
+      {
+        question: 'Is evex an agent marketplace?',
+        answer:
+          'Not in the commerce sense. It is better described as a community registry for reusable Eve agent configurations.',
+      },
     ],
-    faqs: makeFaq(
-      'Eve vs OpenAI Agents SDK',
-      'The decision is whether provider-native features or project-level architecture should drive the implementation.',
-    ),
-  },
-  {
-    slug: 'eve-vs-agentcn',
-    title: 'Eve vs Agentcn: framework or recipe registry?',
-    shortTitle: 'Eve vs Agentcn',
-    description:
-      'Why Eve and Agentcn solve different problems, and where evex sits in the same ecosystem.',
-    cluster: 'comparisons',
-    primaryKeyword: 'Eve vs Agentcn',
-    relatedKeywords: ['Agentcn alternatives', 'Eve recipes', 'agent registry'],
-    audience: 'Developers sorting out frameworks and registries',
-    thesis:
-      'Eve is a framework. Agentcn is a recipe registry. evex is a registry specifically for Eve agent configurations.',
-    problem:
-      'Search results often mix frameworks, registries, marketplaces, and recipe libraries. That makes tool selection noisier than it needs to be.',
-    eveAngle:
-      'Eve defines how the agent runs and where files belong. evex distributes reusable Eve agent folders through shadcn.',
-    nonEveExample:
-      'Agentcn distributes agent recipes across frameworks, positioning itself as a shadcn-style registry for backend agent files.',
-    antiPattern:
-      'Do not compare a runtime framework with a registry as if they are substitutes. They can be complementary layers.',
-    decisionRules: [
-      'Pick a framework to define runtime and authoring model.',
-      'Pick a registry to discover and install reusable artifacts.',
-      'Check whether the registry’s recipes match your chosen framework.',
-    ],
-    faqs: makeFaq(
-      'Eve vs Agentcn',
-      'The decision is whether you are choosing a runtime framework, a recipe source, or both.',
-    ),
-  },
-  {
-    slug: 'langgraph-vs-crewai-vs-eve',
-    title: 'LangGraph vs CrewAI vs Eve: three mental models for agents',
-    shortTitle: 'LangGraph vs CrewAI vs Eve',
-    description:
-      'A comparison of graph-based, role-based, and filesystem-first mental models for building AI agents.',
-    cluster: 'comparisons',
-    primaryKeyword: 'LangGraph vs CrewAI vs Eve',
-    relatedKeywords: ['AI agent frameworks comparison', 'Eve alternatives'],
-    audience: 'Teams selecting an agent framework family',
-    thesis:
-      'LangGraph thinks in graphs, CrewAI thinks in teams, and Eve thinks in files.',
-    problem:
-      'Framework selection gets fuzzy when every option claims tools, agents, memory, and workflows. The mental model matters more than the checklist.',
-    eveAngle:
-      'Eve is compelling when the agent’s file layout should be readable, installable, and reviewable.',
-    nonEveExample:
-      'LangGraph offers explicit control flow. CrewAI offers fast role-based composition. Each wins for different workflows.',
-    antiPattern:
-      'Do not pick the framework with the most features if its mental model fights the way your team debugs software.',
-    decisionRules: [
-      'Choose graph-first for complex state transitions.',
-      'Choose crew-first for role-based collaboration and fast prototypes.',
-      'Choose file-first for inspectable backend agents and source distribution.',
-    ],
-    faqs: makeFaq(
-      'LangGraph vs CrewAI vs Eve',
-      'The decision is which mental model makes your hardest workflow easiest to inspect and operate.',
-    ),
-  },
-  {
-    slug: 'ai-agent-tools',
-    title: 'AI agent tools: the safe way to give models actions',
-    shortTitle: 'AI agent tools',
-    description:
-      'A practical guide to designing tools that agents can call without giving them vague or excessive authority.',
-    cluster: 'agent-engineering',
-    primaryKeyword: 'AI agent tools',
-    relatedKeywords: ['LLM tools', 'tool calling', 'agent actions'],
-    audience: 'Developers exposing APIs to agents',
-    thesis:
-      'A good agent tool is narrow, typed, observable, and honest about side effects.',
-    problem:
-      'Models are good at choosing among well-described actions and bad at safely improvising around broad, ambiguous powers.',
-    eveAngle:
-      'Eve tools as files make each action easy to inspect before an agent is installed or deployed.',
-    nonEveExample:
-      'OpenAI function calling, MCP tools, and LangChain tools all rely on the same basic contract: schema in, result out.',
-    antiPattern:
-      'Do not give the model one giant tool with an `operation` string and dozens of optional fields. That recreates an unsafe API gateway.',
-    decisionRules: [
-      'Make the tool name and description match the exact action.',
-      'Use schemas to reject invalid arguments early.',
-      'Return structured results that the model can reason about.',
-    ],
-    faqs: makeFaq(
-      'AI agent tools',
-      'The main decision is how narrowly to define executable authority so the model can act without guessing.',
-    ),
-  },
-  {
-    slug: 'ai-agent-skills',
-    title: 'AI agent skills: packaging judgment without adding tools',
-    shortTitle: 'AI agent skills',
-    description:
-      'How skills help agents load domain procedure, checklists, and examples only when relevant.',
-    cluster: 'agent-engineering',
-    primaryKeyword: 'AI agent skills',
-    relatedKeywords: ['agent skills', 'SKILL.md', 'procedural knowledge'],
-    audience: 'Teams standardizing repeatable AI workflows',
-    thesis:
-      'Skills package how to think about a task, not new authority to perform it.',
-    problem:
-      'Repeated prompt instructions drift across teammates and chats. Skills make domain procedure portable and inspectable.',
-    eveAngle:
-      'Eve skills can travel with installable agents, so a reusable agent includes both its runtime files and the judgment it should apply.',
-    nonEveExample:
-      'Claude Code and Cursor skills use similar progressive loading to avoid stuffing every workflow into the system prompt.',
-    antiPattern:
-      'Do not use skills as a secret policy layer. If a rule matters for safety, enforce it in code or runtime checks too.',
-    decisionRules: [
-      'Use skills for playbooks, rubrics, examples, and domain rules.',
-      'Keep them specific enough to trigger only when useful.',
-      'Pair skills with evals when they encode important judgment.',
-    ],
-    faqs: makeFaq(
-      'AI agent skills',
-      'The decision is whether repeatable procedure should be packaged as loadable context instead of copy-pasted prompts.',
-    ),
-  },
-  {
-    slug: 'ai-subagents',
-    title: 'AI subagents: delegation without bloating the main context',
-    shortTitle: 'AI subagents',
-    description:
-      'When to split work into subagents, and when a tool or skill is the simpler choice.',
-    cluster: 'agent-engineering',
-    primaryKeyword: 'AI subagents',
-    relatedKeywords: ['subagents', 'multi-agent systems', 'agent delegation'],
-    audience: 'Developers designing multi-agent systems',
-    thesis:
-      'A subagent earns its place when independent reasoning is worth the extra coordination cost.',
-    problem:
-      'Multi-agent designs look powerful, but each delegation adds latency, cost, and another place for context to drift.',
-    eveAngle:
-      'Eve gives subagents a file-based home, making delegation visible in the project instead of hidden in runtime code.',
-    nonEveExample:
-      'CrewAI, AutoGen, Claude Code, and LangGraph can all model specialist workers with different mechanics.',
-    antiPattern:
-      'Do not add subagents for branding or symmetry. If a deterministic function can do it, use a tool.',
-    decisionRules: [
-      'Use subagents for specialist judgment with its own context.',
-      'Avoid subagents for simple API calls or formatting tasks.',
-      'Define what the parent expects back before delegating.',
-    ],
-    faqs: makeFaq(
-      'AI subagents',
-      'The decision is whether the subtask needs its own reasoning loop or just another capability.',
-    ),
-  },
-  {
-    slug: 'agentic-workflows',
-    title: 'Agentic workflows: when software should decide the next step',
-    shortTitle: 'Agentic workflows',
-    description:
-      'A guide to deciding when a workflow should be agentic, deterministic, or a hybrid of both.',
-    cluster: 'agent-engineering',
-    primaryKeyword: 'agentic workflows',
-    relatedKeywords: ['AI workflows', 'agentic systems', 'workflow automation'],
-    audience: 'Teams adding AI to existing workflows',
-    thesis:
-      'Make a workflow agentic only where judgment changes the next step.',
-    problem:
-      'Teams often replace deterministic workflows with agents because agents feel flexible. That trades reliable control for model judgment even when no judgment is needed.',
-    eveAngle:
-      'Eve can host hybrid workflows where channels, tools, schedules, and skills surround model judgment with explicit code.',
-    nonEveExample:
-      'LangGraph and workflow engines often make this split explicit with deterministic nodes around model calls.',
-    antiPattern:
-      'Do not ask the model to decide fixed business rules. Encode rules in software and let the model handle ambiguity.',
-    decisionRules: [
-      'Use deterministic code for known branches and policy.',
-      'Use the model for interpretation, synthesis, and ambiguous prioritization.',
-      'Keep side effects behind typed tools and approvals.',
-    ],
-    faqs: makeFaq(
-      'agentic workflows',
-      'The decision is where uncertainty requires model judgment and where regular software should stay in charge.',
-    ),
-  },
-  {
-    slug: 'agent-context-engineering',
-    title: 'Agent context engineering: giving models the right working set',
-    shortTitle: 'Context engineering',
-    description:
-      'How to design agent context with instructions, skills, resources, retrieval, and runtime state.',
-    cluster: 'agent-engineering',
-    primaryKeyword: 'agent context engineering',
-    relatedKeywords: ['context engineering', 'AI agent context', 'LLM context'],
-    audience: 'Developers improving agent reliability',
-    thesis:
-      'Context engineering is deciding what the model sees now, what it can fetch later, and what it should never guess.',
-    problem:
-      'Agents fail when the prompt is bloated, stale, missing key facts, or mixed with data that should be retrieved on demand.',
-    eveAngle:
-      'Eve’s layout separates instructions, skills, tools, and connections, which helps keep context sources deliberate.',
-    nonEveExample:
-      'RAG systems, MCP resources, memory stores, and prompt routers all exist to control the model’s working set.',
-    antiPattern:
-      'Do not solve every failure by adding more permanent prompt text. More context can make the right detail harder to find.',
-    decisionRules: [
-      'Put stable identity in instructions.',
-      'Put procedural depth in skills.',
-      'Fetch changing facts through tools, resources, or retrieval.',
-    ],
-    faqs: makeFaq(
-      'agent context engineering',
-      'The decision is what belongs in always-on context, on-demand context, or external state.',
-    ),
-  },
-  {
-    slug: 'agent-permissions',
-    title: 'Agent permissions: designing authority before autonomy',
-    shortTitle: 'Agent permissions',
-    description:
-      'How to think about permission boundaries for agents that can read, write, deploy, or message users.',
-    cluster: 'agent-engineering',
-    primaryKeyword: 'agent permissions',
-    relatedKeywords: [
-      'AI agent security',
-      'agent authorization',
-      'tool permissions',
-    ],
-    audience: 'Teams deploying agents with real authority',
-    thesis:
-      'Autonomy should be granted one permission at a time, with logs and fallback paths.',
-    problem:
-      'The fastest way to make an impressive demo is to give the agent broad access. The fastest way to lose trust is to ship that access unchanged.',
-    eveAngle:
-      'Eve’s file-based capabilities make it easier to review where authority enters the system: tools, connections, channels, schedules, and sandbox settings.',
-    nonEveExample:
-      'MCP, cloud IAM, OAuth scopes, and GitHub App permissions all show the same principle at different layers.',
-    antiPattern:
-      'Do not let a model infer authorization from natural language. Check permissions in code.',
-    decisionRules: [
-      'Grant read, draft, and write permissions separately.',
-      'Require approval where damage is hard to undo.',
-      'Log the actor, tool, arguments, and result for privileged actions.',
-    ],
-    faqs: makeFaq(
-      'agent permissions',
-      'The decision is which actions the agent may take alone and which require explicit human or system approval.',
-    ),
-  },
-  {
-    slug: 'ai-agent-frameworks',
-    title: 'AI agent frameworks: how to compare them without feature bingo',
-    shortTitle: 'AI agent frameworks',
-    description:
-      'A practical framework for comparing AI agent frameworks by mental model, runtime, state, tools, and deployment.',
-    cluster: 'comparisons',
-    primaryKeyword: 'AI agent frameworks',
-    relatedKeywords: ['best AI agent framework', 'agent framework comparison'],
-    audience: 'Teams shortlisting agent frameworks',
-    thesis:
-      'Compare frameworks by the shape of work they make easy, not by the number of nouns on the homepage.',
-    problem:
-      'Most frameworks claim tools, memory, workflows, evals, and observability. The harder question is which tradeoffs appear when the workflow breaks.',
-    eveAngle:
-      'Eve’s distinctive bet is filesystem-first durable backend agents in TypeScript.',
-    nonEveExample:
-      'LangGraph, CrewAI, AutoGen, Mastra, and vendor SDKs each privilege a different model of control and deployment.',
-    antiPattern:
-      'Do not choose based on the first tutorial. Build a failure-path prototype with approvals, retries, and one real external system.',
-    decisionRules: [
-      'Compare mental model before feature list.',
-      'Check state, retries, and observability early.',
-      'Choose the framework your team can debug under pressure.',
-    ],
-    faqs: makeFaq(
-      'AI agent frameworks',
-      'The decision is which framework makes your real workflow easiest to operate, not just easiest to demo.',
-    ),
   },
 ] as const
 
