@@ -2,12 +2,11 @@
 
 import { Renderer } from "@openuidev/react-lang";
 import { openuiChatLibrary } from "@openuidev/react-ui/genui-lib";
+import type { EveMessage } from "eve/react";
 import { useEveAgent } from "eve/react";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
-function getLatestAssistantText(
-  messages: ReturnType<typeof useEveAgent>["data"]["messages"],
-): string {
+function getLatestAssistantText(messages: readonly EveMessage[]): string {
   for (let index = messages.length - 1; index >= 0; index -= 1) {
     const message = messages[index];
 
@@ -31,8 +30,10 @@ function getLatestAssistantText(
  */
 export function OpenUIEveChat() {
   const agent = useEveAgent();
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const isStreaming = agent.status === "streaming";
   const isBusy =
-    agent.status === "submitted" || agent.status === "streaming";
+    agent.status === "submitted" || isStreaming;
 
   const assistantProgram = useMemo(
     () => getLatestAssistantText(agent.data.messages),
@@ -41,10 +42,14 @@ export function OpenUIEveChat() {
 
   return (
     <div className="mx-auto flex h-dvh max-w-3xl flex-col gap-4 p-4">
-      <section className="min-h-0 flex-1 overflow-auto rounded-xl border p-4">
+      <section
+        aria-busy={isBusy}
+        aria-live="polite"
+        className="min-h-0 flex-1 overflow-auto rounded-xl border p-4"
+      >
         {assistantProgram.length > 0 ? (
           <Renderer
-            isStreaming={agent.status === "streaming"}
+            isStreaming={isStreaming}
             library={openuiChatLibrary}
             response={assistantProgram}
           />
@@ -57,20 +62,34 @@ export function OpenUIEveChat() {
 
       <form
         className="flex gap-2"
-        onSubmit={(event) => {
+        onSubmit={async (event) => {
           event.preventDefault();
-          const form = new FormData(event.currentTarget);
+          const formElement = event.currentTarget;
+          const form = new FormData(formElement);
           const message = String(form.get("message") ?? "").trim();
 
           if (message.length > 0) {
-            void agent.send({ message });
-            event.currentTarget.reset();
+            setSubmitError(null);
+
+            try {
+              await agent.send({ message });
+              formElement.reset();
+            } catch (error) {
+              const errorMessage =
+                error instanceof Error ? error.message : "Failed to send message.";
+              setSubmitError(errorMessage);
+            }
           }
         }}
       >
+        <label className="sr-only" htmlFor="message">
+          Message
+        </label>
         <input
+          aria-describedby={submitError ? "message-error" : undefined}
           className="flex-1 rounded-md border px-3 py-2 text-sm"
           disabled={isBusy}
+          id="message"
           name="message"
           placeholder="Show me the weather in Tokyo"
         />
@@ -82,6 +101,11 @@ export function OpenUIEveChat() {
           Send
         </button>
       </form>
+      {submitError ? (
+        <p className="text-sm text-destructive" id="message-error" role="alert">
+          {submitError}
+        </p>
+      ) : null}
     </div>
   );
 }

@@ -14,7 +14,8 @@ reference app: the model streams structured UI instead of markdown, and a React
 2. **Answers with OpenUI Lang only** - cards, grids, charts, tables, and buttons
    instead of plain text replies.
 3. **Calls demo data tools** - `get_weather`, `get_stock_price`, and `search_web`
-   mirror the sample tools from `examples/openui-chat/src/app/api/chat/route.ts`.
+   mirror the sample tools from `examples/openui-chat/src/app/api/chat/route.ts`;
+   `search_web` is mock demo data, not live search.
 4. **Ships a frontend reference** -
    `agent/skills/openui/references/openui-eve-chat.tsx` shows how to connect
    `useEveAgent()` to `@openuidev/react-lang` `Renderer`.
@@ -28,7 +29,7 @@ npx shadcn@latest add @evex/openui-assistant
 Install the registry dependencies in your Eve app if they are not already present:
 
 ```bash
-npm install @openuidev/react-ui @openuidev/react-lang eve zod
+npm install @openuidev/react-ui @openuidev/react-lang eve just-bash zod
 ```
 
 ## Configuration
@@ -52,11 +53,12 @@ Quote NVDA and render the move as a dashboard card.
 ```
 
 ```text
-Search the web for "generative UI frameworks" and list the top results.
+Show demo search results for "generative UI frameworks".
 ```
 
 The assistant should return OpenUI Lang starting with `root = ...` and use tool
-results for factual values.
+results for factual values. Search results are labeled as demo data because the
+bundled search tool is deterministic and does not call a live provider.
 
 ## Web UI setup
 
@@ -105,6 +107,10 @@ pnpm --dir packages/agent-registry/agents/openui-assistant typecheck
 pnpm --dir packages/agent-registry/agents/openui-assistant build
 pnpm --dir packages/agent-registry/agents/openui-assistant check
 ```
+
+The package `tsconfig.json` includes the `.tsx` frontend reference under
+`agent/skills/openui/references/`, plus DOM and React types, so `typecheck`
+validates the shipped reference component as well as the Eve agent source.
 
 After editing `registry.json`, regenerate the embedded catalog:
 

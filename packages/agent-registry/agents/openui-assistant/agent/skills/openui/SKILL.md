@@ -13,7 +13,7 @@ example.
 
 ## Pipeline
 
-```
+```text
 Component library -> system prompt -> LLM -> OpenUI Lang stream -> Renderer -> UI
 ```
 
@@ -30,12 +30,16 @@ The build-time prompt in `agent/instructions/openui-prompt.ts` is generated from
 
 Example:
 
-```
-root = Stack([header, stats], "column", "m")
-header = TextContent("Q4 Dashboard", "large-heavy")
-stats = Grid([revenue, users])
-revenue = StatCard("Revenue", "$1.2M", "up")
-users = StatCard("Users", "450k", "flat")
+```text
+root = Card([header, summary, metricsTable, followups])
+header = CardHeader("Q4 Dashboard", "Revenue and user growth")
+summary = TextContent("Revenue is up while user growth is steady.", "default")
+metricsTable = Table([metricCol, valueCol, trendCol])
+metricCol = Col("Metric", ["Revenue", "Users"])
+valueCol = Col("Value", ["$1.2M", "450k"])
+trendCol = Col("Trend", ["up", "flat"])
+followups = FollowUpBlock([details])
+details = FollowUpItem("Show the detailed breakdown")
 ```
 
 ## When to load this skill
@@ -47,9 +51,10 @@ users = StatCard("Users", "450k", "flat")
 
 ## Built-in library
 
-This agent uses `openuiChatLibrary`, which includes chat-oriented layouts,
-content blocks, charts, forms, tables, and buttons. Prefer those primitives over
-inventing raw text responses.
+This agent uses `openuiChatLibrary`, which is centered on chat primitives such
+as `Card`, `CardHeader`, `TextContent`, `Table`, lists, and follow-ups. Do not
+use `Stack`; it belongs to the broader OpenUI library, not the chat library used
+by this agent.
 
 ## References
 

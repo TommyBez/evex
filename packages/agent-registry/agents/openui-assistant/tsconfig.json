@@ -3,7 +3,10 @@
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "isolatedModules": true,
+    "jsx": "react-jsx",
     "lib": [
+      "dom",
+      "dom.iterable",
       "esnext"
     ],
     "module": "esnext",
@@ -14,11 +17,14 @@
     "strict": true,
     "target": "ES2022",
     "types": [
-      "node"
+      "node",
+      "react",
+      "react-dom"
     ]
   },
   "include": [
     "agent/**/*.ts",
+    "agent/**/*.tsx",
     "evals/**/*.ts"
   ]
 }

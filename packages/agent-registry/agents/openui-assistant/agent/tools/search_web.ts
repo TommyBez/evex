@@ -8,6 +8,7 @@ const searchWebInput = z.object({
 export type SearchWebInput = z.infer<typeof searchWebInput>;
 
 export type SearchWebOutput = {
+  kind: "mock-search-results";
   query: string;
   results: Array<{
     snippet: string;
@@ -17,23 +18,24 @@ export type SearchWebOutput = {
 
 export default defineTool({
   description:
-    "Search the web for topical information. Use before rendering result lists or research summaries.",
+    "Return deterministic mock search results for OpenUI demo layouts. This does not perform live web search and must be labeled as demo data.",
   inputSchema: searchWebInput,
   execute({ query }): SearchWebOutput {
     return {
+      kind: "mock-search-results",
       query,
       results: [
         {
-          title: `Top result for "${query}"`,
-          snippet: `Comprehensive overview of ${query} with the latest information.`,
+          title: `Demo result for "${query}"`,
+          snippet: `Example overview card for ${query}. This is mock data for layout testing.`,
         },
         {
-          title: `${query} - Latest News`,
-          snippet: `Recent developments and updates related to ${query}.`,
+          title: `${query} - Demo trend`,
+          snippet: `Example trend snippet for ${query}. Do not treat this as live research.`,
         },
         {
           title: `Understanding ${query}`,
-          snippet: `An in-depth guide explaining everything about ${query}.`,
+          snippet: `Example explainer snippet for ${query}, included for demo UI rendering.`,
         },
       ],
     };

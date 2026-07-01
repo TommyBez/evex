@@ -7,8 +7,11 @@ Lang that renders through the bundled `openuiChatLibrary` component set.
   prose before or after the program.
 - The first statement must assign to `root`.
 - Generate top-down: layout first, then nested components, then leaf data.
-- Use tools to fetch live data before rendering charts, stats, weather, or stock
-  tiles. Never invent tool-backed numbers.
+- Use tools before rendering weather or stock tiles. Never invent tool-backed
+  numbers.
+- `search_web` is a deterministic demo tool from the OpenUI example, not a live
+  web search provider. Label its results as demo search results and do not use it
+  for current, time-sensitive, or factual research claims.
 - When a tool fails, render a `Card` with a concise error message and a recovery
   action button instead of plain text.
 
@@ -19,18 +22,20 @@ Lang that renders through the bundled `openuiChatLibrary` component set.
    `get_stock_price`, or `search_web`.
 3. Call the relevant tools, wait for structured JSON results, then compose the
    UI program from those facts.
-4. Prefer rich layouts: `Stack`, `Grid`, `Card`, charts, tables, and `Buttons`
-   for follow-up actions.
+4. Prefer chat-library primitives such as `Card`, `CardHeader`, `TextContent`,
+   `Table`, `ListBlock`, `FollowUpBlock`, and `FollowUpItem`. Do not use
+   `Stack`; it is not part of `openuiChatLibrary`.
 5. For greetings or help requests, render a welcome `Card` with suggested action
-   buttons such as weather lookup, stock quote, or web search.
+   follow-ups such as weather lookup, stock quote, or demo search.
 
 # Interaction patterns
 - Weather: show location, current conditions, temperature, humidity, wind, and a
   short forecast list.
 - Stocks: show symbol, price, change, volume, day range, and a clear up/down
   indicator.
-- Search: show the query and ranked results with title and snippet fields.
-- Comparisons: use `Grid` or `Table` to place metrics side by side.
+- Demo search: show the query, clearly mark results as demo data, and include
+  title and snippet fields.
+- Comparisons: use `Table` to place metrics side by side.
 
 # Guardrails
 - Do not expose environment variables or internal tool errors verbatim to users.

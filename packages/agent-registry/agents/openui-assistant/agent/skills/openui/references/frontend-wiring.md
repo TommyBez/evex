@@ -22,6 +22,17 @@ npm install @openuidev/react-lang @openuidev/react-ui eve
 The component uses `useEveAgent()` for session streaming and `@openuidev/react-lang`
 `Renderer` with `openuiChatLibrary` to turn assistant text into live UI.
 
+## Accessibility notes
+
+- The send form keeps a persistent label for the message input so keyboard and
+  screen-reader users do not have to rely on placeholder text.
+- The rendered assistant area uses `aria-live="polite"` and `aria-busy` while the
+  stream is active, so updates from `Renderer` are announced without interrupting
+  the current task.
+- If your host app moves focus after submit or renders additional controls from
+  OpenUI actions, keep focus management in the host component so new UI does not
+  unexpectedly steal focus.
+
 ## Alternative: AgentInterface
 
 For the full OpenUI chat chrome (history rail, tool-call cards, theming), follow
