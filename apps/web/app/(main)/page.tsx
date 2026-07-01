@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { Suspense } from 'react'
 import { AgentCard } from '@/components/agent-card'
 import { BrowseFilters } from '@/components/browse-filters'
+import { HomeFaq } from '@/components/home-faq'
 import { JsonLd } from '@/components/json-ld'
 import { RegistryEmptyState } from '@/components/registry-empty-state'
 import { PopInNumber } from '@/components/transitions/pop-in-number'
@@ -332,54 +333,5 @@ function AgentGridSkeleton() {
         <Skeleton className="h-44 rounded-md border border-border" key={id} />
       ))}
     </div>
-  )
-}
-
-const HOME_FAQ_ITEMS = [
-  {
-    question: 'What is evex?',
-    answer:
-      'evex is the community registry for eve agents. It packages reusable agent configurations as shadcn-compatible registry items so developers can browse, inspect, and install them into eve projects.',
-  },
-  {
-    question: 'How do I install an eve agent?',
-    answer:
-      'Run npx shadcn@latest add @evex/{slug} from your eve app root. The command writes the agent files under agent/ in the layout expected by eve.',
-  },
-  {
-    question: 'How do I publish an agent?',
-    answer:
-      'Open a pull request to the evex repository with your agent under packages/agent-registry/agents/{slug}. After merge, the agent appears in the public catalog and shadcn registry.',
-  },
-  {
-    question: 'What is eve?',
-    answer:
-      'eve is a framework for building durable backend AI agents with instructions, skills, tools, connections, and subagents. evex distributes ready-made configurations into eve projects.',
-  },
-] as const
-
-function HomeFaq() {
-  return (
-    <section
-      aria-labelledby="home-faq-heading"
-      className="mt-16 border-border border-t pt-12"
-    >
-      <h2
-        className="text-balance font-semibold text-2xl text-foreground"
-        id="home-faq-heading"
-      >
-        Frequently Asked Questions
-      </h2>
-      <dl className="mt-6 grid gap-6 sm:grid-cols-2">
-        {HOME_FAQ_ITEMS.map((item) => (
-          <div className="min-w-0" key={item.question}>
-            <dt className="font-medium text-foreground">{item.question}</dt>
-            <dd className="mt-2 text-pretty text-muted-foreground text-sm leading-relaxed">
-              {item.answer}
-            </dd>
-          </div>
-        ))}
-      </dl>
-    </section>
   )
 }
