@@ -124,6 +124,7 @@ export function AgentFileViewer({ files }: { files: AgentRegistryFile[] }) {
           </div>
           <Accordion
             className="w-full min-w-0"
+            multiple
             onValueChange={(value) =>
               setOpenPathsByGroup((prev) => ({
                 ...prev,
