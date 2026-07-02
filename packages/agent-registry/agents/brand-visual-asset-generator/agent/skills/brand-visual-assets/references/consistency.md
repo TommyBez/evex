@@ -7,3 +7,8 @@ Apply across every asset in the run:
 - Keep character or device metaphors consistent between hero, onboarding, and empty
   states.
 - Badge and icon geometry should feel like the same design system.
+- Use `currentColor` for icons unless the user explicitly asks for fixed brand
+  colors.
+- Keep hero, empty-state, and onboarding visuals on the same geometry system:
+  shared radii, shared depth rules, and a limited set of reusable motifs.
+- Prefer one clear focal object over many evenly scattered decorative objects.

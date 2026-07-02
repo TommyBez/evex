@@ -41,7 +41,9 @@ Return:
    Context.dev source URLs.
 2. An "Asset pack" section listing each asset with filename suggestion, purpose,
    and dimensions.
-3. Each SVG in its own fenced `svg` block, labeled with the suggested filename.
+3. Each asset under a Markdown heading that includes the suggested filename,
+   followed by exactly one fenced `svg` block containing SVG markup only. Do not
+   put filenames inside `svg` fences.
 4. A short "Usage notes" section covering light/dark theming, recommended sizes,
    and where each asset fits (marketing page, in-app empty state, onboarding, and
    so on).

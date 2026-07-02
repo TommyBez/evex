@@ -42,12 +42,12 @@ subagent does not see parent history.
 **Done when:** every brief has a matching `svg-generator` call; independent assets
 (for example three icons) are delegated in parallel when possible.
 
-## 5. Hunt drift
+## 5. Review taste and drift
 
-Compare returned SVGs against the locked brand profile and pack consistency
-rules.
+Compare returned SVGs against the locked brand profile, pack consistency rules,
+and the visual taste bar.
 
-**Done when:** every asset passes `references/quality-bar.md`; any asset that
-**drifts** (off-palette color, mismatched stroke language, or broken metaphor) is
-regenerated individually with a tighter brief — not the whole pack unless the
-brand profile changed.
+**Done when:** every asset passes `references/quality-bar.md`,
+`references/consistency.md`, and `references/visual-taste.md`; any asset that is
+ugly, generic, off-palette, or visually incoherent is regenerated individually
+with a tighter brief — not the whole pack unless the brand profile changed.

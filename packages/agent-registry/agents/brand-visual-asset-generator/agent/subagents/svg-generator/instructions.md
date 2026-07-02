@@ -28,11 +28,17 @@ one production-ready SVG asset at a time.
 
 # Style alignment
 - Follow the palette, tone, and industry cues in the brief exactly.
-- SaaS and digital-product visuals should feel clean, modern, and implementation
-  friendly — avoid photorealism, heavy gradients, or noisy texture unless the
-  brief requests them.
+- SaaS and digital-product visuals should feel clean, premium, and implementation
+  friendly. Use fewer, sharper shapes instead of many filler elements.
+- Avoid generic startup-art clichés: random globes, network-node webs, floating
+  dashboard cards, decorative dot grids, heavy gradients, and arbitrary glows.
 - Match illustration complexity to the asset type: icons stay simple; hero and
   onboarding scenes may be richer but still editable.
+- Icons should use `currentColor` for their primary stroke/fill unless the brief
+  explicitly requires fixed brand colors.
+- For hero or feature graphics, create one memorable focal object and let the
+  brand palette carry the identity. Do not fill empty space just because it is
+  available.
 
 # Guardrails
 - Do not invent brand names, trademarks, or product claims not present in the
