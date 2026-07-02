@@ -49,7 +49,8 @@ export default defineTool({
   async execute(input, ctx) {
     const sandbox = await ctx.getSandbox();
     const origin = readOrigin(input.deploymentUrl);
-    const bypassSecret = process.env[BYPASS_SECRET_ENV];
+    const bypassSecret = readBypassSecret();
+    const useBypass = bypassSecret !== undefined;
 
     if (bypassSecret) {
       await applyPreviewBypassBroker(sandbox, origin.hostname, bypassSecret);
@@ -61,25 +62,32 @@ export default defineTool({
         message: input.message,
         origin: origin.origin,
         streamMaxSeconds: input.streamMaxSeconds,
-        useBypassHeader: bypassSecret !== undefined,
+        useBypassHeader: useBypass,
       })
     );
 
     try {
       const result = await sandbox.run({ command });
       return toCliCommandResult({
-        brokeredVercelAuth: bypassSecret !== undefined,
+        brokeredVercelAuth: useBypass,
         command,
         result,
       });
     } finally {
-      if (bypassSecret) {
+      if (useBypass) {
         await clearPreviewBypassBroker(sandbox);
       }
     }
   },
   toModelOutput: toCliModelOutput,
 });
+
+// Normalize an unset or empty env var to undefined so the broker, the header
+// injection, and the reported brokeredVercelAuth flag can never disagree.
+function readBypassSecret(): string | undefined {
+  const value = process.env[BYPASS_SECRET_ENV];
+  return value === undefined || value === "" ? undefined : value;
+}
 
 function readOrigin(value: string): URL {
   const url = new URL(value);

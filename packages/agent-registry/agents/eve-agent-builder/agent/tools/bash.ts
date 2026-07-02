@@ -2,13 +2,16 @@ import { type ApprovalStatus, defineTool } from "eve/tools";
 import { bash } from "eve/tools/defaults";
 
 // Blocked commands must match at command position — start of input or right
-// after a shell separator — optionally preceded by env-var assignments and a
-// package-runner prefix. Mentions of these words in arguments (for example
-// `grep vercel package.json`) stay allowed. This is routing enforcement for
-// the structured tools, not a security boundary: Vercel tokens never enter
-// the sandbox, so a crafted bypass gains nothing.
-const COMMAND_POSITION = /(?:^|[;&|\n]|\$\(|`)\s*(?:\w+=\S*\s+)*/;
-const RUNNER_PREFIX = /(?:(?:npx|pnpm|npm|yarn|bun|bunx)(?:\s+(?:dlx|exec|x))?\s+)?(?:\S*\/)?/;
+// after a shell separator, grouping token, or control-flow keyword —
+// optionally preceded by env-var assignments and a package-runner prefix
+// (including runner flags such as `npx --yes`). Mentions of these words in
+// arguments (for example `grep vercel package.json`) stay allowed. This is
+// routing enforcement for the structured tools, not a security boundary:
+// Vercel tokens never enter the sandbox, so a crafted bypass gains nothing.
+const COMMAND_POSITION =
+  /(?:^|[;&|\n({]|`)\s*(?:(?:if|elif|then|else|do|while|until|time)\s+)*(?:\w+=\S*\s+)*/;
+const RUNNER_PREFIX =
+  /(?:(?:npx|pnpm|npm|yarn|bun|bunx)(?:\s+(?:-{1,2}\S+|dlx|exec|x))*\s+)?(?:\S*\/)?/;
 
 function blockedCommandPattern(commandPattern: string): RegExp {
   return new RegExp(
