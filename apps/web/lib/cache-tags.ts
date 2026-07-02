@@ -1,5 +1,7 @@
 import 'server-only'
 
+import { githubUsernameKey } from '@/lib/github'
+
 export const cacheTags = {
   agents: 'agents',
   leaderboard: 'leaderboard',
@@ -11,7 +13,7 @@ export function getAgentTag(slug: string) {
 }
 
 export function getAuthorAgentsTag(githubUsername: string) {
-  return `author-agents:${githubUsername}`
+  return `author-agents:${githubUsernameKey(githubUsername)}`
 }
 
 export function getProfileTag(userId: string) {

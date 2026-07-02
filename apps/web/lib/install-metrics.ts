@@ -5,13 +5,15 @@ import { db } from '@/lib/db'
 import { agentInstallMetric } from '@/lib/db/schema'
 import { getAgentBySlug } from '@/lib/queries'
 
+const CACHE_EXPIRE_IMMEDIATELY = { expire: 0 } as const
+
 function revalidateRegistryCaches(slug: string, authorUsername: string | null) {
-  revalidateTag(cacheTags.agents, 'max')
-  revalidateTag(cacheTags.leaderboard, 'max')
-  revalidateTag(cacheTags.registryStats, 'max')
-  revalidateTag(getAgentTag(slug), 'max')
+  revalidateTag(cacheTags.agents, CACHE_EXPIRE_IMMEDIATELY)
+  revalidateTag(cacheTags.leaderboard, CACHE_EXPIRE_IMMEDIATELY)
+  revalidateTag(cacheTags.registryStats, CACHE_EXPIRE_IMMEDIATELY)
+  revalidateTag(getAgentTag(slug), CACHE_EXPIRE_IMMEDIATELY)
   if (authorUsername) {
-    revalidateTag(getAuthorAgentsTag(authorUsername), 'max')
+    revalidateTag(getAuthorAgentsTag(authorUsername), CACHE_EXPIRE_IMMEDIATELY)
   }
 }
 
