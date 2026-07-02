@@ -39,8 +39,18 @@ const parseSearchMode = (value: string | undefined): "turbo" | "basic" | "advanc
   return DEFAULT_SEARCH_MODE;
 };
 
-const normalizePathPrefix = (prefix: string): string =>
-  prefix.replace(/^\/+/, "").replace(/\/+$/, "");
+const normalizePathPrefix = (prefix: string): string => {
+  const normalized = prefix.replace(/^\/+/, "").replace(/\/+$/, "");
+  const hasTraversalSegment = normalized
+    .split("/")
+    .some((segment) => segment === "." || segment === "..");
+  if (!normalized || hasTraversalSegment) {
+    throw new Error(
+      "PSEO_TARGET_DIR must be a non-empty relative path without . or .. segments.",
+    );
+  }
+  return normalized;
+};
 
 const targetDir = normalizePathPrefix(
   optional(process.env.PSEO_TARGET_DIR) ?? DEFAULT_TARGET_DIR,

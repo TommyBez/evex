@@ -5,15 +5,23 @@ import { SANDBOX_REPO_DIR, pseoConfig } from "./lib/pseo-config.js";
 
 const GIT_IDENTITY_NAME = "programmatic-seo-agent";
 const GIT_IDENTITY_EMAIL = "programmatic-seo-agent@users.noreply.github.com";
+const REPO_PATTERN = /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/;
 
 export default defineSandbox({
   backend: vercel({ resources: { vcpus: 2 } }),
   async onSession({ use }) {
     const sandbox = await use({ networkPolicy: sessionNetworkPolicy() });
 
+    // Without a token the agent could clone a public repo but never push or
+    // open the PR, burning keyword/research API calls first. Skipping the
+    // checkout makes the run stop at the missing-checkout guard instead.
     const repo = pseoConfig.repo;
-    if (!repo) {
+    const token = process.env.PSEO_GITHUB_TOKEN?.trim();
+    if (!(repo && token)) {
       return;
+    }
+    if (!REPO_PATTERN.test(repo)) {
+      throw new Error("PSEO_GITHUB_REPO must be in owner/repo form.");
     }
 
     await sandbox.run({
