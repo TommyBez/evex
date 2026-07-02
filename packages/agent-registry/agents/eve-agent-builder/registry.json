@@ -80,6 +80,11 @@
           "target": "~/agent/tools/verify_vercel_preview.ts"
         },
         {
+          "path": "evals/bash-denial-routing.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/bash-denial-routing.eval.ts"
+        },
+        {
           "path": "evals/deploy-target-clarification.eval.ts",
           "type": "registry:file",
           "target": "~/evals/deploy-target-clarification.eval.ts"
@@ -93,6 +98,11 @@
           "path": "evals/missing-credentials-stop.eval.ts",
           "type": "registry:file",
           "target": "~/evals/missing-credentials-stop.eval.ts"
+        },
+        {
+          "path": "evals/no-deploy-before-local-testing.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/no-deploy-before-local-testing.eval.ts"
         },
         {
           "path": "README.md",
@@ -109,7 +119,7 @@
         "slug": "eve-agent-builder",
         "category": "coding",
         "createdAt": "2026-06-30T10:23:00.000Z",
-        "updatedAt": "2026-06-30T20:15:00.000Z"
+        "updatedAt": "2026-07-02T00:00:00.000Z"
       },
       "author": "TommyBez"
     }

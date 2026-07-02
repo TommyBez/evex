@@ -68,8 +68,8 @@ use a direct AI SDK provider package and its provider key.
 
 When local testing needs a gateway model credential, the agent should call
 `run_vercel_cli` with action `link_project` after approval. That runs
-`vercel link` for the target project and lets the Vercel CLI create `.env.local`
-with a fresh `VERCEL_OIDC_TOKEN`.
+`vercel link` for the target project and then `vercel env pull .env.local`,
+which writes a fresh `VERCEL_OIDC_TOKEN` into `.env.local`.
 
 Set `VERCEL_TOKEN` in the app runtime so Eve can create Vercel Sandboxes and
 `run_vercel_cli` can broker Vercel CLI authentication through Eve's sandbox
@@ -108,14 +108,18 @@ follows the Eve Slack docs:
 5. Deploy and smoke-test Slack delivery.
 
 Vercel Connect setup, project linking, and deploy actions pause for approval
-first. `whoami` does not.
+first. `whoami` does not. Deploy actions require the workspace to already be
+linked to a Vercel project (`.vercel/project.json`), so a deploy can never
+silently create or target a project the user did not confirm.
 
 ## Protected preview verification
 
-Use `verify_vercel_preview` when the deployment is protected by Vercel
-Deployment Protection. The tool reads `VERCEL_AUTOMATION_BYPASS_SECRET` from the
-app runtime, injects it at the sandbox firewall as
-`x-vercel-protection-bypass`, and clears that transform after verification.
+Use `verify_vercel_preview` to check a deployment's Eve routes. When
+`VERCEL_AUTOMATION_BYPASS_SECRET` is set in the app runtime, the tool injects
+it at the sandbox firewall as `x-vercel-protection-bypass` and clears that
+transform after verification, so previews protected by Vercel Deployment
+Protection can be verified without exposing the secret. Without the secret it
+verifies unprotected deployments directly.
 
 It verifies:
 
@@ -129,15 +133,10 @@ sandbox environment variables.
 ## Local testing before preview
 
 The agent must test generated agents locally before deploying a preview:
-
-1. install dependencies
-2. link the Vercel project with `run_vercel_cli` action `link_project` when a
-   local `VERCEL_OIDC_TOKEN` is needed
-3. run typecheck or the repo check
-4. run `eve info --json`
-5. run `eve build`
-6. run `eve eval --skip-report` when evals exist
-7. run a local session or channel smoke test that exercises the changed agent
+install, typecheck, `eve info --json`, `eve build`, evals, and a session or
+channel smoke test that exercises the changed agent. The exact order lives in
+`agent/skills/eve-agent-delivery/references/testing-sequence.md`, which the
+agent follows step by step.
 
 If Vercel Sandbox cannot start, local implementation testing is blocked. Do not
 treat a no-binaries fallback sandbox as complete.

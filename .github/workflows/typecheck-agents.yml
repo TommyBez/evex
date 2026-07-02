@@ -42,9 +42,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
+      # No version input: pnpm/action-setup reads the packageManager field
+      # from the root package.json; pinning both makes the action error out.
       - uses: pnpm/action-setup@v4
-        with:
-          version: 10
       - uses: actions/setup-node@v4
         with:
           node-version: 24

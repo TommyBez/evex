@@ -3,7 +3,8 @@ import type { SandboxNetworkPolicy } from "eve/sandbox";
 import type { ToolContext } from "eve/tools";
 
 export const BROKERED_VERCEL_TOKEN_PLACEHOLDER = "brokeredverceltoken";
-const OUTPUT_PREVIEW_LENGTH = 6000;
+const OUTPUT_PREVIEW_HEAD_LENGTH = 2000;
+const OUTPUT_PREVIEW_TAIL_LENGTH = 4000;
 
 export interface CliCommandResult {
   brokeredVercelAuth: boolean;
@@ -57,8 +58,8 @@ export function toCliModelOutput(output: CliCommandResult): {
       brokeredVercelAuth: output.brokeredVercelAuth,
       command: output.command,
       exitCode: output.exitCode,
-      stderrPreview: tail(output.stderr),
-      stdoutPreview: tail(output.stdout),
+      stderrPreview: preview(output.stderr),
+      stdoutPreview: preview(output.stdout),
     },
   };
 }
@@ -148,10 +149,17 @@ function readVercelToken(): string | undefined {
   return process.env.VERCEL_TOKEN;
 }
 
-function tail(value: string): string {
-  if (value.length <= OUTPUT_PREVIEW_LENGTH) {
+// Build and deploy failures often surface near the top of the output, so keep
+// the head as well as the tail instead of truncating from the front.
+function preview(value: string): string {
+  const maxLength = OUTPUT_PREVIEW_HEAD_LENGTH + OUTPUT_PREVIEW_TAIL_LENGTH;
+
+  if (value.length <= maxLength) {
     return value;
   }
 
-  return value.slice(value.length - OUTPUT_PREVIEW_LENGTH);
+  const head = value.slice(0, OUTPUT_PREVIEW_HEAD_LENGTH);
+  const tail = value.slice(value.length - OUTPUT_PREVIEW_TAIL_LENGTH);
+  const omitted = value.length - maxLength;
+  return `${head}\n…[${omitted} characters omitted]…\n${tail}`;
 }

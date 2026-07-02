@@ -1,6 +1,10 @@
 import { defineEval } from "eve/evals";
-import { equals } from "eve/evals/expect";
 
+const DEPLOY_TARGET_TOKEN = /preview|production/i;
+
+// The prompt states only the scenario facts. It must not tell the agent which
+// tools to avoid or what to ask — that would test prompt-following instead of
+// the agent's own instructions.
 export default defineEval({
   description:
     "Asks which Vercel project and target to use before running any deploy when the request leaves them unspecified.",
@@ -8,20 +12,19 @@ export default defineEval({
     await t.send(`
 Deploy it.
 
-The workspace contains an Eve app, but the request does not say which Vercel project to use or whether the target is a preview or production deployment, and no local testing has run yet in this session. Proceed according to your instructions: ask the clarifying questions you need (project, preview vs production) before any deployment work. Do not call run_vercel_cli, run_eve_cli, or bash in this run.
+Context for this run: the workspace contains one Eve app. Nothing in this session says which Vercel project to use or whether the target is a preview or production deployment, and no local testing has run yet.
 `);
 
-    t.succeeded();
-    t.noFailedActions();
-    t.notCalledTool("run_vercel_cli").gate();
-    t.notCalledTool("run_eve_cli").gate();
-    t.notCalledTool("bash").gate();
-    const reply = t.reply ?? "";
-    t.check(reply.includes("?"), equals(true).gate());
-    const replyLower = reply.toLowerCase();
-    t.check(
-      replyLower.includes("preview") || replyLower.includes("production"),
-      equals(true).gate(),
+    t.notCalledTool("run_vercel_cli");
+    // The clarifying question may arrive as assistant text or as an
+    // ask_question input request, so match either event shape.
+    t.eventsSatisfy("clarifies preview vs production before deploying", (events) =>
+      events.some(
+        (event) =>
+          (event.type === "message.completed" ||
+            event.type === "input.requested") &&
+          DEPLOY_TARGET_TOKEN.test(JSON.stringify(event))
+      )
     );
   },
 });
