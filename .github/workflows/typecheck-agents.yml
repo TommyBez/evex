@@ -26,13 +26,55 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
+          # Full history so the diff base (PR base branch / previous push
+          # commit) is available locally.
+          fetch-depth: 0
       - id: list
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          BEFORE_SHA: ${{ github.event.before }}
         run: |
-          agents=$(ls -d packages/agent-registry/agents/*/ | xargs -n1 basename | jq -R . | jq -cs .)
-          echo "agents=$agents" >> "$GITHUB_OUTPUT"
+          set -euo pipefail
+
+          all_agents=$(ls -d packages/agent-registry/agents/*/ | xargs -n1 basename)
+
+          list_changed_files() {
+            if [ "$EVENT_NAME" = "pull_request" ]; then
+              git diff --name-only "$BASE_SHA...HEAD"
+              return
+            fi
+            if [ -n "$BEFORE_SHA" ] \
+              && ! echo "$BEFORE_SHA" | grep -qE '^0+$' \
+              && git cat-file -e "$BEFORE_SHA^{commit}" 2>/dev/null; then
+              git diff --name-only "$BEFORE_SHA" HEAD
+              return
+            fi
+            # New branch or force push with an unknown base: check everything.
+            echo "__all__"
+          }
+
+          changed=$(list_changed_files)
+
+          # Changes to the typecheck script or this workflow affect every
+          # agent, so fall back to the full list.
+          if echo "$changed" | grep -qE '^(__all__|packages/agent-registry/scripts/typecheck-agents\.mjs|\.github/workflows/typecheck-agents\.yml)$'; then
+            agents="$all_agents"
+          else
+            touched=$(echo "$changed" \
+              | sed -n 's|^packages/agent-registry/agents/\([^/]*\)/.*|\1|p' \
+              | sort -u)
+            # Keep only agents that still exist, skipping ones deleted here.
+            agents=$(comm -12 <(echo "$all_agents" | sort) <(echo "$touched"))
+          fi
+
+          echo "Agents to typecheck:"
+          echo "${agents:-<none>}"
+          echo "agents=$(echo "$agents" | grep . | jq -R . | jq -cs .)" >> "$GITHUB_OUTPUT"
 
   typecheck:
     needs: discover
+    if: needs.discover.outputs.agents != '[]'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
