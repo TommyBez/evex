@@ -1,0 +1,47 @@
+name: Typecheck agents
+
+on:
+  pull_request:
+    paths:
+      - "packages/agent-registry/agents/**"
+      - "packages/agent-registry/scripts/typecheck-agents.mjs"
+      - ".github/workflows/typecheck-agents.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "packages/agent-registry/agents/**"
+      - "packages/agent-registry/scripts/typecheck-agents.mjs"
+      - ".github/workflows/typecheck-agents.yml"
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    outputs:
+      agents: ${{ steps.list.outputs.agents }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: list
+        run: |
+          agents=$(ls -d packages/agent-registry/agents/*/ | xargs -n1 basename | jq -R . | jq -cs .)
+          echo "agents=$agents" >> "$GITHUB_OUTPUT"
+
+  typecheck:
+    needs: discover
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        agent: ${{ fromJSON(needs.discover.outputs.agents) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: packages/agent-registry/agents/${{ matrix.agent }}/package.json
+      - name: Typecheck ${{ matrix.agent }}
+        run: node packages/agent-registry/scripts/typecheck-agents.mjs ${{ matrix.agent }}
