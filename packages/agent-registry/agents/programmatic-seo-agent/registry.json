@@ -1,0 +1,123 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "items": [
+    {
+      "name": "programmatic-seo-agent",
+      "type": "registry:item",
+      "title": "Programmatic SEO Agent",
+      "description": "Weekly scheduled agent that grows a product's organic traffic with programmatic SEO: it checks the product's GitHub repository out into its sandbox, discovers and validates keyword opportunities with DataForSEO, researches each target with the Parallel web search API, generates batches of SEO-optimized pages matching the repo's content conventions, and pushes them as a pull request for human review.",
+      "categories": [
+        "marketing"
+      ],
+      "dependencies": [
+        "eve@^0.18.2",
+        "parallel-web@^1.1.0",
+        "zod@4.3.6"
+      ],
+      "files": [
+        {
+          "path": "agent/agent.ts",
+          "type": "registry:file",
+          "target": "~/agent/agent.ts"
+        },
+        {
+          "path": "agent/instructions.md",
+          "type": "registry:file",
+          "target": "~/agent/instructions.md"
+        },
+        {
+          "path": "agent/lib/dataforseo.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/dataforseo.ts"
+        },
+        {
+          "path": "agent/lib/pseo-config.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/pseo-config.ts"
+        },
+        {
+          "path": "agent/sandbox.ts",
+          "type": "registry:file",
+          "target": "~/agent/sandbox.ts"
+        },
+        {
+          "path": "agent/schedules/weekly-programmatic-seo.ts",
+          "type": "registry:file",
+          "target": "~/agent/schedules/weekly-programmatic-seo.ts"
+        },
+        {
+          "path": "agent/skills/programmatic-seo/references/keyword-research.md",
+          "type": "registry:file",
+          "target": "~/agent/skills/programmatic-seo/references/keyword-research.md"
+        },
+        {
+          "path": "agent/skills/programmatic-seo/references/page-quality.md",
+          "type": "registry:file",
+          "target": "~/agent/skills/programmatic-seo/references/page-quality.md"
+        },
+        {
+          "path": "agent/skills/programmatic-seo/references/playbooks.md",
+          "type": "registry:file",
+          "target": "~/agent/skills/programmatic-seo/references/playbooks.md"
+        },
+        {
+          "path": "agent/skills/programmatic-seo/SKILL.md",
+          "type": "registry:file",
+          "target": "~/agent/skills/programmatic-seo/SKILL.md"
+        },
+        {
+          "path": "agent/tools/discover_keywords.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/discover_keywords.ts"
+        },
+        {
+          "path": "agent/tools/research_keyword.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/research_keyword.ts"
+        },
+        {
+          "path": "agent/tools/validate_keywords.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/validate_keywords.ts"
+        },
+        {
+          "path": "evals/evals.config.ts",
+          "type": "registry:file",
+          "target": "~/evals/evals.config.ts"
+        },
+        {
+          "path": "evals/low-volume-run-is-skipped.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/low-volume-run-is-skipped.eval.ts"
+        },
+        {
+          "path": "evals/missing-config-does-not-publish.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/missing-config-does-not-publish.eval.ts"
+        },
+        {
+          "path": "evals/no-fabricated-volumes.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/no-fabricated-volumes.eval.ts"
+        },
+        {
+          "path": "README.md",
+          "type": "registry:file",
+          "target": "~/agent/README.md"
+        },
+        {
+          "path": ".env.example",
+          "type": "registry:file",
+          "target": "~/.env.example"
+        }
+      ],
+      "meta": {
+        "slug": "programmatic-seo-agent",
+        "category": "marketing",
+        "createdAt": "2026-07-02T22:16:06.740Z",
+        "updatedAt": "2026-07-02T22:16:06.740Z"
+      },
+      "author": "TommyBez"
+    }
+  ]
+}
