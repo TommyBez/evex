@@ -85,7 +85,7 @@ export const LEARN_PAGES: readonly LearnPage[] = [
       'A practical guide to MCP servers for agent builders: tools, resources, prompts, permissions, and where MCP stops.',
     cluster: 'protocols',
     datePublished: '2026-07-01',
-    dateModified: '2026-07-01',
+    dateModified: '2026-07-02',
     primaryKeyword: 'mcp server',
     relatedKeywords: ['model context protocol', 'mcp tools', 'mcp server ai'],
     summary:
@@ -113,7 +113,7 @@ export const LEARN_PAGES: readonly LearnPage[] = [
         ],
       },
       {
-        heading: 'Where Eve fits',
+        heading: 'Keep access separate from agent behavior',
         body: [
           'In an Eve project, MCP access usually belongs near connections or narrow tools, while agent behavior stays in instructions, skills, and application code. That keeps external capability separate from the policy that decides when to use it.',
           'This matters for installable agents. A registry item should make it obvious which external systems the agent can reach and which files implement that access.',
@@ -287,7 +287,7 @@ export const LEARN_PAGES: readonly LearnPage[] = [
       'A practical checklist for comparing LangGraph, CrewAI, AutoGen-style systems, Eve, and other agent frameworks.',
     cluster: 'comparisons',
     datePublished: '2026-07-01',
-    dateModified: '2026-07-01',
+    dateModified: '2026-07-02',
     primaryKeyword: 'ai agent frameworks',
     relatedKeywords: ['ai agent framework', 'best ai agent framework'],
     summary:
@@ -336,7 +336,7 @@ export const LEARN_PAGES: readonly LearnPage[] = [
         ],
       },
       {
-        heading: 'How Eve and evex change the question',
+        heading: 'When distribution is part of the decision',
         body: [
           'If you are building reusable Eve agents, the framework choice also becomes a distribution question. Can another developer inspect the files before they install them? Can they see which tools write to external systems? Can they change the instructions and keep the result in their own repository?',
           'That is where evex is relevant. It does not make Eve the best framework for every workflow. It makes Eve’s source-owned file model easier to discover, preview, and install when that model is the right fit.',
@@ -402,7 +402,7 @@ export const LEARN_PAGES: readonly LearnPage[] = [
       'How to design agent tools with narrow authority, typed inputs, clear descriptions, and observable results.',
     cluster: 'agent-engineering',
     datePublished: '2026-07-01',
-    dateModified: '2026-07-01',
+    dateModified: '2026-07-02',
     primaryKeyword: 'ai agent tools',
     relatedKeywords: ['agent tools', 'llm tools', 'tool calling'],
     summary:
@@ -425,7 +425,7 @@ export const LEARN_PAGES: readonly LearnPage[] = [
         ],
       },
       {
-        heading: 'How Eve helps review tools',
+        heading: 'Give every tool a reviewable file',
         body: [
           'Eve tools live in `agent/tools/`, so every callable action has a file. That layout makes review concrete: what can the model ask the system to do, and where is that behavior implemented?',
           'For registry-installed agents, this is especially useful. Users can inspect tool files before giving the agent credentials or connecting a channel.',
@@ -798,7 +798,7 @@ export const LEARN_PAGES: readonly LearnPage[] = [
       'A builder-focused comparison of LangGraph and CrewAI, with Eve as a file-based reference point.',
     cluster: 'comparisons',
     datePublished: '2026-07-01',
-    dateModified: '2026-07-01',
+    dateModified: '2026-07-02',
     primaryKeyword: 'langgraph vs crewai',
     relatedKeywords: [
       'langgraph alternatives',
@@ -861,13 +861,6 @@ export const LEARN_PAGES: readonly LearnPage[] = [
           'The task maps naturally to roles and fast multi-agent collaboration.',
         avoidWhen:
           'The workflow needs precise state control and durable side-effect boundaries.',
-      },
-      {
-        choice: 'Eve',
-        useWhen:
-          'The agent should be inspected and installed as source files in a TypeScript project.',
-        avoidWhen:
-          'The execution graph is the main artifact the team must manage.',
       },
     ],
     examples: [
