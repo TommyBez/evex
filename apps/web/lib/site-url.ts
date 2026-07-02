@@ -11,3 +11,7 @@ export function getAgentUrl(slug: string): string {
 export function getAuthorUrl(githubUsername: string): string {
   return `${getSiteUrl()}/authors/${githubUsername}`
 }
+
+export function getLearnUrl(slug: string): string {
+  return `${getSiteUrl()}/learn/${slug}`
+}

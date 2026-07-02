@@ -32,6 +32,12 @@ export function SiteFooter() {
             >
               Leaderboard
             </Link>
+            <Link
+              className="text-muted-foreground transition-colors hover:text-foreground"
+              href="/learn"
+            >
+              Learn
+            </Link>
             <a
               className="text-muted-foreground transition-colors hover:text-foreground"
               href={EVE_DOCS_URL}
