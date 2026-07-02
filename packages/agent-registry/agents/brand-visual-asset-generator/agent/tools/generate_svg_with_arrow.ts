@@ -1,4 +1,4 @@
-import { createGateway, generateImage, NoImageGeneratedError } from "ai";
+import { generateImage, NoImageGeneratedError } from "ai";
 import { defineTool } from "eve/tools";
 import { z } from "zod";
 
@@ -60,7 +60,7 @@ export default defineTool({
     }
 
     const prompt = buildPrompt(input);
-    const generatedSvg = await generateSvgWithGateway(credential, prompt);
+    const generatedSvg = await generateSvgWithGateway(prompt);
     if (!generatedSvg.ok) {
       return {
         ok: false,
@@ -135,13 +135,11 @@ function buildPrompt(input: z.infer<typeof inputSchema>): string {
 }
 
 async function generateSvgWithGateway(
-  credential: string,
   prompt: string,
 ): Promise<{ ok: true; svg: string } | { error: string; ok: false; responsePreview?: string }> {
   try {
-    const gateway = createGateway({ apiKey: credential });
     const { image } = await generateImage({
-      model: gateway.imageModel(ARROW_MODEL),
+      model: ARROW_MODEL,
       prompt,
       n: 1,
       providerOptions: {
