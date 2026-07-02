@@ -31,11 +31,6 @@
           "target": "~/agent/instructions.md"
         },
         {
-          "path": "agent/tools/generate_svg_with_arrow.ts",
-          "type": "registry:file",
-          "target": "~/agent/tools/generate_svg_with_arrow.ts"
-        },
-        {
           "path": "agent/skills/brand-visual-assets/references/brief-template.md",
           "type": "registry:file",
           "target": "~/agent/skills/brand-visual-assets/references/brief-template.md"
@@ -69,6 +64,26 @@
           "path": "agent/skills/brand-visual-assets/SKILL.md",
           "type": "registry:file",
           "target": "~/agent/skills/brand-visual-assets/SKILL.md"
+        },
+        {
+          "path": "agent/tools/generate_svg_with_arrow.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/generate_svg_with_arrow.ts"
+        },
+        {
+          "path": "evals/evals.config.ts",
+          "type": "registry:file",
+          "target": "~/evals/evals.config.ts"
+        },
+        {
+          "path": "evals/generation-failure-no-fabrication.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/generation-failure-no-fabrication.eval.ts"
+        },
+        {
+          "path": "evals/missing-context-asks.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/missing-context-asks.eval.ts"
         },
         {
           "path": "README.md",

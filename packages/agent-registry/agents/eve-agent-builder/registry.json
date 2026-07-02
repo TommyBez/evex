@@ -20,9 +20,29 @@
           "target": "~/agent/agent.ts"
         },
         {
+          "path": "agent/connections/vercel.ts",
+          "type": "registry:file",
+          "target": "~/agent/connections/vercel.ts"
+        },
+        {
           "path": "agent/instructions.md",
           "type": "registry:file",
           "target": "~/agent/instructions.md"
+        },
+        {
+          "path": "agent/lib/vercel-brokered-cli.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/vercel-brokered-cli.ts"
+        },
+        {
+          "path": "agent/sandbox.ts",
+          "type": "registry:file",
+          "target": "~/agent/sandbox.ts"
+        },
+        {
+          "path": "agent/skills/eve/SKILL.md",
+          "type": "registry:file",
+          "target": "~/agent/skills/eve/SKILL.md"
         },
         {
           "path": "agent/skills/eve-agent-delivery/references/channel-setup.md",
@@ -38,26 +58,6 @@
           "path": "agent/skills/eve-agent-delivery/SKILL.md",
           "type": "registry:file",
           "target": "~/agent/skills/eve-agent-delivery/SKILL.md"
-        },
-        {
-          "path": "agent/skills/eve/SKILL.md",
-          "type": "registry:file",
-          "target": "~/agent/skills/eve/SKILL.md"
-        },
-        {
-          "path": "agent/connections/vercel.ts",
-          "type": "registry:file",
-          "target": "~/agent/connections/vercel.ts"
-        },
-        {
-          "path": "agent/lib/vercel-brokered-cli.ts",
-          "type": "registry:file",
-          "target": "~/agent/lib/vercel-brokered-cli.ts"
-        },
-        {
-          "path": "agent/sandbox.ts",
-          "type": "registry:file",
-          "target": "~/agent/sandbox.ts"
         },
         {
           "path": "agent/tools/bash.ts",
@@ -78,6 +78,21 @@
           "path": "agent/tools/verify_vercel_preview.ts",
           "type": "registry:file",
           "target": "~/agent/tools/verify_vercel_preview.ts"
+        },
+        {
+          "path": "evals/deploy-target-clarification.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/deploy-target-clarification.eval.ts"
+        },
+        {
+          "path": "evals/evals.config.ts",
+          "type": "registry:file",
+          "target": "~/evals/evals.config.ts"
+        },
+        {
+          "path": "evals/missing-credentials-stop.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/missing-credentials-stop.eval.ts"
         },
         {
           "path": "README.md",

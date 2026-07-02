@@ -125,6 +125,21 @@
           "target": "~/agent/skills/triage/SKILL.md"
         },
         {
+          "path": "evals/evals.config.ts",
+          "type": "registry:file",
+          "target": "~/evals/evals.config.ts"
+        },
+        {
+          "path": "evals/triage-proposes-without-writing.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/triage-proposes-without-writing.eval.ts"
+        },
+        {
+          "path": "evals/unconfigured-initiative-no-update.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/unconfigured-initiative-no-update.eval.ts"
+        },
+        {
           "path": "README.md",
           "type": "registry:file",
           "target": "~/agent/README.md"

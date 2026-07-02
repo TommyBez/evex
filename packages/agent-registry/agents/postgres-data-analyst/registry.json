@@ -53,6 +53,26 @@
           "target": "~/agent/tools/run_sql.ts"
         },
         {
+          "path": "evals/ambiguous-metric-clarification.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/ambiguous-metric-clarification.eval.ts"
+        },
+        {
+          "path": "evals/evals.config.ts",
+          "type": "registry:file",
+          "target": "~/evals/evals.config.ts"
+        },
+        {
+          "path": "evals/missing-database-url-does-not-invent.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/missing-database-url-does-not-invent.eval.ts"
+        },
+        {
+          "path": "evals/read-only-refusal.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/read-only-refusal.eval.ts"
+        },
+        {
           "path": "README.md",
           "type": "registry:file",
           "target": "~/agent/README.md"

@@ -10,6 +10,7 @@
     "build": "eve build",
     "check": "eve info --json",
     "dev": "eve dev",
+    "eval": "eve eval",
     "info": "eve info --json",
     "start": "eve start",
     "typecheck": "tsc --noEmit --pretty false"

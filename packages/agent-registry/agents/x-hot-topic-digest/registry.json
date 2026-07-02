@@ -77,6 +77,11 @@
           "target": "~/evals/evals.config.ts"
         },
         {
+          "path": "evals/failed-send-not-delivered.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/failed-send-not-delivered.eval.ts"
+        },
+        {
           "path": "evals/hot-topic-digest.eval.ts",
           "type": "registry:file",
           "target": "~/evals/hot-topic-digest.eval.ts"

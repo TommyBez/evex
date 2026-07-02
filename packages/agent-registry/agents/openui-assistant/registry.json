@@ -23,21 +23,6 @@
           "target": "~/agent/agent.ts"
         },
         {
-          "path": "agent/skills/openui/references/openui-eve-chat.tsx",
-          "type": "registry:file",
-          "target": "~/agent/skills/openui/references/openui-eve-chat.tsx"
-        },
-        {
-          "path": "agent/skills/openui/references/syntax-examples.md",
-          "type": "registry:file",
-          "target": "~/agent/skills/openui/references/syntax-examples.md"
-        },
-        {
-          "path": "agent/skills/openui/references/frontend-wiring.md",
-          "type": "registry:file",
-          "target": "~/agent/skills/openui/references/frontend-wiring.md"
-        },
-        {
           "path": "agent/instructions/openui-prompt.ts",
           "type": "registry:file",
           "target": "~/agent/instructions/openui-prompt.ts"
@@ -51,6 +36,21 @@
           "path": "agent/lib/openui-library.ts",
           "type": "registry:file",
           "target": "~/agent/lib/openui-library.ts"
+        },
+        {
+          "path": "agent/skills/openui/references/frontend-wiring.md",
+          "type": "registry:file",
+          "target": "~/agent/skills/openui/references/frontend-wiring.md"
+        },
+        {
+          "path": "agent/skills/openui/references/openui-eve-chat.tsx",
+          "type": "registry:file",
+          "target": "~/agent/skills/openui/references/openui-eve-chat.tsx"
+        },
+        {
+          "path": "agent/skills/openui/references/syntax-examples.md",
+          "type": "registry:file",
+          "target": "~/agent/skills/openui/references/syntax-examples.md"
         },
         {
           "path": "agent/skills/openui/SKILL.md",
@@ -71,6 +71,26 @@
           "path": "agent/tools/search_web.ts",
           "type": "registry:file",
           "target": "~/agent/tools/search_web.ts"
+        },
+        {
+          "path": "evals/evals.config.ts",
+          "type": "registry:file",
+          "target": "~/evals/evals.config.ts"
+        },
+        {
+          "path": "evals/openui-format-contract.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/openui-format-contract.eval.ts"
+        },
+        {
+          "path": "evals/stock-quote-exact-price.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/stock-quote-exact-price.eval.ts"
+        },
+        {
+          "path": "evals/weather-card-uses-tool-data.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/weather-card-uses-tool-data.eval.ts"
         },
         {
           "path": "README.md",

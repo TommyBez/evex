@@ -111,6 +111,11 @@
           "target": "~/evals/evals.config.ts"
         },
         {
+          "path": "evals/failed-create-no-retry.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/failed-create-no-retry.eval.ts"
+        },
+        {
           "path": "evals/missing-config-does-not-create.eval.ts",
           "type": "registry:file",
           "target": "~/evals/missing-config-does-not-create.eval.ts"

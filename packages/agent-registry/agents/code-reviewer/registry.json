@@ -62,6 +62,11 @@
           "target": "~/evals/evals.config.ts"
         },
         {
+          "path": "evals/pr-review-input-contract.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/pr-review-input-contract.eval.ts"
+        },
+        {
           "path": "evals/pr-review-no-findings.eval.ts",
           "type": "registry:file",
           "target": "~/evals/pr-review-no-findings.eval.ts"

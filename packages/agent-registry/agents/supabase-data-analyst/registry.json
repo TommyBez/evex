@@ -7,8 +7,13 @@
       "title": "Supabase Data Analyst",
       "description": "A Slack-native Eve analyst for a single Supabase project that only runs read-only SQL queries. It exposes just supabase__list_tables and supabase__execute_sql through an MCP client connection to the hosted Supabase MCP server; no write, migration, Edge Function, branch, storage, logs, advisors, account, or docs tools are available.",
       "author": "TommyBez",
-      "categories": ["data"],
-      "dependencies": ["@vercel/connect@^0.2.6", "eve@^0.18.2"],
+      "categories": [
+        "data"
+      ],
+      "dependencies": [
+        "@vercel/connect@^0.2.6",
+        "eve@^0.18.2"
+      ],
       "files": [
         {
           "path": "agent/agent.ts",
@@ -34,6 +39,21 @@
           "path": "agent/lib/supabase-config.ts",
           "type": "registry:file",
           "target": "~/agent/lib/supabase-config.ts"
+        },
+        {
+          "path": "evals/evals.config.ts",
+          "type": "registry:file",
+          "target": "~/evals/evals.config.ts"
+        },
+        {
+          "path": "evals/secret-redaction.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/secret-redaction.eval.ts"
+        },
+        {
+          "path": "evals/write-request-refusal.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/write-request-refusal.eval.ts"
         },
         {
           "path": "README.md",

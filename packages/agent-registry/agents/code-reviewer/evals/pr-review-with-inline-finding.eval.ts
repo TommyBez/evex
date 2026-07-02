@@ -26,7 +26,7 @@ diff --git a/src/auth.ts b/src/auth.ts
 Review this diff and publish the PR review with submit_pr_review.
 `);
 
-    t.completed();
+    t.succeeded();
     t.calledTool("submit_pr_review");
     t.check(t.reply, includes("submit_pr_review").soft());
   },
