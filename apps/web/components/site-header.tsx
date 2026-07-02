@@ -30,12 +30,6 @@ export function SiteHeaderFallback() {
           >
             Leaderboard
           </Link>
-          <Link
-            className="hidden font-medium text-muted-foreground text-sm sm:inline-flex"
-            href="/learn"
-          >
-            Learn
-          </Link>
         </div>
 
         <div className="flex items-center gap-2">
@@ -71,12 +65,6 @@ export async function SiteHeader() {
             href="/leaderboard"
           >
             Leaderboard
-          </Link>
-          <Link
-            className="hidden font-medium text-muted-foreground text-sm transition-colors hover:text-foreground sm:inline-flex"
-            href="/learn"
-          >
-            Learn
           </Link>
           {user ? (
             <Link

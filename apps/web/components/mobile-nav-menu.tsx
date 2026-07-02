@@ -10,7 +10,6 @@ import {
   DrawerTrigger,
 } from '@evex/ui/drawer'
 import {
-  BookOpen,
   ExternalLink,
   Heart,
   LogIn,
@@ -65,18 +64,6 @@ export function MobileNavMenu({
                 className="size-4 text-muted-foreground"
               />
               Leaderboard
-            </Link>
-          </DrawerClose>
-          <DrawerClose asChild>
-            <Link
-              className="flex min-h-11 items-center gap-3 rounded-md px-3 font-medium text-sm transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
-              href="/learn"
-            >
-              <BookOpen
-                aria-hidden="true"
-                className="size-4 text-muted-foreground"
-              />
-              Learn
             </Link>
           </DrawerClose>
           <DrawerClose asChild>
