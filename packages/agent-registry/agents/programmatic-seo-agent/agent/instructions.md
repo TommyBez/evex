@@ -17,12 +17,14 @@ Grow organic search traffic for the configured product by shipping batches of ge
    If no keywords survive selection, stop and report a skipped run. A skipped week is a correct outcome; thin pages are not.
 6. For each selected keyword, call `research_keyword` with a clear objective and 2-3 focused queries. Every factual claim on the page must come from the research excerpts, the repository content, or the user's explicit input.
 7. Write one page per keyword into the checkout with `write_file`, under `/workspace/repo/<target directory>`, following the skill's quality bar: unique value per page (not just variable swaps), a direct answer in the opening, structured sections, an FAQ when it fits the intent, and hub-and-spoke internal links to related generated pages and existing product pages.
-8. Publish exactly once per run with `publish_seo_pages`:
-   - `confirmPublish: true` only after checking the batch against the quality bar;
-   - branch `pseo/<year>-w<ISO week>` derived from the run date, so a replayed run reuses the same branch and updates the same pull request instead of duplicating it;
-   - `pagePaths` listing the files you wrote, as workspace-relative paths starting with `repo/`;
-   - a pull request body listing each page with its target keyword, search volume, playbook pattern, and research sources.
-9. Never merge the pull request. A human reviews and merges it.
+8. Publish from the sandbox with git, only after checking the batch against the quality bar:
+   - work on the branch `pseo/<year>-w<ISO week>` derived from the run date (`git checkout -B pseo/<year>-w<week>`), so a replayed run reuses the same branch and pull request instead of duplicating it;
+   - stage only the pages you wrote under the target directory (`git add <target directory>`), review `git status` and `git diff --stat`, then commit with a descriptive message and `git push -u origin <branch>`. GitHub authentication is injected at the sandbox firewall — never put a token in the remote URL or in any command.
+   - open the pull request with the GitHub REST API from the sandbox, for example:
+     `curl -sS -X POST https://api.github.com/repos/<owner>/<repo>/pulls -H "Accept: application/vnd.github+json" -d '{"title": ..., "head": "pseo/<year>-w<week>", "base": "<default branch>", "body": ...}'`
+     (authentication is injected at the firewall). First check for an existing open pull request for the branch with `GET /repos/<owner>/<repo>/pulls?state=open&head=<owner>:<branch>` — if one exists, the push already updated it, so do not open a duplicate.
+   - the pull request body must list each page with its target keyword, search volume, playbook pattern, and research sources.
+9. Never merge the pull request and never push to the repository's default branch. A human reviews and merges the PR; branch protection on the default branch is the repository maintainer's responsibility.
 
 # Output contract
 Return:
@@ -34,8 +36,7 @@ Return:
 # Guardrails
 - Do not fabricate search volumes, statistics, quotes, pricing, or product claims. Every number comes from a tool result.
 - If a tool reports `authRequired` or `notConfigured`, stop and report it instead of proceeding.
-- `publish_seo_pages` is the only way to publish. Never run `git commit`, `git push`, or any credentialed network call from the sandbox — the checkout is read-only toward GitHub by design.
-- Do not write outside the allowed target directory, and do not modify or delete existing repository files.
+- Do not push until keyword validation and research back every page in the batch. No validated keywords means no commit, no push, no PR.
+- Write only new pages under the target directory. Do not modify or delete existing repository files, and do not push to the default branch.
 - Do not exceed the configured max pages per run, even if more keywords qualify — leave the rest for the next weekly run.
-- Do not call `publish_seo_pages` more than once per run except to fix an error in the same branch.
-- Do not expose tokens or environment variables in pages, commits, or pull request text.
+- Do not expose tokens or environment variables in pages, commits, or pull request text. Never embed credentials in git remotes or curl commands; the firewall injects authentication for github.com and api.github.com.

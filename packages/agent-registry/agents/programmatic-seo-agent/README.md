@@ -11,14 +11,13 @@ It never merges anything itself, never writes outside the configured content dir
 3. **Validates page patterns** — `validate_keywords` checks the exact template permutations (for example `<product> for <persona>`) against Google Ads search volumes before any page is written; anything below `PSEO_MIN_SEARCH_VOLUME` is dropped.
 4. **Researches each target** — `research_keyword` calls the Parallel Search API with focused queries and returns ranked excerpts with provenance; every factual claim on a page must trace back to them.
 5. **Generates pages with a vertical skill** — the bundled `programmatic-seo` skill encodes the playbook catalog (comparisons, integrations, use cases, glossaries, …), keyword selection rules, and a strict page-quality bar (unique value per page, hub-and-spoke internal linking, no doorway pages).
-6. **Publishes as a pull request** — `publish_seo_pages` reads the generated files back out of the sandbox checkout, commits them to an idempotent weekly branch (`pseo/<year>-w<week>`) via the GitHub REST API, and opens or updates a PR against the default branch. Re-running the same week updates the same PR instead of duplicating it.
+6. **Publishes as a pull request from the sandbox** — the agent works like a developer inside its checkout: it creates the idempotent weekly branch (`pseo/<year>-w<week>`), stages only the target directory, commits, pushes, and opens the PR with a `curl` call to the GitHub REST API. Re-running the same week pushes to the same branch and updates the same PR instead of duplicating it.
 
 ## Architecture notes
 
-Following eve's security model, GitHub access is split across the two trust zones:
+All GitHub interaction happens inside the sandbox, following the same pattern eve's own GitHub channel uses for its sandbox checkout: the token is brokered at the sandbox firewall (a per-domain header transform injects Basic auth on `github.com` for git and Bearer auth on `api.github.com` for the PR API), so it never enters the sandbox process, never appears in command lines or `.git/config`, and can never leak into a generated page or PR body. The agent clones, explores, writes, commits, pushes, and opens the pull request with ordinary `git` and `curl` — no bespoke GitHub tool.
 
-- **Reads happen in the sandbox.** The repo is cloned at session start with a brokered credential (a per-domain header transform in the sandbox network policy), mirroring how eve's own GitHub channel does its sandbox checkout. After the clone, the policy is reset so nothing inside the sandbox can push — the token never enters the sandbox process.
-- **The single write path is an authored tool.** `publish_seo_pages` runs in the app runtime (where `PSEO_GITHUB_TOKEN` lives) and enforces in code what a generic GitHub MCP connection could only ask for in instructions: paths restricted to `PSEO_TARGET_DIR`, `pseo/*` branch naming, an explicit `confirmPublish` gate, and idempotent PR reuse. A GitHub MCP connection would work too, but its generic write tools (`create_or_update_file`, `push_files`) cannot enforce those guardrails, and a scheduled headless run cannot rely on human approval gates — the pull request itself is the human review step.
+Guardrails are behavioral rather than enforced in code: instructions pin the agent to `pseo/*` branches and the target directory, and the PR is the human review gate. Protecting the default branch (required reviews, no direct pushes) is the repository maintainer's responsibility via branch protection rules — the token you configure is only as powerful as you make it, so a fine-grained token scoped to Contents + Pull requests is recommended.
 
 DataForSEO and Parallel are wrapped as authored tools rather than OpenAPI/MCP connections for the same reason the existing registry agents do it: the tools inject the configured location/language/thresholds and return trimmed, model-sized outputs instead of raw API payloads.
 
@@ -37,7 +36,6 @@ Copy `.env.example` into your Eve app environment and fill in the values.
 - `PSEO_GITHUB_REPO` — the product repository that receives the pages, as `owner/repo`.
 - `PSEO_GITHUB_TOKEN` — fine-grained personal access token (or GitHub App installation token) with **Contents: read/write** and **Pull requests: read/write** on that repository.
 - `PSEO_TARGET_DIR` — directory the agent writes pages into. Defaults to `content/programmatic`.
-- `PSEO_ALLOWED_PATH_PREFIXES` — optional comma-separated extra directories the agent may write to. The publish tool rejects any path outside the allowed prefixes.
 
 ### Schedule and batch size
 
@@ -68,15 +66,15 @@ DataForSEO was chosen over scraping-oriented providers because it exposes purpos
    curl -X POST http://localhost:3000/eve/v1/dev/schedules/weekly-programmatic-seo
    ```
 
-3. The agent reads the repo, selects keywords, and only commits when `publish_seo_pages` is called with `confirmPublish: true`. Review the pull request it opens — nothing is merged automatically.
+3. The agent explores the checkout, selects keywords, writes pages into `/workspace/repo/<PSEO_TARGET_DIR>`, then pushes a `pseo/<year>-w<week>` branch and opens a pull request. Review that PR — nothing is merged automatically.
 
 ## Troubleshooting
 
 - **`authRequired: missingEnv DATAFORSEO_LOGIN / DATAFORSEO_PASSWORD`** — DataForSEO credentials are missing.
 - **`authRequired: missingEnv PARALLEL_API_KEY`** — the Parallel API key is missing.
 - **`notConfigured: missingEnv PSEO_GITHUB_REPO`** — the repo is missing or not in `owner/repo` form.
-- **`pathNotAllowed`** — a generated page path fell outside `PSEO_TARGET_DIR` / `PSEO_ALLOWED_PATH_PREFIXES`; nothing was committed.
-- **`notConfirmed: true`** — `publish_seo_pages` was called without `confirmPublish: true`; review the batch first.
+- **`git push` fails with 403** — the token lacks Contents write access on the repo, or the sandbox backend does not support credential brokering.
+- **PR creation via `curl` returns 401/403** — the token lacks Pull requests write access, or the request went to a host other than `api.github.com` (only `github.com` and `api.github.com` carry brokered auth).
 - **The weekly run reports "skipped"** — no keyword cleared `PSEO_MIN_SEARCH_VOLUME` after deduplication and coverage checks. This is intended behavior, not a failure.
 - **HTTP 404 from GitHub** — the token cannot see the repo, or `PSEO_GITHUB_REPO` is wrong.
 - **`/workspace/repo` is missing in the sandbox** — the session-start clone failed: check `PSEO_GITHUB_REPO`, `PSEO_GITHUB_TOKEN`, and that the sandbox backend supports credential brokering (Vercel Sandbox does; plain local Docker does not inject the brokered header).

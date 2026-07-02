@@ -1,7 +1,6 @@
 export type PseoConfig = {
   readonly repo: string | undefined;
   readonly targetDir: string;
-  readonly allowedPathPrefixes: readonly string[];
   readonly weeklyCron: string;
   readonly maxPagesPerRun: number;
   readonly minSearchVolume: number;
@@ -21,12 +20,6 @@ const DEFAULT_LOCATION_CODE = 2840;
 const DEFAULT_LANGUAGE_CODE = "en";
 const DEFAULT_SEARCH_MODE = "basic";
 const DEFAULT_SEARCH_MAX_RESULTS = 5;
-
-const compactCsv = (value: string | undefined): string[] =>
-  (value ?? "")
-    .split(",")
-    .map((item) => item.trim())
-    .filter(Boolean);
 
 const optional = (value: string | undefined): string | undefined => {
   const trimmed = value?.trim();
@@ -56,10 +49,6 @@ const targetDir = normalizePathPrefix(
 export const pseoConfig = {
   repo: optional(process.env.PSEO_GITHUB_REPO),
   targetDir,
-  allowedPathPrefixes: [
-    targetDir,
-    ...compactCsv(process.env.PSEO_ALLOWED_PATH_PREFIXES).map(normalizePathPrefix),
-  ],
   weeklyCron: optional(process.env.PSEO_WEEKLY_CRON) ?? DEFAULT_WEEKLY_CRON,
   maxPagesPerRun: parsePositiveInteger(
     process.env.PSEO_MAX_PAGES_PER_RUN,
