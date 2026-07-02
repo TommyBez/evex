@@ -11,6 +11,8 @@ export type PseoConfig = {
   readonly searchMaxResults: number;
 };
 
+export const SANDBOX_REPO_DIR = "repo";
+
 const DEFAULT_TARGET_DIR = "content/programmatic";
 const DEFAULT_WEEKLY_CRON = "0 7 * * 1";
 const DEFAULT_MAX_PAGES_PER_RUN = 20;

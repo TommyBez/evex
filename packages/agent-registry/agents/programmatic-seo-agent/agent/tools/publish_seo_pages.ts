@@ -9,7 +9,7 @@ import {
   isGitHubAccessError,
   readGitHubAccess,
 } from "../lib/github.js";
-import { pseoConfig } from "../lib/pseo-config.js";
+import { SANDBOX_REPO_DIR, pseoConfig } from "../lib/pseo-config.js";
 
 const MAX_PAGES_PER_CALL = 20;
 const BRANCH_PATTERN = /^pseo\/[A-Za-z0-9._/-]+$/;
@@ -36,7 +36,7 @@ type PullRequestSummary = {
 
 export default defineTool({
   description:
-    "Publish a batch of generated SEO pages to the configured product repository: commits the files to a dedicated 'pseo/...' branch and opens (or updates) a pull request against the default branch. Never merges. Requires confirmPublish=true after the pages have been reviewed against the programmatic-seo quality bar.",
+    `Publish generated SEO pages from the sandbox workspace to the configured product repository: reads the page files you wrote under /workspace/${SANDBOX_REPO_DIR}/, commits them to a dedicated 'pseo/...' branch, and opens (or updates) a pull request against the default branch. Never merges. Requires confirmPublish=true after the pages have been reviewed against the programmatic-seo quality bar.`,
   inputSchema: z.object({
     branch: z
       .string()
@@ -48,19 +48,13 @@ export default defineTool({
         "Branch to commit to, derived from the run date (for example pseo/2026-w27) so a replayed run reuses the same branch and pull request.",
       ),
     commitMessage: z.string().min(1).describe("Commit message for this batch of pages."),
-    pages: z
-      .array(
-        z.object({
-          path: z
-            .string()
-            .min(1)
-            .describe("Repository-relative file path inside the allowed target directory."),
-          content: z.string().min(1).describe("Full file content for the page."),
-        }),
-      )
+    pagePaths: z
+      .array(z.string().min(1))
       .min(1)
       .max(MAX_PAGES_PER_CALL)
-      .describe("Pages to commit in this batch."),
+      .describe(
+        `Sandbox workspace paths of the generated pages, relative to /workspace and starting with ${SANDBOX_REPO_DIR}/ (for example ${SANDBOX_REPO_DIR}/${pseoConfig.targetDir}/my-page.mdx).`,
+      ),
     pullRequestTitle: z.string().min(1).describe("Title for the pull request."),
     pullRequestBody: z
       .string()
@@ -72,14 +66,10 @@ export default defineTool({
       .boolean()
       .describe("Must be true to commit and open the pull request."),
   }),
-  async execute({
-    branch,
-    commitMessage,
-    pages,
-    pullRequestTitle,
-    pullRequestBody,
-    confirmPublish,
-  }) {
+  async execute(
+    { branch, commitMessage, pagePaths, pullRequestTitle, pullRequestBody, confirmPublish },
+    ctx,
+  ) {
     if (!confirmPublish) {
       return {
         published: false,
@@ -93,12 +83,31 @@ export default defineTool({
       return { published: false, ...access };
     }
 
+    const repoPrefix = `${SANDBOX_REPO_DIR}/`;
+    const normalizedPaths = pagePaths.map((pagePath) => pagePath.replace(/^\/+/, ""));
+
+    const outsideRepoPaths = normalizedPaths.filter(
+      (pagePath) => !pagePath.startsWith(repoPrefix),
+    );
+    if (outsideRepoPaths.length > 0) {
+      return {
+        published: false,
+        pathNotAllowed: outsideRepoPaths,
+        message: `Every page path must live under ${repoPrefix} in the sandbox workspace. Nothing was committed.`,
+      };
+    }
+
+    const pages = normalizedPaths.map((sandboxPath) => ({
+      sandboxPath,
+      repoPath: sandboxPath.slice(repoPrefix.length),
+    }));
+
     const disallowedPaths = pages
-      .map((page) => page.path.replace(/^\/+/, ""))
+      .map((page) => page.repoPath)
       .filter(
-        (pagePath) =>
+        (repoPath) =>
           !pseoConfig.allowedPathPrefixes.some((prefix) =>
-            pagePath.startsWith(`${prefix}/`),
+            repoPath.startsWith(`${prefix}/`),
           ),
       );
     if (disallowedPaths.length > 0) {
@@ -108,6 +117,30 @@ export default defineTool({
         allowedPathPrefixes: pseoConfig.allowedPathPrefixes,
         message:
           "Every page path must be inside an allowed path prefix. Nothing was committed.",
+      };
+    }
+
+    const sandbox = await ctx.getSandbox();
+    const files: Array<{ repoPath: string; content: string }> = [];
+    const unreadablePaths: string[] = [];
+    for (const page of pages) {
+      try {
+        const content = await sandbox.readTextFile({ path: page.sandboxPath });
+        if (content === null) {
+          unreadablePaths.push(page.sandboxPath);
+          continue;
+        }
+        files.push({ repoPath: page.repoPath, content });
+      } catch {
+        unreadablePaths.push(page.sandboxPath);
+      }
+    }
+    if (unreadablePaths.length > 0) {
+      return {
+        published: false,
+        unreadablePaths,
+        message:
+          "Some page files could not be read from the sandbox workspace. Nothing was committed.",
       };
     }
 
@@ -126,11 +159,11 @@ export default defineTool({
         method: "POST",
         body: {
           base_tree: headCommit.tree.sha,
-          tree: pages.map((page) => ({
-            path: page.path.replace(/^\/+/, ""),
+          tree: files.map((file) => ({
+            path: file.repoPath,
             mode: BLOB_FILE_MODE,
             type: "blob",
-            content: page.content,
+            content: file.content,
           })),
         },
       },
@@ -170,7 +203,7 @@ export default defineTool({
       repo: access.repoRef.fullName,
       branch,
       commitSha: newCommit.sha,
-      filesCommitted: pages.map((page) => page.path.replace(/^\/+/, "")),
+      filesCommitted: files.map((file) => file.repoPath),
       pullRequest,
     };
   },

@@ -5,7 +5,7 @@
       "name": "programmatic-seo-agent",
       "type": "registry:item",
       "title": "Programmatic SEO Agent",
-      "description": "Weekly scheduled agent that grows a product's organic traffic with programmatic SEO: it reads the product's GitHub repository, discovers and validates keyword opportunities with DataForSEO, researches each target with the Parallel web search API, generates batches of SEO-optimized pages matching the repo's content conventions, and opens a pull request for human review.",
+      "description": "Weekly scheduled agent that grows a product's organic traffic with programmatic SEO: it checks the product's GitHub repository out into its sandbox, discovers and validates keyword opportunities with DataForSEO, researches each target with the Parallel web search API, generates batches of SEO-optimized pages matching the repo's content conventions, and opens a pull request for human review.",
       "categories": [
         "marketing"
       ],
@@ -41,6 +41,11 @@
           "target": "~/agent/lib/pseo-config.ts"
         },
         {
+          "path": "agent/sandbox.ts",
+          "type": "registry:file",
+          "target": "~/agent/sandbox.ts"
+        },
+        {
           "path": "agent/schedules/weekly-programmatic-seo.ts",
           "type": "registry:file",
           "target": "~/agent/schedules/weekly-programmatic-seo.ts"
@@ -74,11 +79,6 @@
           "path": "agent/tools/publish_seo_pages.ts",
           "type": "registry:file",
           "target": "~/agent/tools/publish_seo_pages.ts"
-        },
-        {
-          "path": "agent/tools/read_product_repo.ts",
-          "type": "registry:file",
-          "target": "~/agent/tools/read_product_repo.ts"
         },
         {
           "path": "agent/tools/research_keyword.ts",
@@ -124,8 +124,8 @@
       "meta": {
         "slug": "programmatic-seo-agent",
         "category": "marketing",
-        "createdAt": "2026-07-02T21:52:05.992Z",
-        "updatedAt": "2026-07-02T21:52:05.992Z"
+        "createdAt": "2026-07-02T22:06:29.106Z",
+        "updatedAt": "2026-07-02T22:06:29.106Z"
       },
       "author": "TommyBez"
     }
