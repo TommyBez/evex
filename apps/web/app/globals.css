@@ -341,6 +341,14 @@
     line-height: 1;
     letter-spacing: 0;
   }
+  /* Bulk expand/collapse in the file viewer applies instantly: a dozen
+     concurrent accordion height animations force a full-page relayout on
+     every frame. Individual toggles keep their animation. */
+  [data-suppress-panel-animation] [data-slot="accordion-content"],
+  [data-suppress-panel-animation] [data-slot="accordion-content"] > div {
+    transition: none !important;
+    animation: none !important;
+  }
 }
 
 /* transitions-dev — semantic tokens + snippets for the transitions wired into

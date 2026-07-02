@@ -91,13 +91,24 @@ function FilePanelContent({
   }
 
   return (
-    <CodeEditor
-      aria-label={file.path}
-      className="rounded-none border-0"
-      path={file.path}
-      readOnly
-      value={file.content}
-    />
+    // content-visibility lets the browser skip layout/paint for editors that
+    // are offscreen — with many files expanded, only the visible ones cost
+    // anything per frame. The intrinsic size matches the editor's real height
+    // so scrollbar and anchor positions stay stable.
+    <div
+      style={{
+        containIntrinsicBlockSize: `${EDITOR_VERTICAL_PADDING_REM + lineCount * EDITOR_LINE_HEIGHT_REM}rem`,
+        contentVisibility: 'auto',
+      }}
+    >
+      <CodeEditor
+        aria-label={file.path}
+        className="rounded-none border-0"
+        path={file.path}
+        readOnly
+        value={file.content}
+      />
+    </div>
   )
 }
 
@@ -150,6 +161,30 @@ export function AgentFileViewer({ files }: { files: AgentRegistryFile[] }) {
   // Files whose highlighter has mounted once; re-opening them skips the
   // placeholder. A ref so membership changes don't re-render the viewer.
   const loadedFileIdsRef = useRef<Set<string>>(new Set())
+  // Expand/collapse-all applies instantly: a dozen concurrent panel height
+  // animations jank the whole page, so bulk toggles suppress them and only
+  // individual clicks animate.
+  const [suppressPanelAnimation, setSuppressPanelAnimation] = useState(false)
+
+  useEffect(() => {
+    if (!suppressPanelAnimation) {
+      return
+    }
+    // Two frames: one for the batch-open commit to paint with animations off,
+    // one of margin, then individual toggles animate again.
+    let secondFrame: number | null = null
+    const firstFrame = requestAnimationFrame(() => {
+      secondFrame = requestAnimationFrame(() => {
+        setSuppressPanelAnimation(false)
+      })
+    })
+    return () => {
+      cancelAnimationFrame(firstFrame)
+      if (secondFrame !== null) {
+        cancelAnimationFrame(secondFrame)
+      }
+    }
+  }, [suppressPanelAnimation])
 
   if (files.length === 0) {
     return null
@@ -163,6 +198,7 @@ export function AgentFileViewer({ files }: { files: AgentRegistryFile[] }) {
   const allOpen = openCount === files.length
 
   const toggleAll = () => {
+    setSuppressPanelAnimation(true)
     if (allOpen) {
       setOpenPathsByGroup({})
       return
@@ -175,7 +211,10 @@ export function AgentFileViewer({ files }: { files: AgentRegistryFile[] }) {
   }
 
   return (
-    <div className="grid gap-6">
+    <div
+      className="grid gap-6"
+      data-suppress-panel-animation={suppressPanelAnimation ? '' : undefined}
+    >
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <h2 className="font-semibold text-foreground text-lg">Files</h2>
