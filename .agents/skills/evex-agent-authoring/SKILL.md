@@ -1,224 +1,178 @@
 ---
 name: evex-agent-authoring
-description: Use when creating, modifying, or reviewing installable Eve agents in the evex repository under registry/<slug>. Guides repo-specific standards for package layout, registry.json, README/install surface, env examples, registry generate/check/build gates, and alignment with the code-reviewer and postgres-data-analyst reference agents.
+description: Use when creating, modifying, or reviewing an installable Eve agent under registry/<slug> in the evex repository.
 ---
 
 # Evex Agent Authoring
 
-Use this skill for Evex repository standards, not for explaining the Eve
-framework. Before writing code, always read the relevant guide in
-`node_modules/eve/docs/`.
+This skill carries evex repository standards only. It never restates:
 
-## Start Here
+- **Eve framework semantics** — agent layout, tools, connections, channels,
+  schedules, skills, evals. Read the docs shipped with the installed eve
+  package (`registry/<slug>/node_modules/eve/docs/`, present after
+  `pnpm registry:install`) and mirror a reference agent: list the current
+  catalog (`ls registry/`) and pick the agent whose surface overlaps most —
+  channels, connections, credentials, schedules, evals. Agents come and go,
+  so choose from what is there now, never from memory.
+- **The registry contract** — package layout, `registry.json` field rules,
+  dependency/author sync, eve version pinning, slug policy, generated
+  output. `CONTRIBUTIONS.md` at the repo root is canonical and matches what
+  the generator enforces; consult it instead of memory.
 
-1. Inspect the closest in-repo reference agent before designing a new shape:
-   - `registry/code-reviewer/` for GitHub PR review,
-     structured publishing, rate limiting, agent skills, and evals.
-   - `registry/postgres-data-analyst/` for Slack,
-     Vercel Connect credentials, external data access, env parsing, and
-     read-only policy enforcement.
-2. Confirm the agent is meant to install into an existing Eve app. Do not create
-   a standalone app scaffold or publish app-level project files.
-3. Keep canonical metadata and installable files source-owned under
-   `registry/<slug>/`. Runtime database state is not the
-   source of truth for agent metadata.
+Ground rules for every branch:
 
-## Package Shape
+- Agents install into an existing Eve app via
+  `npx shadcn@latest add @evex/<slug>`. Never scaffold a standalone app or
+  publish app-level project files.
+- Canonical metadata and installable files are source-owned under
+  `registry/<slug>/`; the runtime database is never the source of truth.
+- `registry/` is its own pnpm workspace with its own lockfile. Run
+  `pnpm registry:install` from the repo root before agent-local commands,
+  and run agent scripts as `pnpm --dir registry --filter <slug> run
+  <script>` — always with explicit `run`, since script names like `info`
+  collide with pnpm builtins.
+- Keep generated output (`.eve/`, `.output/`, `dist/`, `node_modules/`) and
+  real credentials out of the PR. Preserve unrelated working-tree changes.
 
-Create each agent under:
+Work the steps in order; each ends on a checkable bound.
 
-```text
-registry/<slug>/
-  .env.example       # when installed files read environment variables
-  package.json
-  README.md
-  registry.json
-  tsconfig.json
-  agent/             # Eve source files; choose layout from Eve docs
-  evals/             # when behavior should be regression-tested
+## 1. Design
+
+Before writing code:
+
+1. Read the relevant guides in the eve docs and inspect the chosen
+   reference agent.
+2. Trace one core scenario end-to-end with realistic data: what arrives,
+   what the agent must already know, each decision and action in order,
+   where a human must stop the flow, what returns to the user.
+3. Derive the surface from the trace: every distinct action becomes a tool
+   or connection, and every decision gets an owner — the model
+   (instructions or skill), code (validation inside a tool), or a human
+   (approval).
+
+Done when the trace names every tool, connection, channel, schedule, and
+environment variable the agent needs, and no decision is unowned.
+
+## 2. Scaffold
+
+```bash
+pnpm --filter @evex/agent-registry registry:new <slug> <github-username>
+pnpm registry:install
 ```
 
-Use only the directories that the agent actually needs. Keep generated output
-such as `.eve/`, `.output/`, `dist/`, and `node_modules/` out of the PR.
+The slug is the permanent public install name — read `CONTRIBUTIONS.md`
+("Slugs") before picking one. The scaffold seeds `package.json` (private
+ESM, Node `>=24`, the standard script set, `author` set to the GitHub
+username, the catalog-wide pinned `eve` version), `tsconfig.json` extending
+`../tsconfig.agent.json`, and stub `agent/` and `evals/` files.
 
-For `package.json`:
+Done when the package contains only the directories the agent needs and
+`pnpm --dir registry --filter <slug> run typecheck` passes.
 
-- Use a private ESM package with Node `>=24`.
-- Keep runtime packages in `dependencies` and type/tooling packages in
+## 3. Implement
+
+Eve-side shape comes from the docs and reference agents. The evex-side
+constraints:
+
+- Installable source lives only in publishable paths: `README.md`,
+  `.env.example`, `agent/**`, `evals/**`. Everything else is repo-only and
+  never published.
+- Declare every environment variable read by `agent/**` files in
+  `.env.example`, placeholder values only (`CI` and `NODE_ENV` exempt) —
+  the generator enforces coverage.
+- Runtime packages go in `package.json.dependencies` (they become the
+  public install list); tooling and type-only packages in
   `devDependencies`.
-- Keep local scripts aligned with the reference agents: `build`, `check`,
-  `dev`, `info`, `start`, `typecheck`, and `eval` only when evals exist.
-- Put the GitHub username in `author` so scaffolding can seed `registry.json`.
-
-## Implementation Standards
-
-Do not restate Eve framework layout, channel, tool, connection, schedule, skill,
-or eval semantics in this skill. For those decisions, read the current docs in
-the installed Eve bundle at `node_modules/eve/docs/`, then compare the closest
-reference agent in this repo.
-
-After choosing the Eve-side shape, apply only Evex-specific constraints here:
-
-- Keep installed source files inside paths the registry can publish.
-- Keep runtime dependencies reflected in `registry.json.dependencies`.
-- Declare every installed-file environment variable in `.env.example`.
-- Make README setup steps match the actual channels, connections, routes,
-  credentials, and smoke tests implemented by the agent.
 - Follow the repo's TypeScript, Ultracite, and reference-agent style.
 
-## Registry Contract
+Done when `pnpm --dir registry --filter <slug> run typecheck` and
+`pnpm --dir registry --filter <slug> run info` succeed.
 
-Each agent has exactly one registry item in `registry.json`.
+## 4. Registry item
 
-- `name` must match the folder slug.
-- `author` must be the author's GitHub username.
-- `dependencies` is the public install dependency list. Keep it intentionally
-  aligned with runtime dependencies; after `registry.json` exists, the generator
-  does not infer it from `package.json`.
-- `files` must list every installed file. Allowed source paths are `README.md`,
-  `.env.example`, `agent/**`, and `evals/**`.
-- Do not publish `package.json`, `tsconfig.json`, lockfiles, build output, or
-  monorepo config through the registry item.
-- Target `README.md` to `~/agent/README.md` and `.env.example` to
-  `~/.env.example`.
-- If any installed `agent/**` file reads `process.env`, include `.env.example`
-  in `files` and declare every non-built-in env var there.
-- Update `meta.updatedAt` when the agent's public package changes.
-
-For a new agent, scaffold the initial registry file after the package source,
-README, and package dependencies exist:
+After the source, README, and package dependencies are final:
 
 ```bash
-pnpm --filter @evex/agent-registry registry:scaffold <slug>
+pnpm --filter @evex/agent-registry registry:scaffold <slug>   # --force to overwrite
 ```
 
-Then edit `registry.json` manually. Treat it as source of truth.
+Then edit `registry.json` by hand — it is the source of truth. Review
+`title`, `description`, `categories`, `meta.category`, and dates; the full
+field contract is in `CONTRIBUTIONS.md` ("Editing registry.json"). The
+generator enforces exact two-way sync between `registry.json.dependencies`
+and `package.json.dependencies`, matching `author`, and a complete `files`
+list (undeclared files on disk are errors too). Bump `meta.updatedAt`
+whenever the published package changes.
 
-**Scaffold does not update `src/generated/registry.ts`.** After scaffold or any
-`registry.json` edit, always run generate (see [Build gates](#build-gates)).
-Committing without generate makes `pnpm build` fail.
+Done when `pnpm --filter @evex/agent-registry generate` succeeds. It
+validates everything above and writes `.github/CODEOWNERS` — commit that
+diff; the JSON artifacts under `packages/agent-registry/generated/` are
+gitignored, never committed or hand-edited.
 
-## README Standards
+## 5. README
 
-The README is installed into the consumer's Eve app, so write it for the user
-who ran:
-
-```bash
-npx shadcn@latest add @evex/<slug>
-```
-
-Include:
+Write for the consumer who ran `npx shadcn@latest add @evex/<slug>`. It
+installs as `~/agent/README.md`, and its title and first paragraph seed the
+registry `title`/`description` shown on evex.sh. Include:
 
 - What the agent does and the surface it runs on.
 - Required channels, connectors, webhooks, permissions, and routes.
-- Environment variables from `.env.example`, with clear separation between
-  different credential types.
+- Environment variables from `.env.example`, separated by credential type.
 - Deployment or HTTPS exposure requirements.
 - Smoke tests using realistic prompts or webhook events.
 - Troubleshooting for the most likely setup failures.
 
-Do not describe installing a full app from scratch. Do not rely on the app's
-`components.json` or any root registry path as the public install command.
+Do not describe installing a full app from scratch, and keep all
+user-facing install copy on the `@evex/<slug>` shadcn path — never the
+app's `components.json` or a root registry path.
 
-## Build Gates
+Done when every setup step matches a channel, connection, route, or
+credential that exists in the code.
 
-The monorepo build and lint pipelines both depend on the agent registry being
-valid and in sync. Treat these as hard gates before opening or updating a PR.
+## 6. Security and evals
 
-### What root commands run
+Gate the agent before validation:
 
-| Command | Registry package | Web app |
-| --- | --- | --- |
-| `pnpm build` | `generate-registry.mjs --check` | `next build` (after registry build) |
-| `pnpm check` | `generate-registry.mjs --check` | `ultracite check` (after registry check) |
-| `pnpm typecheck` | `tsc --noEmit` (after registry build) | `tsc --noEmit` |
+- Auth on any exposed route is real; anonymous access only by explicit
+  choice.
+- Every tool or connection that spends money, sends messages, mutates or
+  deletes external state carries an `approval` policy — mechanics in the
+  eve docs; grep `registry/*/agent` for `approval` to find working
+  patterns in the current catalog.
+- Secrets stay out of installed files, tool output, and model context.
 
-`@evex/agent-registry` `build` and `check` are the same gate: they do not write
-files; they only verify that `src/generated/registry.ts` matches the agent
-sources. Agent packages under `agents/<slug>/` are **not** Turbo workspace
-packages — run their scripts with `pnpm --dir
-registry/<slug> …`.
+Add evals when behavior is easy to regress or the agent publishes external
+artifacts, following an existing `registry/*/evals/` directory for
+structure. Minimum bar when they exist:
 
-### Generator validations
+- One smoke eval per core job.
+- One negative eval proving the agent does not act when it should not.
+- If any tool requires approval, one eval covering the pause → approve →
+  resume cycle.
 
-`pnpm --filter @evex/agent-registry generate` (write) and `… run check`
-(verify) both execute `scripts/generate-registry.mjs`. Besides syncing
-`src/generated/registry.ts`, the script fails when:
+Done when `pnpm --dir registry --filter <slug> run eval` passes (skip when
+the agent has no evals).
 
-- `registry.json` does not define exactly one item of type `registry:item`.
-- Item `name` does not match the folder slug.
-- `dependencies` is present but not an array of non-empty strings.
-- A declared `files[].path` is not a relative POSIX path under the agent
-  (`README.md`, `.env.example`, `agent/**`, or `evals/**` only).
-- A declared file is missing on disk.
-- Installed `agent/**` source reads `process.env.*` but `.env.example` is
-  absent from `files`, or `.env.example` omits any used variable (`CI` and
-  `NODE_ENV` are exempt).
+## 7. Validate
 
-Fix the source (`registry.json`, missing files, `.env.example`) then regenerate.
-Do not hand-edit `src/generated/registry.ts`.
-
-### Mandatory sequence after registry changes
-
-Run in this order whenever you scaffold, edit `registry.json`, add/remove
-installed files, or change file content referenced by the registry:
+Rerun after every registry-affecting change — scaffold, `registry.json`
+edit, installed file added, removed, or edited:
 
 ```bash
-# 1. Regenerate the embedded catalog (writes src/generated/registry.ts)
-pnpm --filter @evex/agent-registry generate
-
-# 2. Agent-local Eve and TypeScript gates
-pnpm --dir registry/<slug> typecheck
-pnpm --dir registry/<slug> build    # eve build
-pnpm --dir registry/<slug> check    # eve info --json
-
-# 3. Monorepo gates (match CI / pre-merge expectations)
-pnpm --filter @evex/agent-registry run check              # same as registry build --check
-pnpm check                                                # ultracite + registry check
-pnpm build                                                # registry check + next build
+pnpm --filter @evex/agent-registry generate   # validate + artifacts + CODEOWNERS
+pnpm check
+pnpm typecheck
+pnpm typecheck:agents
+pnpm test
+pnpm build
 ```
 
-Step 1 is **required** for every registry-affecting change. Steps 2–3 catch
-issues the generator does not cover (Eve surface, TypeScript, lint, Next.js).
+On a validation error, fix the source (`registry.json`, missing files,
+`.env.example`, `package.json`) and rerun `generate`. CI runs this same
+pipeline plus a standalone install smoke test (`pnpm install
+--ignore-workspace`) for changed agents.
 
-If `generate` or `check` prints:
-
-```text
-src/generated/registry.ts is out of date. Run "pnpm --filter @evex/agent-registry generate".
-```
-
-run `generate`, commit the updated `src/generated/registry.ts`, and rerun
-`pnpm --filter @evex/agent-registry run check` or `pnpm build`.
-
-## Evals And Tests
-
-Add evals when behavior is easy to regress or when the agent publishes external
-artifacts. Follow `code-reviewer/evals/` for structure.
-
-When evals exist, also run:
-
-```bash
-pnpm --dir registry/<slug> eval -- --skip-report
-```
-
-If root validation is blocked by unrelated local state, report that explicitly
-and keep the narrow agent-registry validation clean. Do not pretend generation
-or build succeeded when it did not.
-
-## Pre-PR Checklist
-
-- Read the relevant Eve docs in `node_modules/eve/docs/` and mirror the closest
-  in-repo reference agent.
-- Keep package shape, scripts, TypeScript style, and dependency placement
-  aligned with the reference agents.
-- Ensure env vars used in installed files are declared in `.env.example`.
-- Ensure `registry.json.files` includes every publishable file and excludes
-  app-level or generated files.
-- After scaffold or any `registry.json` / installed-file change: run
-  `pnpm --filter @evex/agent-registry generate` and commit
-  `packages/agent-registry/src/generated/registry.ts`.
-- Run the [mandatory validation sequence](#mandatory-sequence-after-registry-changes);
-  `pnpm build` must pass before merge.
-- Verify README setup steps match the actual channel/connection code.
-- Keep user-facing install copy on the `@evex/<slug>` shadcn registry path.
-- Preserve unrelated working-tree changes.
+Done when `pnpm build` passes. If root validation is blocked by unrelated
+local state, report that explicitly and keep
+`pnpm --filter @evex/agent-registry run check` green — never report a gate
+as passed when it did not run or did not pass.
