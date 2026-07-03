@@ -4,7 +4,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url))
-const agentsDir = path.resolve(scriptDir, '..', 'agents')
+const agentsDir = path.resolve(scriptDir, '..', '..', '..', 'registry')
 
 async function readJson(filePath) {
   return JSON.parse(await fs.readFile(filePath, 'utf8'))

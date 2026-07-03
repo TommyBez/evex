@@ -38,7 +38,7 @@ export async function GET(
   await connection()
 
   try {
-    const item = getRegistryItem(name)
+    const item = await getRegistryItem(name)
 
     after(async () => {
       try {

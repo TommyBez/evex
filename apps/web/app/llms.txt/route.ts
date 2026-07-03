@@ -68,7 +68,7 @@ ${agentLines || '- No agents published yet.'}
 
 ## Publishing
 
-Authors add agents by opening a pull request to the evex repository. Each agent lives under \`packages/agent-registry/agents/{slug}\` with a \`registry.json\` manifest.
+Authors add agents by opening a pull request to the evex repository. Each agent lives under \`registry/{slug}\` with a \`registry.json\` manifest.
 
 ## Contact
 

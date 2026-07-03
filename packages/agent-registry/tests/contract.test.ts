@@ -24,9 +24,9 @@ describe('registry catalog contract', () => {
     }
   })
 
-  it('resolves every catalog entry to a full item with file content', () => {
+  it('resolves every catalog entry to a full item with file content', async () => {
     for (const catalogItem of catalog.items) {
-      const item = getRegistryItem(catalogItem.name)
+      const item = await getRegistryItem(catalogItem.name)
       expect(item.name).toBe(catalogItem.name)
       expect(item.files.length).toBeGreaterThan(0)
       for (const file of item.files) {
@@ -45,8 +45,8 @@ describe('registry catalog contract', () => {
     }
   })
 
-  it('throws a typed error for unknown items', () => {
-    expect(() => getRegistryItem('definitely-not-an-agent')).toThrow(
+  it('throws a typed error for unknown items', async () => {
+    await expect(getRegistryItem('definitely-not-an-agent')).rejects.toThrow(
       RegistryItemNotFoundError,
     )
   })

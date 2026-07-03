@@ -12,7 +12,7 @@ __v0_jsx-dev-runtime.ts
 !.env.example
 
 # Generated registry output (rebuilt on install/build)
-packages/agent-registry/src/generated/
+packages/agent-registry/generated/
 
 # Common ignores
 node_modules
@@ -24,10 +24,10 @@ apps/*/.next/
 apps/agents/*/.eve/
 apps/agents/*/.output/
 apps/agents/*/.vercel/
-packages/agent-registry/agents/*/.eve/
-packages/agent-registry/agents/*/.output/
-packages/agent-registry/agents/*/.vercel/
-packages/agent-registry/agents/*/.workflow-data/
+registry/*/.eve/
+registry/*/.output/
+registry/*/.vercel/
+registry/*/.workflow-data/
 .DS_Store
 .vercel
 next-env.d.ts

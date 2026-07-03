@@ -129,9 +129,11 @@ function normalizeRegistryFilePath(file: {
   return rawPath.startsWith('~/') ? rawPath.slice(2) : rawPath
 }
 
-export function getStaticAgentFiles(slug: string): AgentRegistryFile[] {
+export async function getStaticAgentFiles(
+  slug: string,
+): Promise<AgentRegistryFile[]> {
   try {
-    const item = getRegistryItem(slug)
+    const item = await getRegistryItem(slug)
     return item.files.map((file) => {
       const path = normalizeRegistryFilePath(file)
       return {

@@ -29,7 +29,7 @@
         ".eve/**",
         ".output/**",
         ".vercel/output/**",
-        "src/generated/**"
+        "generated/**"
       ]
     },
     "check": {

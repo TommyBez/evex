@@ -19,9 +19,11 @@
     "email:preview": "pnpm --filter ./apps/web email:preview",
     "fix": "turbo run fix",
     "postinstall": "node packages/agent-registry/scripts/generate-registry.mts",
+    "registry:install": "pnpm --dir registry install",
     "start": "pnpm --filter ./apps/web start",
     "test": "turbo run test",
-    "typecheck": "turbo run typecheck"
+    "typecheck": "turbo run typecheck",
+    "typecheck:agents": "pnpm --dir registry --recursive run typecheck"
   },
   "devDependencies": {
     "turbo": "^2.8.0"

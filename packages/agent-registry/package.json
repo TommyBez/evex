@@ -8,6 +8,7 @@
   },
   "scripts": {
     "build": "node scripts/generate-registry.mts",
+    "bump-eve": "node scripts/bump-eve.mts",
     "check": "node scripts/generate-registry.mts --check",
     "generate": "node scripts/generate-registry.mts",
     "prepare": "node scripts/generate-registry.mts",

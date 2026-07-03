@@ -2,7 +2,7 @@ import fs from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { buildRegistry } from '../scripts/lib/registry-builder.mts'
+import { buildCodeowners, buildRegistry } from '../scripts/lib/registry-builder.mts'
 
 let workDir: string
 let agentsDir: string
@@ -91,8 +91,24 @@ describe('buildRegistry', () => {
 
     expect(result.errors).toEqual([])
     expect(result.agentSlugs).toEqual(['valid-agent'])
-    expect(result.source).toContain('generatedRegistry')
-    expect(result.source).toContain('export default {}')
+    expect(result.catalog.items).toHaveLength(1)
+    for (const file of result.catalog.items[0]?.files ?? []) {
+      expect(file.content).toBeUndefined()
+    }
+    const item = result.itemsByName['valid-agent']
+    expect(
+      item?.files.some((file) => file.content?.includes('export default {}')),
+    ).toBe(true)
+  })
+
+  it('maps every agent directory to its author in CODEOWNERS', async () => {
+    await writeAgentFixture('owned-agent')
+
+    const result = await buildRegistry(agentsDir)
+    const codeowners = buildCodeowners(result.itemsByName, 'fallback-owner')
+
+    expect(codeowners).toContain('* @fallback-owner')
+    expect(codeowners).toContain('/registry/owned-agent/ @octocat')
   })
 
   it('reports a file that exists on disk but is not declared', async () => {

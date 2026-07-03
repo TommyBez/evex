@@ -43,15 +43,22 @@ jobs:
         with:
           node-version: 24
           cache: pnpm
-      # Installing also regenerates packages/agent-registry/src/generated via
-      # the root postinstall hook, so every downstream step sees a registry
-      # that matches the agent sources in this checkout.
+          cache-dependency-path: |
+            pnpm-lock.yaml
+            registry/pnpm-lock.yaml
+      # Installing also regenerates packages/agent-registry/generated via the
+      # root postinstall hook, so every downstream step sees registry
+      # artifacts that match the agent sources in this checkout.
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+      - name: Install agent catalog workspace
+        run: pnpm --dir registry install --frozen-lockfile
       - name: Lint and validate registry
         run: pnpm run check
       - name: Typecheck
         run: pnpm typecheck
+      - name: Typecheck agents
+        run: pnpm typecheck:agents
       - name: Test
         run: pnpm test
       - name: Migrate database

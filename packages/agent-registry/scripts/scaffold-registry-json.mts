@@ -15,7 +15,7 @@ const LINE_SPLIT_PATTERN = /\r?\n/
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url))
 const packageRoot = path.resolve(scriptDir, '..')
-const agentsDir = path.join(packageRoot, 'agents')
+const agentsDir = path.join(packageRoot, '..', '..', 'registry')
 
 function titleizeSlug(slug: string): string {
   return slug

@@ -113,13 +113,13 @@ export default function AgentDetailPage({
   )
 }
 
-function AgentDetailContent({ slug }: { slug: string }) {
+async function AgentDetailContent({ slug }: { slug: string }) {
   const agent = getStaticAgentBySlug(slug)
   if (!agent) {
     notFound()
   }
 
-  const files = getStaticAgentFiles(agent.slug)
+  const files = await getStaticAgentFiles(agent.slug)
   const authorAgents = agent.authorUsername
     ? getStaticAgentsByAuthorUsername(agent.authorUsername)
     : []

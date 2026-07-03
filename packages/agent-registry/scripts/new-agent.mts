@@ -7,7 +7,7 @@ const EVE_VERSION_SOURCE_AGENT = 'code-reviewer'
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url))
 const packageRoot = path.resolve(scriptDir, '..')
-const agentsDir = path.join(packageRoot, 'agents')
+const agentsDir = path.join(packageRoot, '..', '..', 'registry')
 
 function titleizeSlug(slug: string): string {
   return slug
@@ -61,7 +61,7 @@ function buildPackageJson(slug: string, author: string, eveRange: string) {
 }
 
 const TSCONFIG_TEMPLATE = `{
-  "extends": "../../tsconfig.agent.json",
+  "extends": "../tsconfig.agent.json",
   "include": ["agent/**/*.ts", "evals/**/*.ts"]
 }
 `

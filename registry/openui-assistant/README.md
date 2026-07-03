@@ -103,9 +103,9 @@ shell.
 
 ```bash
 pnpm install
-pnpm --dir packages/agent-registry/agents/openui-assistant typecheck
-pnpm --dir packages/agent-registry/agents/openui-assistant build
-pnpm --dir packages/agent-registry/agents/openui-assistant check
+pnpm --dir registry/openui-assistant typecheck
+pnpm --dir registry/openui-assistant build
+pnpm --dir registry/openui-assistant check
 ```
 
 The package `tsconfig.json` includes the `.tsx` frontend reference under
