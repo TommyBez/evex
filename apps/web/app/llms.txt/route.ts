@@ -1,7 +1,7 @@
 import { listLearnPages } from '@/lib/learn-content'
-import { getSiteUrl, siteConfig } from '@/lib/metadata'
-import { getAgentUrl, getLearnUrl } from '@/lib/site-url'
-import { listStaticAgents } from '@/lib/static-agents'
+import { siteConfig } from '@/lib/metadata'
+import { listStaticAgents } from '@/lib/registry'
+import { getAgentUrl, getLearnUrl, getSiteUrl } from '@/lib/site-url'
 
 const MAX_FEATURED_AGENTS = 20
 const MAX_FEATURED_GUIDES = 20

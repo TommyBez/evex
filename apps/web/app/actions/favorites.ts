@@ -1,12 +1,8 @@
 'use server'
 
-import { and, eq } from 'drizzle-orm'
-import { revalidatePath } from 'next/cache'
 import { checkHuman } from '@/lib/bot-id'
 import { getCurrentUser } from '@/lib/current-user'
-import { db } from '@/lib/db'
-import { agentFavorite } from '@/lib/db/schema'
-import { getAgentBySlug } from '@/lib/queries'
+import { setFavorite } from '@/lib/data/favorites'
 
 export type ToggleFavoriteResult =
   | { ok: true; isFavorite: boolean }
@@ -35,36 +31,5 @@ export async function toggleFavorite(
     return { ok: false, error: 'Invalid favorite state.' }
   }
 
-  const agent = await getAgentBySlug(agentSlug)
-  if (!agent) {
-    return { ok: false, error: 'Agent not found.' }
-  }
-
-  if (shouldFavorite) {
-    await db
-      .insert(agentFavorite)
-      .values({ userId: user.id, agentSlug })
-      .onConflictDoNothing()
-  } else {
-    await db
-      .delete(agentFavorite)
-      .where(
-        and(
-          eq(agentFavorite.userId, user.id),
-          eq(agentFavorite.agentSlug, agentSlug),
-        ),
-      )
-  }
-
-  revalidateFavoritePaths(agentSlug, agent.authorUsername)
-  return { ok: true, isFavorite: shouldFavorite }
-}
-
-function revalidateFavoritePaths(slug: string, authorUsername: string | null) {
-  revalidatePath('/')
-  revalidatePath('/favorites')
-  revalidatePath(`/agents/${slug}`)
-  if (authorUsername) {
-    revalidatePath(`/authors/${authorUsername}`)
-  }
+  return await setFavorite(user.id, agentSlug, shouldFavorite)
 }

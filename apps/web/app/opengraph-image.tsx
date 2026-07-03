@@ -1,5 +1,6 @@
-import { getSiteHost, siteConfig } from '@/lib/metadata'
+import { siteConfig } from '@/lib/metadata'
 import { createOgImage, ogImageContentType, ogImageSize } from '@/lib/og-image'
+import { getSiteHost } from '@/lib/site-url'
 
 export const alt = 'evex - the eve agent registry'
 export const size = ogImageSize

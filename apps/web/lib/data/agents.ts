@@ -1,8 +1,29 @@
 import 'server-only'
 
+import { cacheLife, cacheTag } from 'next/cache'
 import type { AgentWithAuthor } from '@/lib/agent-types'
+import { cacheTags, getAgentTag } from '@/lib/cache-tags'
 import { getCurrentUser } from '@/lib/current-user'
-import { getFavoriteAgentIds, getInstallCountMap } from '@/lib/queries'
+import { getFavoriteAgentIds } from '@/lib/data/favorites'
+import { hydrateAgents } from '@/lib/data/hydrate'
+import { getInstallCountMap } from '@/lib/data/install-metrics'
+import { getCatalogAgentBySlug } from '@/lib/registry'
+
+export async function getAgentBySlug(
+  slug: string,
+): Promise<AgentWithAuthor | null> {
+  'use cache'
+  cacheLife('minutes')
+  cacheTag(cacheTags.agents)
+  cacheTag(getAgentTag(slug))
+
+  const item = getCatalogAgentBySlug(slug)
+  if (!item) {
+    return null
+  }
+  const [hydrated] = await hydrateAgents([item])
+  return hydrated ?? null
+}
 
 export interface AgentRuntimeState {
   favoriteAgentIdSet: Set<string>

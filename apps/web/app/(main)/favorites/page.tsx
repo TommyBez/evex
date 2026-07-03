@@ -2,13 +2,12 @@ import { Button } from '@evex/ui/button'
 import { Skeleton } from '@evex/ui/skeleton'
 import { Heart, PackageSearch } from 'lucide-react'
 import Link from 'next/link'
-import { redirect } from 'next/navigation'
 import { Suspense } from 'react'
 import { AgentCard } from '@/components/agent-card'
 import { RegistryEmptyState } from '@/components/registry-empty-state'
-import { getCurrentUser } from '@/lib/current-user'
+import { requireUser } from '@/lib/current-user'
+import { getFavoriteAgents } from '@/lib/data/favorites'
 import { createPageMetadata } from '@/lib/metadata'
-import { getFavoriteAgents } from '@/lib/queries'
 
 export const metadata = createPageMetadata({
   title: 'Favorites',
@@ -35,11 +34,7 @@ export default function FavoritesPage() {
 }
 
 async function FavoritesContent() {
-  const user = await getCurrentUser()
-  if (!user) {
-    redirect('/sign-in')
-  }
-
+  const user = await requireUser()
   const agents = await getFavoriteAgents(user.id)
 
   return (

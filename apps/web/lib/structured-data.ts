@@ -1,12 +1,13 @@
 import type { AgentWithAuthor } from '@/lib/agent-types'
 import { HOME_FAQ_ITEMS } from '@/lib/home-faq-content'
 import type { LearnPage } from '@/lib/learn-content'
-import { getSiteUrl, siteConfig } from '@/lib/metadata'
+import { siteConfig } from '@/lib/metadata'
 import {
   buildInstallCommand,
   getAgentUrl,
   getAuthorUrl,
   getLearnUrl,
+  getSiteUrl,
 } from '@/lib/site-url'
 
 const SCHEMA_CONTEXT = 'https://schema.org'

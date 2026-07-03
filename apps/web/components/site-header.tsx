@@ -1,6 +1,5 @@
 import { Button } from '@evex/ui/button'
 import { Skeleton } from '@evex/ui/skeleton'
-import { headers } from 'next/headers'
 import Link from 'next/link'
 import { BrandMark } from '@/components/brand-mark'
 import { GitHubStarButton } from '@/components/github-star-button'
@@ -8,7 +7,7 @@ import { MobileNavMenu } from '@/components/mobile-nav-menu'
 import { NavLink } from '@/components/nav-link'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { UserMenu } from '@/components/user-menu'
-import { auth } from '@/lib/auth'
+import { getCurrentUser } from '@/lib/current-user'
 
 export function SiteHeaderFallback() {
   return (
@@ -44,8 +43,7 @@ export function SiteHeaderFallback() {
 }
 
 export async function SiteHeader() {
-  const session = await auth.api.getSession({ headers: await headers() })
-  const user = session?.user
+  const user = await getCurrentUser()
 
   return (
     <header className="sticky top-0 z-40 w-full border-border border-b bg-background/90 backdrop-blur-md">
