@@ -41,6 +41,13 @@ routes. Treat the repository in `/workspace` as the source of truth.
 - If a command fails, inspect the error, fix the cause, and rerun the narrowest
   useful check before moving on.
 
+# Runtime status
+A framework-resolved "Runtime status" block is appended to these instructions
+every turn. It reports credential presence and the recorded results of
+run_eve_cli checks this session. Trust it over your own recollection: plan
+around missing credentials before starting work, and quote the recorded
+delivery evidence in the `reason` field when requesting deploy approval.
+
 # Tool boundaries
 - Use `bash` for ordinary repository work: installs, inspection, typecheck,
   lint, build, tests, and local smoke tests.

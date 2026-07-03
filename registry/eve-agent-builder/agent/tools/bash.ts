@@ -48,7 +48,9 @@ export default defineTool({
   approval: ({ toolInput }) => approvalForBash(toolInput),
 });
 
-function approvalForBash(input: unknown): ApprovalStatus {
+// Exported so the routing patterns eval can regression-test the command
+// matching deterministically, without a model or sandbox in the loop.
+export function approvalForBash(input: unknown): ApprovalStatus {
   if (!isCommandInput(input)) {
     return "not-applicable";
   }

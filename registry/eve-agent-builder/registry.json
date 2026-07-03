@@ -25,9 +25,24 @@
           "target": "~/agent/connections/vercel.ts"
         },
         {
+          "path": "agent/hooks/record-check-evidence.ts",
+          "type": "registry:file",
+          "target": "~/agent/hooks/record-check-evidence.ts"
+        },
+        {
           "path": "agent/instructions.md",
           "type": "registry:file",
           "target": "~/agent/instructions.md"
+        },
+        {
+          "path": "agent/instructions/runtime-status.ts",
+          "type": "registry:file",
+          "target": "~/agent/instructions/runtime-status.ts"
+        },
+        {
+          "path": "agent/lib/delivery-evidence.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/delivery-evidence.ts"
         },
         {
           "path": "agent/lib/vercel-brokered-cli.ts",
@@ -85,9 +100,24 @@
           "target": "~/evals/bash-denial-routing.eval.ts"
         },
         {
+          "path": "evals/bash-routing-patterns.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/bash-routing-patterns.eval.ts"
+        },
+        {
           "path": "evals/deploy-target-clarification.eval.ts",
           "type": "registry:file",
           "target": "~/evals/deploy-target-clarification.eval.ts"
+        },
+        {
+          "path": "evals/final-report-quality.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/final-report-quality.eval.ts"
+        },
+        {
+          "path": "evals/loads-eve-skill.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/loads-eve-skill.eval.ts"
         },
         {
           "path": "evals/evals.config.ts",
@@ -119,7 +149,7 @@
         "slug": "eve-agent-builder",
         "category": "coding",
         "createdAt": "2026-06-30T10:23:00.000Z",
-        "updatedAt": "2026-07-02T00:00:00.000Z"
+        "updatedAt": "2026-07-03T00:00:00.000Z"
       },
       "author": "TommyBez"
     }
