@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url'
 import { buildCodeowners, buildRegistry } from './lib/registry-builder.mts'
 
 const CHECK_FLAG = '--check'
+const CODEOWNERS_FLAG = '--codeowners'
 const FALLBACK_OWNER = 'TommyBez'
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url))
@@ -44,6 +45,7 @@ async function readFileIfExists(filePath: string): Promise<string | null> {
 
 async function main(): Promise<void> {
   const isCheckOnly = process.argv.includes(CHECK_FLAG)
+  const writeCodeowners = process.argv.includes(CODEOWNERS_FLAG)
   const { agentSlugs, catalog, errors, itemsByName } =
     await buildRegistry(agentsDir)
   const codeowners = buildCodeowners(itemsByName, FALLBACK_OWNER)
@@ -85,7 +87,6 @@ async function main(): Promise<void> {
     path.join(generatedDir, 'items.ts'),
     createLoaderIndex(agentSlugs),
   )
-  await fs.writeFile(codeownersPath, codeowners)
 
   // Prune item files for agents that no longer exist.
   const expectedItemFiles = new Set(
@@ -97,9 +98,19 @@ async function main(): Promise<void> {
     }
   }
 
-  process.stdout.write(
-    `Generated ${agentSlugs.length} registry items and .github/CODEOWNERS.\n`,
-  )
+  // The committed CODEOWNERS is only written on explicit `generate`
+  // (--codeowners). Install and build write the gitignored artifacts only:
+  // if a lifecycle hook silently fixed the working tree, CI's freshness
+  // check would pass while the committed file stayed stale.
+  if (writeCodeowners) {
+    await fs.writeFile(codeownersPath, codeowners)
+    process.stdout.write(
+      `Generated ${agentSlugs.length} registry items and .github/CODEOWNERS.\n`,
+    )
+    return
+  }
+
+  process.stdout.write(`Generated ${agentSlugs.length} registry items.\n`)
 }
 
 await main()

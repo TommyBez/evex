@@ -2,8 +2,22 @@
   "$schema": "https://turborepo.dev/schema.json",
   "extends": ["//"],
   "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/registry/**"],
+      "outputs": ["generated/**"]
+    },
+    "check": {
+      "dependsOn": ["^check"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/registry/**",
+        "$TURBO_ROOT$/.github/CODEOWNERS"
+      ]
+    },
     "test": {
       "dependsOn": ["build", "^build"],
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/registry/**"],
       "outputs": []
     },
     "typecheck": {

@@ -116,14 +116,17 @@ installed it — treat slugs as permanent.
 ## Generated output
 
 The generator emits JSON artifacts to `packages/agent-registry/generated/`
-(`catalog.json`, `items/<slug>.json`, and a lazy loader index) plus the
-committed `.github/CODEOWNERS` (one entry per agent, owned by its
-`registry.json` author). The JSON artifacts are **not committed** — they are
-regenerated automatically on `pnpm install` (root postinstall) and by the
-package `build`. After editing an agent, run
-`pnpm --filter @evex/agent-registry generate` to refresh them; the item
-endpoints embed file contents, while the catalog endpoint keeps descriptors
-only. CI fails when CODEOWNERS is stale.
+(`catalog.json`, `items/<slug>.json`, and a lazy loader index). These are
+**not committed** — they regenerate automatically on `pnpm install` (root
+postinstall) and by the package `build`. The item endpoints embed file
+contents, while the catalog endpoint keeps descriptors only.
+
+The committed `.github/CODEOWNERS` (one entry per agent, owned by its
+`registry.json` author) is written **only** by the explicit
+`pnpm --filter @evex/agent-registry generate` — never by install or build,
+so a lifecycle hook can't silently mask a stale committed file. Run
+`generate` after adding an agent or changing an author, and commit the
+CODEOWNERS update; CI fails when it is stale.
 
 ## Validate
 
