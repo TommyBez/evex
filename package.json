@@ -18,7 +18,9 @@
     "dev": "turbo run dev --filter=./apps/web",
     "email:preview": "pnpm --filter ./apps/web email:preview",
     "fix": "turbo run fix",
+    "postinstall": "node packages/agent-registry/scripts/generate-registry.mts",
     "start": "pnpm --filter ./apps/web start",
+    "test": "turbo run test",
     "typecheck": "turbo run typecheck"
   },
   "devDependencies": {
@@ -28,9 +30,5 @@
     "overrides": {
       "hono": "4.12.25"
     }
-  },
-  "dependencies": {
-    "react-markdown": "^10.1.0",
-    "remark-gfm": "^4.0.1"
   }
 }

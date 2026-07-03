@@ -28,7 +28,8 @@
         ".next/**",
         ".eve/**",
         ".output/**",
-        ".vercel/output/**"
+        ".vercel/output/**",
+        "src/generated/**"
       ]
     },
     "check": {
@@ -38,6 +39,9 @@
     },
     "dev": {
       "cache": false,
+      "dependsOn": [
+        "^build"
+      ],
       "passThroughEnv": [
         "BETTER_AUTH_SECRET",
         "BETTER_AUTH_URL",
@@ -55,6 +59,12 @@
     },
     "fix": {
       "cache": false
+    },
+    "test": {
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": []
     },
     "typecheck": {
       "dependsOn": [

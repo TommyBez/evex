@@ -30,4 +30,15 @@ export function getRegistryItem(name: string): RegistryItem {
   return item
 }
 
-export type { RegistryCatalog, RegistryFile, RegistryItem } from './types'
+export {
+  agentRegistryJsonSchema,
+  registryFileSchema,
+  registryItemMetaSchema,
+  registryItemSchema,
+} from './schema'
+export type {
+  RegistryCatalog,
+  RegistryFile,
+  RegistryItem,
+  RegistryItemMeta,
+} from './types'

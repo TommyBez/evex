@@ -11,6 +11,9 @@ __v0_jsx-dev-runtime.ts
 .env*
 !.env.example
 
+# Generated registry output (rebuilt on install/build)
+packages/agent-registry/src/generated/
+
 # Common ignores
 node_modules
 .turbo/

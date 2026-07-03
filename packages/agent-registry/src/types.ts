@@ -1,21 +1,16 @@
-export interface RegistryFile {
+import type {
+  RegistryItemMeta,
+  RegistrySourceFile,
+  RegistrySourceItem,
+} from './schema'
+
+export type RegistryFile = RegistrySourceFile & {
   readonly content?: string
-  readonly path: string
-  readonly target?: string
-  readonly type: string
 }
 
-export interface RegistryItem {
+export type RegistryItem = Omit<RegistrySourceItem, 'files'> & {
   readonly $schema?: string
-  readonly author?: string
-  readonly categories?: readonly string[]
-  readonly dependencies?: readonly string[]
-  readonly description?: string
-  readonly files?: readonly RegistryFile[]
-  readonly meta?: Record<string, unknown>
-  readonly name: string
-  readonly title?: string
-  readonly type: string
+  readonly files: readonly RegistryFile[]
 }
 
 export interface RegistryCatalog {
@@ -24,3 +19,5 @@ export interface RegistryCatalog {
   readonly items: readonly RegistryItem[]
   readonly name: string
 }
+
+export type { RegistryItemMeta }

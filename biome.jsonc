@@ -19,6 +19,7 @@
       "!apps/agents/*/.output",
       "!apps/agents/*/.vercel",
       "!packages/ui/src/components/*",
+      "!packages/agent-registry/src/generated",
       "!apps/web/.next"
     ]
   }

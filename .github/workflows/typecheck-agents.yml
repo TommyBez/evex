@@ -1,4 +1,9 @@
-name: Typecheck agents
+# Standalone smoke test: installs each changed agent with
+# `pnpm install --ignore-workspace` and typechecks it in isolation, proving
+# the agent package works outside the monorepo — the situation a consumer is
+# in after `npx shadcn add @evex/<slug>`. Workspace-integrated typechecking of
+# all agents runs in ci.yml via `turbo run typecheck`.
+name: Agent standalone smoke test
 
 permissions:
   contents: read

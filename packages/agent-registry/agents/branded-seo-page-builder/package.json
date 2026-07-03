@@ -7,10 +7,9 @@
     "node": ">=24"
   },
   "scripts": {
-    "build": "eve build",
-    "check": "eve info --json",
     "dev": "eve dev",
     "eval": "eve eval",
+    "eve:build": "eve build",
     "info": "eve info --json",
     "start": "eve start",
     "typecheck": "tsc --noEmit --pretty false"
