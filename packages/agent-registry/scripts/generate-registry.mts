@@ -71,21 +71,31 @@ async function main(): Promise<void> {
     return
   }
 
-  await fs.rm(generatedDir, { recursive: true, force: true })
-  await fs.mkdir(path.join(generatedDir, 'items'), { recursive: true })
+  // Write in place instead of wiping the directory first: turbo can run other
+  // tasks (typecheck, dev) while this executes, and a delete-then-rewrite
+  // window would make `../generated/items` unresolvable mid-generation.
+  const itemsDir = path.join(generatedDir, 'items')
+  await fs.mkdir(itemsDir, { recursive: true })
 
   await fs.writeFile(path.join(generatedDir, 'catalog.json'), stringify(catalog))
   for (const [slug, item] of Object.entries(itemsByName)) {
-    await fs.writeFile(
-      path.join(generatedDir, 'items', `${slug}.json`),
-      stringify(item),
-    )
+    await fs.writeFile(path.join(itemsDir, `${slug}.json`), stringify(item))
   }
   await fs.writeFile(
     path.join(generatedDir, 'items.ts'),
     createLoaderIndex(agentSlugs),
   )
   await fs.writeFile(codeownersPath, codeowners)
+
+  // Prune item files for agents that no longer exist.
+  const expectedItemFiles = new Set(
+    agentSlugs.map((slug) => `${slug}.json`),
+  )
+  for (const existingFile of await fs.readdir(itemsDir)) {
+    if (!expectedItemFiles.has(existingFile)) {
+      await fs.rm(path.join(itemsDir, existingFile), { force: true })
+    }
+  }
 
   process.stdout.write(
     `Generated ${agentSlugs.length} registry items and .github/CODEOWNERS.\n`,
