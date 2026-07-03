@@ -27,6 +27,10 @@ const environmentSchema = z
     VERCEL_URL: z.string().min(1).optional(),
   })
   .superRefine((value, context) => {
+    // GitHub OAuth is all-or-nothing: a half-configured provider would be
+    // registered broken. The Resend pair is intentionally NOT validated here:
+    // delivery is production-only and auth-email.ts fails lazily with a clear
+    // message at send time, so a missing sender must not block the build.
     if (
       Boolean(value.GITHUB_CLIENT_ID) !== Boolean(value.GITHUB_CLIENT_SECRET)
     ) {
@@ -34,14 +38,6 @@ const environmentSchema = z
         code: 'custom',
         message:
           'GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET must be set together (or both left unset).',
-      })
-    }
-
-    if (Boolean(value.RESEND_API_KEY) !== Boolean(value.RESEND_FROM_EMAIL)) {
-      context.addIssue({
-        code: 'custom',
-        message:
-          'RESEND_API_KEY and RESEND_FROM_EMAIL must be set together (or both left unset).',
       })
     }
   })

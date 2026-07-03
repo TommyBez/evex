@@ -17,11 +17,15 @@
         "DATABASE_URL",
         "GITHUB_CLIENT_ID",
         "GITHUB_CLIENT_SECRET",
+        "NEXT_PUBLIC_SITE_URL",
         "NODE_ENV",
         "RESEND_API_KEY",
+        "RESEND_FROM_EMAIL",
+        "V0_RUNTIME_URL",
         "VERCEL",
         "VERCEL_BRANCH_URL",
         "VERCEL_ENV",
+        "VERCEL_PROJECT_PRODUCTION_URL",
         "VERCEL_URL"
       ],
       "outputs": [
@@ -48,11 +52,15 @@
         "DATABASE_URL",
         "GITHUB_CLIENT_ID",
         "GITHUB_CLIENT_SECRET",
+        "NEXT_PUBLIC_SITE_URL",
         "NODE_ENV",
         "RESEND_API_KEY",
+        "RESEND_FROM_EMAIL",
+        "V0_RUNTIME_URL",
         "VERCEL",
         "VERCEL_BRANCH_URL",
         "VERCEL_ENV",
+        "VERCEL_PROJECT_PRODUCTION_URL",
         "VERCEL_URL"
       ],
       "persistent": true
