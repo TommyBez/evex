@@ -88,6 +88,12 @@ export default async function AuthorPage({
   params: Promise<{ githubUsername: string }>
 }) {
   const { githubUsername } = await params
+  // Authors only exist for registry agent owners. Reject unknown usernames
+  // before streaming starts so the response is a real 404 — a `notFound()`
+  // thrown inside the Suspense boundary below would ship a 200 soft 404.
+  if (getStaticAgentsByAuthorUsername(githubUsername).length === 0) {
+    notFound()
+  }
 
   return (
     <Suspense fallback={<AuthorSkeleton />}>

@@ -99,16 +99,22 @@ export async function generateMetadata({
   }
 }
 
-export default function AgentDetailPage({
+export default async function AgentDetailPage({
   params,
 }: {
   params: Promise<{ slug: string }>
 }) {
+  const { slug } = await params
+  // Reject unknown slugs before streaming starts so the response is a real
+  // 404 — a `notFound()` thrown inside the Suspense boundary below would
+  // ship a 200 soft 404.
+  if (!getStaticAgentBySlug(slug)) {
+    notFound()
+  }
+
   return (
     <Suspense fallback={<AgentDetailSkeleton />}>
-      {params.then(({ slug }) => (
-        <AgentDetailContent slug={slug} />
-      ))}
+      <AgentDetailContent slug={slug} />
     </Suspense>
   )
 }
