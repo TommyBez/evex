@@ -128,11 +128,14 @@ Most formatting and common issues are automatically fixed by Biome. Run `pnpm dl
 
 `evex` is a pnpm/Turborepo monorepo. `apps/web` is the Next.js 16 App Router registry UI, and `packages/agent-registry` holds the code-owned agents under `agents/<slug>` together with the generator that builds the public shadcn registry. Agents are added by pull request; the database stores runtime state only, not canonical agent metadata or files. Runtime data lives in Postgres via `drizzle-orm`/`pg`, and auth is handled by `better-auth` (passwordless email one-time codes, plus optional GitHub OAuth).
 
-### Running / lint / build (commands live in `package.json`)
-- Dev server: `pnpm dev` (runs `@evex/web` through Turborepo on port 3000).
-- Lint/format check: `pnpm run check` (ultracite/biome through Turborepo). Use `pnpm run fix` for auto-fixes.
-- Agent catalog: agents live in `packages/agent-registry/agents/<slug>` with a per-agent `registry.json`. After editing one, run `pnpm --filter @evex/agent-registry generate` to rebuild the embedded `src/generated/registry.ts`. The web app serves the catalog at `/r/registry.json` and items at `/r/{name}` via `getRegistry` / `getRegistryItem` from `@evex/agent-registry`.
-- Build: `pnpm build` (builds `@evex/web` and the `@evex/agent-registry` package; the registry build re-checks that `src/generated/registry.ts` is in sync with the agent sources).
+### Running / lint / test / build (commands live in `package.json`)
+- Dev server: `pnpm dev` (runs `@evex/web` through Turborepo on port 3000; the registry build runs first via `dependsOn`).
+- Lint/format check: `pnpm run check` (ultracite/biome through Turborepo; the agent-registry `check` also validates every `registry.json` against the Zod schema in `packages/agent-registry/src/schema.ts`). Use `pnpm run fix` for auto-fixes.
+- Tests: `pnpm test` (Vitest — registry schema/generator/contract tests in `packages/agent-registry/tests`, pure-logic tests in `apps/web/tests`).
+- Typecheck: `pnpm typecheck` (covers `apps/web`, packages, and every agent — agent packages are pnpm workspace members).
+- Agent catalog: agents live in `packages/agent-registry/agents/<slug>` with a per-agent `registry.json`. `src/generated/registry.ts` is **gitignored** and regenerated automatically on `pnpm install` (root postinstall) and `pnpm build`; after editing an agent run `pnpm --filter @evex/agent-registry generate` to refresh it. The web app serves the catalog at `/r/registry.json` and items at `/r/{name}` via `getRegistry` / `getRegistryItem` from `@evex/agent-registry`. New agents: `pnpm --filter @evex/agent-registry registry:new <slug> <github-username>` scaffolds the full package (see CONTRIBUTIONS.md).
+- Build: `pnpm build` (generates the registry, then builds `@evex/web`).
+- CI (`.github/workflows/ci.yml`) runs check + typecheck + test + migrate + build against a Postgres service on every PR; `typecheck-agents.yml` additionally smoke-tests changed agents standalone (`pnpm install --ignore-workspace`).
 
 ### Install command
 - The public, product-facing install command is `npx shadcn@latest add @evex/{slug}`, built by `buildInstallCommand` in `apps/web/lib/site-url.ts` and shown on every agent page and the home hero. evex is part of the official shadcn community registry; the `@evex` entry in `apps/web/components.json` points at the hosted registry items.
@@ -140,11 +143,11 @@ Most formatting and common issues are automatically fixed by Biome. Run `pnpm dl
 ### Database (required to run the app)
 - `apps/web` reads `DATABASE_URL` for auth, profiles, favorites, and install metrics. Public agent metadata/files come from the source-owned shadcn registry files.
 - The schema is defined in `apps/web/lib/db/schema.ts` with Drizzle migrations in `apps/web/drizzle` (config in `apps/web/drizzle.config.ts`). On a fresh database run `pnpm db:migrate` to create the tables (`pnpm db:push` syncs the schema directly for quick local setup, `pnpm db:generate` writes a new migration after schema edits, `pnpm db:studio` opens the inspector). Tables: `user`, `session`, `account`, `verification` (better-auth, camelCase column names — do not rename) plus `agent_install_metric`, `agent_favorite`, and `profile`.
-- For local dev, set `BETTER_AUTH_URL=http://localhost:3000`, any `BETTER_AUTH_SECRET`, and `DATABASE_URL` in the environment used by `apps/web` (for example `apps/web/.env.local` or shell/Vercel project env). Delivering sign-in codes in production also needs `RESEND_API_KEY` and `RESEND_FROM_EMAIL`.
+- For local dev, copy `apps/web/.env.example` to `apps/web/.env.local` and fill in `DATABASE_URL` (plus `BETTER_AUTH_URL=http://localhost:3000` and any `BETTER_AUTH_SECRET`). Environment variables are validated at startup by the Zod schema in `apps/web/lib/env.ts` — a missing/invalid variable fails fast with a clear error. Delivering sign-in codes in production also needs `RESEND_API_KEY` and `RESEND_FROM_EMAIL`.
 
 ### Non-obvious gotchas
 - Outside production (`NODE_ENV=development` or Vercel preview), OTP delivery is bypassed (`shouldBypassAuthOtp` in `apps/web/lib/auth-environment.ts`): no email is sent and Resend credentials are not required locally.
 - In `NODE_ENV=development`, better-auth issues cookies with `Secure; SameSite=None`. This still works on `http://localhost:3000` because browsers treat `localhost` as a secure context — sign-in succeeds locally.
-- The log line `WARN [Better Auth]: Social provider github is missing clientId or clientSecret` is harmless unless you specifically need GitHub OAuth (set `GITHUB_CLIENT_ID`/`GITHUB_CLIENT_SECRET`). Email one-time-code sign-in works without it.
+- GitHub OAuth is optional: the provider is only registered when both `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET` are set (setting only one fails env validation). Email one-time-code sign-in works without it.
 - The `pg` "SSL modes ... treated as aliases for verify-full" warnings are benign.
 - `pnpm install` reports ignored build scripts (`esbuild`, `msw`, `sharp`); the dev server runs fine without approving them.

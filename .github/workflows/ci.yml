@@ -1,0 +1,60 @@
+name: CI
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: evex
+          POSTGRES_PASSWORD: evex
+          POSTGRES_DB: evex
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U evex"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgres://evex:evex@localhost:5432/evex
+      BETTER_AUTH_SECRET: ci-only-secret
+      BETTER_AUTH_URL: http://localhost:3000
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      # Installing also regenerates packages/agent-registry/src/generated via
+      # the root postinstall hook, so every downstream step sees a registry
+      # that matches the agent sources in this checkout.
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Lint and validate registry
+        run: pnpm run check
+      - name: Typecheck
+        run: pnpm typecheck
+      - name: Test
+        run: pnpm test
+      - name: Migrate database
+        run: pnpm db:migrate
+      - name: Build
+        run: pnpm build
