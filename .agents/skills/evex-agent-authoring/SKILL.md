@@ -28,7 +28,9 @@ Ground rules for every branch:
   `registry/<slug>/`; the runtime database is never the source of truth.
 - `registry/` is its own pnpm workspace with its own lockfile. Run
   `pnpm registry:install` from the repo root before agent-local commands,
-  and run agent scripts as `pnpm --dir registry --filter <slug> <script>`.
+  and run agent scripts as `pnpm --dir registry --filter <slug> run
+  <script>` — always with explicit `run`, since script names like `info`
+  collide with pnpm builtins.
 - Keep generated output (`.eve/`, `.output/`, `dist/`, `node_modules/`) and
   real credentials out of the PR. Preserve unrelated working-tree changes.
 
@@ -65,7 +67,7 @@ username, the catalog-wide pinned `eve` version), `tsconfig.json` extending
 `../tsconfig.agent.json`, and stub `agent/` and `evals/` files.
 
 Done when the package contains only the directories the agent needs and
-`pnpm --dir registry --filter <slug> typecheck` passes.
+`pnpm --dir registry --filter <slug> run typecheck` passes.
 
 ## 3. Implement
 
@@ -83,8 +85,8 @@ constraints:
   `devDependencies`.
 - Follow the repo's TypeScript, Ultracite, and reference-agent style.
 
-Done when `pnpm --dir registry --filter <slug> typecheck` and
-`pnpm --dir registry --filter <slug> info` succeed.
+Done when `pnpm --dir registry --filter <slug> run typecheck` and
+`pnpm --dir registry --filter <slug> run info` succeed.
 
 ## 4. Registry item
 
@@ -148,8 +150,8 @@ structure. Minimum bar when they exist:
 - If any tool requires approval, one eval covering the pause → approve →
   resume cycle.
 
-Done when `pnpm --dir registry --filter <slug> eval` passes (skip when the
-agent has no evals).
+Done when `pnpm --dir registry --filter <slug> run eval` passes (skip when
+the agent has no evals).
 
 ## 7. Validate
 
