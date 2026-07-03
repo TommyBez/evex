@@ -22,7 +22,6 @@ export function getSiteUrl(): string {
     env.NEXT_PUBLIC_SITE_URL ??
     productionUrl ??
     env.VERCEL_URL ??
-    env.V0_RUNTIME_URL ??
     DEFAULT_SITE_URL
 
   const url = envUrl.startsWith('http') ? envUrl : `https://${envUrl}`

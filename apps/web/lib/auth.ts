@@ -58,7 +58,7 @@ function getAuthBaseUrl(): string | undefined {
   if (env.VERCEL_URL) {
     return `https://${env.VERCEL_URL}`
   }
-  return env.V0_RUNTIME_URL
+  return
 }
 
 function getTrustedOrigins(): string[] {
@@ -68,7 +68,6 @@ function getTrustedOrigins(): string[] {
 
   return uniqueOrigins([
     getOrigin(env.BETTER_AUTH_URL),
-    getOrigin(env.V0_RUNTIME_URL),
     getOrigin(env.VERCEL_URL),
     getOrigin(env.VERCEL_PROJECT_PRODUCTION_URL),
     ...(isDevelopment
@@ -134,16 +133,4 @@ export const auth = betterAuth({
     expiresIn: 60 * 60 * 24 * 7, // 7 days
     updateAge: 60 * 60 * 24, // 1 day
   },
-  ...(isDevelopment
-    ? {
-        advanced: {
-          // In dev (v0 preview iframe), force cross-site cookies so the
-          // session cookie is stored by the browser.
-          defaultCookieAttributes: {
-            sameSite: 'none' as const,
-            secure: true,
-          },
-        },
-      }
-    : {}),
 })

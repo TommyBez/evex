@@ -147,7 +147,6 @@ Most formatting and common issues are automatically fixed by Biome. Run `pnpm dl
 
 ### Non-obvious gotchas
 - Outside production (`NODE_ENV=development` or Vercel preview), OTP delivery is bypassed (`shouldBypassAuthOtp` in `apps/web/lib/auth-environment.ts`): no email is sent and Resend credentials are not required locally.
-- In `NODE_ENV=development`, better-auth issues cookies with `Secure; SameSite=None`. This still works on `http://localhost:3000` because browsers treat `localhost` as a secure context — sign-in succeeds locally.
 - GitHub OAuth is optional: the provider is only registered when both `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET` are set (setting only one fails env validation). Email one-time-code sign-in works without it.
 - The `pg` "SSL modes ... treated as aliases for verify-full" warnings are benign.
 - `pnpm install` reports ignored build scripts (`esbuild`, `msw`, `sharp`); the dev server runs fine without approving them.
