@@ -17,18 +17,22 @@
         "DATABASE_URL",
         "GITHUB_CLIENT_ID",
         "GITHUB_CLIENT_SECRET",
+        "NEXT_PUBLIC_SITE_URL",
         "NODE_ENV",
         "RESEND_API_KEY",
+        "RESEND_FROM_EMAIL",
         "VERCEL",
         "VERCEL_BRANCH_URL",
         "VERCEL_ENV",
+        "VERCEL_PROJECT_PRODUCTION_URL",
         "VERCEL_URL"
       ],
       "outputs": [
         ".next/**",
         ".eve/**",
         ".output/**",
-        ".vercel/output/**"
+        ".vercel/output/**",
+        "generated/**"
       ]
     },
     "check": {
@@ -38,23 +42,35 @@
     },
     "dev": {
       "cache": false,
+      "dependsOn": [
+        "^build"
+      ],
       "passThroughEnv": [
         "BETTER_AUTH_SECRET",
         "BETTER_AUTH_URL",
         "DATABASE_URL",
         "GITHUB_CLIENT_ID",
         "GITHUB_CLIENT_SECRET",
+        "NEXT_PUBLIC_SITE_URL",
         "NODE_ENV",
         "RESEND_API_KEY",
+        "RESEND_FROM_EMAIL",
         "VERCEL",
         "VERCEL_BRANCH_URL",
         "VERCEL_ENV",
+        "VERCEL_PROJECT_PRODUCTION_URL",
         "VERCEL_URL"
       ],
       "persistent": true
     },
     "fix": {
       "cache": false
+    },
+    "test": {
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": []
     },
     "typecheck": {
       "dependsOn": [

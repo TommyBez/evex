@@ -1,0 +1,108 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "items": [
+    {
+      "name": "brand-visual-asset-generator",
+      "type": "registry:item",
+      "title": "Brand Visual Asset Generator",
+      "description": "Generate brand-aligned SVG asset packs for SaaS products using Context.dev brand extraction and a Quiver Arrow SVG tool.",
+      "categories": [
+        "marketing"
+      ],
+      "dependencies": [
+        "ai@^7.0.11",
+        "eve@^0.18.2",
+        "zod@4.4.3"
+      ],
+      "files": [
+        {
+          "path": "agent/agent.ts",
+          "type": "registry:file",
+          "target": "~/agent/agent.ts"
+        },
+        {
+          "path": "agent/connections/context-dev.ts",
+          "type": "registry:file",
+          "target": "~/agent/connections/context-dev.ts"
+        },
+        {
+          "path": "agent/instructions.md",
+          "type": "registry:file",
+          "target": "~/agent/instructions.md"
+        },
+        {
+          "path": "agent/skills/brand-visual-assets/references/brief-template.md",
+          "type": "registry:file",
+          "target": "~/agent/skills/brand-visual-assets/references/brief-template.md"
+        },
+        {
+          "path": "agent/skills/brand-visual-assets/references/consistency.md",
+          "type": "registry:file",
+          "target": "~/agent/skills/brand-visual-assets/references/consistency.md"
+        },
+        {
+          "path": "agent/skills/brand-visual-assets/references/default-pack.md",
+          "type": "registry:file",
+          "target": "~/agent/skills/brand-visual-assets/references/default-pack.md"
+        },
+        {
+          "path": "agent/skills/brand-visual-assets/references/quality-bar.md",
+          "type": "registry:file",
+          "target": "~/agent/skills/brand-visual-assets/references/quality-bar.md"
+        },
+        {
+          "path": "agent/skills/brand-visual-assets/references/scorecard.md",
+          "type": "registry:file",
+          "target": "~/agent/skills/brand-visual-assets/references/scorecard.md"
+        },
+        {
+          "path": "agent/skills/brand-visual-assets/references/visual-taste.md",
+          "type": "registry:file",
+          "target": "~/agent/skills/brand-visual-assets/references/visual-taste.md"
+        },
+        {
+          "path": "agent/skills/brand-visual-assets/SKILL.md",
+          "type": "registry:file",
+          "target": "~/agent/skills/brand-visual-assets/SKILL.md"
+        },
+        {
+          "path": "agent/tools/generate_svg_with_arrow.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/generate_svg_with_arrow.ts"
+        },
+        {
+          "path": "evals/evals.config.ts",
+          "type": "registry:file",
+          "target": "~/evals/evals.config.ts"
+        },
+        {
+          "path": "evals/generation-failure-no-fabrication.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/generation-failure-no-fabrication.eval.ts"
+        },
+        {
+          "path": "evals/missing-context-asks.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/missing-context-asks.eval.ts"
+        },
+        {
+          "path": "README.md",
+          "type": "registry:file",
+          "target": "~/agent/README.md"
+        },
+        {
+          "path": ".env.example",
+          "type": "registry:file",
+          "target": "~/.env.example"
+        }
+      ],
+      "meta": {
+        "slug": "brand-visual-asset-generator",
+        "category": "marketing",
+        "createdAt": "2026-07-01T21:16:30.433Z",
+        "updatedAt": "2026-07-02T04:38:00.000Z"
+      },
+      "author": "TommyBez"
+    }
+  ]
+}

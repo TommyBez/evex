@@ -7,7 +7,9 @@ import { GeistSans } from 'geist/font/sans'
 import type { Metadata, Viewport } from 'next'
 import { JsonLd } from '@/components/json-ld'
 import { ThemeProvider } from '@/components/theme-provider'
-import { getMetadataBase, siteConfig } from '@/lib/metadata'
+import { isProduction } from '@/lib/env'
+import { siteConfig } from '@/lib/metadata'
+import { getMetadataBase } from '@/lib/site-url'
 import {
   createOrganizationSchema,
   createWebsiteSchema,
@@ -99,7 +101,7 @@ export default function RootLayout({
         <ThemeProvider>
           <TooltipProvider>{children}</TooltipProvider>
           <Toaster />
-          {process.env.NODE_ENV === 'production' && <Analytics />}
+          {isProduction && <Analytics />}
         </ThemeProvider>
       </body>
     </html>

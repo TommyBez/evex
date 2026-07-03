@@ -59,7 +59,7 @@ at [evex.sh](https://evex.sh).
 
 Agents are added and updated by pull request, so authorship and review stay in
 source control. Each agent is a package under
-`packages/agent-registry/agents/<slug>` with its files, dependencies, and
+`registry/<slug>` with its files, dependencies, and
 author identity declared in `registry.json`. The full workflow — scaffolding,
 validation, and the review checklist — is in
 [CONTRIBUTIONS.md](./CONTRIBUTIONS.md).
@@ -97,15 +97,21 @@ pnpm dev          # web app on http://localhost:3000
 ```
 
 ```bash
-pnpm check        # lint + format check (ultracite / biome)
-pnpm fix          # auto-fix lint and formatting
-pnpm build        # build the web app and agent packages
-pnpm db:migrate   # apply database migrations (drizzle)
+pnpm check             # lint + registry validation (ultracite / biome + zod schema)
+pnpm fix               # auto-fix lint and formatting
+pnpm typecheck         # web app + packages
+pnpm registry:install  # install the agent catalog workspace (registry/)
+pnpm typecheck:agents  # typecheck every agent in registry/
+pnpm test              # vitest (registry contract + pure-logic tests)
+pnpm build             # build the web app and registry artifacts
+pnpm db:migrate        # apply database migrations (drizzle)
 ```
 
-Requires Node >= 24 and pnpm. The web app reads `DATABASE_URL` (Postgres) and
-better-auth settings; sign-in uses email one-time codes with optional GitHub
-OAuth. See [AGENTS.md](./AGENTS.md) for the full environment and setup notes.
+Requires Node >= 24 and pnpm. Copy `apps/web/.env.example` to
+`apps/web/.env.local` and set `DATABASE_URL` (Postgres); environment
+variables are validated at startup. Sign-in uses email one-time codes with
+optional GitHub OAuth. See [AGENTS.md](./AGENTS.md) for the full environment
+and setup notes.
 
 ## Star history
 

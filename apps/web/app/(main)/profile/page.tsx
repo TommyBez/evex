@@ -1,10 +1,8 @@
 import { Skeleton } from '@evex/ui/skeleton'
-import { headers } from 'next/headers'
-import { redirect } from 'next/navigation'
 import { Suspense } from 'react'
 import { getProfile } from '@/app/actions/profile'
 import { ProfileForm } from '@/components/profile-form'
-import { auth } from '@/lib/auth'
+import { requireUser } from '@/lib/current-user'
 import { createPageMetadata } from '@/lib/metadata'
 
 export const metadata = createPageMetadata({
@@ -23,11 +21,7 @@ export default function ProfilePage() {
 }
 
 async function ProfileContent() {
-  const session = await auth.api.getSession({ headers: await headers() })
-  if (!session?.user) {
-    redirect('/sign-in')
-  }
-
+  const user = await requireUser()
   const profile = await getProfile()
 
   return (
@@ -42,9 +36,9 @@ async function ProfileContent() {
         </p>
       </div>
       <ProfileForm
-        email={session.user.email}
+        email={user.email}
         key={JSON.stringify(profile)}
-        name={session.user.name || session.user.email}
+        name={user.name || user.email}
         profile={profile}
       />
     </main>

@@ -1,0 +1,67 @@
+name: CI
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: evex
+          POSTGRES_PASSWORD: evex
+          POSTGRES_DB: evex
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U evex"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgres://evex:evex@localhost:5432/evex
+      BETTER_AUTH_SECRET: ci-only-secret
+      BETTER_AUTH_URL: http://localhost:3000
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: |
+            pnpm-lock.yaml
+            registry/pnpm-lock.yaml
+      # Installing also regenerates packages/agent-registry/generated via the
+      # root postinstall hook, so every downstream step sees registry
+      # artifacts that match the agent sources in this checkout.
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Install agent catalog workspace
+        run: pnpm --dir registry install --frozen-lockfile
+      - name: Lint and validate registry
+        run: pnpm run check
+      - name: Typecheck
+        run: pnpm typecheck
+      - name: Typecheck agents
+        run: pnpm typecheck:agents
+      - name: Test
+        run: pnpm test
+      - name: Migrate database
+        run: pnpm db:migrate
+      - name: Build
+        run: pnpm build

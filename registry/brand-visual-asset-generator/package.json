@@ -1,0 +1,28 @@
+{
+  "name": "brand-visual-asset-generator",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "eve dev",
+    "eval": "eve eval",
+    "eve:build": "eve build",
+    "info": "eve info --json",
+    "start": "eve start",
+    "typecheck": "tsc --noEmit --pretty false"
+  },
+  "dependencies": {
+    "ai": "^7.0.11",
+    "eve": "^0.18.2",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^24",
+    "just-bash": "^3.0.2",
+    "typescript": "5.7.3"
+  },
+  "author": "TommyBez"
+}

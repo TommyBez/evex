@@ -1,15 +1,12 @@
-# v0 sandbox internal files
-__v0_runtime_loader.js
-__v0_devtools.tsx
-__v0_jsx-dev-runtime.ts
-.snowflake/
-.v0-trash/
 .vercel/
 
 # Environment variables
 .env*.local
 .env*
 !.env.example
+
+# Generated registry output (rebuilt on install/build)
+packages/agent-registry/generated/
 
 # Common ignores
 node_modules
@@ -21,10 +18,10 @@ apps/*/.next/
 apps/agents/*/.eve/
 apps/agents/*/.output/
 apps/agents/*/.vercel/
-packages/agent-registry/agents/*/.eve/
-packages/agent-registry/agents/*/.output/
-packages/agent-registry/agents/*/.vercel/
-packages/agent-registry/agents/*/.workflow-data/
+registry/*/.eve/
+registry/*/.output/
+registry/*/.vercel/
+registry/*/.workflow-data/
 .DS_Store
 .vercel
 next-env.d.ts

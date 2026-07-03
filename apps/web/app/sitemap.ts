@@ -1,8 +1,7 @@
 import type { MetadataRoute } from 'next'
 import { listLearnPages } from '@/lib/learn-content'
-import { getSiteUrl } from '@/lib/metadata'
-import { getAuthorUrl, getLearnUrl } from '@/lib/site-url'
-import { listStaticAgents } from '@/lib/static-agents'
+import { listStaticAgents } from '@/lib/registry'
+import { getAuthorUrl, getLearnUrl, getSiteUrl } from '@/lib/site-url'
 
 function getAuthorLastModified(
   githubUsername: string,

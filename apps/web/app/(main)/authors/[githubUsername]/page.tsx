@@ -11,19 +11,19 @@ import { GitHubIcon } from '@/components/github-icon'
 import { JsonLd } from '@/components/json-ld'
 import { LinkedInIcon } from '@/components/linkedin-icon'
 import { XIcon } from '@/components/x-icon'
-import { applyInstallCounts, getAgentRuntimeState } from '@/lib/agent-runtime'
 import type { AgentWithAuthor, StaticAuthorProfile } from '@/lib/agent-types'
+import { applyInstallCounts, getAgentRuntimeState } from '@/lib/data/agents'
+import { getAuthorProfile } from '@/lib/data/authors'
 import {
   createPageMetadata,
   defaultOpenGraphImage,
   defaultTwitterImage,
   siteConfig,
 } from '@/lib/metadata'
-import { getAuthorProfile } from '@/lib/queries'
 import {
   getStaticAgentsByAuthorUsername,
   listStaticAgents,
-} from '@/lib/static-agents'
+} from '@/lib/registry'
 import { createAuthorProfileSchema } from '@/lib/structured-data'
 
 export function generateStaticParams() {

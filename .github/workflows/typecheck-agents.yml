@@ -1,4 +1,9 @@
-name: Typecheck agents
+# Standalone smoke test: installs each changed agent with
+# `pnpm install --ignore-workspace` and typechecks it in isolation, proving
+# the agent package works outside the monorepo — the situation a consumer is
+# in after `npx shadcn add @evex/<slug>`. Workspace-integrated typechecking of
+# all agents runs in ci.yml via `turbo run typecheck`.
+name: Agent standalone smoke test
 
 permissions:
   contents: read
@@ -6,14 +11,14 @@ permissions:
 on:
   pull_request:
     paths:
-      - "packages/agent-registry/agents/**"
+      - "registry/**"
       - "packages/agent-registry/scripts/typecheck-agents.mjs"
       - ".github/workflows/typecheck-agents.yml"
   push:
     branches:
       - main
     paths:
-      - "packages/agent-registry/agents/**"
+      - "registry/**"
       - "packages/agent-registry/scripts/typecheck-agents.mjs"
       - ".github/workflows/typecheck-agents.yml"
 
@@ -37,7 +42,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          all_agents=$(ls -d packages/agent-registry/agents/*/ | xargs -n1 basename)
+          all_agents=$(ls -d registry/*/ | xargs -n1 basename | grep -v '^node_modules$')
 
           list_changed_files() {
             if [ "$EVENT_NAME" = "pull_request" ]; then
@@ -62,7 +67,7 @@ jobs:
             agents="$all_agents"
           else
             touched=$(echo "$changed" \
-              | sed -n 's|^packages/agent-registry/agents/\([^/]*\)/.*|\1|p' \
+              | sed -n 's|^registry/\([^/]*\)/.*|\1|p' \
               | sort -u)
             # Keep only agents that still exist, skipping ones deleted here.
             agents=$(comm -12 <(echo "$all_agents" | sort) <(echo "$touched"))
@@ -91,7 +96,7 @@ jobs:
         with:
           node-version: 24
           cache: pnpm
-          cache-dependency-path: packages/agent-registry/agents/${{ matrix.agent }}/package.json
+          cache-dependency-path: registry/${{ matrix.agent }}/package.json
       - name: Typecheck ${{ matrix.agent }}
         env:
           AGENT: ${{ matrix.agent }}

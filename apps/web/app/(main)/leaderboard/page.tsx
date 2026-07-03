@@ -14,8 +14,8 @@ import Link from 'next/link'
 import { Suspense } from 'react'
 import { AuthorAvatar } from '@/components/author-avatar'
 import { RegistryEmptyMessage } from '@/components/registry-empty-state'
+import { getTopAgents, getTopAuthors } from '@/lib/data/leaderboard'
 import { createPageMetadata } from '@/lib/metadata'
-import { getTopAgents, getTopAuthors } from '@/lib/queries'
 
 export const metadata: Metadata = createPageMetadata({
   title: 'Leaderboard | Top eve Agents and Authors',

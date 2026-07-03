@@ -10,17 +10,17 @@ import { HomeFaq } from '@/components/home-faq'
 import { JsonLd } from '@/components/json-ld'
 import { RegistryEmptyState } from '@/components/registry-empty-state'
 import { PopInNumber } from '@/components/transitions/pop-in-number'
+import { parseSort, sortAgents } from '@/lib/agents'
 import {
   applyInstallCounts,
   getAgentRuntimeState,
   sumInstallCounts,
-} from '@/lib/agent-runtime'
-import { parseSort, sortAgents } from '@/lib/agents'
+} from '@/lib/data/agents'
+import { getInstallCountMap } from '@/lib/data/install-metrics'
 import { listLearnPages } from '@/lib/learn-content'
 import { createPageMetadata } from '@/lib/metadata'
-import { getInstallCountMap } from '@/lib/queries'
+import { getStaticRegistryStats, listStaticAgents } from '@/lib/registry'
 import { buildInstallCommand } from '@/lib/site-url'
-import { getStaticRegistryStats, listStaticAgents } from '@/lib/static-agents'
 import {
   createAgentListSchema,
   createHomeFaqSchema,

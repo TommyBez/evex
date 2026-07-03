@@ -12,7 +12,7 @@ export const HOME_FAQ_ITEMS = [
   {
     question: 'How do I publish an agent?',
     answer:
-      'Open a pull request to the evex repository with your agent under packages/agent-registry/agents/{slug}. After merge, the agent appears in the public catalog and shadcn registry.',
+      'Open a pull request to the evex repository with your agent under registry/{slug}. After merge, the agent appears in the public catalog and shadcn registry.',
   },
   {
     question: 'What is eve?',

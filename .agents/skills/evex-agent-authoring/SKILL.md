@@ -1,6 +1,6 @@
 ---
 name: evex-agent-authoring
-description: Use when creating, modifying, or reviewing installable Eve agents in the evex repository under packages/agent-registry/agents/<slug>. Guides repo-specific standards for package layout, registry.json, README/install surface, env examples, registry generate/check/build gates, and alignment with the code-reviewer and postgres-data-analyst reference agents.
+description: Use when creating, modifying, or reviewing installable Eve agents in the evex repository under registry/<slug>. Guides repo-specific standards for package layout, registry.json, README/install surface, env examples, registry generate/check/build gates, and alignment with the code-reviewer and postgres-data-analyst reference agents.
 ---
 
 # Evex Agent Authoring
@@ -12,15 +12,15 @@ framework. Before writing code, always read the relevant guide in
 ## Start Here
 
 1. Inspect the closest in-repo reference agent before designing a new shape:
-   - `packages/agent-registry/agents/code-reviewer/` for GitHub PR review,
+   - `registry/code-reviewer/` for GitHub PR review,
      structured publishing, rate limiting, agent skills, and evals.
-   - `packages/agent-registry/agents/postgres-data-analyst/` for Slack,
+   - `registry/postgres-data-analyst/` for Slack,
      Vercel Connect credentials, external data access, env parsing, and
      read-only policy enforcement.
 2. Confirm the agent is meant to install into an existing Eve app. Do not create
    a standalone app scaffold or publish app-level project files.
 3. Keep canonical metadata and installable files source-owned under
-   `packages/agent-registry/agents/<slug>/`. Runtime database state is not the
+   `registry/<slug>/`. Runtime database state is not the
    source of truth for agent metadata.
 
 ## Package Shape
@@ -28,7 +28,7 @@ framework. Before writing code, always read the relevant guide in
 Create each agent under:
 
 ```text
-packages/agent-registry/agents/<slug>/
+registry/<slug>/
   .env.example       # when installed files read environment variables
   package.json
   README.md
@@ -137,7 +137,7 @@ valid and in sync. Treat these as hard gates before opening or updating a PR.
 files; they only verify that `src/generated/registry.ts` matches the agent
 sources. Agent packages under `agents/<slug>/` are **not** Turbo workspace
 packages — run their scripts with `pnpm --dir
-packages/agent-registry/agents/<slug> …`.
+registry/<slug> …`.
 
 ### Generator validations
 
@@ -168,9 +168,9 @@ installed files, or change file content referenced by the registry:
 pnpm --filter @evex/agent-registry generate
 
 # 2. Agent-local Eve and TypeScript gates
-pnpm --dir packages/agent-registry/agents/<slug> typecheck
-pnpm --dir packages/agent-registry/agents/<slug> build    # eve build
-pnpm --dir packages/agent-registry/agents/<slug> check    # eve info --json
+pnpm --dir registry/<slug> typecheck
+pnpm --dir registry/<slug> build    # eve build
+pnpm --dir registry/<slug> check    # eve info --json
 
 # 3. Monorepo gates (match CI / pre-merge expectations)
 pnpm --filter @evex/agent-registry run check              # same as registry build --check
@@ -198,7 +198,7 @@ artifacts. Follow `code-reviewer/evals/` for structure.
 When evals exist, also run:
 
 ```bash
-pnpm --dir packages/agent-registry/agents/<slug> eval -- --skip-report
+pnpm --dir registry/<slug> eval -- --skip-report
 ```
 
 If root validation is blocked by unrelated local state, report that explicitly

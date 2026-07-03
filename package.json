@@ -18,8 +18,12 @@
     "dev": "turbo run dev --filter=./apps/web",
     "email:preview": "pnpm --filter ./apps/web email:preview",
     "fix": "turbo run fix",
+    "postinstall": "node packages/agent-registry/scripts/generate-registry.mts",
+    "registry:install": "pnpm --dir registry install",
     "start": "pnpm --filter ./apps/web start",
-    "typecheck": "turbo run typecheck"
+    "test": "turbo run test",
+    "typecheck": "turbo run typecheck",
+    "typecheck:agents": "pnpm --dir registry --recursive run typecheck"
   },
   "devDependencies": {
     "turbo": "^2.8.0"
@@ -28,9 +32,5 @@
     "overrides": {
       "hono": "4.12.25"
     }
-  },
-  "dependencies": {
-    "react-markdown": "^10.1.0",
-    "remark-gfm": "^4.0.1"
   }
 }
