@@ -10,11 +10,10 @@ This skill carries evex repository standards only. It never restates:
 - **Eve framework semantics** — agent layout, tools, connections, channels,
   schedules, skills, evals. Read the docs shipped with the installed eve
   package (`registry/<slug>/node_modules/eve/docs/`, present after
-  `pnpm registry:install`) and mirror the closest reference agent:
-  - `registry/code-reviewer/` — GitHub PR review, structured publishing,
-    rate limiting, agent skills, evals.
-  - `registry/postgres-data-analyst/` — Slack, Vercel Connect credentials,
-    external data access, env parsing, read-only policy enforcement.
+  `pnpm registry:install`) and mirror a reference agent: list the current
+  catalog (`ls registry/`) and pick the agent whose surface overlaps most —
+  channels, connections, credentials, schedules, evals. Agents come and go,
+  so choose from what is there now, never from memory.
 - **The registry contract** — package layout, `registry.json` field rules,
   dependency/author sync, eve version pinning, slug policy, generated
   output. `CONTRIBUTIONS.md` at the repo root is canonical and matches what
@@ -39,7 +38,7 @@ Work the steps in order; each ends on a checkable bound.
 
 Before writing code:
 
-1. Read the relevant guides in the eve docs and inspect the closest
+1. Read the relevant guides in the eve docs and inspect the chosen
    reference agent.
 2. Trace one core scenario end-to-end with realistic data: what arrives,
    what the agent must already know, each decision and action in order,
@@ -136,13 +135,13 @@ Gate the agent before validation:
   choice.
 - Every tool or connection that spends money, sends messages, mutates or
   deletes external state carries an `approval` policy — mechanics in the
-  eve docs; `registry/eve-agent-builder/` and
-  `registry/linear-operations-agent/` show working patterns.
+  eve docs; grep `registry/*/agent` for `approval` to find working
+  patterns in the current catalog.
 - Secrets stay out of installed files, tool output, and model context.
 
 Add evals when behavior is easy to regress or the agent publishes external
-artifacts, following `registry/code-reviewer/evals/` for structure. Minimum
-bar when they exist:
+artifacts, following an existing `registry/*/evals/` directory for
+structure. Minimum bar when they exist:
 
 - One smoke eval per core job.
 - One negative eval proving the agent does not act when it should not.
