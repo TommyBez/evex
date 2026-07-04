@@ -221,8 +221,11 @@ const CtaScene = ({ agent }: { agent: AgentLaunchData }) => (
     <ScenePush zoomTo={1.03}>
       <TerminalSimulator
         chunkSize={3}
+        fontSize={22}
         lines={installLines(agent)}
         title="~/my-app"
+        windowHeight={340}
+        windowWidth={1080}
       />
     </ScenePush>
   </AbsoluteFill>

@@ -38,6 +38,10 @@ export interface TerminalSimulatorProps {
   chunkSize?: number;
   speed?: number;
   className?: string;
+  /** Terminal window width in px (default 900). */
+  windowWidth?: number;
+  /** Terminal window height in px (default 480). */
+  windowHeight?: number;
 }
 
 const DEFAULT_LINES: TerminalLine[] = [
@@ -76,14 +80,14 @@ export function TerminalSimulator({
   chunkSize = 1,
   speed = 1,
   className,
+  windowWidth = 900,
+  windowHeight = 480,
 }: TerminalSimulatorProps) {
   const frame = useCurrentFrame() * speed;
   const { fps } = useVideoConfig();
 
   const lineHeight = Math.round(fontSize * 1.6);
   const visibleLines = 8;
-  const windowWidth = 900;
-  const windowHeight = 480;
 
   // Compute cumulative start frames for each line, including auto/explicit
   // pauses AFTER a line finishes typing.
