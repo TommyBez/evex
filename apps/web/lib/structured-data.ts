@@ -1,4 +1,5 @@
 import type { AgentWithAuthor } from '@/lib/agent-types'
+import type { DocsPage } from '@/lib/docs-content'
 import { HOME_FAQ_ITEMS } from '@/lib/home-faq-content'
 import type { LearnPage } from '@/lib/learn-content'
 import { siteConfig } from '@/lib/metadata'
@@ -236,6 +237,56 @@ export function createLearnFaqSchema(page: LearnPage): JsonLdObject {
         text: faq.answer,
       },
     })),
+  }
+}
+
+export function createDocsArticleSchema(
+  page: DocsPage,
+  pageUrl: string,
+): JsonLdObject {
+  return {
+    '@context': SCHEMA_CONTEXT,
+    '@type': 'TechArticle',
+    headline: page.title,
+    description: page.description,
+    datePublished: page.datePublished,
+    dateModified: page.dateModified,
+    url: pageUrl,
+    author: {
+      '@type': 'Organization',
+      name: 'evex',
+      url: getSiteUrl(),
+    },
+  }
+}
+
+export function createDocsBreadcrumbSchema(
+  page: DocsPage,
+  pageUrl: string,
+): JsonLdObject {
+  const siteUrl = getSiteUrl()
+  const items = [
+    { '@type': 'ListItem', position: 1, name: 'Registry', item: siteUrl },
+    {
+      '@type': 'ListItem',
+      position: 2,
+      name: 'Docs',
+      item: `${siteUrl}/docs`,
+    },
+  ]
+  if (page.slug !== 'introduction') {
+    items.push({
+      '@type': 'ListItem',
+      position: 3,
+      name: page.shortTitle,
+      item: pageUrl,
+    })
+  }
+
+  return {
+    '@context': SCHEMA_CONTEXT,
+    '@type': 'BreadcrumbList',
+    itemListElement: items,
   }
 }
 

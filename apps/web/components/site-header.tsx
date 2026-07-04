@@ -26,6 +26,12 @@ export function SiteHeaderFallback() {
           </Link>
           <Link
             className="hidden font-medium text-muted-foreground text-sm sm:inline-flex"
+            href="/docs"
+          >
+            Docs
+          </Link>
+          <Link
+            className="hidden font-medium text-muted-foreground text-sm sm:inline-flex"
             href="/learn"
           >
             Learn
@@ -65,6 +71,9 @@ export async function SiteHeader() {
             href="/"
           >
             Browse
+          </NavLink>
+          <NavLink className="hidden sm:inline-flex" href="/docs">
+            Docs
           </NavLink>
           <NavLink className="hidden sm:inline-flex" href="/learn">
             Learn

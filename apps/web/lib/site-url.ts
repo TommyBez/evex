@@ -62,3 +62,7 @@ export function getAuthorUrl(githubUsername: string): string {
 export function getLearnUrl(slug: string): string {
   return `${getSiteUrl()}/learn/${slug}`
 }
+
+export function getDocsUrl(slug?: string): string {
+  return slug ? `${getSiteUrl()}/docs/${slug}` : `${getSiteUrl()}/docs`
+}

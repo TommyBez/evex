@@ -3,11 +3,13 @@ import 'server-only'
 import type { RegistryItemDocs } from '@evex/agent-registry'
 import type { AgentRegistryFile, AgentWithAuthor } from '@/lib/agent-types'
 import { parseDependencies } from '@/lib/agents'
+import type { DocsPage } from '@/lib/docs-content'
 import type { LearnPage } from '@/lib/learn-content'
 import {
   buildInstallCommand,
   getAgentUrl,
   getAuthorUrl,
+  getDocsUrl,
   getLearnUrl,
   getSiteUrl,
 } from '@/lib/site-url'
@@ -115,6 +117,45 @@ ${fileList || 'No files listed.'}
 
 ${fileContents || 'No file contents available.'}
 `
+}
+
+function docsSectionMarkdown(page: DocsPage): string {
+  return page.sections
+    .map((section) => {
+      const bullets = section.bullets?.length
+        ? `\n\n${section.bullets.map((bullet) => `- ${bullet}`).join('\n')}`
+        : ''
+      const code = section.code?.length
+        ? `\n\n${section.code
+            .map((block) => {
+              const label = block.label ? `${block.label}\n\n` : ''
+              return `${label}\`\`\`${block.language}\n${block.code}\n\`\`\``
+            })
+            .join('\n\n')}`
+        : ''
+      return `## ${section.heading}\n\n${section.body.join('\n\n')}${bullets}${code}`
+    })
+    .join('\n\n')
+}
+
+export function buildDocsPageMarkdown(page: DocsPage): string {
+  const isIndex = page.slug === 'introduction'
+  const docsUrl = isIndex ? getDocsUrl() : getDocsUrl(page.slug)
+  const blocks = [
+    `# ${page.title}`,
+    page.description,
+    page.summary,
+    docsSectionMarkdown(page),
+    `---
+
+- Published: ${page.datePublished}
+- Updated: ${page.dateModified}
+- Web page: ${docsUrl}
+- This document: ${docsUrl}.md
+- Docs index: ${getDocsUrl()}`,
+  ]
+
+  return `${blocks.filter(Boolean).join('\n\n')}\n`
 }
 
 function learnSectionMarkdown(page: LearnPage): string {

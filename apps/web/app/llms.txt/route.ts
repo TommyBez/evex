@@ -1,3 +1,4 @@
+import { listDocsPages } from '@/lib/docs-content'
 import { listLearnPages } from '@/lib/learn-content'
 import { siteConfig } from '@/lib/metadata'
 import { listStaticAgents } from '@/lib/registry'
@@ -20,6 +21,17 @@ function buildLlmsTxt(): string {
       const name = escapeMarkdownLinkText(agent.name)
       const description = escapeMarkdownLinkText(agent.description)
       return `- [${name}](${getAgentUrl(agent.slug)}.md): ${description}`
+    })
+    .join('\n')
+  const docsLines = listDocsPages()
+    .map((page) => {
+      const title = escapeMarkdownLinkText(page.shortTitle)
+      const description = escapeMarkdownLinkText(page.description)
+      const url =
+        page.slug === 'introduction'
+          ? `${siteUrl}/docs.md`
+          : `${siteUrl}/docs/${page.slug}.md`
+      return `- [${title}](${url}): ${description}`
     })
     .join('\n')
   const guideLines = guides
@@ -48,10 +60,15 @@ evex is a shadcn-compatible registry for eve agents. Each registry item packages
 ## Key pages
 
 - [Browse agents](${siteUrl}/): Search and filter the full agent catalog
+- [Docs](${siteUrl}/docs): How to install agents, use the registry API, and publish your own agent
 - [Learn](${siteUrl}/learn): Decision guides for Eve, AI agents, MCP, shadcn registries, and framework comparisons
 - [Leaderboard](${siteUrl}/leaderboard): Most installed agents and top authors
 - [GitHub repository](https://github.com/TommyBez/evex): Source, issues, and contribution guide
 - [eve framework docs](https://eve.dev/docs/introduction): Framework documentation
+
+## Docs
+
+${docsLines}
 
 ## Guides
 

@@ -12,6 +12,8 @@ const nextConfig: NextConfig = {
     return Promise.resolve([
       { source: '/agents/:slug.md', destination: '/agents/:slug/md' },
       { source: '/learn/:slug.md', destination: '/learn/:slug/md' },
+      { source: '/docs.md', destination: '/docs/md' },
+      { source: '/docs/:slug.md', destination: '/docs/:slug/md' },
     ])
   },
 }

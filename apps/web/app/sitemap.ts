@@ -1,4 +1,5 @@
 import type { MetadataRoute } from 'next'
+import { listDocsPages, listDocsSubPages } from '@/lib/docs-content'
 import { listLearnPages } from '@/lib/learn-content'
 import { listStaticAgents } from '@/lib/registry'
 import { getAuthorUrl, getLearnUrl, getSiteUrl } from '@/lib/site-url'
@@ -33,6 +34,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const siteUrl = getSiteUrl()
   const agents = listStaticAgents()
   const learnPages = listLearnPages()
+  const docsPages = listDocsPages()
+  const latestDocsUpdate = latestDate(
+    docsPages.map((page) => new Date(page.dateModified)),
+  )
   // Stable lastmod values: a build timestamp changes on every deploy and
   // teaches crawlers to distrust the field. Derive dates from content.
   const latestAgentUpdate = latestDate(agents.map((agent) => agent.updatedAt))
@@ -66,6 +71,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'weekly',
       priority: 0.8,
     },
+    {
+      url: `${siteUrl}/docs`,
+      lastModified: latestDocsUpdate,
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    },
   ]
 
   const agentRoutes: MetadataRoute.Sitemap = agents.map((agent) => ({
@@ -91,5 +102,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.7,
   }))
 
-  return [...staticRoutes, ...agentRoutes, ...authorRoutes, ...learnRoutes]
+  const docsRoutes: MetadataRoute.Sitemap = listDocsSubPages().map((page) => ({
+    url: `${siteUrl}/docs/${page.slug}`,
+    lastModified: new Date(page.dateModified),
+    changeFrequency: 'monthly' as const,
+    priority: 0.7,
+  }))
+
+  return [
+    ...staticRoutes,
+    ...agentRoutes,
+    ...authorRoutes,
+    ...learnRoutes,
+    ...docsRoutes,
+  ]
 }
