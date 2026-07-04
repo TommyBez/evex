@@ -2,9 +2,9 @@ import type { Metadata } from 'next'
 
 export const siteConfig = {
   name: 'evex',
-  title: 'evex — Vercel eve Agent Registry | Install with One Command',
+  title: 'evex: Vercel eve Agent Registry | Install with One Command',
   description:
-    "evex is the community registry for eve agents — reusable agents built on eve, Vercel's agent framework. Browse configurations, preview every file before install, and add agents with one shadcn command.",
+    "evex is the community registry for eve agents, reusable agents built on eve, Vercel's agent framework. Browse configurations, preview every file before install, and add agents with one shadcn command.",
 }
 
 export const siteTwitterHandle = '@TommyBez85'
