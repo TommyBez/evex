@@ -145,7 +145,7 @@
           "overview": [
             "X Draft Assistant is a scheduled eve agent that turns what a watched set of X (Twitter) accounts posted in the last 24 hours into three ready-to-review draft posts in Typefully. Every day it scans the handles listed in X_HOT_TOPIC_HANDLES via the X API v2, clusters their recent posts into hot topics, researches each topic with the Parallel web search API, and writes three distinct draft candidates with cited sources.",
             "You interact with it through a cron schedule rather than chat: the daily-x-drafts schedule fires at 08:00 UTC by default (configurable with X_HOT_TOPIC_DAILY_CRON), and the output lands as unscheduled drafts in your Typefully social set. The agent never publishes, schedules, replies, or likes anything, so a human always makes the final call on what goes live.",
-            "What makes it useful for teams doing content is the safety model around draft creation. Every candidate is previewed in dry-run mode first, creation is gated behind an explicit confirmCreate flag, and each draft carries a per-run idempotency key so a retried step never produces a duplicate in Typefully. Posts are labeled with the X made-with-AI disclosure by default."
+            "The safety model around draft creation is what makes this workable for teams that review before publishing. The agent previews every candidate in dry-run mode first, only creates drafts after an explicit confirmCreate flag, and attaches a per-run idempotency key to each draft so a retried step never produces a duplicate in Typefully. It labels posts with the X made-with-AI disclosure by default."
           ],
           "howItWorks": [
             "On each scheduled run, the scan_x_profiles tool pulls recent posts (excluding retweets) from every handle in X_HOT_TOPIC_HANDLES using X API v2 app-only bearer auth, scoped to the X_HOT_TOPIC_LOOKBACK_HOURS window (default 24 hours) so topics do not repeat day over day.",
@@ -170,7 +170,7 @@
             },
             {
               "title": "Compliance-safe AI drafting",
-              "body": "Because drafts are never published or scheduled, carry the X made-with-AI disclosure by default, and are deduplicated via idempotency keys, teams with review requirements can adopt LLM drafting without risking unreviewed or duplicate posts."
+              "body": "Because the agent never publishes or schedules drafts, labels them with the X made-with-AI disclosure by default, and deduplicates them with idempotency keys, teams with review requirements can adopt LLM drafting without risking unreviewed or duplicate posts."
             }
           ],
           "requirements": [
