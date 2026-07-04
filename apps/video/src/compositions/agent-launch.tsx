@@ -1,5 +1,3 @@
-import { loadFont as loadInter } from '@remotion/google-fonts/Inter'
-import { loadFont as loadJetBrainsMono } from '@remotion/google-fonts/JetBrainsMono'
 import { linearTiming, TransitionSeries } from '@remotion/transitions'
 import type { CSSProperties, ReactNode } from 'react'
 import {
@@ -21,14 +19,20 @@ import { whipPan } from '@/components/remocn/whip-pan'
 import { LogoSting } from '@/components/video/logo-sting'
 import { PayoffLine } from '@/components/video/payoff-line'
 import type { AgentLaunchData } from '@/data/agents'
+import {
+  GEIST_MONO,
+  GEIST_SANS,
+  geistPixelStack,
+  geistSansStack,
+} from '@/fonts'
 
-const { fontFamily: sansFamily } = loadInter()
-const { fontFamily: monoFamily } = loadJetBrainsMono()
+const sansFamily = geistSansStack
 
-// remocn components resolve their type through these CSS variables.
+// remocn components resolve their type through these CSS variables — point them
+// at the real Geist faces the web app uses.
 const fontVariables = {
-  '--font-geist-mono': monoFamily,
-  '--font-geist-sans': sansFamily,
+  '--font-geist-mono': GEIST_MONO,
+  '--font-geist-sans': GEIST_SANS,
 } as CSSProperties
 
 export const AGENT_LAUNCH_FPS = 30
@@ -137,7 +141,7 @@ const BrandTagline = () => {
 const BrandScene = () => (
   <SceneBase shaderOpacity={0.5} shaderSpeed={0.5}>
     <ScenePush zoomTo={1.05}>
-      <LogoSting accent={BRAND_ACCENT} unit={46} />
+      <LogoSting accent={BRAND_ACCENT} fontFamily={geistPixelStack} unit={46} />
       <BrandTagline />
     </ScenePush>
   </SceneBase>
@@ -240,6 +244,7 @@ const CtaScene = ({ agent }: { agent: AgentLaunchData }) => (
       >
         <LogoSting
           accent={BRAND_ACCENT}
+          fontFamily={geistPixelStack}
           unit={12}
           wordmark="evex.sh"
           wordmarkColor={TEXT_FAINT}

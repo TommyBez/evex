@@ -14,10 +14,12 @@
   "dependencies": {
     "@paper-design/shaders-react": "^0.0.77",
     "@remotion/cli": "4.0.484",
+    "@remotion/fonts": "4.0.484",
     "@remotion/google-fonts": "4.0.484",
     "@remotion/transitions": "4.0.484",
     "culori": "^4.0.2",
     "date-fns": "^4.4.0",
+    "geist": "1.7.2",
     "lucide-react": "^1.17.0",
     "react": "^19",
     "react-dom": "^19",
