@@ -95,7 +95,7 @@
         "docs": {
           "overview": [
             "Code Reviewer is an eve agent that reviews GitHub pull requests when someone mentions @code-reviewer in a PR comment or a review thread. It runs behind a native GitHub App channel: GitHub delivers the comment webhook to your deployed eve app at /eve/v1/github, and the agent replies by publishing a real GitHub review with inline comments anchored to the diff.",
-            "The agent reviews changed behavior, not style. Its instructions direct it at concrete bugs, regressions, security risks, rollout risk, and materially missing tests, and explicitly forbid naming nits and speculative rewrites. Findings are labeled blocking, warning, or nit, capped at 10 inline comments per review, and small local fixes can ship as GitHub suggestion blocks the author applies manually.",
+            "The agent reviews changed behavior, not style. Its instructions direct it at concrete bugs, regressions, security risks, rollout risk, and materially missing tests, and explicitly forbid naming nits and speculative rewrites. It labels each finding blocking, warning, or nit, caps each review at 10 inline comments, and attaches GitHub suggestion blocks for small local fixes the author applies manually.",
             "It is read-only toward your repository: the channel checks the code out into the eve sandbox for inspection, but the agent never pushes commits, opens branches, or edits the pull request. Built-in Upstash-backed rate limiting keeps public deployments safe, with stricter defaults for public repositories than private ones."
           ],
           "howItWorks": [

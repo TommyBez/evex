@@ -112,7 +112,7 @@
             "The agent calls the context-dev MCP connection (search_docs and execute against the hosted Context.dev server) to retrieve brand data, homepage markdown, and styleguide details, authenticating with your CONTEXT_DEV_API_KEY via the x-context-dev-api-key header.",
             "The brand-visual-assets skill scopes the pack, falling back to a default asset list if you did not name specific types, then locks a brand profile with primary and secondary hex colors, tone adjectives, and up to four reference images such as Context.dev logo or screenshot URLs.",
             "For each asset it writes a self-contained brief and calls generate_svg_with_arrow once, which prompts quiverai/arrow-1.1 through Vercel AI Gateway, rejects output lacking a viewBox or containing scripts and raster content, fits the artwork to your requested dimensions, and adds title and desc elements for accessibility.",
-            "Every generated asset is scored against the skill's quality-bar, consistency, and visual-taste references; any asset scoring 8 or below on the scorecard is individually regenerated with a tighter brief.",
+            "The agent scores every generated asset against the skill's quality-bar, consistency, and visual-taste references, then regenerates any asset scoring 8 or below on the scorecard with a tighter brief.",
             "The final reply contains a brand brief with source URLs, an asset pack manifest with filenames and purposes, one fenced svg block per asset, usage notes for theming and placement, and an assumptions section when choices were inferred. Two bundled evals verify the ask-first and no-fabrication behaviors."
           ],
           "useCases": [
