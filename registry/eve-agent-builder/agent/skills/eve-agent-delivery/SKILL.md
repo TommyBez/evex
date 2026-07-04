@@ -49,6 +49,16 @@ using this skill. Do not restate Eve docs here.
   not expose.
 - For channels, follow [channel-setup](./references/channel-setup.md).
 
+## Parallel work
+
+For independent subtasks — reading several doc pages, summarizing channel
+setup options, running unrelated read-only checks — fan out with the built-in
+`agent` tool: one call per subtask, all in one response, each `message`
+self-contained (the child does not see this conversation). Children share the
+workspace filesystem, so give parallel children non-overlapping write scopes
+and keep file edits in the parent when in doubt. Approval-gated tools stay
+gated inside children.
+
 ## Testing
 
 Follow [testing-sequence](./references/testing-sequence.md).
