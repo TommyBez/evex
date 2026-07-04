@@ -26,10 +26,10 @@ const toWords = (text: string, emphasized: boolean): PayoffWord[] =>
     .filter(Boolean)
     .map((word) => ({ text: word, emphasized }))
 
-const WORD_STAGGER = 3
-const WORD_DURATION = 16
-const HIGHLIGHT_START = 42
-const HIGHLIGHT_END = 68
+const WORD_STAGGER = 2
+const WORD_DURATION = 12
+const HIGHLIGHT_START = 28
+const HIGHLIGHT_END = 48
 
 /**
  * One benefit sentence entering word by word, with the key phrase shifting to
