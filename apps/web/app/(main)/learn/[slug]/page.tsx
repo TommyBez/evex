@@ -218,10 +218,7 @@ export default async function LearnDetailPage({
                 href={`/learn/${relatedPage.slug}`}
                 key={relatedPage.slug}
               >
-                <span className="mono-label text-muted-foreground">
-                  {relatedPage.primaryKeyword}
-                </span>
-                <h3 className="mt-2 font-medium text-foreground">
+                <h3 className="font-medium text-foreground">
                   {relatedPage.shortTitle}
                 </h3>
                 <p className="mt-2 line-clamp-2 text-muted-foreground text-sm leading-relaxed">

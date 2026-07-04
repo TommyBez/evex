@@ -1,6 +1,5 @@
 import { Badge } from '@evex/ui/badge'
 import { Card } from '@evex/ui/card'
-import { BookOpen } from 'lucide-react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { JsonLd } from '@/components/json-ld'
@@ -27,11 +26,7 @@ export default function LearnPage() {
       <JsonLd data={createLearnListSchema(pages)} />
       <main className="mx-auto w-full min-w-0 max-w-6xl px-4 py-10 sm:px-6">
         <header className="max-w-3xl">
-          <span className="mono-label inline-flex items-center gap-2 text-muted-foreground">
-            <BookOpen aria-hidden="true" className="size-4 text-brand" />
-            learn
-          </span>
-          <h1 className="mt-3 text-balance font-semibold text-3xl text-foreground sm:text-4xl">
+          <h1 className="text-balance font-semibold text-3xl text-foreground sm:text-4xl">
             AI agent engineering guides for people building real agents
           </h1>
           <p className="mt-4 max-w-2xl text-pretty text-muted-foreground leading-relaxed">
@@ -99,17 +94,20 @@ export default function LearnPage() {
                 href={`/learn/${page.slug}`}
                 key={page.slug}
               >
-                <span className="mono-label text-muted-foreground">
-                  {page.primaryKeyword}
-                </span>
-                <h3 className="mt-2 font-display font-semibold text-foreground">
+                <h3 className="font-display font-semibold text-foreground">
                   {page.shortTitle}
                 </h3>
                 <p className="mt-2 line-clamp-3 text-muted-foreground text-sm leading-relaxed">
                   {page.description}
                 </p>
-                <span className="mt-auto inline-flex pt-3 text-brand text-sm opacity-0 transition-opacity group-hover:opacity-100">
-                  Read guide →
+                <span className="mt-auto inline-flex pt-3 text-brand text-sm opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100">
+                  Read guide{' '}
+                  <span
+                    aria-hidden="true"
+                    className="inline-block transition-transform group-hover:translate-x-0.5"
+                  >
+                    →
+                  </span>
                 </span>
               </Link>
             ))}

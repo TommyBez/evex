@@ -8,7 +8,7 @@ import {
   ItemTitle,
 } from '@evex/ui/item'
 import { Skeleton } from '@evex/ui/skeleton'
-import { Download, Trophy } from 'lucide-react'
+import { Download } from 'lucide-react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Suspense } from 'react'
@@ -37,10 +37,6 @@ export default function LeaderboardPage() {
   return (
     <main className="mx-auto w-full min-w-0 max-w-5xl px-4 py-10">
       <header className="flex flex-col gap-3">
-        <span className="mono-label inline-flex items-center gap-2 text-muted-foreground">
-          <Trophy aria-hidden="true" className="size-4 text-brand" />
-          leaderboard
-        </span>
         <h1 className="text-balance font-semibold text-3xl text-foreground">
           Top Agents and Authors
         </h1>

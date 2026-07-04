@@ -17,7 +17,7 @@ export function AgentCard({
   isFavorite?: boolean
 }) {
   return (
-    <Card className="group relative flex h-full w-full min-w-0 flex-col gap-4 rounded-md border border-border p-5 shadow-[var(--shadow-card)] ring-0 transition-[background-color,border-color,box-shadow] focus-within:border-input focus-within:bg-muted/40 focus-within:ring-2 focus-within:ring-ring/20 hover:border-input hover:bg-muted/40">
+    <Card className="group relative flex h-full w-full min-w-0 flex-col gap-4 rounded-md border border-border p-5 shadow-[var(--shadow-card)] ring-0 transition-[background-color,border-color,box-shadow,transform] focus-within:border-input focus-within:bg-muted/40 focus-within:ring-2 focus-within:ring-ring/20 hover:border-input hover:bg-muted/40 hover:shadow-[var(--shadow-popover)] motion-safe:hover:-translate-y-0.5">
       <div className="flex min-w-0 items-center justify-between gap-3">
         <Link
           aria-label={`Browse ${agent.category} agents`}
@@ -90,7 +90,13 @@ export function AgentCard({
           </span>
         )}
         <span className="mono-label text-brand opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100">
-          View →
+          View{' '}
+          <span
+            aria-hidden="true"
+            className="inline-block transition-transform group-hover:translate-x-0.5"
+          >
+            →
+          </span>
         </span>
       </div>
     </Card>
