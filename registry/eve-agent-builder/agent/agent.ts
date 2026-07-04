@@ -32,7 +32,7 @@ export default defineAgent({
   // Runaway guard, not a budget: a legitimate delivery session never comes
   // near this. Input stays on the framework default.
   limits: {
-    maxOutputTokensPerSession: 2_000_000,
+    maxOutputTokensPerSession: 5_000_000,
   },
   outputSchema: deliveryReportSchema,
 });
