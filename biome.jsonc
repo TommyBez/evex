@@ -20,7 +20,9 @@
       "!apps/agents/*/.vercel",
       "!packages/ui/src/components/*",
       "!packages/agent-registry/generated",
-      "!apps/web/.next"
+      "!apps/web/.next",
+      "!apps/video/src/components/remocn",
+      "!apps/video/src/lib/remocn-ui"
     ]
   }
 }

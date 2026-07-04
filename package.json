@@ -23,7 +23,10 @@
     "start": "pnpm --filter ./apps/web start",
     "test": "turbo run test",
     "typecheck": "turbo run typecheck",
-    "typecheck:agents": "pnpm --dir registry --recursive run typecheck"
+    "typecheck:agents": "pnpm --dir registry --recursive run typecheck",
+    "video:dev": "pnpm --filter @evex/video dev",
+    "video:render": "pnpm --filter @evex/video render",
+    "video:render:all": "pnpm --filter @evex/video render:all"
   },
   "devDependencies": {
     "turbo": "^2.8.0"
