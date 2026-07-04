@@ -100,7 +100,80 @@
         "slug": "brand-visual-asset-generator",
         "category": "marketing",
         "createdAt": "2026-07-01T21:16:30.433Z",
-        "updatedAt": "2026-07-02T04:38:00.000Z"
+        "updatedAt": "2026-07-04T00:00:00.000Z",
+        "docs": {
+          "overview": [
+            "Brand Visual Asset Generator is an on-demand eve agent that turns a company domain, product description, or explicit brand profile into a coherent pack of editable SVG assets: icons, empty states, hero illustrations, badges, feature graphics, onboarding visuals, changelog art, and dashboard or modal graphics. You talk to it in your eve chat client, name the assets you want, and it returns real SVG markup ready to drop into a product or landing page.",
+            "Under the hood it combines two services. A Context.dev MCP connection resolves the brand facts first: name, description, colors, logos, homepage copy, and styleguide cues for a domain. Then a generate_svg_with_arrow tool calls the quiverai/arrow-1.1 image model through Vercel AI Gateway once per asset brief, validates that the response is safe SVG with a viewBox, rescales it to the requested dimensions, and normalizes icons to currentColor strokes so they theme automatically.",
+            "What makes it useful is pack coherence and honesty. A bundled brand-visual-assets skill enforces a six-step workflow with a scorecard: every asset must share palette, stroke language, and illustration metaphors, and anything scoring 8 or below gets regenerated with a tighter brief. If Context.dev or AI Gateway credentials fail, the agent stops and reports the error instead of fabricating brand facts or hand-writing replacement SVGs."
+          ],
+          "howItWorks": [
+            "You send a request in chat, such as a feature launch pack for linear.app; if no website, product description, or brand profile is given, the agent asks for one before doing any generation work.",
+            "The agent calls the context-dev MCP connection (search_docs and execute against the hosted Context.dev server) to retrieve brand data, homepage markdown, and styleguide details, authenticating with your CONTEXT_DEV_API_KEY via the x-context-dev-api-key header.",
+            "The brand-visual-assets skill scopes the pack, falling back to a default asset list if you did not name specific types, then locks a brand profile with primary and secondary hex colors, tone adjectives, and up to four reference images such as Context.dev logo or screenshot URLs.",
+            "For each asset it writes a self-contained brief and calls generate_svg_with_arrow once, which prompts quiverai/arrow-1.1 through Vercel AI Gateway, rejects output lacking a viewBox or containing scripts and raster content, fits the artwork to your requested dimensions, and adds title and desc elements for accessibility.",
+            "Every generated asset is scored against the skill's quality-bar, consistency, and visual-taste references; any asset scoring 8 or below on the scorecard is individually regenerated with a tighter brief.",
+            "The final reply contains a brand brief with source URLs, an asset pack manifest with filenames and purposes, one fenced svg block per asset, usage notes for theming and placement, and an assumptions section when choices were inferred. Two bundled evals verify the ask-first and no-fabrication behaviors."
+          ],
+          "useCases": [
+            {
+              "title": "Feature launch pack from a domain",
+              "body": "Point the agent at your marketing site and request a hero illustration, feature icons, a new-feature badge, and an onboarding visual. Context.dev extracts your palette and logos so every asset lands on brand without manual specs."
+            },
+            {
+              "title": "Empty states for a pre-launch product",
+              "body": "No public website yet? Provide a product description, a primary hex color, and tone adjectives, and the agent generates empty-state and modal illustrations directly from that explicit brand profile, listing its assumptions alongside the SVGs."
+            },
+            {
+              "title": "Themeable icon sets for a design system",
+              "body": "Request feature, navigation, or status icons and get SVGs normalized to currentColor strokes with fill none, a 1.8 stroke width, and rounded caps, so the icons inherit text color and work in light and dark themes."
+            },
+            {
+              "title": "Changelog and release visuals on demand",
+              "body": "Generate consistent changelog art or dashboard graphics for each release. Because the skill enforces shared palette and stroke language across the pack, week-over-week visuals stay coherent instead of drifting in style."
+            }
+          ],
+          "requirements": [
+            {
+              "name": "CONTEXT_DEV_API_KEY",
+              "body": "Context.dev API key used by the MCP connection for brand, webpage, and styleguide extraction; sent only from the eve runtime as the x-context-dev-api-key header. Create one in your Context.dev account. CONTEXT_API_KEY is accepted as a fallback name."
+            },
+            {
+              "name": "AI_GATEWAY_API_KEY",
+              "body": "Vercel AI Gateway key (vck_ prefix) that lets generate_svg_with_arrow call the quiverai/arrow-1.1 image model. Create it in your Vercel AI Gateway project and make sure that model is enabled there."
+            },
+            {
+              "name": "VERCEL_OIDC_TOKEN",
+              "body": "Alternative AI Gateway credential. On Vercel deployments it is provided automatically; locally you can pull one with the Vercel CLI. Set either this or AI_GATEWAY_API_KEY, not necessarily both."
+            },
+            {
+              "name": "eve, ai, zod",
+              "body": "Runtime dependencies installed with the registry item: the eve framework (^0.18.2), the ai SDK (^7.0.11) for generateImage, and zod 4.4.3 for tool input validation. Node.js 24 or newer is required."
+            }
+          ],
+          "faqs": [
+            {
+              "question": "How do I install and run this agent?",
+              "answer": "Run npx shadcn@latest add @evex/brand-visual-asset-generator in your eve app, copy .env.example into your environment with the Context.dev and AI Gateway credentials filled in, then start the app with pnpm dev and ask for a visual pack in chat."
+            },
+            {
+              "question": "Which models does it use?",
+              "answer": "The root orchestrator runs on deepseek/deepseek-v4-pro, and SVG generation uses quiverai/arrow-1.1 called through Vercel AI Gateway's image-generation endpoint. Your deployment needs access to both providers; the agent never asks a language model to draw the SVGs itself."
+            },
+            {
+              "question": "Can I customize the assets it produces?",
+              "answer": "Yes. Name the exact asset types, dimensions, colors, and tone in your request, or let the skill fall back to its default pack. You can also pass up to four reference images per asset for style, palette, composition, or typography direction, stating what to preserve and what to change."
+            },
+            {
+              "question": "Does it work without a company website?",
+              "answer": "Yes. Instead of a domain, give a product description or an explicit brand profile such as a primary hex color, audience, and tone adjectives. The agent skips Context.dev extraction only when you supply the brand facts, and it records inferred choices in an assumptions section."
+            },
+            {
+              "question": "What are the known limits and failure modes?",
+              "answer": "Arrow 1.1 accepts at most four reference images and about 6000 output tokens per asset. Context.dev can return 408 or 429 on cold starts and rate limits, so retry or reduce concurrency. On missing credentials or model errors the agent stops and reports the failure rather than fabricating output."
+            }
+          ]
+        }
       },
       "author": "TommyBez"
     }

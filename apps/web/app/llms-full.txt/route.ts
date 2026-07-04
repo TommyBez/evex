@@ -13,10 +13,12 @@ function buildAgentSection(agent: AgentWithAuthor): string {
   const deps = parseDependencies(agent.dependencies)
   const agentUrl = getAgentUrl(agent.slug)
 
+  const overview = agent.docs ? `\n${agent.docs.overview.join('\n\n')}\n` : ''
+
   return `## ${agent.name}
 
 ${agent.description}
-
+${overview}
 - Install: \`${buildInstallCommand(agent.slug)}\`
 - Category: ${agent.category}
 - Author: ${agent.authorName}

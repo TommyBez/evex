@@ -34,6 +34,7 @@ import {
 } from '@/lib/registry'
 import {
   createAgentBreadcrumbSchema,
+  createAgentFaqSchema,
   createAgentSoftwareSchema,
 } from '@/lib/structured-data'
 
@@ -259,6 +260,8 @@ async function AgentDetailContent({ agent }: { agent: AgentWithAuthor }) {
         )}
       </section>
 
+      <AgentDocsSection agent={agent} />
+
       <Separator className="my-8" />
 
       <section>
@@ -282,6 +285,92 @@ async function AgentDetailContent({ agent }: { agent: AgentWithAuthor }) {
         slug={agent.slug}
       />
     </main>
+  )
+}
+
+function AgentDocsSection({ agent }: { agent: AgentWithAuthor }) {
+  const { docs } = agent
+  if (!docs) {
+    return null
+  }
+
+  const faqSchema = createAgentFaqSchema(agent)
+
+  return (
+    <>
+      {faqSchema ? <JsonLd data={faqSchema} /> : null}
+      <Separator className="my-8" />
+      <section>
+        <h2 className="font-semibold text-foreground text-lg">
+          About {agent.name}
+        </h2>
+        <div className="mt-3 grid gap-3 text-muted-foreground leading-relaxed">
+          {docs.overview.map((paragraph) => (
+            <p key={paragraph}>{paragraph}</p>
+          ))}
+        </div>
+      </section>
+
+      <section className="mt-8">
+        <h2 className="font-semibold text-foreground text-lg">How it works</h2>
+        <ol className="mt-3 grid list-decimal gap-2 pl-5 text-muted-foreground leading-relaxed">
+          {docs.howItWorks.map((step) => (
+            <li key={step}>{step}</li>
+          ))}
+        </ol>
+      </section>
+
+      <section className="mt-8">
+        <h2 className="font-semibold text-foreground text-lg">Use cases</h2>
+        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          {docs.useCases.map((useCase) => (
+            <div
+              className="rounded-md border border-border bg-background p-4"
+              key={useCase.title}
+            >
+              <h3 className="font-medium text-foreground">{useCase.title}</h3>
+              <p className="mt-1.5 text-muted-foreground text-sm leading-relaxed">
+                {useCase.body}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {docs.requirements.length > 0 && (
+        <section className="mt-8">
+          <h2 className="font-semibold text-foreground text-lg">
+            Requirements
+          </h2>
+          <dl className="mt-3 grid gap-px overflow-hidden rounded-md border border-border bg-border">
+            {docs.requirements.map((requirement) => (
+              <div className="bg-background p-3" key={requirement.name}>
+                <dt className="font-medium font-mono text-foreground text-sm">
+                  {requirement.name}
+                </dt>
+                <dd className="mt-1 text-muted-foreground text-sm leading-relaxed">
+                  {requirement.body}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+      )}
+
+      <section className="mt-8">
+        <h2 className="font-semibold text-foreground text-lg">FAQ</h2>
+        <div className="mt-3 divide-y divide-border rounded-md border border-border">
+          {docs.faqs.map((faq) => (
+            <div className="p-4" key={faq.question}>
+              <h3 className="font-medium text-foreground">{faq.question}</h3>
+              <p className="mt-2 text-muted-foreground text-sm leading-relaxed">
+                {faq.answer}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+    </>
   )
 }
 

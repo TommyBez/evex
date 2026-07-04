@@ -154,7 +154,92 @@
         "slug": "linear-operations-agent",
         "category": "productivity",
         "createdAt": "2026-06-20T00:00:00.000Z",
-        "updatedAt": "2026-06-30T18:00:00.000Z"
+        "updatedAt": "2026-07-04T00:00:00.000Z",
+        "docs": {
+          "overview": [
+            "Linear Operations Agent is an eve agent that keeps Linear as the operational source of truth while meeting your team where work actually starts. You mention or delegate to it inside Linear Agent Sessions, mention or DM it in Slack threads, or let six built-in schedules run digests for triage, cycle health, backlog hygiene, project summaries, P0/P1 monitoring, and weekly initiative updates.",
+            "All Linear reads and writes go through a single Linear MCP connection to https://mcp.linear.app/mcp with an explicit tool allow-list: eleven read tools such as list_issues, get_issue, and list_cycles, and six write tools such as save_issue, save_comment, and save_status_update. A dynamic approval policy gates every sensitive write, so issue creation, priority changes, reassignments, and bulk actions always require human sign-off first.",
+            "It ships ten skills covering triage, duplicate detection, clarification, decomposition, incident support, Slack intake, and project, initiative, cycle, and backlog reporting. Two included evals verify the safety contract: triage produces evidence-backed proposals without calling save_issue, and initiatives outside LINEAR_OPS_COVERED_INITIATIVES never receive automated status updates."
+          ],
+          "howItWorks": [
+            "A Linear Agent app sends AgentSessionEvent webhooks to POST /eve/v1/linear when someone mentions or delegates to the agent; the channel verifies LINEAR_WEBHOOK_SECRET, accepts only created and prompted actions, and filters events against LINEAR_OPS_COVERED_TEAMS and LINEAR_OPS_COVERED_PROJECTS before waking the agent.",
+            "In Slack, a Vercel Connect Slack connector delivers app mentions and DMs to POST /eve/v1/slack; on each mention the channel loads thread context since the last agent reply and instructs the model that Slack is intake and delivery while Linear stays the source of truth.",
+            "Whenever the agent needs Linear data from any surface, it calls allow-listed tools on the Linear MCP connection authenticated through the Vercel Connect OAuth connector in LINEAR_CONNECT_UID; the first call can trigger a sign-in challenge, after which Eve stores and refreshes the credential.",
+            "Before any sensitive write, such as creating an issue, changing state, priority, assignee, project, cycle, or relationships, or any write touching priority 1 or 2 issues, the approval policy pauses the tool call and the agent asks for approval in the originating channel.",
+            "Cron schedules, all configurable via env vars and running in UTC, post read-only digests to the Slack channels you configure, for example the daily triage digest at 0 7 on weekdays to LINEAR_OPS_TRIAGE_SLACK_CHANNEL_ID; handlers skip silently when no target channel is set.",
+            "Weekly initiative updates are the one automated Linear write: every Monday the agent calls save_status_update with type initiative, but only for initiatives explicitly listed and enabled in LINEAR_OPS_COVERED_INITIATIVES and only while LINEAR_OPS_AUTO_INITIATIVE_UPDATES is not false."
+          ],
+          "useCases": [
+            {
+              "title": "Triage inbound issues from inside Linear",
+              "body": "Mention the agent on a vague bug report and it reads the issue and comments through MCP, checks for duplicates, proposes type, priority, labels, and next steps with cited evidence, then asks for approval before applying anything with save_issue."
+            },
+            {
+              "title": "Turn Slack threads into structured Linear work",
+              "body": "Mention the agent in a Slack discussion and it summarizes the thread since its last reply, separates discussion from decisions, drafts a Linear issue or links the thread to an existing one like ENG-123, and requests approval before creating anything."
+            },
+            {
+              "title": "Automated operational digests in Slack",
+              "body": "Weekday triage and cycle-health digests plus Monday backlog and project summaries flag issues stuck in triage, missing owners or priorities, stale updates, and blocked work, each delivered read-only to its own configurable Slack channel with concrete next steps."
+            },
+            {
+              "title": "Hands-off weekly initiative status updates",
+              "body": "For initiatives you explicitly list in LINEAR_OPS_COVERED_INITIATIVES, the agent writes a weekly status update directly to Linear every Monday, no approval round-trip needed, while unlisted initiatives are refused, a behavior enforced by an included eval."
+            }
+          ],
+          "requirements": [
+            {
+              "name": "LINEAR_AGENT_ACCESS_TOKEN",
+              "body": "Access token of your Linear Agent app, used by the Linear channel to post Agent Activities and manage Agent Sessions. Created in Linear when you configure the app with actor=app and the app:assignable and app:mentionable scopes. It does not authorize MCP tools."
+            },
+            {
+              "name": "LINEAR_WEBHOOK_SECRET",
+              "body": "Webhook signing secret from the Linear app settings, used to verify the Linear-Signature header on AgentSessionEvent webhooks arriving at /eve/v1/linear."
+            },
+            {
+              "name": "LINEAR_CONNECT_UID",
+              "body": "UID returned by vercel connect create linear. Authorizes the Linear MCP connection at https://mcp.linear.app/mcp via Vercel Connect OAuth; this is what actually grants Linear read and write access."
+            },
+            {
+              "name": "SLACK_CONNECT_UID",
+              "body": "UID returned by vercel connect create slack, attached with triggers pointing at /eve/v1/slack so app mentions and DMs reach the agent. Replaces direct SLACK_BOT_TOKEN and SLACK_SIGNING_SECRET configuration."
+            },
+            {
+              "name": "LINEAR_OPS_DEFAULT_SLACK_CHANNEL_ID",
+              "body": "Fallback Slack channel ID for scheduled digests. Per-schedule overrides exist for triage, cycle, backlog, and P1 monitoring, plus LINEAR_OPS_PROJECT_CHANNELS for per-project routing. Schedules that resolve no channel simply do not post."
+            },
+            {
+              "name": "LINEAR_OPS_COVERED_INITIATIVES",
+              "body": "Comma-separated list of initiative-id-or-name|optional-slack-channel|optional-enabled-flag entries. Only initiatives listed here ever receive automated weekly status updates in Linear; leave it empty to disable automated initiative writes entirely."
+            },
+            {
+              "name": "eve and @vercel/connect",
+              "body": "npm dependencies eve ^0.18.2 and @vercel/connect ^0.2.6, installed automatically with the registry item. Node.js 24 or newer and an HTTPS-reachable Eve deployment are required for the Linear and Slack webhooks."
+            }
+          ],
+          "faqs": [
+            {
+              "question": "How do I install and verify it?",
+              "answer": "Run npx shadcn@latest add @evex/linear-operations-agent in an existing Eve app, then pnpm install. After configuring the connectors, pnpm info should list the linear and slack channels, one MCP connection named linear, six schedules, and ten skills, with no custom Linear SDK tools."
+            },
+            {
+              "question": "Which model does it use and can I change it?",
+              "answer": "The agent is defined in agent/agent.ts with model openai/gpt-5.4-mini. Change the model string there to any model your Eve deployment supports; instructions, skills, and the approval policy are model-agnostic."
+            },
+            {
+              "question": "Can it modify Linear without my approval?",
+              "answer": "Almost never. Reads, non-destructive save_comment proposals, and weekly initiative updates for explicitly configured initiatives run without approval. Everything else, including issue creation, state, priority, assignee, project, cycle, and relationship changes, any priority 1 or 2 write, project and document writes, and deletes, is approval-gated."
+            },
+            {
+              "question": "How do I scope it to specific teams or make it read-only?",
+              "answer": "Set LINEAR_OPS_COVERED_TEAMS and LINEAR_OPS_COVERED_PROJECTS to filter which Linear events wake the agent, and LINEAR_OPS_READ_ONLY_TEAMS to keep it propose-only for certain teams. Empty values mean all teams and projects are covered."
+            },
+            {
+              "question": "What are the built-in limits and schedule defaults?",
+              "answer": "Bulk actions are capped by LINEAR_OPS_MAX_BULK_ISSUE_COUNT, defaulting to 10 issues. All six cron schedules are overridable via env vars and evaluated in UTC, for example daily triage at 0 7 on weekdays and weekly initiative updates at 0 9 on Mondays."
+            }
+          ]
+        }
       },
       "author": "TommyBez"
     }

@@ -1,5 +1,6 @@
 import 'server-only'
 
+import type { RegistryItemDocs } from '@evex/agent-registry'
 import type { AgentRegistryFile, AgentWithAuthor } from '@/lib/agent-types'
 import { parseDependencies } from '@/lib/agents'
 import type { LearnPage } from '@/lib/learn-content'
@@ -50,6 +51,34 @@ function fencedFileBlock(file: AgentRegistryFile): string {
   return `### \`${file.path}\`\n\n${fence}${language}\n${file.content}\n${fence}`
 }
 
+function agentDocsMarkdown(docs: RegistryItemDocs | null): string {
+  if (!docs) {
+    return ''
+  }
+
+  const blocks = [
+    `## Overview\n\n${docs.overview.join('\n\n')}`,
+    `## How it works\n\n${docs.howItWorks
+      .map((step, index) => `${index + 1}. ${step}`)
+      .join('\n')}`,
+    `## Use cases\n\n${docs.useCases
+      .map((useCase) => `### ${useCase.title}\n\n${useCase.body}`)
+      .join('\n\n')}`,
+    docs.requirements.length > 0
+      ? `## Requirements\n\n${docs.requirements
+          .map(
+            (requirement) => `- \`${requirement.name}\`: ${requirement.body}`,
+          )
+          .join('\n')}`
+      : '',
+    `## FAQ\n\n${docs.faqs
+      .map((faq) => `### ${faq.question}\n\n${faq.answer}`)
+      .join('\n\n')}`,
+  ]
+
+  return blocks.filter(Boolean).join('\n\n')
+}
+
 export function buildAgentMarkdown(
   agent: AgentWithAuthor,
   files: readonly AgentRegistryFile[],
@@ -75,6 +104,8 @@ export function buildAgentMarkdown(
 ${agent.description}
 
 ${factLines.join('\n')}
+
+${agentDocsMarkdown(agent.docs)}
 
 ## Files installed
 

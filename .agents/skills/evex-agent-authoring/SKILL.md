@@ -109,7 +109,33 @@ validates everything above and writes `.github/CODEOWNERS` — commit that
 diff; the JSON artifacts under `packages/agent-registry/generated/` are
 gitignored, never committed or hand-edited.
 
-## 5. README
+## 5. Editorial docs (`meta.docs`)
+
+Every agent ships editorial documentation in `registry.json` under
+`meta.docs`. It renders on the agent's evex.sh page (About / How it works /
+Use cases / Requirements / FAQ), in the `/agents/<slug>.md` markdown mirror,
+and in `llms-full.txt` — it is the main body of indexable content for the
+agent, so treat it as product copy, not filler.
+
+Shape (validated by `registryItemDocsSchema`):
+
+- `overview`: 2-3 paragraphs (40-80 words each). What the agent does, how
+  you interact with it (channel/trigger), why it is useful.
+- `howItWorks`: 4-6 steps, each a full sentence describing the real flow —
+  name the actual channels, tools, skills, and evals in the package.
+- `useCases`: 3-4 concrete scenarios (`title` + 25-50 word `body`).
+- `requirements`: one entry per env var or external dependency, sourced
+  from `.env.example` and `dependencies` (`[]` only if truly none).
+- `faqs`: 3-5 Q&A a developer would actually ask (install, customization,
+  model, limits), 20-60 word answers.
+
+Rules: plain English prose, no markdown syntax inside strings, every claim
+grounded in the package sources, mention the eve framework naturally
+(once or twice, never keyword-stuffed). Bump `meta.updatedAt` whenever docs
+change. The scaffold seeds placeholders — replacing all of them is part of
+"done" for a new agent.
+
+## 6. README
 
 Write for the consumer who ran `npx shadcn@latest add @evex/<slug>`. It
 installs as `~/agent/README.md`, and its title and first paragraph seed the
@@ -129,7 +155,7 @@ app's `components.json` or a root registry path.
 Done when every setup step matches a channel, connection, route, or
 credential that exists in the code.
 
-## 6. Security and evals
+## 7. Security and evals
 
 Gate the agent before validation:
 
@@ -153,7 +179,7 @@ structure. Minimum bar when they exist:
 Done when `pnpm --dir registry --filter <slug> run eval` passes (skip when
 the agent has no evals).
 
-## 7. Validate
+## 8. Validate
 
 Rerun after every registry-affecting change — scaffold, `registry.json`
 edit, installed file added, removed, or edited:

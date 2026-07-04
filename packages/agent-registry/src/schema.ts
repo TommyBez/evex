@@ -84,6 +84,48 @@ export const registryFileSchema = z
   })
   .readonly()
 
+// Editorial documentation rendered on the agent's page (and its markdown
+// mirror). Written by the agent author; see the evex-agent-authoring skill
+// for tone and structure guidance.
+export const registryItemDocsSchema = z
+  .strictObject({
+    overview: z.array(z.string().min(1)).min(1).readonly(),
+    howItWorks: z.array(z.string().min(1)).min(1).readonly(),
+    useCases: z
+      .array(
+        z
+          .strictObject({
+            title: z.string().min(1),
+            body: z.string().min(1),
+          })
+          .readonly(),
+      )
+      .min(1)
+      .readonly(),
+    requirements: z
+      .array(
+        z
+          .strictObject({
+            name: z.string().min(1),
+            body: z.string().min(1),
+          })
+          .readonly(),
+      )
+      .readonly(),
+    faqs: z
+      .array(
+        z
+          .strictObject({
+            question: z.string().min(1),
+            answer: z.string().min(1),
+          })
+          .readonly(),
+      )
+      .min(1)
+      .readonly(),
+  })
+  .readonly()
+
 export const registryItemMetaSchema = z
   .strictObject({
     slug: z.string().regex(SLUG_PATTERN, {
@@ -92,6 +134,7 @@ export const registryItemMetaSchema = z
     category: z.string().min(1),
     createdAt: z.iso.datetime(),
     updatedAt: z.iso.datetime(),
+    docs: registryItemDocsSchema.optional(),
   })
   .readonly()
 
@@ -119,6 +162,7 @@ export const agentRegistryJsonSchema = z
   .readonly()
 
 export type AgentRegistryJson = z.infer<typeof agentRegistryJsonSchema>
+export type RegistryItemDocs = z.infer<typeof registryItemDocsSchema>
 export type RegistryItemMeta = z.infer<typeof registryItemMetaSchema>
 export type RegistrySourceFile = z.infer<typeof registryFileSchema>
 export type RegistrySourceItem = z.infer<typeof registryItemSchema>

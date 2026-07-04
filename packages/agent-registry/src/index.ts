@@ -36,12 +36,14 @@ export async function getRegistryItem(name: string): Promise<RegistryItem> {
 
 export {
   agentRegistryJsonSchema,
+  registryItemDocsSchema,
   registryFileSchema,
   registryItemMetaSchema,
   registryItemSchema,
 } from './schema'
 export type {
   RegistryCatalog,
+  RegistryItemDocs,
   RegistryFile,
   RegistryItem,
   RegistryItemMeta,

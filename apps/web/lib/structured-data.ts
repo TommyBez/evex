@@ -202,6 +202,28 @@ export function createLearnArticleSchema(page: LearnPage): JsonLdObject {
   }
 }
 
+export function createAgentFaqSchema(
+  agent: AgentWithAuthor,
+): JsonLdObject | null {
+  const faqs = agent.docs?.faqs
+  if (!faqs || faqs.length === 0) {
+    return null
+  }
+
+  return {
+    '@context': SCHEMA_CONTEXT,
+    '@type': 'FAQPage',
+    mainEntity: faqs.map((faq) => ({
+      '@type': 'Question',
+      name: faq.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: faq.answer,
+      },
+    })),
+  }
+}
+
 export function createLearnFaqSchema(page: LearnPage): JsonLdObject {
   return {
     '@context': SCHEMA_CONTEXT,

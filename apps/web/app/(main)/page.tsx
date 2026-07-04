@@ -27,9 +27,9 @@ import {
 } from '@/lib/structured-data'
 
 export const metadata: Metadata = createPageMetadata({
-  title: 'Install eve Agents with One Command',
+  title: 'Vercel eve Agent Registry — Install eve Agents with One Command',
   description:
-    'Browse community-built eve agents, preview every file before install, and add any agent to your project with npx shadcn add @evex/{slug}.',
+    "Community registry for agents built on eve, Vercel's agent framework. Browse configurations, preview every file before install, and add any agent with npx shadcn add @evex/{slug}.",
   path: '/',
 })
 
@@ -105,7 +105,7 @@ function Hero() {
             evex · the eve agent registry
           </span>
           <h1 className="mt-5 text-balance font-semibold text-4xl text-foreground leading-[1.05] sm:text-5xl">
-            Install Community Agents with{' '}
+            Install eve Agents with{' '}
             <span className="text-brand">One Command</span>
           </h1>
           <p className="mt-5 max-w-md text-pretty text-base text-muted-foreground leading-relaxed sm:text-lg">

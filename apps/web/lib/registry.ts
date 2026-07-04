@@ -69,6 +69,7 @@ export function toAgentWithAuthor(
     createdAt: new Date(item.meta.createdAt),
     dependencies: (item.dependencies ?? []).join(','),
     description: item.description,
+    docs: item.meta.docs ?? null,
     id: slug,
     installCount: installCounts?.get(slug) ?? 0,
     name: item.title,
