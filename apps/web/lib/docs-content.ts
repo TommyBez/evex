@@ -80,13 +80,22 @@ export const DOCS_PAGES: readonly DocsPage[] = [
     sections: [
       {
         body: [
-          'You need two things before installing an agent: an eve app and Node.js.',
+          'Agents install into an eve project: the CLI writes the agent/ directory layout that the eve framework loads at runtime. If you do not have an eve app yet, create one first and run every install command from its root.',
+          'eve requires Node.js 24 or newer. npx, bundled with Node, downloads and runs both the eve and shadcn CLIs on demand, so no global installs are needed.',
         ],
-        bullets: [
-          'An eve app: agents install into the agent/ directory layout that the eve framework loads, so run the command from the root of an existing eve project',
-          'Node.js with npx available, which downloads and runs the shadcn CLI on demand',
+        code: [
+          {
+            code: 'npx eve@latest init my-agent',
+            label: 'Create a new eve project (skip if you already have one)',
+            language: 'bash',
+          },
+          {
+            code: 'cd my-agent',
+            label: 'Install commands run from the project root',
+            language: 'bash',
+          },
         ],
-        heading: 'Prerequisites',
+        heading: 'Prerequisites: an eve project',
       },
       {
         body: [
@@ -131,7 +140,7 @@ export const DOCS_PAGES: readonly DocsPage[] = [
       },
       {
         body: [
-          'If the CLI writes files somewhere unexpected or the agent fails to load, check that you ran the command from the root of an eve app. The installed files assume the eve framework is present; add eve to the project first if it is missing.',
+          'If the CLI writes files somewhere unexpected or the agent fails to load, check that you ran the command from the root of an eve app. The installed files assume the eve framework is present: create a project with npx eve@latest init, or add eve to an existing package with npm install eve@latest, then rerun the install.',
           'If the CLI prompts you to install npm packages, those are the dependencies the agent declares in its registry item. The list matches the dependencies shown on the agent page, so review it there first and accept the prompt to complete the install.',
         ],
         heading: 'Troubleshooting',
