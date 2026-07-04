@@ -100,7 +100,7 @@ export default function LearnPage() {
                 <p className="mt-2 line-clamp-3 text-muted-foreground text-sm leading-relaxed">
                   {page.description}
                 </p>
-                <span className="mt-auto inline-flex pt-3 text-brand text-sm opacity-0 transition-opacity group-hover:opacity-100">
+                <span className="mt-auto inline-flex pt-3 text-brand text-sm opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100">
                   Read guide{' '}
                   <span
                     aria-hidden="true"
