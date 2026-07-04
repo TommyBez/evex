@@ -22,12 +22,12 @@ const ALLOWED_COMMANDS = [
   "echo vercel",
 ] as const;
 
-function isDenied(status: unknown): boolean {
+function isDenied(status: unknown): status is { type: "denied" } {
   return (
     typeof status === "object" &&
     status !== null &&
     "type" in status &&
-    (status as { type: unknown }).type === "denied"
+    status.type === "denied"
   );
 }
 

@@ -7,21 +7,24 @@ import {
 // Resolved on every turn so long-lived sessions pick up credential changes
 // after a redeploy. Reports presence only — never values — because this
 // markdown becomes model context.
+// Each check passes when any of its variables is present. The gateway model
+// credential is satisfied by either AI_GATEWAY_API_KEY or a Vercel OIDC token
+// from a linked project.
 const READINESS_CHECKS = [
   {
     missing:
       "MISSING — the Vercel MCP connection, run_vercel_cli, and every deploy are blocked until it is set in the app runtime",
-    name: "VERCEL_TOKEN",
+    names: ["VERCEL_TOKEN"],
   },
   {
     missing:
       "missing — local model calls need run_vercel_cli link_project to pull VERCEL_OIDC_TOKEN into .env.local",
-    name: "AI_GATEWAY_API_KEY",
+    names: ["AI_GATEWAY_API_KEY", "VERCEL_OIDC_TOKEN"],
   },
   {
     missing:
       "missing — protected Vercel previews cannot be verified; unprotected deployments still can",
-    name: "VERCEL_AUTOMATION_BYPASS_SECRET",
+    names: ["VERCEL_AUTOMATION_BYPASS_SECRET"],
   },
 ] as const;
 
@@ -32,8 +35,10 @@ function isPresent(name: string): boolean {
 
 function renderReadiness(): string {
   const lines = READINESS_CHECKS.map((check) => {
-    const status = isPresent(check.name) ? "present" : check.missing;
-    return `- ${check.name}: ${status}`;
+    const presentName = check.names.find(isPresent);
+    const label = check.names.join(" or ");
+    const status = presentName ? `present (${presentName})` : check.missing;
+    return `- ${label}: ${status}`;
   });
 
   return lines.join("\n");

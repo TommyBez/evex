@@ -17,7 +17,7 @@ const deliveryReportSchema = z.object({
   deployment: z
     .object({
       target: z.enum(["preview", "production"]),
-      url: z.string(),
+      url: z.url(),
     })
     .nullable(),
   summary: z.string(),
