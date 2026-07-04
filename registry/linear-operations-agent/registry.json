@@ -184,7 +184,7 @@
             },
             {
               "title": "Hands-off weekly initiative status updates",
-              "body": "For initiatives you explicitly list in LINEAR_OPS_COVERED_INITIATIVES, the agent writes a weekly status update directly to Linear every Monday, no approval round-trip needed, while unlisted initiatives are refused, a behavior enforced by an included eval."
+              "body": "For initiatives you explicitly list in LINEAR_OPS_COVERED_INITIATIVES, the agent writes a weekly status update directly to Linear every Monday with no approval round-trip. It refuses unlisted initiatives, and an included eval verifies that refusal."
             }
           ],
           "requirements": [
@@ -206,7 +206,7 @@
             },
             {
               "name": "LINEAR_OPS_DEFAULT_SLACK_CHANNEL_ID",
-              "body": "Fallback Slack channel ID for scheduled digests. Per-schedule overrides exist for triage, cycle, backlog, and P1 monitoring, plus LINEAR_OPS_PROJECT_CHANNELS for per-project routing. Schedules that resolve no channel simply do not post."
+              "body": "Fallback Slack channel ID for scheduled digests. Per-schedule overrides exist for triage, cycle, backlog, and P1 monitoring, plus LINEAR_OPS_PROJECT_CHANNELS for per-project routing. Schedules that resolve no channel do not post."
             },
             {
               "name": "LINEAR_OPS_COVERED_INITIATIVES",

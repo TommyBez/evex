@@ -117,7 +117,7 @@
             },
             {
               "title": "Guarded ad hoc investigations",
-              "body": "Debug a spike or verify a customer claim with bounded queries: a 10 second default statement timeout and a 200 row default cap keep exploratory SQL from hammering production, and truncation is reported honestly."
+              "body": "Debug a spike or verify a customer claim with bounded queries: a 10 second default statement timeout and a 200 row default cap keep exploratory SQL from hammering production, and the agent labels truncated results."
             }
           ],
           "requirements": [
@@ -157,7 +157,7 @@
             },
             {
               "question": "Which model does it use, and can I change it?",
-              "answer": "The agent ships with zai/glm-5.2 configured in agent/agent.ts. Since the files are installed into your codebase, you can change the model to any one supported by the eve framework by editing that one line."
+              "answer": "The agent ships with zai/glm-5.2 configured in agent/agent.ts. The files install into your codebase, so edit that one line to switch to any model the eve framework supports."
             },
             {
               "question": "How do I keep sensitive tables out of Slack?",
@@ -165,7 +165,7 @@
             },
             {
               "question": "What are the query limits?",
-              "answer": "One statement per request, SELECT or WITH only, at most 1000 rows (200 by default), a statement timeout capped at 60 seconds (10 by default), and a connection pool of 3. Unqualified pg_catalog tables are blocked, and truncated results are labeled as such."
+              "answer": "One statement per request, SELECT or WITH only, at most 1000 rows (200 by default), a statement timeout capped at 60 seconds (10 by default), and a connection pool of 3. run_sql blocks unqualified pg_catalog tables and labels truncated results."
             }
           ]
         }
