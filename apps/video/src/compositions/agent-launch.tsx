@@ -24,10 +24,7 @@ import {
   GEIST_SANS,
   geistMonoStack,
   geistPixelStack,
-  geistSansStack,
 } from '@/fonts'
-
-const sansFamily = geistSansStack
 
 // remocn components resolve their type through these CSS variables — point them
 // at the real Geist faces the web app uses.
@@ -40,23 +37,19 @@ export const AGENT_LAUNCH_FPS = 30
 export const AGENT_LAUNCH_WIDTH = 1280
 export const AGENT_LAUNCH_HEIGHT = 720
 
-const BRAND_FRAMES = 74
-const INTRO_FRAMES = 104
+const INTRO_FRAMES = 110
 const PAYOFF_FRAMES = 96
 const CTA_FRAMES = 122
 const OUTRO_FRAMES = 96
-const PUSH_INTO_INTRO_FRAMES = 20
 const WHIP_PAN_FRAMES = 18
 const PUSH_INTO_CTA_FRAMES = 22
 const PUSH_INTO_OUTRO_FRAMES = 22
 
 export const AGENT_LAUNCH_DURATION =
-  BRAND_FRAMES +
   INTRO_FRAMES +
   PAYOFF_FRAMES +
   CTA_FRAMES +
   OUTRO_FRAMES -
-  PUSH_INTO_INTRO_FRAMES -
   WHIP_PAN_FRAMES -
   PUSH_INTO_CTA_FRAMES -
   PUSH_INTO_OUTRO_FRAMES
@@ -109,46 +102,6 @@ const SceneBase = ({
     </AbsoluteFill>
     {children}
   </AbsoluteFill>
-)
-
-const BRAND_TAGLINE_IN = 46
-const BRAND_TAGLINE_SETTLED = 62
-
-const BrandTagline = () => {
-  const frame = useCurrentFrame()
-  const opacity = interpolate(
-    frame,
-    [BRAND_TAGLINE_IN, BRAND_TAGLINE_SETTLED],
-    [0, 1],
-    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
-  )
-  return (
-    <div
-      style={{
-        color: TEXT_MUTED,
-        fontFamily: `${sansFamily}, -apple-system, sans-serif`,
-        fontSize: 24,
-        fontWeight: 500,
-        inset: 0,
-        opacity,
-        position: 'absolute',
-        textAlign: 'center',
-        transform: 'translateY(96px)',
-        top: '50%',
-      }}
-    >
-      The agent registry
-    </div>
-  )
-}
-
-const BrandScene = () => (
-  <SceneBase shaderOpacity={0.5} shaderSpeed={0.5}>
-    <ScenePush zoomTo={1.05}>
-      <LogoSting accent={BRAND_ACCENT} fontFamily={geistPixelStack} unit={46} />
-      <BrandTagline />
-    </ScenePush>
-  </SceneBase>
 )
 
 const IntroScene = ({ agent }: { agent: AgentLaunchData }) => (
@@ -303,13 +256,6 @@ const OutroScene = () => (
 export const AgentLaunch = ({ agent }: { agent: AgentLaunchData }) => (
   <AbsoluteFill style={fontVariables}>
     <TransitionSeries>
-      <TransitionSeries.Sequence durationInFrames={BRAND_FRAMES}>
-        <BrandScene />
-      </TransitionSeries.Sequence>
-      <TransitionSeries.Transition
-        presentation={pushThrough()}
-        timing={linearTiming({ durationInFrames: PUSH_INTO_INTRO_FRAMES })}
-      />
       <TransitionSeries.Sequence durationInFrames={INTRO_FRAMES}>
         <IntroScene agent={agent} />
       </TransitionSeries.Sequence>
