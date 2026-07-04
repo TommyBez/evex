@@ -29,7 +29,7 @@ export const DOCS_PAGES: readonly DocsPage[] = [
     dateModified: '2026-07-04',
     datePublished: '2026-07-04',
     description:
-      'What evex is, how the shadcn-compatible registry distributes eve agents, and how to install community agents into your eve project with one command.',
+      'Install community eve agents into your project with one command and own every file they write. What evex is and how the shadcn-compatible registry works.',
     sections: [
       {
         body: [
@@ -164,7 +164,7 @@ export const DOCS_PAGES: readonly DocsPage[] = [
       },
       {
         body: [
-          'Each agent is served as a complete shadcn registry item at its slug. The item embeds the contents of every file the install will write, plus the declared npm dependencies. This is the same payload the shadcn CLI fetches when you install the agent.',
+          'The registry serves each agent as a complete shadcn registry item at its slug. The item embeds the contents of every file the install will write, plus the declared npm dependencies. This is the same payload the shadcn CLI fetches when you install the agent.',
         ],
         code: [
           {
@@ -220,25 +220,25 @@ export const DOCS_PAGES: readonly DocsPage[] = [
     shortTitle: 'Registry',
     slug: 'registry',
     summary:
-      'Every evex agent is served as a standard shadcn registry item over HTTPS. Fetch the catalog at /r/registry.json, fetch items at /r/{slug}, or address them as @evex/{slug} in the shadcn CLI.',
+      'evex serves every agent as a standard shadcn registry item over HTTPS. Fetch the catalog at /r/registry.json, fetch items at /r/{slug}, or address them as @evex/{slug} in the shadcn CLI.',
     title: 'Registry API: shadcn-compatible endpoints for eve agents',
   },
   {
     dateModified: '2026-07-04',
     datePublished: '2026-07-04',
     description:
-      'Browse and install evex agents from Cursor, VS Code, or Claude Code through the shadcn MCP server. Setup pointer and example prompts for @evex items.',
+      'Browse and install evex agents from Cursor, VS Code, or Claude Code through the shadcn MCP server. Setup steps and example prompts for @evex/{slug} items.',
     sections: [
       {
         body: [
           'The shadcn project ships an MCP server that lets AI-assisted editors discover and install registry items through the Model Context Protocol. Clients such as Cursor, VS Code, and Claude Code can search a registry, inspect items, and run installs from a conversation.',
-          'Because evex is part of the shadcn community registry, every evex agent is addressable to the MCP server as @evex/{slug}. No evex-specific server or configuration is required.',
+          'Because evex is part of the shadcn community registry, the MCP server addresses every evex agent as @evex/{slug}. You need no evex-specific server or configuration.',
         ],
         heading: 'What the shadcn MCP server does',
       },
       {
         body: [
-          'Configure the shadcn MCP server in your editor by following the official setup guide for your client. Once the server is registered, your assistant can resolve @evex items the same way the CLI does.',
+          'Configure the shadcn MCP server in your editor by following the official setup guide for your client. Once you register the server, your assistant resolves @evex items the same way the CLI does.',
         ],
         code: [
           {
@@ -310,7 +310,7 @@ export const DOCS_PAGES: readonly DocsPage[] = [
       {
         body: [
           'registry.json carries a meta.docs block: the editorial documentation rendered on your agent page, covering the overview, how it works, use cases, requirements, and FAQs.',
-          'The scaffold seeds placeholder text. Replace every placeholder before opening the pull request, and bump meta.updatedAt whenever the docs change. Agent pages are how consumers evaluate your work, so this content is treated as a first-class part of the package.',
+          'The scaffold seeds placeholder text. Replace every placeholder before opening the pull request, and bump meta.updatedAt whenever the docs change. Agent pages are how consumers evaluate your work, so treat this content as a first-class part of the package.',
         ],
         heading: 'Write meta.docs',
       },
@@ -336,7 +336,7 @@ export const DOCS_PAGES: readonly DocsPage[] = [
       {
         body: [
           'Running generate also writes .github/CODEOWNERS, with one entry per agent owned by its registry.json author. Commit the CODEOWNERS update with your pull request; CI fails when the committed file is stale.',
-          'Automation covers schema shape, file and dependency sync, and environment coverage. Human reviewers focus on what machines cannot judge: that the author field is really your GitHub username, that the agent does what its README and description claim, that the declared dependencies are reasonable, and that .env.example contains placeholders rather than real credentials.',
+          'Automation covers schema shape, file and dependency sync, and environment coverage. Human reviewers focus on what machines cannot judge: that the author field matches your GitHub username, that the agent does what its README and description claim, that the declared dependencies are reasonable, and that .env.example contains placeholders rather than real credentials.',
         ],
         heading: 'CODEOWNERS and review',
       },
