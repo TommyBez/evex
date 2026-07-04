@@ -46,6 +46,7 @@ export async function generateMetadata({
     title: page.title,
     description: page.description,
     path: `/learn/${page.slug}`,
+    markdownPath: `/learn/${page.slug}.md`,
   })
 }
 

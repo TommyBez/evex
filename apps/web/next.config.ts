@@ -6,6 +6,14 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   outputFileTracingRoot: path.join(process.cwd(), '../..'),
   transpilePackages: ['@evex/agent-registry', '@evex/ui'],
+  // Markdown mirrors for LLM/agent crawlers: appending .md to an agent or
+  // learn URL serves the page as text/markdown.
+  rewrites() {
+    return Promise.resolve([
+      { source: '/agents/:slug.md', destination: '/agents/:slug/md' },
+      { source: '/learn/:slug.md', destination: '/learn/:slug/md' },
+    ])
+  },
 }
 
 export default withBotId(nextConfig)

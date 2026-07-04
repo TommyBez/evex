@@ -19,6 +19,7 @@ import {
   defaultOpenGraphImage,
   defaultTwitterImage,
   siteConfig,
+  siteTwitterHandle,
 } from '@/lib/metadata'
 import {
   getStaticAgentsByAuthorUsername,
@@ -75,6 +76,8 @@ export async function generateMetadata({
     },
     twitter: {
       card: 'summary_large_image',
+      site: siteTwitterHandle,
+      creator: siteTwitterHandle,
       title: author.name,
       description,
       images: [defaultTwitterImage],
@@ -88,6 +91,14 @@ export default async function AuthorPage({
   params: Promise<{ githubUsername: string }>
 }) {
   const { githubUsername } = await params
+
+  // An author page exists only for authors with agents in the static
+  // registry (same condition getAuthorProfile uses). Checking it before the
+  // Suspense boundary makes unknown authors a real 404 instead of a soft
+  // 404 streamed after the 200 status.
+  if (getStaticAgentsByAuthorUsername(githubUsername).length === 0) {
+    notFound()
+  }
 
   return (
     <Suspense fallback={<AuthorSkeleton />}>

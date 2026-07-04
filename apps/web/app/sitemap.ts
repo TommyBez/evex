@@ -22,11 +22,23 @@ function getAuthorLastModified(
   )
 }
 
+function latestDate(dates: readonly Date[]): Date {
+  return dates.reduce(
+    (latest, date) => (date.getTime() > latest.getTime() ? date : latest),
+    new Date(0),
+  )
+}
+
 export default function sitemap(): MetadataRoute.Sitemap {
   const siteUrl = getSiteUrl()
-  const now = new Date()
   const agents = listStaticAgents()
   const learnPages = listLearnPages()
+  // Stable lastmod values: a build timestamp changes on every deploy and
+  // teaches crawlers to distrust the field. Derive dates from content.
+  const latestAgentUpdate = latestDate(agents.map((agent) => agent.updatedAt))
+  const latestLearnUpdate = latestDate(
+    learnPages.map((page) => new Date(page.dateModified)),
+  )
   const authorUsernames = [
     ...new Set(
       agents
@@ -38,19 +50,19 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const staticRoutes: MetadataRoute.Sitemap = [
     {
       url: siteUrl,
-      lastModified: now,
+      lastModified: latestAgentUpdate,
       changeFrequency: 'daily',
       priority: 1,
     },
     {
       url: `${siteUrl}/leaderboard`,
-      lastModified: now,
+      lastModified: latestAgentUpdate,
       changeFrequency: 'daily',
       priority: 0.8,
     },
     {
       url: `${siteUrl}/learn`,
-      lastModified: now,
+      lastModified: latestLearnUpdate,
       changeFrequency: 'weekly',
       priority: 0.8,
     },
@@ -74,7 +86,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   const learnRoutes: MetadataRoute.Sitemap = learnPages.map((page) => ({
     url: getLearnUrl(page.slug),
-    lastModified: now,
+    lastModified: new Date(page.dateModified),
     changeFrequency: 'monthly' as const,
     priority: 0.7,
   }))

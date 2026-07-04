@@ -25,7 +25,11 @@ import {
 import type { AgentRegistryFile, AgentWithAuthor } from '@/lib/agent-types'
 import { parseDependencies } from '@/lib/agents'
 import { applyInstallCounts, getAgentRuntimeState } from '@/lib/data/agents'
-import { createPageMetadata, siteConfig } from '@/lib/metadata'
+import {
+  createPageMetadata,
+  siteConfig,
+  siteTwitterHandle,
+} from '@/lib/metadata'
 import {
   getStaticAgentBySlug,
   getStaticAgentFiles,
@@ -75,8 +79,19 @@ export async function generateMetadata({
   return {
     title,
     description: agent.description,
+    keywords: [
+      agent.name,
+      `@evex/${agent.slug}`,
+      agent.category,
+      'eve agent',
+      'vercel eve',
+      'shadcn registry',
+    ],
     alternates: {
       canonical: path,
+      types: {
+        'text/markdown': `${path}.md`,
+      },
     },
     openGraph: {
       title,
@@ -93,32 +108,36 @@ export async function generateMetadata({
     },
     twitter: {
       card: 'summary_large_image',
+      site: siteTwitterHandle,
+      creator: siteTwitterHandle,
       title,
       description: agent.description,
     },
   }
 }
 
-export default function AgentDetailPage({
+export default async function AgentDetailPage({
   params,
 }: {
   params: Promise<{ slug: string }>
 }) {
-  return (
-    <Suspense fallback={<AgentDetailSkeleton />}>
-      {params.then(({ slug }) => (
-        <AgentDetailContent slug={slug} />
-      ))}
-    </Suspense>
-  )
-}
-
-async function AgentDetailContent({ slug }: { slug: string }) {
+  // Resolve the agent before the Suspense boundary: notFound() inside a
+  // streamed subtree fires after the 200 status is already sent, which
+  // turns every unknown slug into a soft 404.
+  const { slug } = await params
   const agent = getStaticAgentBySlug(slug)
   if (!agent) {
     notFound()
   }
 
+  return (
+    <Suspense fallback={<AgentDetailSkeleton />}>
+      <AgentDetailContent agent={agent} />
+    </Suspense>
+  )
+}
+
+async function AgentDetailContent({ agent }: { agent: AgentWithAuthor }) {
   const files = await getStaticAgentFiles(agent.slug)
   const authorAgents = agent.authorUsername
     ? getStaticAgentsByAuthorUsername(agent.authorUsername)
