@@ -15,10 +15,10 @@ import type { AgentWithAuthor, StaticAuthorProfile } from '@/lib/agent-types'
 import { applyInstallCounts, getAgentRuntimeState } from '@/lib/data/agents'
 import { getAuthorProfile } from '@/lib/data/authors'
 import {
-  createPageMetadata,
   defaultOpenGraphImage,
   defaultTwitterImage,
   siteConfig,
+  siteTwitterHandle,
 } from '@/lib/metadata'
 import {
   getStaticAgentsByAuthorUsername,
@@ -47,12 +47,10 @@ export async function generateMetadata({
   const { githubUsername } = await params
   const author = await getAuthorProfile(githubUsername)
   if (!author) {
-    return createPageMetadata({
-      title: 'Author not found',
-      description: 'This evex author is no longer available.',
-      path: `/authors/${githubUsername}`,
-      noIndex: true,
-    })
+    // Unknown authors render the not-found page. With cacheComponents the
+    // fallback shell still streams a 200, but Next injects a robots noindex
+    // meta into that response, keeping arbitrary URLs out of the index.
+    notFound()
   }
 
   const description = author.bio || `${author.name}'s eve agents on evex`
@@ -75,6 +73,8 @@ export async function generateMetadata({
     },
     twitter: {
       card: 'summary_large_image',
+      site: siteTwitterHandle,
+      creator: siteTwitterHandle,
       title: author.name,
       description,
       images: [defaultTwitterImage],
@@ -88,6 +88,14 @@ export default async function AuthorPage({
   params: Promise<{ githubUsername: string }>
 }) {
   const { githubUsername } = await params
+
+  // An author page exists only for authors with agents in the static
+  // registry (same condition getAuthorProfile uses). Checking it before the
+  // Suspense boundary renders the not-found page (with its noindex meta)
+  // instead of streaming the author skeleton first.
+  if (getStaticAgentsByAuthorUsername(githubUsername).length === 0) {
+    notFound()
+  }
 
   return (
     <Suspense fallback={<AuthorSkeleton />}>

@@ -168,6 +168,27 @@ async function main(): Promise<void> {
           category,
           createdAt: now,
           updatedAt: now,
+          docs: {
+            overview: [
+              `Replace with 2-3 paragraphs describing what ${slug} does, how you interact with it, and why it is useful.`,
+            ],
+            howItWorks: [
+              'Replace with 4-6 steps describing the actual flow (channel, tools, skills, evals).',
+            ],
+            useCases: [
+              {
+                title: 'Replace with a concrete scenario',
+                body: 'Replace with 25-50 words describing the scenario.',
+              },
+            ],
+            requirements: [],
+            faqs: [
+              {
+                question: 'Replace with a real question a developer would ask',
+                answer: 'Replace with a 20-60 word answer.',
+              },
+            ],
+          },
         },
       },
     ],
@@ -186,7 +207,7 @@ async function main(): Promise<void> {
   await fs.writeFile(registryPath, `${JSON.stringify(registry, null, 2)}\n`)
   process.stdout.write(`Wrote ${registryPath}.\n`)
   process.stdout.write(
-    'Review categories, meta.category, and dates, then run "pnpm --filter @evex/agent-registry generate".\n',
+    'Review categories, meta.category, dates, and replace every meta.docs placeholder with real editorial content, then run "pnpm --filter @evex/agent-registry generate".\n',
   )
 }
 

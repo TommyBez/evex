@@ -107,7 +107,76 @@
         "slug": "openui-assistant",
         "category": "general",
         "createdAt": "2026-06-30T21:52:44.748Z",
-        "updatedAt": "2026-07-01T12:00:00.000Z"
+        "updatedAt": "2026-07-04T00:00:00.000Z",
+        "docs": {
+          "overview": [
+            "OpenUI Assistant is an eve agent that answers every chat turn with OpenUI Lang, a structured generative UI language, so your chat streams rendered cards, tables, and follow-up buttons instead of markdown prose. It builds its system prompt at build time by calling openuiChatLibrary.prompt(openuiChatPromptOptions) from @openuidev/react-ui, the same library and prompt options the official openui-chat example app uses, so its output stays compatible with the upstream renderer.",
+            "You interact with it through a normal chat session: run eve dev for the terminal UI, or mount the bundled OpenUIEveChat reference component in a Next.js app that uses withEve(), where useEveAgent() streams the reply into the Renderer from @openuidev/react-lang. Every reply is a program whose first statement assigns root, built from chat primitives like Card, CardHeader, TextContent, Table, and FollowUpItem.",
+            "Three deterministic demo tools ship with the agent: get_weather, get_stock_price, and search_web. They mirror the sample tools from the openui-chat example and return mock JSON, which makes the agent a self-contained sandbox for evaluating generative UI without wiring real data providers or API keys."
+          ],
+          "howItWorks": [
+            "At build time, agent/instructions/openui-prompt.ts calls openuiChatLibrary.prompt(openuiChatPromptOptions) and injects the resulting OpenUI system prompt into the agent, alongside instructions.md which enforces the output contract: OpenUI Lang only, no markdown fences, first statement assigns root.",
+            "When a message arrives in the terminal UI or your web chat, the agent, running on the openai/gpt-5-mini model, decides whether the request needs get_weather, get_stock_price, or search_web before composing any UI.",
+            "The relevant tool runs and returns deterministic mock JSON, for example a weather object with temperature, humidity, wind, and a two-day forecast, or a stock quote with price, change, volume, and day range, and the agent is instructed never to invent tool-backed numbers.",
+            "The agent composes a top-down OpenUI Lang program from those tool results, using chat-library components such as Card, Table, ListBlock, and FollowUpBlock, and explicitly avoiding Stack, which is not part of openuiChatLibrary.",
+            "On the frontend, the reference component in agent/skills/openui/references/openui-eve-chat.tsx connects useEveAgent() to the @openuidev/react-lang Renderer, which paints live components while the stream is still in flight.",
+            "Three evals guard the contract with a 120 second timeout each: openui-format-contract checks that a greeting yields a pure OpenUI welcome card, while stock-quote-exact-price and weather-card-uses-tool-data verify the rendered UI matches the exact tool output."
+          ],
+          "useCases": [
+            {
+              "title": "Prototype a generative UI chat product",
+              "body": "Use the agent as a working end-to-end reference for streaming structured UI from an eve backend to a React frontend, with the openui skill documenting syntax, library constraints, and a debugging checklist for parse and render failures."
+            },
+            {
+              "title": "Demo dashboards from natural language",
+              "body": "Ask for a weather card for Tokyo or an NVDA quote rendered as a dashboard tile, and the agent calls the matching demo tool and streams cards, tables, and follow-up buttons built from that JSON."
+            },
+            {
+              "title": "Test your OpenUI renderer integration",
+              "body": "Because the tools are deterministic, the same prompt produces the same data every run, making it a stable fixture for verifying that your Renderer setup, withEve() wiring, and @openuidev packages handle streamed OpenUI Lang correctly."
+            },
+            {
+              "title": "Learn the OpenUI Lang output contract",
+              "body": "The instructions, skill references, and eval suite together show how to enforce a strict format contract on a model: root-first programs, no markdown fences, no forbidden components, and tool-backed numbers only."
+            }
+          ],
+          "requirements": [
+            {
+              "name": "AI_GATEWAY_API_KEY",
+              "body": "Optional model gateway credential for the host eve app; get one from Vercel AI Gateway. Not needed when your deployment already provides credentials through VERCEL_OIDC_TOKEN or another provider. The agent itself requires no agent-specific environment variables."
+            },
+            {
+              "name": "@openuidev/react-ui and @openuidev/react-lang",
+              "body": "npm packages (^0.12.1 and ^0.2.8) that provide openuiChatLibrary, the prompt options, and the React Renderer. Both must be installed in the host app for the frontend reference component to work."
+            },
+            {
+              "name": "eve",
+              "body": "The eve agent framework (^0.18.2) that runs the agent, tools, skill, and evals; the web integration also relies on withEve() from eve/next and the useEveAgent() hook. Requires Node 24 or newer."
+            }
+          ],
+          "faqs": [
+            {
+              "question": "How do I install the agent?",
+              "answer": "Run npx shadcn@latest add @evex/openui-assistant in your eve app, then install the registry dependencies (@openuidev/react-ui, @openuidev/react-lang, eve, just-bash, zod) if they are not already present. Start it with pnpm dev or eve dev."
+            },
+            {
+              "question": "Which model does it use, and can I change it?",
+              "answer": "agent/agent.ts pins openai/gpt-5-mini via defineAgent. You can swap the model string for any provider your eve gateway supports, then re-run the bundled evals to confirm the new model still honors the OpenUI Lang format contract."
+            },
+            {
+              "question": "Is the web search real?",
+              "answer": "No. search_web returns deterministic mock results and is labeled demo data by design; the instructions forbid using it for current or factual research. The weather and stock tools are also deterministic samples mirrored from the openui-chat example."
+            },
+            {
+              "question": "Why does the UI sometimes render as plain text or fail to parse?",
+              "answer": "The model broke the contract, usually by adding markdown fences or prose around the program. The openui skill ships a debugging checklist: confirm the reply starts with root =, all identifiers are defined, and no Stack component is used."
+            },
+            {
+              "question": "How do I render the UI in my own Next.js app?",
+              "answer": "Wrap your app with withEve() from eve/next, copy the openui-eve-chat.tsx reference into your components folder, and render OpenUIEveChat on a page. The frontend-wiring.md reference covers full setup plus an AgentInterface alternative matching the upstream chat shell."
+            }
+          ]
+        }
       },
       "author": "TommyBez"
     }

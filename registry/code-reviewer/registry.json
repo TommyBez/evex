@@ -91,7 +91,92 @@
         "slug": "code-reviewer",
         "category": "coding",
         "createdAt": "2026-06-20T00:00:00.000Z",
-        "updatedAt": "2026-07-01T00:00:00.000Z"
+        "updatedAt": "2026-07-04T00:00:00.000Z",
+        "docs": {
+          "overview": [
+            "Code Reviewer is an eve agent that reviews GitHub pull requests when someone mentions @code-reviewer in a PR comment or a review thread. It runs behind a native GitHub App channel: GitHub delivers the comment webhook to your deployed eve app at /eve/v1/github, and the agent replies by publishing a real GitHub review with inline comments anchored to the diff.",
+            "The agent reviews changed behavior, not style. Its instructions direct it at concrete bugs, regressions, security risks, rollout risk, and materially missing tests, and explicitly forbid naming nits and speculative rewrites. It labels each finding blocking, warning, or nit, caps each review at 10 inline comments, and attaches GitHub suggestion blocks for small local fixes the author applies manually.",
+            "It is read-only toward your repository: the channel checks the code out into the eve sandbox for inspection, but the agent never pushes commits, opens branches, or edits the pull request. Built-in Upstash-backed rate limiting keeps public deployments safe, with stricter defaults for public repositories than private ones."
+          ],
+          "howItWorks": [
+            "A user comments @code-reviewer (the mention must match GITHUB_APP_SLUG) on a pull request timeline or in a Files changed review thread, and GitHub sends the webhook to the eve app.",
+            "The channel verifies the mention targets a pull request conversation, then checks Upstash rate limits: per-PR cooldown, per-user-per-PR cooldown, and daily repository quotas; if blocked, it posts at most one cooldown reply per 15 minutes instead of running the model.",
+            "When allowed, the channel injects PR metadata and diff context (excluding lockfiles and build output like dist, .next, and coverage) and checks the repository out into the eve sandbox.",
+            "The agent, running on the zai/glm-5.2 model, inspects only the context needed to validate findings using read_file, grep, glob, and targeted bash, loading the bundled review-calibration skill when severity is ambiguous.",
+            "It calls the submit_pr_review tool exactly once with a summary and up to 10 severity-labeled inline comments, each validated by a Zod schema (path, line, side, optional suggestion block).",
+            "The channel claims the publication in Redis to prevent duplicates, then posts a batch GitHub review; if batch creation fails, it falls back to individual inline comments plus a timeline summary, and reviews with no findings become a short timeline comment."
+          ],
+          "useCases": [
+            {
+              "title": "On-demand review for team pull requests",
+              "body": "Install the GitHub App on your team repositories and mention @code-reviewer when a PR is ready. You get a structured review with blocking, warning, and nit findings anchored to the exact diff lines, focused on bugs and regressions rather than style."
+            },
+            {
+              "title": "Safe reviews on public open-source repos",
+              "body": "The Upstash-backed limiter defaults to 10 reviews per public repository per day, one review per PR every 15 minutes, and a per-user cooldown of 30 minutes, so drive-by mentions on a public repo cannot exhaust your model budget."
+            },
+            {
+              "title": "Quick-fix suggestions authors can apply in one click",
+              "body": "For short, local, near-certain fixes the agent attaches a GitHub suggestion block to the inline comment. The PR author applies it from the GitHub UI; the agent itself never commits or modifies the branch."
+            },
+            {
+              "title": "Second pass on risky surfaces before merge",
+              "body": "The instructions prioritize auth, permissions, user data, schemas, cache invalidation, concurrency, and billing code paths. Mention the agent on high-risk PRs to get a focused pass on those surfaces plus residual-risk notes in the review summary."
+            }
+          ],
+          "requirements": [
+            {
+              "name": "GITHUB_APP_ID",
+              "body": "The App ID of the GitHub App you create under GitHub Settings, Developer settings, GitHub Apps. The app needs Metadata read, Contents read, Pull requests read/write, and Issues read/write permissions."
+            },
+            {
+              "name": "GITHUB_APP_PRIVATE_KEY",
+              "body": "The PEM private key generated from the GitHub App settings page. When stored as a single-line variable, replace literal newlines with \\n; eve normalizes that form at runtime."
+            },
+            {
+              "name": "GITHUB_WEBHOOK_SECRET",
+              "body": "A long random value set both in the GitHub App webhook configuration and in your deployment. A mismatch produces HTTP 401 responses at /eve/v1/github."
+            },
+            {
+              "name": "GITHUB_APP_SLUG",
+              "body": "The mention users type on GitHub, defaulting to code-reviewer. It must match your GitHub App name so @code-reviewer mentions trigger the agent."
+            },
+            {
+              "name": "KV_REST_API_URL",
+              "body": "Upstash Redis REST endpoint used by @upstash/ratelimit for cooldowns, daily quotas, and duplicate-publication claims. Provision it via Upstash or the Vercel Redis Marketplace integration."
+            },
+            {
+              "name": "KV_REST_API_TOKEN",
+              "body": "The matching Upstash REST token. Use a read-write token, not the read-only one, because the agent writes cooldown and review publication keys."
+            },
+            {
+              "name": "AI_GATEWAY_API_KEY",
+              "body": "A model credential for the deployment, either a Vercel AI Gateway API key or AI Gateway OIDC, so the agent can call the zai/glm-5.2 model."
+            }
+          ],
+          "faqs": [
+            {
+              "question": "How do I install and trigger it?",
+              "answer": "Run npx shadcn@latest add @evex/code-reviewer inside an eve app, deploy it over HTTPS, create a GitHub App pointing its webhook at /eve/v1/github, subscribe to Issue comments and Pull request review comments, install it on your repositories, then comment @code-reviewer review this on any pull request."
+            },
+            {
+              "question": "Can it modify my pull request?",
+              "answer": "No. The agent only publishes review comments and optional suggestion blocks. It may test small patches inside the eve sandbox to validate a suggestion, but it never pushes commits, opens branches, or edits the PR; authors apply suggestions manually."
+            },
+            {
+              "question": "Which model does it use and can I change it?",
+              "answer": "The agent is pinned to zai/glm-5.2 in agent/agent.ts. Since the file is installed into your app, you can edit defineAgent to point at any model available through your AI Gateway credential."
+            },
+            {
+              "question": "How do the rate limits work and can I tune them?",
+              "answer": "Defaults are one review per PR every 15 minutes, one per user per PR every 30 minutes, 25 daily reviews per private repository, and 10 per public repository. Every limit is tunable via CODE_REVIEWER_* environment variables, and CODE_REVIEWER_RATE_LIMIT_ENABLED=false disables limiting for local development."
+            },
+            {
+              "question": "What happens if Upstash is unreachable?",
+              "answer": "The failure mode defaults to public_closed: reviews on public repositories are blocked while private repositories continue working. You can change CODE_REVIEWER_RATE_LIMIT_FAILURE_MODE to closed or open depending on how conservative you want the deployment to be."
+            }
+          ]
+        }
       },
       "author": "TommyBez"
     }

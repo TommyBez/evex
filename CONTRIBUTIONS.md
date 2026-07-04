@@ -92,6 +92,11 @@ the schema:
 - `title`, `description`, and `author` are required and non-empty.
 - `categories` must include `meta.category`.
 - `meta.createdAt` / `meta.updatedAt` are ISO datetimes.
+- `meta.docs` holds the editorial documentation rendered on the agent's page
+  (overview, howItWorks, useCases, requirements, faqs — see the
+  evex-agent-authoring skill for the writing guide). The scaffold seeds
+  placeholders; replace all of them before opening a PR, and bump
+  `meta.updatedAt` whenever docs change.
 - `dependencies` entries use the `name@range` format.
 - `files` declares every installed file. Declared paths must be `README.md`,
   `.env.example`, or live under `agent/` or `evals/`, and the list must match

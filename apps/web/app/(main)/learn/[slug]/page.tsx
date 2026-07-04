@@ -34,18 +34,17 @@ export async function generateMetadata({
   const { slug } = await params
   const page = getLearnPage(slug)
   if (!page) {
-    return createPageMetadata({
-      title: 'Guide not found',
-      description: 'This evex learning guide is no longer available.',
-      path: `/learn/${slug}`,
-      noIndex: true,
-    })
+    // Unknown slugs render the not-found page. With cacheComponents the
+    // fallback shell still streams a 200, but Next injects a robots noindex
+    // meta into that response, keeping arbitrary URLs out of the index.
+    notFound()
   }
 
   return createPageMetadata({
     title: page.title,
     description: page.description,
     path: `/learn/${page.slug}`,
+    markdownPath: `/learn/${page.slug}.md`,
   })
 }
 

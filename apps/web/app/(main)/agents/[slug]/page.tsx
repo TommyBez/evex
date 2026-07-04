@@ -25,7 +25,7 @@ import {
 import type { AgentRegistryFile, AgentWithAuthor } from '@/lib/agent-types'
 import { parseDependencies } from '@/lib/agents'
 import { applyInstallCounts, getAgentRuntimeState } from '@/lib/data/agents'
-import { createPageMetadata, siteConfig } from '@/lib/metadata'
+import { siteConfig, siteTwitterHandle } from '@/lib/metadata'
 import {
   getStaticAgentBySlug,
   getStaticAgentFiles,
@@ -34,6 +34,7 @@ import {
 } from '@/lib/registry'
 import {
   createAgentBreadcrumbSchema,
+  createAgentFaqSchema,
   createAgentSoftwareSchema,
 } from '@/lib/structured-data'
 
@@ -61,12 +62,10 @@ export async function generateMetadata({
   const { slug } = await params
   const agent = getStaticAgentBySlug(slug)
   if (!agent) {
-    return createPageMetadata({
-      title: 'Agent not found',
-      description: 'This evex registry item is no longer available.',
-      path: `/agents/${slug}`,
-      noIndex: true,
-    })
+    // Unknown slugs render the not-found page. With cacheComponents the
+    // fallback shell still streams a 200, but Next injects a robots noindex
+    // meta into that response, keeping arbitrary URLs out of the index.
+    notFound()
   }
 
   const path = `/agents/${agent.slug}`
@@ -75,8 +74,19 @@ export async function generateMetadata({
   return {
     title,
     description: agent.description,
+    keywords: [
+      agent.name,
+      `@evex/${agent.slug}`,
+      agent.category,
+      'eve agent',
+      'vercel eve',
+      'shadcn registry',
+    ],
     alternates: {
       canonical: path,
+      types: {
+        'text/markdown': `${path}.md`,
+      },
     },
     openGraph: {
       title,
@@ -93,32 +103,36 @@ export async function generateMetadata({
     },
     twitter: {
       card: 'summary_large_image',
+      site: siteTwitterHandle,
+      creator: siteTwitterHandle,
       title,
       description: agent.description,
     },
   }
 }
 
-export default function AgentDetailPage({
+export default async function AgentDetailPage({
   params,
 }: {
   params: Promise<{ slug: string }>
 }) {
-  return (
-    <Suspense fallback={<AgentDetailSkeleton />}>
-      {params.then(({ slug }) => (
-        <AgentDetailContent slug={slug} />
-      ))}
-    </Suspense>
-  )
-}
-
-async function AgentDetailContent({ slug }: { slug: string }) {
+  // Resolve the agent before the Suspense boundary so unknown slugs render
+  // the not-found page (with its noindex meta) instead of streaming the
+  // agent skeleton first.
+  const { slug } = await params
   const agent = getStaticAgentBySlug(slug)
   if (!agent) {
     notFound()
   }
 
+  return (
+    <Suspense fallback={<AgentDetailSkeleton />}>
+      <AgentDetailContent agent={agent} />
+    </Suspense>
+  )
+}
+
+async function AgentDetailContent({ agent }: { agent: AgentWithAuthor }) {
   const files = await getStaticAgentFiles(agent.slug)
   const authorAgents = agent.authorUsername
     ? getStaticAgentsByAuthorUsername(agent.authorUsername)
@@ -246,6 +260,8 @@ async function AgentDetailContent({ slug }: { slug: string }) {
         )}
       </section>
 
+      <AgentDocsSection agent={agent} />
+
       <Separator className="my-8" />
 
       <section>
@@ -269,6 +285,92 @@ async function AgentDetailContent({ slug }: { slug: string }) {
         slug={agent.slug}
       />
     </main>
+  )
+}
+
+function AgentDocsSection({ agent }: { agent: AgentWithAuthor }) {
+  const { docs } = agent
+  if (!docs) {
+    return null
+  }
+
+  const faqSchema = createAgentFaqSchema(agent)
+
+  return (
+    <>
+      {faqSchema ? <JsonLd data={faqSchema} /> : null}
+      <Separator className="my-8" />
+      <section>
+        <h2 className="font-semibold text-foreground text-lg">
+          About {agent.name}
+        </h2>
+        <div className="mt-3 grid gap-3 text-muted-foreground leading-relaxed">
+          {docs.overview.map((paragraph) => (
+            <p key={paragraph}>{paragraph}</p>
+          ))}
+        </div>
+      </section>
+
+      <section className="mt-8">
+        <h2 className="font-semibold text-foreground text-lg">How it works</h2>
+        <ol className="mt-3 grid list-decimal gap-2 pl-5 text-muted-foreground leading-relaxed">
+          {docs.howItWorks.map((step) => (
+            <li key={step}>{step}</li>
+          ))}
+        </ol>
+      </section>
+
+      <section className="mt-8">
+        <h2 className="font-semibold text-foreground text-lg">Use cases</h2>
+        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          {docs.useCases.map((useCase) => (
+            <div
+              className="rounded-md border border-border bg-background p-4"
+              key={useCase.title}
+            >
+              <h3 className="font-medium text-foreground">{useCase.title}</h3>
+              <p className="mt-1.5 text-muted-foreground text-sm leading-relaxed">
+                {useCase.body}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {docs.requirements.length > 0 && (
+        <section className="mt-8">
+          <h2 className="font-semibold text-foreground text-lg">
+            Requirements
+          </h2>
+          <dl className="mt-3 grid gap-px overflow-hidden rounded-md border border-border bg-border">
+            {docs.requirements.map((requirement) => (
+              <div className="bg-background p-3" key={requirement.name}>
+                <dt className="font-medium font-mono text-foreground text-sm">
+                  {requirement.name}
+                </dt>
+                <dd className="mt-1 text-muted-foreground text-sm leading-relaxed">
+                  {requirement.body}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+      )}
+
+      <section className="mt-8">
+        <h2 className="font-semibold text-foreground text-lg">FAQ</h2>
+        <div className="mt-3 divide-y divide-border rounded-md border border-border">
+          {docs.faqs.map((faq) => (
+            <div className="p-4" key={faq.question}>
+              <h3 className="font-medium text-foreground">{faq.question}</h3>
+              <p className="mt-2 text-muted-foreground text-sm leading-relaxed">
+                {faq.answer}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+    </>
   )
 }
 

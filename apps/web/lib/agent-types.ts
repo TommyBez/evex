@@ -1,3 +1,5 @@
+import type { RegistryItemDocs } from '@evex/agent-registry'
+
 export interface CatalogAgentAuthor {
   readonly avatarUrl?: string
   readonly githubUsername: string | null
@@ -14,6 +16,7 @@ export interface AgentWithAuthor {
   createdAt: Date
   dependencies: string
   description: string
+  docs: RegistryItemDocs | null
   id: string
   installCount: number
   name: string

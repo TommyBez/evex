@@ -1,4 +1,5 @@
 import type {
+  RegistryItemDocs,
   RegistryItemMeta,
   RegistrySourceFile,
   RegistrySourceItem,
@@ -20,4 +21,4 @@ export interface RegistryCatalog {
   readonly name: string
 }
 
-export type { RegistryItemMeta }
+export type { RegistryItemDocs, RegistryItemMeta }

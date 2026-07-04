@@ -87,7 +87,88 @@
         "slug": "postgres-data-analyst",
         "category": "data",
         "createdAt": "2026-06-23T00:00:00.000Z",
-        "updatedAt": "2026-07-01T00:00:00.000Z"
+        "updatedAt": "2026-07-04T00:00:00.000Z",
+        "docs": {
+          "overview": [
+            "Postgres Data Analyst is an eve agent that lives in your Slack workspace and answers questions about a single Postgres database. Mention it in a channel or send it a DM, ask something like show total signups by month for the last 6 months, and it inspects the schema, writes one read-only SQL query, runs it, and replies with an interpreted answer rather than a raw row dump.",
+            "Safety is layered rather than assumed. Every query is parsed into an AST with pgsql-ast-parser and rejected unless it is a single SELECT or WITH statement over allowed schemas; INSERT, UPDATE, DELETE, DDL, SET, and transaction control are all blocked before anything reaches the database. Execution then happens inside a READ ONLY transaction with a statement timeout and a hard row cap, and the docs walk you through creating a dedicated read-only Postgres role as the real enforcement boundary.",
+            "It works with any Postgres you can reach with a connection string, including Neon branches and Supabase, and connects to Slack through Vercel Connect so you never handle bot tokens or signing secrets yourself. Schema allowlists and a blocked-tables list let you keep sensitive tables out of both query results and schema listings."
+          ],
+          "howItWorks": [
+            "A Slack mention or DM arrives through the eve Slack channel at /eve/v1/slack, authenticated by Vercel Connect credentials resolved from DATA_ANALYST_SLACK_CONNECT_UID, so no Slack bot token is stored in your environment.",
+            "If the metric definition, time range, table choice, or grain is ambiguous, the agent asks a clarifying question in the thread before touching the database, a behavior pinned by the ambiguous-metric-clarification eval.",
+            "For unfamiliar tables it calls the describe_schema tool, which lists tables, columns, types, nullability, and primary keys from allowed schemas only, filtering out anything in DATA_ANALYST_BLOCKED_TABLES.",
+            "It writes one read-only query and calls run_sql, which parses the SQL into an AST, rejects anything that is not a single SELECT or WITH statement, blocks disallowed schemas, blocked tables, and unqualified pg_ catalog tables.",
+            "Validated SQL runs inside a READ ONLY transaction with SET LOCAL statement_timeout applied and results wrapped in a LIMIT of DATA_ANALYST_MAX_ROWS plus one, so the agent knows when output was truncated and says so.",
+            "The agent interprets the rows in plain language for Slack, stating assumptions, filters, units, and date windows, and narrows the question instead of issuing broader SQL when results are incomplete."
+          ],
+          "useCases": [
+            {
+              "title": "Self-serve metrics in Slack",
+              "body": "Let product managers and founders ask signups by month, active users last week, or revenue by plan directly in a channel, without writing SQL or waiting on a data team, while the agent explains the query assumptions it made."
+            },
+            {
+              "title": "Safe database exploration for the whole team",
+              "body": "Point the agent at a reporting schema and let anyone ask what schemas and tables can you see. describe_schema exposes only allowed schemas and hides blocked tables, so exploration stays inside boundaries you define."
+            },
+            {
+              "title": "Read-only analytics over Neon or Supabase",
+              "body": "Connect a Neon reporting branch or a dedicated read-only Supabase role and get conversational analytics without granting the service role. The AST validator plus the read-only role means no write path exists."
+            },
+            {
+              "title": "Guarded ad hoc investigations",
+              "body": "Debug a spike or verify a customer claim with bounded queries: a 10 second default statement timeout and a 200 row default cap keep exploratory SQL from hammering production, and the agent labels truncated results."
+            }
+          ],
+          "requirements": [
+            {
+              "name": "DATA_ANALYST_DATABASE_URL",
+              "body": "Postgres connection string the agent queries. Create a dedicated read-only role (the README includes the exact GRANT statements) and use its credentials; the role, not the SQL validator, is the enforcement boundary."
+            },
+            {
+              "name": "DATA_ANALYST_ALLOWED_SCHEMAS",
+              "body": "Comma-separated list of schemas the agent may query and describe. Defaults to public. Queries referencing any other schema are rejected before execution, and search_path is pinned to this list."
+            },
+            {
+              "name": "DATA_ANALYST_BLOCKED_TABLES",
+              "body": "Optional comma-separated table names, plain or schema-qualified like users,public.accounts, that are excluded from both run_sql queries and describe_schema listings. Leave empty to block nothing."
+            },
+            {
+              "name": "DATA_ANALYST_MAX_ROWS",
+              "body": "Maximum rows returned per query, 1 to 1000, default 200. The tool wraps every query in a LIMIT and flags truncated results so the agent can narrow the question."
+            },
+            {
+              "name": "DATA_ANALYST_STATEMENT_TIMEOUT_MS",
+              "body": "Per-query statement timeout in milliseconds, 1000 to 60000, default 10000. Applied with SET LOCAL inside each transaction so a runaway query cannot hold a connection."
+            },
+            {
+              "name": "DATA_ANALYST_SLACK_CONNECT_UID",
+              "body": "Vercel Connect UID for the Slack integration, default slack/postgres-data-analyst. Obtain it by running vercel connect create slack --triggers from the Vercel project and attaching it to the /eve/v1/slack route."
+            }
+          ],
+          "faqs": [
+            {
+              "question": "How do I install it?",
+              "answer": "Run npx shadcn@latest add @evex/postgres-data-analyst inside an existing eve app, install the listed dependencies (eve, pg, pgsql-ast-parser, zod, @vercel/connect), fill in the DATA_ANALYST_* environment variables, deploy, then connect Slack with vercel connect create slack --triggers."
+            },
+            {
+              "question": "Can it modify or delete data?",
+              "answer": "No. Every query is parsed into an AST and rejected unless it is a single SELECT or WITH statement; INSERT, UPDATE, DELETE, TRUNCATE, DDL, and SET are blocked. Execution runs in a READ ONLY transaction, and the recommended setup uses a Postgres role with SELECT-only grants. A dedicated eval verifies the agent refuses mutation requests."
+            },
+            {
+              "question": "Which model does it use, and can I change it?",
+              "answer": "The agent ships with zai/glm-5.2 configured in agent/agent.ts. The files install into your codebase, so edit that one line to switch to any model the eve framework supports."
+            },
+            {
+              "question": "How do I keep sensitive tables out of Slack?",
+              "answer": "Restrict DATA_ANALYST_ALLOWED_SCHEMAS to reporting schemas, list sensitive tables in DATA_ANALYST_BLOCKED_TABLES, and grant the database role SELECT only on safe tables. Blocked tables are hidden from schema listings and rejected in queries, but remember anything the role can read could surface in a channel."
+            },
+            {
+              "question": "What are the query limits?",
+              "answer": "One statement per request, SELECT or WITH only, at most 1000 rows (200 by default), a statement timeout capped at 60 seconds (10 by default), and a connection pool of 3. run_sql blocks unqualified pg_catalog tables and labels truncated results."
+            }
+          ]
+        }
       },
       "author": "TommyBez"
     }

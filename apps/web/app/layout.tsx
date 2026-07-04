@@ -8,7 +8,7 @@ import type { Metadata, Viewport } from 'next'
 import { JsonLd } from '@/components/json-ld'
 import { ThemeProvider } from '@/components/theme-provider'
 import { isProduction } from '@/lib/env'
-import { siteConfig } from '@/lib/metadata'
+import { siteConfig, siteTwitterHandle } from '@/lib/metadata'
 import { getMetadataBase } from '@/lib/site-url'
 import {
   createOrganizationSchema,
@@ -29,10 +29,14 @@ export const metadata: Metadata = {
     'evex',
     'eve',
     'eve agents',
+    'eve framework',
+    'vercel eve',
     'agent registry',
     'shadcn registry',
     'install eve agent',
     'AI agents',
+    'AI agent recipes',
+    'npx shadcn add',
     'developer tools',
   ],
   authors: [{ name: siteConfig.name }],
@@ -56,6 +60,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
+    site: siteTwitterHandle,
+    creator: siteTwitterHandle,
     title: siteConfig.title,
     description: siteConfig.description,
   },

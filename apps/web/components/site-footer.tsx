@@ -34,6 +34,12 @@ export function SiteFooter() {
             </Link>
             <Link
               className="text-muted-foreground transition-colors hover:text-foreground"
+              href="/docs"
+            >
+              Docs
+            </Link>
+            <Link
+              className="text-muted-foreground transition-colors hover:text-foreground"
               href="/learn"
             >
               Learn

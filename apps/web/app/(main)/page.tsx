@@ -1,6 +1,6 @@
 import { Button } from '@evex/ui/button'
 import { Skeleton } from '@evex/ui/skeleton'
-import { BookOpen, PackageSearch } from 'lucide-react'
+import { PackageSearch } from 'lucide-react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Suspense } from 'react'
@@ -17,7 +17,6 @@ import {
   sumInstallCounts,
 } from '@/lib/data/agents'
 import { getInstallCountMap } from '@/lib/data/install-metrics'
-import { listLearnPages } from '@/lib/learn-content'
 import { createPageMetadata } from '@/lib/metadata'
 import { getStaticRegistryStats, listStaticAgents } from '@/lib/registry'
 import { buildInstallCommand } from '@/lib/site-url'
@@ -27,9 +26,9 @@ import {
 } from '@/lib/structured-data'
 
 export const metadata: Metadata = createPageMetadata({
-  title: 'Install eve Agents with One Command',
+  title: 'Vercel eve Agent Registry — Install eve Agents with One Command',
   description:
-    'Browse community-built eve agents, preview every file before install, and add any agent to your project with npx shadcn add @evex/{slug}.',
+    "Community registry for agents built on eve, Vercel's agent framework. Browse configurations, preview every file before install, and add any agent with npx shadcn add @evex/{slug}.",
   path: '/',
 })
 
@@ -48,13 +47,6 @@ const AGENT_GRID_SKELETON_CARD_IDS = [
   'agent-card-d',
   'agent-card-e',
   'agent-card-f',
-] as const
-const FEATURED_LEARN_SLUGS = [
-  'mcp-server-for-ai-agents',
-  'agentic-workflows',
-  'ai-agent-frameworks',
-  'ai-agent-tools',
-  'mcp-vs-skills',
 ] as const
 
 export default function HomePage({
@@ -77,7 +69,6 @@ export default function HomePage({
             <AgentResults searchParams={searchParams} />
           </Suspense>
         </section>
-        <LearnPreview />
         <HomeFaq />
       </main>
     </>
@@ -105,7 +96,7 @@ function Hero() {
             evex · the eve agent registry
           </span>
           <h1 className="mt-5 text-balance font-semibold text-4xl text-foreground leading-[1.05] sm:text-5xl">
-            Install Community Agents with{' '}
+            Install eve Agents with{' '}
             <span className="text-brand">One Command</span>
           </h1>
           <p className="mt-5 max-w-md text-pretty text-base text-muted-foreground leading-relaxed sm:text-lg">
@@ -289,57 +280,6 @@ async function AgentResults({
         ))}
       </div>
     </div>
-  )
-}
-
-function LearnPreview() {
-  const pageBySlug = new Map(
-    listLearnPages().map((page) => [page.slug, page] as const),
-  )
-  const featuredPages = FEATURED_LEARN_SLUGS.flatMap((slug) => {
-    const page = pageBySlug.get(slug)
-    return page ? [page] : []
-  })
-
-  return (
-    <section className="mt-14 rounded-md border border-border bg-muted/25 p-5 sm:p-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <span className="mono-label inline-flex items-center gap-2 text-muted-foreground">
-            <BookOpen aria-hidden="true" className="size-4 text-brand" />
-            learn
-          </span>
-          <h2 className="mt-2 font-display font-semibold text-2xl text-foreground">
-            Build agents you can inspect, run, and recover
-          </h2>
-          <p className="mt-2 max-w-2xl text-muted-foreground text-sm leading-relaxed">
-            Decision guides for Eve, AI agent architecture, MCP, shadcn
-            registries, and framework tradeoffs. Start with the architecture
-            choice, then inspect installable source when you are ready to build.
-          </p>
-        </div>
-        <Button render={<Link href="/learn">View all guides</Link>} />
-      </div>
-      <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {featuredPages.map((page) => (
-          <Link
-            className="rounded-md border border-border bg-background p-4 transition-colors hover:border-input hover:bg-muted/50"
-            href={`/learn/${page.slug}`}
-            key={page.slug}
-          >
-            <span className="mono-label text-muted-foreground">
-              {page.primaryKeyword}
-            </span>
-            <h3 className="mt-2 font-medium text-foreground">
-              {page.shortTitle}
-            </h3>
-            <p className="mt-2 line-clamp-2 text-muted-foreground text-sm leading-relaxed">
-              {page.description}
-            </p>
-          </Link>
-        ))}
-      </div>
-    </section>
   )
 }
 

@@ -18,13 +18,6 @@ export function AgentCard({
 }) {
   return (
     <Card className="group relative flex h-full w-full min-w-0 flex-col gap-4 rounded-md border border-border p-5 shadow-[var(--shadow-card)] ring-0 transition-[background-color,border-color,box-shadow] focus-within:border-input focus-within:bg-muted/40 focus-within:ring-2 focus-within:ring-ring/20 hover:border-input hover:bg-muted/40">
-      {/* Overlay link makes the whole card open the agent. The author link
-          and favorite button sit above it (z-10) so they remain clickable. */}
-      <Link
-        aria-label={`View ${agent.name}`}
-        className="absolute inset-0 rounded-md"
-        href={`/agents/${agent.slug}`}
-      />
       <div className="flex min-w-0 items-center justify-between gap-3">
         <Link
           aria-label={`Browse ${agent.category} agents`}
@@ -55,8 +48,19 @@ export function AgentCard({
         </div>
       </div>
       <div className="flex-1">
-        <h3 className="truncate font-display font-semibold text-foreground text-lg">
-          {agent.name}
+        <h3 className="min-w-0 font-display font-semibold text-foreground text-lg">
+          {/* Stretched link: the ::after overlay makes the whole card open
+              the agent while keeping the agent name as the anchor text.
+              The author link and buttons sit above it (z-10) so they remain
+              clickable. Truncation lives on an inner span — overflow-hidden
+              on the link or heading would clip the ::after overlay to the
+              title box. */}
+          <Link
+            className="block after:absolute after:inset-0 after:rounded-md"
+            href={`/agents/${agent.slug}`}
+          >
+            <span className="block truncate">{agent.name}</span>
+          </Link>
         </h3>
         <p className="mt-1.5 line-clamp-2 text-pretty text-muted-foreground text-sm leading-relaxed">
           <AgentDescription>{agent.description}</AgentDescription>

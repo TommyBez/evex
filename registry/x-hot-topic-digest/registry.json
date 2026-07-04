@@ -111,7 +111,88 @@
         "slug": "x-hot-topic-digest",
         "category": "research",
         "createdAt": "2026-06-26T09:40:22.348Z",
-        "updatedAt": "2026-06-30T18:00:00.000Z"
+        "updatedAt": "2026-07-04T00:00:00.000Z",
+        "docs": {
+          "overview": [
+            "X Hot Topic Digest is a scheduled eve agent that watches a list of X (Twitter) profiles you configure and turns their recent posts into a researched daily briefing. It runs unattended on a cron schedule (X_HOT_TOPIC_DAILY_CRON, default 0 8 * * * UTC), reads only public posts through the X API v2 with an app-only bearer token, and never posts anything back to X.",
+            "Each run scans up to 20 recent posts per handle inside a configurable lookback window (default 24 hours), clusters them into at most 5 hot topics by recurrence and engagement, and researches every topic with the Parallel web search API to attach ranked sources with titles, URLs, and excerpts. The result is a single accessible HTML email delivered through Resend to your configured recipients.",
+            "You interact with it through configuration and your inbox: set the handles, schedule, and recipients in environment variables, and the digest arrives by email. The agent gates every send: it previews the email first and only sends with an explicit confirmation flag plus an idempotency key, so a replayed run never delivers the same digest twice."
+          ],
+          "howItWorks": [
+            "On the daily-hot-topic-digest schedule (cron from X_HOT_TOPIC_DAILY_CRON, default 08:00 UTC), the agent loads the bundled email-best-practices skill before drafting anything.",
+            "It calls the scan_x_profiles tool, which resolves each handle in X_HOT_TOPIC_HANDLES via X API v2, fetches recent posts excluding retweets, and filters them to the X_HOT_TOPIC_LOOKBACK_HOURS window along with like, reply, repost, and impression counts.",
+            "From those posts it surfaces up to X_HOT_TOPIC_MAX_TOPICS recurring themes, announcements, or high-engagement signals, clustering near-duplicate posts into a single topic.",
+            "For each topic it calls research_hot_topics, which sends 2 to 3 focused keyword queries to the Parallel Search API in the configured mode (turbo, basic, or advanced) and returns ranked results with URLs, titles, publish dates, and excerpts.",
+            "It composes one HTML email with a per-topic takeaway, the originating X posts with links, and the research sources, then calls preview_digest_email to review the exact sender, recipients, subject, and HTML before anything is sent.",
+            "Finally it calls send_digest_email with confirmSend set to true and a date-derived idempotency key that is forwarded to Resend as the Idempotency-Key header; four bundled evals verify the digest flow, send confirmation, failed-send reporting, and that missing configuration blocks delivery."
+          ],
+          "useCases": [
+            {
+              "title": "Daily competitor and ecosystem watch",
+              "body": "Track the X accounts of competitors, partners, and platform vendors and get one morning email that names what they announced, how much engagement it drew, and what independent web sources say about it."
+            },
+            {
+              "title": "Founder or investor market signal briefing",
+              "body": "Watch a curated list of founders, VCs, and analysts and receive up to five clustered topics per day, each backed by Parallel research sources, instead of scrolling timelines yourself."
+            },
+            {
+              "title": "Developer relations trend monitoring",
+              "body": "Follow framework maintainers and developer advocates to catch launches, RFC debates, and breaking-change chatter early, with links back to the original posts and supporting articles for your team."
+            },
+            {
+              "title": "Team newsletter without the manual curation",
+              "body": "Point X_HOT_TOPIC_DIGEST_TO at a team alias and let the agent produce an accessible HTML digest daily; the 24-hour lookback window keeps topics from repeating day over day."
+            }
+          ],
+          "requirements": [
+            {
+              "name": "X_BEARER_TOKEN",
+              "body": "App-only bearer token from the X Developer Console. Used to resolve handles and read public posts via X API v2; the agent stops with an authRequired error if it is missing."
+            },
+            {
+              "name": "X_HOT_TOPIC_HANDLES",
+              "body": "Comma-separated X handles to scan, with or without the @ prefix, for example vercel,parallel_ai,anthropicai. With no handles configured the run reports the missing configuration instead of inventing profiles."
+            },
+            {
+              "name": "PARALLEL_API_KEY",
+              "body": "API key for the Parallel Search API, created at platform.parallel.ai. Powers the research_hot_topics tool that attaches ranked web sources to each topic."
+            },
+            {
+              "name": "RESEND_API_KEY",
+              "body": "Resend API key used by send_digest_email to deliver the HTML digest. The idempotency key is passed to Resend so retried sends are deduplicated."
+            },
+            {
+              "name": "X_HOT_TOPIC_DIGEST_FROM",
+              "body": "Sender address for the digest; it must be verified in Resend or delivery fails. Recipients and sender cannot be overridden through tool input."
+            },
+            {
+              "name": "X_HOT_TOPIC_DIGEST_TO",
+              "body": "Comma-separated recipient addresses. Optional tuning variables include X_HOT_TOPIC_DAILY_CRON, X_HOT_TOPIC_LOOKBACK_HOURS, X_HOT_TOPIC_MAX_TWEETS_PER_PROFILE, X_HOT_TOPIC_MAX_TOPICS, X_HOT_TOPIC_SEARCH_MAX_RESULTS, X_HOT_TOPIC_SEARCH_MODE, and X_HOT_TOPIC_DIGEST_SUBJECT."
+            }
+          ],
+          "faqs": [
+            {
+              "question": "How do I install and run it?",
+              "answer": "Install with npx shadcn@latest add @evex/x-hot-topic-digest, copy .env.example into your eve app environment, fill in the X, Parallel, and Resend credentials plus handles and recipients, then trigger the schedule in dev with a POST to /eve/v1/dev/schedules/daily-hot-topic-digest."
+            },
+            {
+              "question": "Can it accidentally send duplicate or unwanted emails?",
+              "answer": "No. send_digest_email refuses to send unless confirmSend is true, and every send requires a stable idempotency key derived from the digest date. The key is cached in the tool and forwarded to Resend as the Idempotency-Key header, so a replayed eve step returns the recorded result instead of sending again."
+            },
+            {
+              "question": "Which model does the agent use?",
+              "answer": "The agent is defined with openai/gpt-5.4-mini in agent/agent.ts. You can change the model there after installing; the tools, schedule, and instructions are plain TypeScript and Markdown files you own in your project."
+            },
+            {
+              "question": "How do I control how much it scans and researches?",
+              "answer": "Tune the environment variables: lookback window defaults to 24 hours, up to 20 posts per profile, at most 5 topics per run, and 5 Parallel results per topic. X_HOT_TOPIC_SEARCH_MODE switches Parallel between turbo, basic, and advanced search."
+            },
+            {
+              "question": "Does it post to X or need write access?",
+              "answer": "No. The agent only reads public posts with app-only bearer auth and explicitly excludes retweets. Its guardrails forbid posting to X, and every citation in the digest must come from a tool result, so URLs, excerpts, and post ids are never fabricated."
+            }
+          ]
+        }
       },
       "author": "TommyBez"
     }

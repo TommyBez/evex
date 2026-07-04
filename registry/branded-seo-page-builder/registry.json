@@ -98,7 +98,76 @@
         "slug": "branded-seo-page-builder",
         "category": "marketing",
         "createdAt": "2026-06-27T07:44:00.000Z",
-        "updatedAt": "2026-06-30T18:00:00.000Z"
+        "updatedAt": "2026-07-04T00:00:00.000Z",
+        "docs": {
+          "overview": [
+            "Branded SEO Page Builder is an eve agent that turns a bare domain into one complete, SEO-optimized HTML page. You interact with it in chat: ask for a page from a domain such as linear.app, or point it at a specific source URL and a target topic, and it returns a full static document with metadata, Open Graph and Twitter card tags, semantic sections, and JSON-LD structured data.",
+            "What makes it useful is grounding. The agent connects to Context.dev's hosted MCP server at context-dev.stlmcp.com to resolve real brand data for the domain: company name, description, colors, logos, industry labels, homepage content as markdown, and optional styleguide signals like typography and spacing. Every user-facing claim in the generated page comes from that data or your explicit request, never invented statistics, testimonials, or pricing.",
+            "Two vendored skills shape the output. The seo-audit skill enforces on-page fundamentals such as one h1, canonical tags, descriptive alt text, and intent-matched schema types, while the ai-seo skill structures copy into extractable answer blocks and FAQ sections so answer engines like ChatGPT, Perplexity, and Google AI Overviews can cite the page, not only rank it."
+          ],
+          "howItWorks": [
+            "You ask for a page in chat, for example 'Create an SEO-optimized landing page for linear.app'; if no domain is given, the agent stops and asks for one before doing any generation work.",
+            "It loads the bundled seo-audit skill to plan page structure, metadata, headings, canonical tags, image alt text, and schema, then loads the ai-seo skill before writing body copy so sections stay extractable and answer-oriented.",
+            "Through the context-dev MCP connection it discovers Context.dev tools via connection_search, consults search_docs for exact SDK method names, and calls execute to fetch brand data, page markdown, and styleguide details for the domain.",
+            "It infers the most useful page intent from the request and the retrieved data, choosing between homepage, landing, feature, comparison, local, or product page, and only asks a follow-up when the data cannot support a sensible choice.",
+            "It generates one complete HTML document with inline CSS reflecting the brand's colors and typography, a single h1, Open Graph and Twitter card tags, an FAQ section when it fits, and JSON-LD using Organization, WebPage, FAQPage, Product, or Service.",
+            "It returns the document in a single fenced html block followed by SEO notes covering search intent, primary keyword, secondary topics, schema types, and Context.dev source URLs, plus an assumptions list whenever copy relied on inference; two bundled evals verify the missing-domain guard and this page-structure contract."
+          ],
+          "useCases": [
+            {
+              "title": "Landing page from a domain in minutes",
+              "body": "Give the agent a prospect's or your own domain and get a launch-ready static landing page whose copy, colors, and typography match the live brand, complete with metadata and structured data for immediate deployment."
+            },
+            {
+              "title": "Programmatic SEO page drafts",
+              "body": "Generate grounded first drafts for feature, comparison, or product pages by pointing the agent at a specific source URL and target keyword, such as building a product page targeting AI support automation."
+            },
+            {
+              "title": "AI answer engine visibility",
+              "body": "Produce pages structured for citation by ChatGPT, Perplexity, and Google AI Overviews, with extractable answer blocks, FAQ sections, and FAQPage schema, while staying people-first to avoid scaled content abuse penalties."
+            },
+            {
+              "title": "On-brand pages for agency clients",
+              "body": "Agencies can prototype an SEO page for any client domain without collecting brand assets manually; Context.dev supplies logos, colors, industry labels, and homepage copy so the draft looks like the client made it."
+            }
+          ],
+          "requirements": [
+            {
+              "name": "CONTEXT_DEV_API_KEY",
+              "body": "Context.dev API key used to authenticate the hosted MCP server at context-dev.stlmcp.com via the x-context-dev-api-key header. Create one in your Context.dev account; keys look like ctxt_secret_. The agent refuses to run brand lookups without it."
+            },
+            {
+              "name": "CONTEXT_API_KEY",
+              "body": "Optional fallback variable read when CONTEXT_DEV_API_KEY is unset, for projects that already use this name. CONTEXT_DEV_API_KEY is the documented standard; set only one of the two."
+            },
+            {
+              "name": "eve@^0.18.2",
+              "body": "The eve framework runtime that hosts the agent, its MCP client connection, skills, and evals. Installed as the registry item's dependency; the agent package requires Node 24 or newer."
+            }
+          ],
+          "faqs": [
+            {
+              "question": "How do I install and run it?",
+              "answer": "Run npx shadcn@latest add @evex/branded-seo-page-builder in your eve app, copy .env.example and set CONTEXT_DEV_API_KEY, then start with pnpm dev and ask the agent in chat for a page from any domain."
+            },
+            {
+              "question": "Which model does the agent use?",
+              "answer": "It is configured with zai/glm-5.2-fast in agent/agent.ts. You can swap the model by editing the defineAgent call; the instructions, skills, and Context.dev connection work independently of the model choice."
+            },
+            {
+              "question": "What output do I actually get?",
+              "answer": "One complete HTML document in a single fenced html block with inline CSS and no JavaScript unless requested, followed by SEO notes listing search intent, primary keyword, secondary topics, schema types, and Context.dev source URLs, plus assumptions when copy was inferred."
+            },
+            {
+              "question": "What happens if Context.dev has little data for a domain, or the API fails?",
+              "answer": "The agent will not fabricate brand facts. On a missing or invalid key, a 401, or a 429 rate limit it stops and reports the failure; with thin brand data it asks for more source copy or a specific page URL instead of inventing claims."
+            },
+            {
+              "question": "Can I customize the visual style or page type?",
+              "answer": "Yes. By default the agent applies Context.dev styleguide data for colors, typography, spacing, and shadows. You can pass a specific source page URL, request a particular intent like a comparison or product page, or ask it to skip styleguide data entirely."
+            }
+          ]
+        }
       },
       "author": "TommyBez"
     }

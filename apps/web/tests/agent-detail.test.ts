@@ -23,6 +23,7 @@ function makeAgent(overrides: Partial<AgentWithAuthor>): AgentWithAuthor {
     createdAt: new Date('2026-01-01'),
     dependencies: '',
     description: 'desc',
+    docs: null,
     id: 'agent-a',
     installCount: 0,
     name: 'Agent A',

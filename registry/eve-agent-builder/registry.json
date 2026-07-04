@@ -149,7 +149,84 @@
         "slug": "eve-agent-builder",
         "category": "coding",
         "createdAt": "2026-06-30T10:23:00.000Z",
-        "updatedAt": "2026-07-03T00:00:00.000Z"
+        "updatedAt": "2026-07-03T00:00:00.000Z",
+        "docs": {
+          "overview": [
+            "Eve Agent Builder turns a plain request like 'create an agent that answers onboarding questions' into a tested, deployed Eve agent, so you review approvals and results instead of running the delivery checklist yourself. Install it into an existing Eve app and talk to it through whatever channel that app already exposes: web chat, the Eve session API, Slack, or GitHub.",
+            "Every claim it makes is backed by a recorded result. The agent tests generated code in a real Vercel Sandbox with Node 24, and a hook captures the exit code of each eve info, build, and eval run. When it asks you to approve a deploy, the request quotes that recorded evidence, so you decide with facts rather than the model's recollection.",
+            "Deployment stays under your control. The bash tool denies Vercel CLI commands outright and routes them through run_vercel_cli, which pauses for human approval on every Connect setup, project link, and deploy, and refuses to deploy a workspace that is not already linked to a Vercel project. After deploying, it verifies the live health, session, and stream routes."
+          ],
+          "howItWorks": [
+            "You install the agent into an existing Eve app with npx shadcn@latest add @evex/eve-agent-builder; it adds no channel of its own, so you reach it through the app's existing web, Slack, GitHub, or session API surface.",
+            "On each request it loads the bundled eve and eve-agent-delivery skills, reads the local Eve docs in node_modules/eve/docs, and writes the smallest set of instructions, tools, channels, schedules, and evals that satisfies the request.",
+            "It tests the result locally in a Vercel Sandbox (Node 24, 2 vCPUs) through the run_eve_cli tool, running eve info --json, eve build, and eve eval, while the record-check-evidence hook stores each command's exit code in session state.",
+            "A runtime-status block regenerated every turn reports which credentials are present (never their values) plus the recorded check results, and the agent quotes that evidence when it requests deploy approval.",
+            "Once you approve, run_vercel_cli links the target project and runs the preview or production deploy with VERCEL_TOKEN injected at the sandbox firewall, never in command text or generated files.",
+            "Finally, verify_vercel_preview checks GET /eve/v1/health, creates a smoke-test session, and reads the session stream, brokering VERCEL_AUTOMATION_BYPASS_SECRET when the preview is protected by Vercel Deployment Protection."
+          ],
+          "useCases": [
+            {
+              "title": "Scaffold a new agent with evals",
+              "body": "Ask for an agent that answers customer onboarding questions from your docs. The builder reads the repo, writes the instructions and evals, runs eve build and the eval suite locally, and stops with recorded results before any deploy."
+            },
+            {
+              "title": "Wire up a Slack channel end to end",
+              "body": "The builder adds the Slack channel with run_eve_cli, then walks the Vercel Connect flow: create the Slack client, detach the default destination, attach it to /eve/v1/slack with triggers, deploy, and smoke-test delivery. You approve each Vercel step."
+            },
+            {
+              "title": "Run it as a remote build service",
+              "body": "Deploy the builder itself and call it from another Eve app as a typed subagent with defineRemoteAgent. Task-mode runs return a structured delivery report: changed files, command outcomes, deployment URL and target, verification evidence, and blockers."
+            },
+            {
+              "title": "Diagnose a broken deployment",
+              "body": "Point it at a failing Vercel deployment. It uses the Vercel MCP connection to pull build logs, runtime errors, and Agent Runs traces, fixes the cause in the repo, reruns the local checks, and redeploys after approval."
+            }
+          ],
+          "requirements": [
+            {
+              "name": "VERCEL_TOKEN",
+              "body": "Required. Creates Vercel Sandboxes for local testing, authenticates the Vercel MCP connection, and is brokered at the sandbox firewall for run_vercel_cli calls, so it never appears in commands or files. Create one under Account Settings, Tokens, on vercel.com."
+            },
+            {
+              "name": "AI_GATEWAY_API_KEY",
+              "body": "Optional model credential for local eval and smoke-test runs outside Vercel. On Vercel you can skip it: the agent pulls a VERCEL_OIDC_TOKEN by linking the project after approval. Get a key from the Vercel AI Gateway dashboard."
+            },
+            {
+              "name": "VERCEL_AUTOMATION_BYPASS_SECRET",
+              "body": "Optional. Lets verify_vercel_preview check previews protected by Vercel Deployment Protection by injecting the x-vercel-protection-bypass header at the sandbox firewall. Copy it from the project's Deployment Protection settings."
+            },
+            {
+              "name": "VERCEL_MCP_URL",
+              "body": "Optional override for the hosted Vercel MCP endpoint. Defaults to https://mcp.vercel.com; change it only if you operate a compatible endpoint."
+            },
+            {
+              "name": "eve@^0.18.2",
+              "body": "The eve framework the agent is built on, installed as an npm dependency alongside zod ^4.4.3 when you add the registry item. The sandbox prewarms the eve 0.18.2 and Vercel CLIs so first commands skip the cold download."
+            }
+          ],
+          "faqs": [
+            {
+              "question": "Can it deploy to production without me noticing?",
+              "answer": "No. Every Vercel Connect setup, project link, preview deploy, and production deploy pauses for human approval; only the read-only whoami check runs without it. Deploys also refuse to run unless the workspace is already linked to a Vercel project, so a deploy can never silently create or target a project you did not confirm."
+            },
+            {
+              "question": "Does the agent or its sandbox ever see my Vercel token?",
+              "answer": "No. Eve injects VERCEL_TOKEN at the sandbox network policy, so it never enters command text, sandbox files, or generated source, and the bash tool denies any command that sets VERCEL_TOKEN. The preview bypass secret gets the same treatment and is cleared after verification."
+            },
+            {
+              "question": "What stops it from claiming tests passed when they did not?",
+              "answer": "A hook records the real exit code of every eve info, build, and eval call, and the runtime-status block replays that evidence to the agent each turn. Seven bundled evals also regression-test the guardrails, including that it never deploys before local testing and that it stops when credentials are missing."
+            },
+            {
+              "question": "Which model does it run on, and can I swap it?",
+              "answer": "It ships with zai/glm-5.2-fast at high reasoning effort, set in agent/agent.ts; change the model string there to use any model your gateway serves. The eval suite judges outputs with openai/gpt-5.4-mini, configured separately in evals/evals.config.ts."
+            },
+            {
+              "question": "How do I install it, and what does it need to run?",
+              "answer": "Run npx shadcn@latest add @evex/eve-agent-builder inside an existing Eve app, then set VERCEL_TOKEN in the app runtime. The package adds no channel of its own; if your app has no interactive surface yet, add a web or Slack channel first."
+            }
+          ]
+        }
       },
       "author": "TommyBez"
     }

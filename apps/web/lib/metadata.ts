@@ -2,10 +2,12 @@ import type { Metadata } from 'next'
 
 export const siteConfig = {
   name: 'evex',
-  title: 'evex | Install eve Agents with One Command',
+  title: 'evex — Vercel eve Agent Registry | Install with One Command',
   description:
-    'evex is the community registry for eve agents. Browse configurations, preview files before install, and add agents with one shadcn command.',
+    "evex is the community registry for eve agents — reusable agents built on eve, Vercel's agent framework. Browse configurations, preview every file before install, and add agents with one shadcn command.",
 }
+
+export const siteTwitterHandle = '@TommyBez85'
 
 export const defaultOpenGraphImage = {
   url: '/opengraph-image',
@@ -26,17 +28,20 @@ export function createPageMetadata({
   description,
   path,
   noIndex = false,
+  markdownPath,
 }: {
   title: string
   description: string
   path: string
   noIndex?: boolean
+  markdownPath?: string
 }): Metadata {
   return {
     title,
     description,
     alternates: {
       canonical: path,
+      ...(markdownPath ? { types: { 'text/markdown': markdownPath } } : {}),
     },
     openGraph: {
       title,
@@ -49,6 +54,8 @@ export function createPageMetadata({
     },
     twitter: {
       card: 'summary_large_image',
+      site: siteTwitterHandle,
+      creator: siteTwitterHandle,
       title,
       description,
       images: [defaultTwitterImage],
