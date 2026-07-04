@@ -48,16 +48,18 @@ export function AgentCard({
         </div>
       </div>
       <div className="flex-1">
-        <h3 className="truncate font-display font-semibold text-foreground text-lg">
+        <h3 className="min-w-0 font-display font-semibold text-foreground text-lg">
           {/* Stretched link: the ::after overlay makes the whole card open
               the agent while keeping the agent name as the anchor text.
               The author link and buttons sit above it (z-10) so they remain
-              clickable. */}
+              clickable. Truncation lives on an inner span — overflow-hidden
+              on the link or heading would clip the ::after overlay to the
+              title box. */}
           <Link
-            className="after:absolute after:inset-0 after:rounded-md"
+            className="block after:absolute after:inset-0 after:rounded-md"
             href={`/agents/${agent.slug}`}
           >
-            {agent.name}
+            <span className="block truncate">{agent.name}</span>
           </Link>
         </h3>
         <p className="mt-1.5 line-clamp-2 text-pretty text-muted-foreground text-sm leading-relaxed">
