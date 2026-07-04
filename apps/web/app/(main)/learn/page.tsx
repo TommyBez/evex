@@ -94,10 +94,7 @@ export default function LearnPage() {
                 href={`/learn/${page.slug}`}
                 key={page.slug}
               >
-                <span className="mono-label text-muted-foreground">
-                  {page.primaryKeyword}
-                </span>
-                <h3 className="mt-2 font-display font-semibold text-foreground">
+                <h3 className="font-display font-semibold text-foreground">
                   {page.shortTitle}
                 </h3>
                 <p className="mt-2 line-clamp-3 text-muted-foreground text-sm leading-relaxed">
