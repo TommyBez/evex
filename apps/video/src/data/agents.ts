@@ -6,6 +6,8 @@ export interface AgentPayoff {
 
 export interface AgentLaunchData {
   accent: string
+  /** 2–4 concrete things the agent does, revealed as a checklist beat. */
+  capabilities?: string[]
   category: string
   fileCount: number
   payoff: AgentPayoff
@@ -38,6 +40,11 @@ export const AGENTS: AgentLaunchData[] = [
       highlight: 'minutes.',
       after: '',
     },
+    capabilities: [
+      'Extracts your brand with Context.dev',
+      'Generates matching SVG assets',
+      'Ships a ready-to-use pack',
+    ],
     fileCount: 16,
   },
   {
@@ -50,6 +57,11 @@ export const AGENTS: AgentLaunchData[] = [
       highlight: 'your brand.',
       after: '',
     },
+    capabilities: [
+      'Reads your brand and styleguide',
+      'Writes SEO-optimized copy',
+      'Builds a ready-to-ship page',
+    ],
     fileCount: 16,
   },
   {
@@ -62,6 +74,11 @@ export const AGENTS: AgentLaunchData[] = [
       highlight: 'real review.',
       after: '',
     },
+    capabilities: [
+      'Reviews each pull request',
+      'Posts inline comments',
+      'Suggests concrete fixes',
+    ],
     fileCount: 14,
   },
   {
@@ -74,6 +91,12 @@ export const AGENTS: AgentLaunchData[] = [
       highlight: 'deploys',
       after: 'new Eve agents.',
     },
+    capabilities: [
+      'Implements a new Eve agent',
+      'Runs its checks',
+      'Deploys it to Vercel',
+      'Verifies the live routes',
+    ],
     fileCount: 26,
   },
   {
@@ -86,6 +109,11 @@ export const AGENTS: AgentLaunchData[] = [
       highlight: 'from Slack.',
       after: '',
     },
+    capabilities: [
+      'Manages your Linear issues',
+      'Works right from Slack',
+      'Runs on a schedule',
+    ],
     fileCount: 27,
   },
   {
@@ -98,6 +126,11 @@ export const AGENTS: AgentLaunchData[] = [
       highlight: 'generative UI.',
       after: '',
     },
+    capabilities: [
+      'Streams generative UI',
+      'Calls live tools',
+      'Weather, stocks, and search',
+    ],
     fileCount: 17,
   },
   {
@@ -110,6 +143,11 @@ export const AGENTS: AgentLaunchData[] = [
       highlight: 'in Slack.',
       after: '',
     },
+    capabilities: [
+      'Answers questions in Slack',
+      'Inspects your schema',
+      'Runs read-only SQL',
+    ],
     fileCount: 13,
   },
   {
@@ -122,6 +160,12 @@ export const AGENTS: AgentLaunchData[] = [
       highlight: 'pull requests.',
       after: '',
     },
+    capabilities: [
+      'Finds keyword opportunities',
+      'Researches each target',
+      'Generates SEO pages',
+      'Opens a pull request',
+    ],
     fileCount: 19,
   },
   {
@@ -134,6 +178,11 @@ export const AGENTS: AgentLaunchData[] = [
       highlight: 'read-only',
       after: 'by design.',
     },
+    capabilities: [
+      'Answers questions in Slack',
+      'Lists your tables',
+      'Runs read-only SQL',
+    ],
     fileCount: 10,
   },
   {
@@ -146,6 +195,11 @@ export const AGENTS: AgentLaunchData[] = [
       highlight: 'every morning.',
       after: '',
     },
+    capabilities: [
+      'Scans the X profiles you pick',
+      "Surfaces the day's hot topics",
+      'Drafts three posts in Typefully',
+    ],
     fileCount: 24,
   },
   {
@@ -158,6 +212,11 @@ export const AGENTS: AgentLaunchData[] = [
       highlight: 'your inbox.',
       after: '',
     },
+    capabilities: [
+      'Scans the X profiles you pick',
+      "Surfaces the day's hot topics",
+      'Emails you an HTML digest',
+    ],
     fileCount: 18,
   },
 ]

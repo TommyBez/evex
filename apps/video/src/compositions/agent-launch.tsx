@@ -7,6 +7,7 @@ import {
   useCurrentFrame,
   useVideoConfig,
 } from 'remotion'
+import { focusPull } from '@/components/remocn/focus-pull'
 import { MicroScaleFade } from '@/components/remocn/micro-scale-fade'
 import { PerCharacterRise } from '@/components/remocn/per-character-rise'
 import { pushThrough } from '@/components/remocn/push-through'
@@ -16,6 +17,7 @@ import {
   TerminalSimulator,
 } from '@/components/remocn/terminal-simulator'
 import { whipPan } from '@/components/remocn/whip-pan'
+import { CapabilityList } from '@/components/video/capability-list'
 import { LogoSting } from '@/components/video/logo-sting'
 import { PayoffLine } from '@/components/video/payoff-line'
 import type { AgentLaunchData } from '@/data/agents'
@@ -37,20 +39,24 @@ export const AGENT_LAUNCH_FPS = 30
 export const AGENT_LAUNCH_WIDTH = 1280
 export const AGENT_LAUNCH_HEIGHT = 720
 
-const INTRO_FRAMES = 110
-const PAYOFF_FRAMES = 96
-const CTA_FRAMES = 122
-const OUTRO_FRAMES = 96
+const INTRO_FRAMES = 118
+const PAYOFF_FRAMES = 100
+const CAPABILITIES_FRAMES = 172
+const CTA_FRAMES = 128
+const OUTRO_FRAMES = 112
 const WHIP_PAN_FRAMES = 18
+const FOCUS_PULL_FRAMES = 26
 const PUSH_INTO_CTA_FRAMES = 22
 const PUSH_INTO_OUTRO_FRAMES = 22
 
 export const AGENT_LAUNCH_DURATION =
   INTRO_FRAMES +
   PAYOFF_FRAMES +
+  CAPABILITIES_FRAMES +
   CTA_FRAMES +
   OUTRO_FRAMES -
   WHIP_PAN_FRAMES -
+  FOCUS_PULL_FRAMES -
   PUSH_INTO_CTA_FRAMES -
   PUSH_INTO_OUTRO_FRAMES
 
@@ -169,6 +175,36 @@ const PayoffScene = ({ agent }: { agent: AgentLaunchData }) => (
   </SceneBase>
 )
 
+const CapabilitiesScene = ({ agent }: { agent: AgentLaunchData }) => (
+  <SceneBase shaderOpacity={0.5} shaderSpeed={0.5}>
+    <ScenePush zoomTo={1.04}>
+      <Sequence from={4} name="Capabilities kicker">
+        <div
+          style={{
+            inset: 0,
+            position: 'absolute',
+            transform: 'translateY(-150px)',
+          }}
+        >
+          <MicroScaleFade
+            color={TEXT_MUTED}
+            fontSize={24}
+            fontWeight={500}
+            text="What it does"
+          />
+        </div>
+      </Sequence>
+      <Sequence from={16} name="Capability list">
+        <CapabilityList
+          accent={agent.accent}
+          items={agent.capabilities ?? []}
+          textColor={TEXT_PRIMARY}
+        />
+      </Sequence>
+    </ScenePush>
+  </SceneBase>
+)
+
 const installLines = (agent: AgentLaunchData): TerminalLine[] => [
   {
     text: `npx shadcn@latest add @evex/${agent.slug}`,
@@ -265,6 +301,13 @@ export const AgentLaunch = ({ agent }: { agent: AgentLaunchData }) => (
       />
       <TransitionSeries.Sequence durationInFrames={PAYOFF_FRAMES}>
         <PayoffScene agent={agent} />
+      </TransitionSeries.Sequence>
+      <TransitionSeries.Transition
+        presentation={focusPull()}
+        timing={linearTiming({ durationInFrames: FOCUS_PULL_FRAMES })}
+      />
+      <TransitionSeries.Sequence durationInFrames={CAPABILITIES_FRAMES}>
+        <CapabilitiesScene agent={agent} />
       </TransitionSeries.Sequence>
       <TransitionSeries.Transition
         presentation={pushThrough()}
