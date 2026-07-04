@@ -18,6 +18,7 @@ import {
   TerminalSimulator,
 } from '@/components/remocn/terminal-simulator'
 import { whipPan } from '@/components/remocn/whip-pan'
+import { LogoSting } from '@/components/video/logo-sting'
 import { PayoffLine } from '@/components/video/payoff-line'
 import type { AgentLaunchData } from '@/data/agents'
 
@@ -34,20 +35,25 @@ export const AGENT_LAUNCH_FPS = 30
 export const AGENT_LAUNCH_WIDTH = 1280
 export const AGENT_LAUNCH_HEIGHT = 720
 
-const INTRO_FRAMES = 120
+const BRAND_FRAMES = 74
+const INTRO_FRAMES = 104
 const PAYOFF_FRAMES = 96
 const CTA_FRAMES = 150
+const PUSH_INTO_INTRO_FRAMES = 20
 const WHIP_PAN_FRAMES = 18
-const PUSH_THROUGH_FRAMES = 22
+const PUSH_INTO_CTA_FRAMES = 22
 
 export const AGENT_LAUNCH_DURATION =
+  BRAND_FRAMES +
   INTRO_FRAMES +
   PAYOFF_FRAMES +
   CTA_FRAMES -
+  PUSH_INTO_INTRO_FRAMES -
   WHIP_PAN_FRAMES -
-  PUSH_THROUGH_FRAMES
+  PUSH_INTO_CTA_FRAMES
 
 const BACKGROUND = '#050505'
+const BRAND_ACCENT = '#47a8ff'
 const TEXT_PRIMARY = '#fafafa'
 const TEXT_MUTED = '#a1a1aa'
 const TEXT_FAINT = '#71717a'
@@ -97,8 +103,48 @@ const SceneBase = ({
   </AbsoluteFill>
 )
 
+const BRAND_TAGLINE_IN = 46
+const BRAND_TAGLINE_SETTLED = 62
+
+const BrandTagline = () => {
+  const frame = useCurrentFrame()
+  const opacity = interpolate(
+    frame,
+    [BRAND_TAGLINE_IN, BRAND_TAGLINE_SETTLED],
+    [0, 1],
+    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
+  )
+  return (
+    <div
+      style={{
+        color: TEXT_MUTED,
+        fontFamily: `${sansFamily}, -apple-system, sans-serif`,
+        fontSize: 24,
+        fontWeight: 500,
+        inset: 0,
+        opacity,
+        position: 'absolute',
+        textAlign: 'center',
+        transform: 'translateY(96px)',
+        top: '50%',
+      }}
+    >
+      The agent registry
+    </div>
+  )
+}
+
+const BrandScene = () => (
+  <SceneBase shaderOpacity={0.5} shaderSpeed={0.5}>
+    <ScenePush zoomTo={1.05}>
+      <LogoSting accent={BRAND_ACCENT} unit={46} />
+      <BrandTagline />
+    </ScenePush>
+  </SceneBase>
+)
+
 const IntroScene = ({ agent }: { agent: AgentLaunchData }) => (
-  <SceneBase shaderOpacity={0.6} shaderSpeed={0.6}>
+  <SceneBase shaderOpacity={0.58} shaderSpeed={0.6}>
     <ScenePush zoomTo={1.06}>
       <Sequence from={4} name="Kicker">
         <div
@@ -112,11 +158,11 @@ const IntroScene = ({ agent }: { agent: AgentLaunchData }) => (
             color={TEXT_MUTED}
             fontSize={26}
             fontWeight={500}
-            text="New in the evex registry"
+            text="New in the registry"
           />
         </div>
       </Sequence>
-      <Sequence from={16} name="Agent name">
+      <Sequence from={14} name="Agent name">
         <PerCharacterRise
           color={TEXT_PRIMARY}
           distance={44}
@@ -125,7 +171,7 @@ const IntroScene = ({ agent }: { agent: AgentLaunchData }) => (
           text={agent.title}
         />
       </Sequence>
-      <Sequence from={50} name="Category">
+      <Sequence from={48} name="Category">
         <div
           style={{
             inset: 0,
@@ -162,38 +208,6 @@ const PayoffScene = ({ agent }: { agent: AgentLaunchData }) => (
   </SceneBase>
 )
 
-const CTA_CAPTION_IN = 92
-const CTA_CAPTION_SETTLED = 110
-
-const CtaCaption = () => {
-  const frame = useCurrentFrame()
-  const opacity = interpolate(
-    frame,
-    [CTA_CAPTION_IN, CTA_CAPTION_SETTLED],
-    [0, 1],
-    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
-  )
-  return (
-    <div
-      style={{
-        bottom: 44,
-        color: TEXT_FAINT,
-        fontFamily: `${sansFamily}, -apple-system, sans-serif`,
-        fontSize: 22,
-        fontWeight: 500,
-        left: 0,
-        opacity,
-        position: 'absolute',
-        right: 0,
-        textAlign: 'center',
-      }}
-    >
-      Browse every agent at{' '}
-      <span style={{ color: TEXT_PRIMARY, fontWeight: 600 }}>evex.sh</span>
-    </div>
-  )
-}
-
 const installLines = (agent: AgentLaunchData): TerminalLine[] => [
   {
     text: `npx shadcn@latest add @evex/${agent.slug}`,
@@ -214,13 +228,38 @@ const CtaScene = ({ agent }: { agent: AgentLaunchData }) => (
         title="~/my-app"
       />
     </ScenePush>
-    <CtaCaption />
+    <Sequence from={90} name="Brand sign-off">
+      <div
+        style={{
+          bottom: 52,
+          height: 40,
+          left: 0,
+          position: 'absolute',
+          right: 0,
+        }}
+      >
+        <LogoSting
+          accent={BRAND_ACCENT}
+          unit={12}
+          wordmark="evex.sh"
+          wordmarkColor={TEXT_FAINT}
+          wordmarkStart={8}
+        />
+      </div>
+    </Sequence>
   </AbsoluteFill>
 )
 
 export const AgentLaunch = ({ agent }: { agent: AgentLaunchData }) => (
   <AbsoluteFill style={fontVariables}>
     <TransitionSeries>
+      <TransitionSeries.Sequence durationInFrames={BRAND_FRAMES}>
+        <BrandScene />
+      </TransitionSeries.Sequence>
+      <TransitionSeries.Transition
+        presentation={pushThrough()}
+        timing={linearTiming({ durationInFrames: PUSH_INTO_INTRO_FRAMES })}
+      />
       <TransitionSeries.Sequence durationInFrames={INTRO_FRAMES}>
         <IntroScene agent={agent} />
       </TransitionSeries.Sequence>
@@ -233,7 +272,7 @@ export const AgentLaunch = ({ agent }: { agent: AgentLaunchData }) => (
       </TransitionSeries.Sequence>
       <TransitionSeries.Transition
         presentation={pushThrough()}
-        timing={linearTiming({ durationInFrames: PUSH_THROUGH_FRAMES })}
+        timing={linearTiming({ durationInFrames: PUSH_INTO_CTA_FRAMES })}
       />
       <TransitionSeries.Sequence durationInFrames={CTA_FRAMES}>
         <CtaScene agent={agent} />
