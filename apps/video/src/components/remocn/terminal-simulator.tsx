@@ -245,11 +245,19 @@ function TerminalLineRow({
   // Chunked reveal: Math.floor of an interpolated count, then snapped to the
   // nearest multiple of `chunkSize`. This is what gives the bursty terminal
   // feel — text doesn't drip, it lurches.
+  // The reveal window matches the throughput the parent's `starts` schedule
+  // assumes (chunkSize * charsPerFrame chars/frame), so a line finishes typing
+  // exactly when the next line is scheduled to begin — no overlap.
   const linearRevealed = Math.floor(
-    interpolate(localFrame, [0, totalChars / charsPerFrame], [0, totalChars], {
-      extrapolateLeft: "clamp",
-      extrapolateRight: "clamp",
-    }),
+    interpolate(
+      localFrame,
+      [0, totalChars / (charsPerFrame * chunkSize)],
+      [0, totalChars],
+      {
+        extrapolateLeft: "clamp",
+        extrapolateRight: "clamp",
+      },
+    ),
   );
   const revealed = Math.min(
     totalChars,

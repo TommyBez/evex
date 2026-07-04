@@ -22,6 +22,7 @@ import type { AgentLaunchData } from '@/data/agents'
 import {
   GEIST_MONO,
   GEIST_SANS,
+  geistMonoStack,
   geistPixelStack,
   geistSansStack,
 } from '@/fonts'
@@ -42,25 +43,28 @@ export const AGENT_LAUNCH_HEIGHT = 720
 const BRAND_FRAMES = 74
 const INTRO_FRAMES = 104
 const PAYOFF_FRAMES = 96
-const CTA_FRAMES = 150
+const CTA_FRAMES = 122
+const OUTRO_FRAMES = 96
 const PUSH_INTO_INTRO_FRAMES = 20
 const WHIP_PAN_FRAMES = 18
 const PUSH_INTO_CTA_FRAMES = 22
+const PUSH_INTO_OUTRO_FRAMES = 22
 
 export const AGENT_LAUNCH_DURATION =
   BRAND_FRAMES +
   INTRO_FRAMES +
   PAYOFF_FRAMES +
-  CTA_FRAMES -
+  CTA_FRAMES +
+  OUTRO_FRAMES -
   PUSH_INTO_INTRO_FRAMES -
   WHIP_PAN_FRAMES -
-  PUSH_INTO_CTA_FRAMES
+  PUSH_INTO_CTA_FRAMES -
+  PUSH_INTO_OUTRO_FRAMES
 
 const BACKGROUND = '#050505'
 const BRAND_ACCENT = '#47a8ff'
 const TEXT_PRIMARY = '#fafafa'
 const TEXT_MUTED = '#a1a1aa'
-const TEXT_FAINT = '#71717a'
 
 const titleFontSize = (title: string): number => {
   if (title.length <= 16) {
@@ -232,27 +236,68 @@ const CtaScene = ({ agent }: { agent: AgentLaunchData }) => (
         title="~/my-app"
       />
     </ScenePush>
-    <Sequence from={90} name="Brand sign-off">
+  </AbsoluteFill>
+)
+
+const OUTRO_ADDRESS_IN = 44
+const OUTRO_ADDRESS_SETTLED = 60
+
+const OutroAddress = () => {
+  const frame = useCurrentFrame()
+  const opacity = interpolate(
+    frame,
+    [OUTRO_ADDRESS_IN, OUTRO_ADDRESS_SETTLED],
+    [0, 1],
+    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
+  )
+  const y = interpolate(
+    frame,
+    [OUTRO_ADDRESS_IN, OUTRO_ADDRESS_SETTLED],
+    [10, 0],
+    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
+  )
+  return (
+    <div
+      style={{
+        color: TEXT_MUTED,
+        fontFamily: geistMonoStack,
+        fontSize: 26,
+        fontWeight: 500,
+        inset: 0,
+        letterSpacing: '0.01em',
+        opacity,
+        position: 'absolute',
+        textAlign: 'center',
+        top: '50%',
+        transform: `translateY(${104 + y}px)`,
+      }}
+    >
+      evex.sh
+    </div>
+  )
+}
+
+// Closing brand card: the logo animates in (mark assembles + wordmark builds),
+// with the product address settling underneath, then a generous hold.
+const OutroScene = () => (
+  <SceneBase shaderOpacity={0.5} shaderSpeed={0.5}>
+    <ScenePush zoomTo={1.04}>
       <div
         style={{
-          bottom: 52,
-          height: 40,
-          left: 0,
+          inset: 0,
           position: 'absolute',
-          right: 0,
+          transform: 'translateY(-24px)',
         }}
       >
         <LogoSting
           accent={BRAND_ACCENT}
           fontFamily={geistPixelStack}
-          unit={12}
-          wordmark="evex.sh"
-          wordmarkColor={TEXT_FAINT}
-          wordmarkStart={8}
+          unit={44}
         />
       </div>
-    </Sequence>
-  </AbsoluteFill>
+      <OutroAddress />
+    </ScenePush>
+  </SceneBase>
 )
 
 export const AgentLaunch = ({ agent }: { agent: AgentLaunchData }) => (
@@ -281,6 +326,13 @@ export const AgentLaunch = ({ agent }: { agent: AgentLaunchData }) => (
       />
       <TransitionSeries.Sequence durationInFrames={CTA_FRAMES}>
         <CtaScene agent={agent} />
+      </TransitionSeries.Sequence>
+      <TransitionSeries.Transition
+        presentation={pushThrough()}
+        timing={linearTiming({ durationInFrames: PUSH_INTO_OUTRO_FRAMES })}
+      />
+      <TransitionSeries.Sequence durationInFrames={OUTRO_FRAMES}>
+        <OutroScene />
       </TransitionSeries.Sequence>
     </TransitionSeries>
   </AbsoluteFill>
