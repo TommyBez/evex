@@ -44,6 +44,9 @@ Slack channel.
 - verify protected Vercel previews through `verify_vercel_preview` without
   exposing `VERCEL_AUTOMATION_BYPASS_SECRET`
 - smoke-test `/eve/v1/health`, `/eve/v1/session`, streams, and channel routes
+- fan out independent read-only subtasks through Eve's built-in `agent` tool
+- return a structured delivery report when called in task mode (subagent,
+  schedule, or remote job)
 
 The `bash` tool stays available for ordinary shell work. It denies Vercel CLI,
 Eve deploy/link, Eve channel setup, and Vercel token commands, so those actions
@@ -79,6 +82,44 @@ environment variables inside the sandbox, or generated files.
 `VERCEL_TOKEN` also authorizes the Vercel MCP connection. `VERCEL_MCP_URL`
 defaults to `https://mcp.vercel.com`; override it only when Vercel publishes or
 you operate a different compatible MCP endpoint.
+
+## Runtime status and delivery evidence
+
+Every turn, a framework-resolved "Runtime status" block is appended to the
+agent's instructions by `agent/instructions/runtime-status.ts`. It reports:
+
+- which deployment credentials are present in the app runtime (presence only,
+  never values), so the agent plans around missing setup instead of failing
+  mid-flow
+- the recorded outcome of every `run_eve_cli` `info`/`build`/`eval` call this
+  session, captured by the `record-check-evidence` hook from actual tool
+  results
+
+The agent quotes that recorded evidence in the `reason` field of deploy
+approvals, so the approver decides with facts rather than the model's
+recollection. The human approval stays the only gate.
+
+## Use as a remote agent
+
+`agent/agent.ts` declares an `outputSchema`, so task-mode runs (subagents,
+schedules, remote jobs) return a structured delivery report: summary, changed
+files, command outcomes, deployment URL and target, verification evidence, and
+blockers. Another Eve app can call a deployed builder as a typed subagent:
+
+```ts
+// agent/subagents/eve-agent-builder/agent.ts (in the calling app)
+import { defineRemoteAgent } from "eve";
+import { vercelOidc } from "eve/agents/auth";
+
+export default defineRemoteAgent({
+  url: "https://your-eve-agent-builder.vercel.app",
+  description:
+    "Builds, tests, and deploys Eve agents in its own workspace. Send one complete, self-contained request.",
+  auth: vercelOidc(),
+});
+```
+
+Interactive chat turns are unaffected by the schema.
 
 ## Vercel MCP
 

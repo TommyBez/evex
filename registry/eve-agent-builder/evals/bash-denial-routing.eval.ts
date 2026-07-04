@@ -5,6 +5,7 @@ import { defineEval } from "eve/evals";
 export default defineEval({
   description:
     "Routes a denied raw Vercel CLI command through run_vercel_cli instead of retrying bash.",
+  tags: ["routing"],
   async test(t) {
     await t.send(`
 Continue the preview deploy.
