@@ -1,8 +1,11 @@
+import generatedCatalog from '../generated/catalog.json'
 import { itemLoaders } from '../generated/items'
-import { getRegistryCatalog } from './catalog'
 import type { RegistryCatalog, RegistryItem } from './types'
 
-const catalog = getRegistryCatalog()
+// The generator validates every item against the Zod schema before emitting
+// the artifacts, so the JSON can be trusted to match the public types (the
+// contract tests in tests/contract.test.ts re-verify this on every run).
+const catalog = generatedCatalog as unknown as RegistryCatalog
 
 export const EVEX_REGISTRY_NAME = catalog.name
 export const EVEX_REGISTRY_NAMESPACE = '@evex'

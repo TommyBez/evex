@@ -25,11 +25,7 @@ import {
 import type { AgentRegistryFile, AgentWithAuthor } from '@/lib/agent-types'
 import { parseDependencies } from '@/lib/agents'
 import { applyInstallCounts, getAgentRuntimeState } from '@/lib/data/agents'
-import {
-  createPageMetadata,
-  siteConfig,
-  siteTwitterHandle,
-} from '@/lib/metadata'
+import { siteConfig, siteTwitterHandle } from '@/lib/metadata'
 import {
   getStaticAgentBySlug,
   getStaticAgentFiles,
@@ -65,12 +61,10 @@ export async function generateMetadata({
   const { slug } = await params
   const agent = getStaticAgentBySlug(slug)
   if (!agent) {
-    return createPageMetadata({
-      title: 'Agent not found',
-      description: 'This evex registry item is no longer available.',
-      path: `/agents/${slug}`,
-      noIndex: true,
-    })
+    // Unknown slugs render the not-found page. With cacheComponents the
+    // fallback shell still streams a 200, but Next injects a robots noindex
+    // meta into that response, keeping arbitrary URLs out of the index.
+    notFound()
   }
 
   const path = `/agents/${agent.slug}`
@@ -121,9 +115,9 @@ export default async function AgentDetailPage({
 }: {
   params: Promise<{ slug: string }>
 }) {
-  // Resolve the agent before the Suspense boundary: notFound() inside a
-  // streamed subtree fires after the 200 status is already sent, which
-  // turns every unknown slug into a soft 404.
+  // Resolve the agent before the Suspense boundary so unknown slugs render
+  // the not-found page (with its noindex meta) instead of streaming the
+  // agent skeleton first.
   const { slug } = await params
   const agent = getStaticAgentBySlug(slug)
   if (!agent) {

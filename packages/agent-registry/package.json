@@ -4,8 +4,7 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts",
-    "./catalog": "./src/catalog.ts"
+    ".": "./src/index.ts"
   },
   "scripts": {
     "build": "node scripts/generate-registry.mts",

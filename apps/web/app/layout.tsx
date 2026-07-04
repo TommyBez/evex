@@ -5,7 +5,6 @@ import { GeistMono } from 'geist/font/mono'
 import { GeistPixelSquare } from 'geist/font/pixel'
 import { GeistSans } from 'geist/font/sans'
 import type { Metadata, Viewport } from 'next'
-import { Suspense } from 'react'
 import { JsonLd } from '@/components/json-ld'
 import { ThemeProvider } from '@/components/theme-provider'
 import { isProduction } from '@/lib/env'
@@ -108,14 +107,7 @@ export default function RootLayout({
         <ThemeProvider>
           <TooltipProvider>{children}</TooltipProvider>
           <Toaster />
-          {/* Analytics reads useSearchParams(); without a Suspense boundary
-              it poisons fully dynamic renders (e.g. the 404 path for unknown
-              slugs), turning them into 500s. */}
-          {isProduction && (
-            <Suspense fallback={null}>
-              <Analytics />
-            </Suspense>
-          )}
+          {isProduction && <Analytics />}
         </ThemeProvider>
       </body>
     </html>
