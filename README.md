@@ -113,6 +113,10 @@ variables are validated at startup. Sign-in uses email one-time codes with
 optional GitHub OAuth. See [AGENTS.md](./AGENTS.md) for the full environment
 and setup notes.
 
+## License
+
+MIT © [TommyBez](https://github.com/TommyBez)
+
 ## Star history
 
 <p align="center">
