@@ -1,3 +1,4 @@
 packages:
+  - apps/video
   - apps/web
   - packages/*
