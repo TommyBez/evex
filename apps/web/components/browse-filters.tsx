@@ -72,6 +72,10 @@ export function BrowseFilters() {
   const [isPending, startTransition] = useTransition()
   const searchInputRef = useRef<HTMLInputElement>(null)
   const searchTimeoutRef = useRef<number | null>(null)
+  // Path of the last navigation this component asked for. Anything else that
+  // turns up in the params (back/forward, an external link) changed the
+  // applied filters from outside.
+  const lastRequestedPathRef = useRef<string | null>(null)
   // Last search term reported to analytics. Seeded from the URL so landing on
   // /?q=foo does not report a search the visitor never typed.
   const trackedSearchRef = useRef(params.get('q') ?? '')
@@ -89,6 +93,7 @@ export function BrowseFilters() {
   const replaceFilters = useCallback(
     (nextSearch: string, nextCategory: string, nextSort: AgentSort) => {
       const path = getFiltersPath(nextSearch, nextCategory, nextSort)
+      lastRequestedPathRef.current = path
 
       startTransition(() => {
         router.replace(path, { scroll: false })
@@ -115,6 +120,15 @@ export function BrowseFilters() {
   // Adopt external URL changes (back/forward navigation, "clear all") unless
   // the user is actively typing in the field.
   useEffect(() => {
+    const appliedPath = getFiltersPath(activeSearch, activeCategory, activeSort)
+    if (appliedPath !== lastRequestedPathRef.current) {
+      lastRequestedPathRef.current = appliedPath
+      // The applied filters moved under us. A pending debounce still carries
+      // the category and sort captured when it was scheduled, so letting it
+      // run would rewrite the URL and report the search against filters the
+      // visitor already navigated away from.
+      clearPendingSearchSync()
+    }
     // Always follow the applied query, even while typing: re-typing a term
     // after it was cleared elsewhere is a new search and must be reported.
     trackedSearchRef.current = activeSearch
@@ -122,7 +136,7 @@ export function BrowseFilters() {
       return
     }
     setSearchValue(activeSearch)
-  }, [activeSearch])
+  }, [activeSearch, activeCategory, activeSort, clearPendingSearchSync])
 
   // Press "/" anywhere on the page to jump into the search field, matching
   // the muscle memory from GitHub and most doc sites.
@@ -229,10 +243,8 @@ export function BrowseFilters() {
   const clearAll = useCallback(() => {
     clearPendingSearchSync()
     setSearchValue('')
-    startTransition(() => {
-      router.replace('/', { scroll: false })
-    })
-  }, [clearPendingSearchSync, router])
+    replaceFilters('', DEFAULT_CATEGORY, DEFAULT_AGENT_SORT)
+  }, [clearPendingSearchSync, replaceFilters])
 
   const hasCategory = selectedCategory !== DEFAULT_CATEGORY
   const hasSort = selectedSort !== DEFAULT_AGENT_SORT

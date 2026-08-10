@@ -9,7 +9,7 @@ const LOCAL_HOSTNAMES = new Set(['localhost', '127.0.0.1'])
 // Dev servers and end-to-end runs must never reach the analytics project:
 // local traffic is not product usage, and mixing it in silently inflates
 // every funnel and baseline we later measure against.
-function isLocalTraffic(): boolean {
+const isLocalTraffic = (): boolean => {
   if (process.env.NODE_ENV === 'development') {
     return true
   }

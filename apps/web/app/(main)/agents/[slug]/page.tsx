@@ -144,7 +144,8 @@ async function AgentDetailContent({ agent }: { agent: AgentWithAuthor }) {
   ])
   // Installs by the agent's own author are not demand. Every install-intent
   // event on this page carries this flag so the north star metric can exclude
-  // them. Signed out, or either username missing, is not the author.
+  // them. Null when authorship cannot be resolved (signed out, or either
+  // username missing): unknown is never reported as a verified non-author.
   const viewerIsAuthor = isSameGithubUsername(
     viewer?.githubUsername,
     agent.authorUsername,
@@ -402,7 +403,7 @@ async function AgentDetailRuntimeSection({
   viewerIsAuthor,
 }: {
   agent: AgentWithAuthor
-  viewerIsAuthor: boolean
+  viewerIsAuthor: boolean | null
 }) {
   const runtimeState = await getAgentRuntimeState([agent.id])
   const installCount = runtimeState.installCounts.get(agent.id) ?? 0
