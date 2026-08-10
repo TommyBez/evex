@@ -18,6 +18,7 @@ node_modules/eve/docs/
 Start with `node_modules/eve/docs/README.md`. **Done when** you have identified
 the guide pages for every slot you will touch in this task.
 
-If `eve` is not installed yet, install it (`npm install eve@latest ai`) or
-scaffold with `npx eve@latest init <agent-name>`, then read the bundled docs
-before writing code.
+If `eve` is not installed yet, use this skill's pinned bootstrap baseline
+(`npm install eve@0.31.3 ai@7.0.38`) or scaffold with
+`npx eve@0.31.3 init <agent-name>`, then read the bundled docs before writing
+code.

@@ -15,6 +15,8 @@ const ROUTE_AUTHORIZATION_ENV = 'EVE_ROUTE_AUTHORIZATION'
 const VERIFICATION_ALLOWED_ORIGINS_ENV = 'EVE_VERIFICATION_ALLOWED_ORIGINS'
 const BROKERED_BYPASS_PLACEHOLDER = 'brokeredvercelbypass'
 const BROKERED_ROUTE_AUTH_PLACEHOLDER = 'brokeredeveauthorization'
+const VERIFICATION_CONNECT_TIMEOUT_SECONDS = 10
+const VERIFICATION_REQUEST_TIMEOUT_SECONDS = 30
 
 const PARSE_SESSION_ID_SCRIPT =
   'let raw = ""; process.stdin.on("data", (chunk) => { raw += chunk; }); process.stdin.on("end", () => { try { const body = JSON.parse(raw); process.stdout.write(typeof body.sessionId === "string" ? body.sessionId : ""); } catch {} });'
@@ -215,14 +217,14 @@ export function buildVerificationCommand({
     `ORIGIN=${shellQuote(origin)}`,
     `SESSION_BODY=${shellQuote(sessionBody)}`,
     'echo "=== health ==="',
-    `HEALTH_RESPONSE=$(curl --disable --silent --show-error --write-out "\\nHEALTH_HTTP_STATUS:%{http_code}\\n" ${bypassHeaderOption} "$ORIGIN/eve/v1/health")`,
+    `HEALTH_RESPONSE=$(curl --disable --silent --show-error --connect-timeout ${VERIFICATION_CONNECT_TIMEOUT_SECONDS} --max-time ${VERIFICATION_REQUEST_TIMEOUT_SECONDS} --write-out "\\nHEALTH_HTTP_STATUS:%{http_code}\\n" ${bypassHeaderOption} "$ORIGIN/eve/v1/health")`,
     'HEALTH_CURL_EXIT=$?',
     'printf "%s\\n" "$HEALTH_RESPONSE"',
     'echo "HEALTH_CURL_EXIT:$HEALTH_CURL_EXIT"',
     'HEALTH_HTTP_STATUS=$(printf "%s\\n" "$HEALTH_RESPONSE" | sed -n "s/^HEALTH_HTTP_STATUS://p" | tail -n 1)',
     `HEALTH_HTTP_STATUS=\${HEALTH_HTTP_STATUS:-000}`,
     'echo "=== session ==="',
-    `SESSION_RESPONSE=$(curl --disable --silent --show-error --write-out "\\nSESSION_HTTP_STATUS:%{http_code}\\n" ${authenticatedHeaderOptions} -H "content-type: application/json" -d "$SESSION_BODY" "$ORIGIN/eve/v1/session")`,
+    `SESSION_RESPONSE=$(curl --disable --silent --show-error --connect-timeout ${VERIFICATION_CONNECT_TIMEOUT_SECONDS} --max-time ${VERIFICATION_REQUEST_TIMEOUT_SECONDS} --write-out "\\nSESSION_HTTP_STATUS:%{http_code}\\n" ${authenticatedHeaderOptions} -H "content-type: application/json" -d "$SESSION_BODY" "$ORIGIN/eve/v1/session")`,
     'SESSION_CURL_EXIT=$?',
     'printf "%s\\n" "$SESSION_RESPONSE"',
     'echo "SESSION_CURL_EXIT:$SESSION_CURL_EXIT"',

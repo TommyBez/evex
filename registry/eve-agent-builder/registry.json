@@ -155,7 +155,7 @@
         "slug": "eve-agent-builder",
         "category": "coding",
         "createdAt": "2026-06-30T10:23:00.000Z",
-        "updatedAt": "2026-07-03T00:00:00.000Z",
+        "updatedAt": "2026-08-10T00:00:00.000Z",
         "docs": {
           "overview": [
             "Eve Agent Builder turns a plain request like 'create an agent that answers onboarding questions' into a tested, deployed Eve agent, so you review approvals and results instead of running the delivery checklist yourself. Install it into an existing Eve app and talk to it through whatever channel that app already exposes: web chat, the Eve session API, Slack, or GitHub.",

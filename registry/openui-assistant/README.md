@@ -29,7 +29,7 @@ npx shadcn@latest add @evex/openui-assistant
 Install the registry dependencies in your Eve app if they are not already present:
 
 ```bash
-npm install @openuidev/react-ui @openuidev/react-lang ai eve just-bash zod
+npm install @openuidev/react-lang@^0.2.8 @openuidev/react-ui@^0.12.1 ai@^7.0.38 eve@^0.31.3 just-bash@^3.0.2 zod@^4.4.3
 ```
 
 ## Configuration

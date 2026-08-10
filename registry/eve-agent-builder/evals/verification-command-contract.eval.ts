@@ -27,6 +27,18 @@ const healthCommand =
   brokeredCommand
     .split('\n')
     .find((line) => line.startsWith('HEALTH_RESPONSE=')) ?? ''
+const sessionCommand =
+  brokeredCommand
+    .split('\n')
+    .find((line) => line.startsWith('SESSION_RESPONSE=')) ?? ''
+const healthStatusPredicate =
+  brokeredCommand
+    .split('\n')
+    .find((line) => line.startsWith('HEALTH_OK=')) ?? ''
+const sessionStatusPredicate =
+  brokeredCommand
+    .split('\n')
+    .find((line) => line.startsWith('SESSION_OK=')) ?? ''
 
 const curlCommandLines = brokeredCommand
   .split('\n')
@@ -78,6 +90,34 @@ export default defineEval({
           typeof command === 'string' &&
           !command.includes(BROKERED_ROUTE_AUTH_HEADER),
         'does not send route auth to the public health endpoint',
+      ),
+    )
+    t.check(
+      [healthCommand, sessionCommand],
+      satisfies(
+        (commands) =>
+          Array.isArray(commands) &&
+          commands.every(
+            (command) =>
+              typeof command === 'string' &&
+              command.includes('--connect-timeout 10') &&
+              command.includes('--max-time 30'),
+          ),
+        'bounds health and session connection and request time',
+      ),
+    )
+    t.check(
+      [healthStatusPredicate, sessionStatusPredicate],
+      satisfies(
+        (predicates) =>
+          Array.isArray(predicates) &&
+          predicates.every(
+            (predicate) =>
+              typeof predicate === 'string' &&
+              predicate.includes('_CURL_EXIT" -eq 0') &&
+              !predicate.includes('_CURL_EXIT" -eq 28'),
+          ),
+        'treats health and session timeouts as verification failures',
       ),
     )
     t.check(
