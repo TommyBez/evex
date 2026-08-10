@@ -11,10 +11,14 @@ export function AgentCard({
   agent,
   isAuthenticated = false,
   isFavorite = false,
+  viewerIsAuthor = null,
 }: {
   agent: AgentWithAuthor
   isAuthenticated?: boolean
   isFavorite?: boolean
+  // Null when the caller has no viewer identity to compare against, so card
+  // events report "unknown authorship" rather than claiming non-author.
+  viewerIsAuthor?: boolean | null
 }) {
   return (
     <Card className="group relative flex h-full w-full min-w-0 flex-col gap-4 rounded-md border border-border p-5 shadow-[var(--shadow-card)] ring-0 transition-[background-color,border-color,box-shadow,transform] focus-within:border-input focus-within:bg-muted/40 focus-within:ring-2 focus-within:ring-ring/20 hover:border-input hover:bg-muted/40 hover:shadow-[var(--shadow-popover)] motion-safe:hover:-translate-y-0.5">
@@ -39,11 +43,13 @@ export function AgentCard({
             slug={agent.slug}
           />
           <FavoriteButton
+            agentAuthor={agent.authorUsername}
             agentId={agent.id}
             className="relative z-10"
             initialIsFavorite={isFavorite}
             isAuthenticated={isAuthenticated}
             key={`${agent.id}:${isFavorite}`}
+            viewerIsAuthor={viewerIsAuthor}
           />
         </div>
       </div>

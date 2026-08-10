@@ -12,6 +12,7 @@ import { NativeSelect, NativeSelectOption } from '@evex/ui/native-select'
 import { ToggleGroup, ToggleGroupItem } from '@evex/ui/toggle-group'
 import { Search, X } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import posthog from 'posthog-js'
 import { useCallback, useEffect, useRef, useState, useTransition } from 'react'
 import {
   AGENT_CATEGORIES,
@@ -71,6 +72,13 @@ export function BrowseFilters() {
   const [isPending, startTransition] = useTransition()
   const searchInputRef = useRef<HTMLInputElement>(null)
   const searchTimeoutRef = useRef<number | null>(null)
+  // Path of the last navigation this component asked for. Anything else that
+  // turns up in the params (back/forward, an external link) changed the
+  // applied filters from outside.
+  const lastRequestedPathRef = useRef<string | null>(null)
+  // Last search term reported to analytics. Seeded from the URL so landing on
+  // /?q=foo does not report a search the visitor never typed.
+  const trackedSearchRef = useRef(params.get('q') ?? '')
 
   const activeCategory = params.get('category') ?? DEFAULT_CATEGORY
   const activeSearch = params.get('q') ?? ''
@@ -85,6 +93,7 @@ export function BrowseFilters() {
   const replaceFilters = useCallback(
     (nextSearch: string, nextCategory: string, nextSort: AgentSort) => {
       const path = getFiltersPath(nextSearch, nextCategory, nextSort)
+      lastRequestedPathRef.current = path
 
       startTransition(() => {
         router.replace(path, { scroll: false })
@@ -111,11 +120,23 @@ export function BrowseFilters() {
   // Adopt external URL changes (back/forward navigation, "clear all") unless
   // the user is actively typing in the field.
   useEffect(() => {
+    const appliedPath = getFiltersPath(activeSearch, activeCategory, activeSort)
+    if (appliedPath !== lastRequestedPathRef.current) {
+      lastRequestedPathRef.current = appliedPath
+      // The applied filters moved under us. A pending debounce still carries
+      // the category and sort captured when it was scheduled, so letting it
+      // run would rewrite the URL and report the search against filters the
+      // visitor already navigated away from.
+      clearPendingSearchSync()
+    }
+    // Always follow the applied query, even while typing: re-typing a term
+    // after it was cleared elsewhere is a new search and must be reported.
+    trackedSearchRef.current = activeSearch
     if (document.activeElement === searchInputRef.current) {
       return
     }
     setSearchValue(activeSearch)
-  }, [activeSearch])
+  }, [activeSearch, activeCategory, activeSort, clearPendingSearchSync])
 
   // Press "/" anywhere on the page to jump into the search field, matching
   // the muscle memory from GitHub and most doc sites.
@@ -139,15 +160,43 @@ export function BrowseFilters() {
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [])
 
+  // Reports the term that is actually applied to the catalog. Every path that
+  // commits `searchValue` to the URL calls this, so a term is never lost when a
+  // category or sort change pre-empts the pending debounce. Keystrokes and
+  // mounts never reach here, and an unchanged term is ignored.
+  const trackSearchIfChanged = useCallback(
+    (nextSearch: string, category: string, sort: AgentSort) => {
+      if (nextSearch === trackedSearchRef.current) {
+        return
+      }
+      trackedSearchRef.current = nextSearch
+      posthog.capture('catalog_search', {
+        category,
+        has_query: nextSearch.length > 0,
+        search_query: nextSearch,
+        sort,
+      })
+    },
+    [],
+  )
+
   const scheduleSearchSync = useCallback(
     (nextSearch: string) => {
       clearPendingSearchSync()
       searchTimeoutRef.current = window.setTimeout(() => {
-        replaceFilters(nextSearch, selectedCategory, selectedSort)
         searchTimeoutRef.current = null
+        replaceFilters(nextSearch, selectedCategory, selectedSort)
+        // Fires on the settled term only: the debounce keeps keystrokes out.
+        trackSearchIfChanged(nextSearch, selectedCategory, selectedSort)
       }, SEARCH_URL_SYNC_DELAY_MS)
     },
-    [clearPendingSearchSync, replaceFilters, selectedCategory, selectedSort],
+    [
+      clearPendingSearchSync,
+      replaceFilters,
+      selectedCategory,
+      selectedSort,
+      trackSearchIfChanged,
+    ],
   )
 
   const clearSearch = useCallback(() => {
@@ -158,27 +207,44 @@ export function BrowseFilters() {
 
   const changeCategory = useCallback(
     (nextCategory: string) => {
+      // Picking a category also commits whatever is in the search box, so the
+      // pending debounce is dropped and the term is reported here instead,
+      // against the category that is actually being applied.
       clearPendingSearchSync()
       replaceFilters(searchValue, nextCategory, selectedSort)
+      trackSearchIfChanged(searchValue, nextCategory, selectedSort)
     },
-    [clearPendingSearchSync, searchValue, replaceFilters, selectedSort],
+    [
+      clearPendingSearchSync,
+      searchValue,
+      replaceFilters,
+      selectedSort,
+      trackSearchIfChanged,
+    ],
   )
 
   const changeSort = useCallback(
     (nextSort: AgentSort) => {
+      // Same as changing category: this commits the current search box value,
+      // so the term is reported against the sort that is actually applied.
       clearPendingSearchSync()
       replaceFilters(searchValue, selectedCategory, nextSort)
+      trackSearchIfChanged(searchValue, selectedCategory, nextSort)
     },
-    [clearPendingSearchSync, searchValue, replaceFilters, selectedCategory],
+    [
+      clearPendingSearchSync,
+      searchValue,
+      replaceFilters,
+      selectedCategory,
+      trackSearchIfChanged,
+    ],
   )
 
   const clearAll = useCallback(() => {
     clearPendingSearchSync()
     setSearchValue('')
-    startTransition(() => {
-      router.replace('/', { scroll: false })
-    })
-  }, [clearPendingSearchSync, router])
+    replaceFilters('', DEFAULT_CATEGORY, DEFAULT_AGENT_SORT)
+  }, [clearPendingSearchSync, replaceFilters])
 
   const hasCategory = selectedCategory !== DEFAULT_CATEGORY
   const hasSort = selectedSort !== DEFAULT_AGENT_SORT

@@ -24,7 +24,9 @@ import {
 } from '@/lib/agent-detail'
 import type { AgentRegistryFile, AgentWithAuthor } from '@/lib/agent-types'
 import { parseDependencies } from '@/lib/agents'
+import { getCurrentUserIdentity } from '@/lib/current-user'
 import { applyInstallCounts, getAgentRuntimeState } from '@/lib/data/agents'
+import { isSameGithubUsername } from '@/lib/github'
 import { siteConfig, siteTwitterHandle } from '@/lib/metadata'
 import {
   getStaticAgentBySlug,
@@ -133,7 +135,21 @@ export default async function AgentDetailPage({
 }
 
 async function AgentDetailContent({ agent }: { agent: AgentWithAuthor }) {
-  const files = await getStaticAgentFiles(agent.slug)
+  // Resolve the viewer alongside the files (not after) so the author check
+  // costs one round trip, not two. The verified GitHub username lives on the
+  // user row, not the session payload, hence getCurrentUserIdentity.
+  const [files, viewer] = await Promise.all([
+    getStaticAgentFiles(agent.slug),
+    getCurrentUserIdentity(),
+  ])
+  // Installs by the agent's own author are not demand. Every install-intent
+  // event on this page carries this flag so the north star metric can exclude
+  // them. Null when authorship cannot be resolved (signed out, or either
+  // username missing): unknown is never reported as a verified non-author.
+  const viewerIsAuthor = isSameGithubUsername(
+    viewer?.githubUsername,
+    agent.authorUsername,
+  )
   const authorAgents = agent.authorUsername
     ? getStaticAgentsByAuthorUsername(agent.authorUsername)
     : []
@@ -175,7 +191,10 @@ async function AgentDetailContent({ agent }: { agent: AgentWithAuthor }) {
               </Badge>
             </Link>
             <Suspense fallback={<AgentDetailRuntimeFallback />}>
-              <AgentDetailRuntimeSection agent={agent} />
+              <AgentDetailRuntimeSection
+                agent={agent}
+                viewerIsAuthor={viewerIsAuthor}
+              />
             </Suspense>
           </div>
           <p className="mt-1 max-w-2xl text-pretty text-muted-foreground">
@@ -219,8 +238,10 @@ async function AgentDetailContent({ agent }: { agent: AgentWithAuthor }) {
         </p>
         <div className="mt-4">
           <InstallCommand
+            agentAuthor={agent.authorUsername}
             label={`${agent.name} install command`}
             slug={agent.slug}
+            viewerIsAuthor={viewerIsAuthor}
           />
         </div>
         <AgentInstallSummary agent={agent} deps={deps} files={files} />
@@ -276,13 +297,16 @@ async function AgentDetailContent({ agent }: { agent: AgentWithAuthor }) {
             authorUsername={agent.authorUsername ?? ''}
             currentAgent={agent}
             moreFromAuthorCount={moreFromAuthorCount}
+            viewerGithubUsername={viewer?.githubUsername ?? null}
           />
         </Suspense>
       )}
 
       <MobileInstallBar
+        agentAuthor={agent.authorUsername}
         label={`${agent.name} install command (quick copy)`}
         slug={agent.slug}
+        viewerIsAuthor={viewerIsAuthor}
       />
     </main>
   )
@@ -376,8 +400,10 @@ function AgentDocsSection({ agent }: { agent: AgentWithAuthor }) {
 
 async function AgentDetailRuntimeSection({
   agent,
+  viewerIsAuthor,
 }: {
   agent: AgentWithAuthor
+  viewerIsAuthor: boolean | null
 }) {
   const runtimeState = await getAgentRuntimeState([agent.id])
   const installCount = runtimeState.installCounts.get(agent.id) ?? 0
@@ -391,11 +417,13 @@ async function AgentDetailRuntimeSection({
         ]}
       />
       <FavoriteButton
+        agentAuthor={agent.authorUsername}
         agentId={agent.id}
         initialIsFavorite={runtimeState.favoriteAgentIdSet.has(agent.id)}
         isAuthenticated={runtimeState.isAuthenticated}
         key={`${agent.id}:${runtimeState.favoriteAgentIdSet.has(agent.id)}`}
         showLabel
+        viewerIsAuthor={viewerIsAuthor}
       />
       <span className="flex items-center gap-1.5">
         <Download aria-hidden="true" className="size-4" />
@@ -496,12 +524,14 @@ async function RelatedAgentsSection({
   authorUsername,
   currentAgent,
   moreFromAuthorCount,
+  viewerGithubUsername,
 }: {
   agents: readonly AgentWithAuthor[]
   authorName: string
   authorUsername: string
   currentAgent: AgentWithAuthor
   moreFromAuthorCount: number
+  viewerGithubUsername: string | null
 }) {
   const runtimeState = await getAgentRuntimeState(
     agents.map((agent) => agent.id),
@@ -539,6 +569,10 @@ async function RelatedAgentsSection({
               isAuthenticated={runtimeState.isAuthenticated}
               isFavorite={runtimeState.favoriteAgentIdSet.has(agent.id)}
               key={agent.id}
+              viewerIsAuthor={isSameGithubUsername(
+                viewerGithubUsername,
+                agent.authorUsername,
+              )}
             />
           ))}
         </div>

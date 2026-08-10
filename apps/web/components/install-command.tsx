@@ -38,12 +38,20 @@ interface IndicatorRect {
 
 export function InstallCommand({
   slug,
+  agentAuthor,
   className,
   label = 'install command',
+  viewerIsAuthor,
 }: {
   slug: string
+  // Registry author of the agent, and whether the signed-in viewer is that
+  // author. `viewerIsAuthor` is null when authorship cannot be resolved
+  // (never guessed), so authors copying their own command can be excluded
+  // from the install-intent metric.
+  agentAuthor: string | null
   className?: string
   label?: string
+  viewerIsAuthor: boolean | null
 }) {
   const [packageManager, setPackageManager] = usePackageManager()
   const command = buildInstallCommandForManager(packageManager, slug)
@@ -92,9 +100,11 @@ export function InstallCommand({
     })
     if (copied) {
       posthog.capture('agent_install_command_copied', {
+        agent_author: agentAuthor,
         agent_slug: slug,
         package_manager: packageManager,
         surface: 'install_command',
+        viewer_is_author: viewerIsAuthor,
       })
     }
   }

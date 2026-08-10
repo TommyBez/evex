@@ -16,10 +16,16 @@ import { buildInstallCommandForManager } from '@/lib/package-managers'
  */
 export function MobileInstallBar({
   slug,
+  agentAuthor,
   label = 'install command',
+  viewerIsAuthor,
 }: {
   slug: string
+  // Mirrors the install card so both install-intent surfaces are attributable
+  // to author vs non-author. Null means authorship is unknown, not false.
+  agentAuthor: string | null
   label?: string
+  viewerIsAuthor: boolean | null
 }) {
   const { copied, copy } = useCopyToClipboard()
   const [packageManager] = usePackageManager()
@@ -31,9 +37,11 @@ export function MobileInstallBar({
     })
     if (copied) {
       posthog.capture('agent_install_command_copied', {
+        agent_author: agentAuthor,
         agent_slug: slug,
         package_manager: packageManager,
         surface: 'mobile_install_bar',
+        viewer_is_author: viewerIsAuthor,
       })
     }
   }
