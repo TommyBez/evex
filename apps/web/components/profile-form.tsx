@@ -122,8 +122,10 @@ export function ProfileForm({
     startTransition(async () => {
       const result = await saveProfile(formData)
       if (result.ok) {
+        const avatar = formData.get('avatar')
+        const uploadedAvatar = avatar instanceof File && avatar.size > 0
         posthog.capture('profile_saved', {
-          has_avatar: Boolean(formData.get('avatar')),
+          has_avatar: uploadedAvatar || Boolean(preview),
           has_bio: Boolean(formData.get('bio')),
           has_social_links: Boolean(
             formData.get('websiteUrl') ||
