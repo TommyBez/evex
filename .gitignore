@@ -29,3 +29,9 @@ tsconfig.tsbuildinfo
 out/
 # Typefully config (contains API key)
 .typefully/
+
+# GTM agent state (lives on disk only, by choice — setup 2026-08-10)
+gtm/
+
+# Agent credentials (GitHub PAT)
+.credentials/
