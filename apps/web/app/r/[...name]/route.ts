@@ -4,6 +4,7 @@ import {
 } from '@evex/agent-registry'
 import { after, connection, NextResponse } from 'next/server'
 import { incrementInstallCount } from '@/lib/data/install-metrics'
+import { shouldCountInstall } from '@/lib/install-tracking'
 
 const JSON_EXTENSION = '.json'
 
@@ -24,8 +25,10 @@ function normalizeRegistryItemName(segments: string[]): string | null {
 
 // Public shadcn registry item endpoint. The registry package embeds file
 // contents at build time while preserving best-effort install/download counts.
+// Only non-browser, non-crawler requests increment the counter; the response is
+// identical either way.
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ name: string[] }> },
 ) {
   const { name: nameSegments } = await params
@@ -40,13 +43,15 @@ export async function GET(
   try {
     const item = await getRegistryItem(name)
 
-    after(async () => {
-      try {
-        await incrementInstallCount(name)
-      } catch {
-        // Best-effort tracking; ignore failures.
-      }
-    })
+    if (shouldCountInstall(request.headers.get('user-agent'))) {
+      after(async () => {
+        try {
+          await incrementInstallCount(name)
+        } catch {
+          // Best-effort tracking; ignore failures.
+        }
+      })
+    }
 
     return NextResponse.json(item, {
       headers: {
