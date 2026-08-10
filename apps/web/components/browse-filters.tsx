@@ -1,16 +1,18 @@
 'use client'
 
-import { Search, X } from 'lucide-react'
-import { useRouter, useSearchParams } from 'next/navigation'
-import { useCallback, useEffect, useRef, useTransition } from 'react'
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupButton,
   InputGroupInput,
-} from '@/components/ui/input-group'
-import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
+} from '@evex/ui/input-group'
+import { Kbd } from '@evex/ui/kbd'
+import { cn } from '@evex/ui/lib/utils'
+import { NativeSelect, NativeSelectOption } from '@evex/ui/native-select'
+import { ToggleGroup, ToggleGroupItem } from '@evex/ui/toggle-group'
+import { Search, X } from 'lucide-react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useCallback, useEffect, useRef, useState, useTransition } from 'react'
 import {
   AGENT_CATEGORIES,
   AGENT_SORTS,
@@ -19,7 +21,6 @@ import {
   getSortLabel,
   parseSort,
 } from '@/lib/agents'
-import { cn } from '@/lib/utils'
 
 const DEFAULT_CATEGORY = 'all'
 const SEARCH_URL_SYNC_DELAY_MS = 200
@@ -77,6 +78,10 @@ export function BrowseFilters() {
   const selectedCategory = activeCategory
   const selectedSort = activeSort
 
+  // Controlled input state; the URL is synced behind a short debounce so we
+  // don't push a history entry per keystroke.
+  const [searchValue, setSearchValue] = useState(activeSearch)
+
   const replaceFilters = useCallback(
     (nextSearch: string, nextCategory: string, nextSort: AgentSort) => {
       const path = getFiltersPath(nextSearch, nextCategory, nextSort)
@@ -86,11 +91,6 @@ export function BrowseFilters() {
       })
     },
     [router],
-  )
-
-  const getSearchValue = useCallback(
-    () => searchInputRef.current?.value ?? activeSearch,
-    [activeSearch],
   )
 
   const clearPendingSearchSync = useCallback(() => {
@@ -108,13 +108,36 @@ export function BrowseFilters() {
     [clearPendingSearchSync],
   )
 
+  // Adopt external URL changes (back/forward navigation, "clear all") unless
+  // the user is actively typing in the field.
   useEffect(() => {
-    const input = searchInputRef.current
-    if (!input || document.activeElement === input) {
+    if (document.activeElement === searchInputRef.current) {
       return
     }
-    input.value = activeSearch
+    setSearchValue(activeSearch)
   }, [activeSearch])
+
+  // Press "/" anywhere on the page to jump into the search field, matching
+  // the muscle memory from GitHub and most doc sites.
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== '/' || event.metaKey || event.ctrlKey || event.altKey) {
+        return
+      }
+      const target = event.target
+      if (
+        target instanceof HTMLElement &&
+        target.closest('input, textarea, select, [contenteditable="true"]')
+      ) {
+        return
+      }
+      event.preventDefault()
+      searchInputRef.current?.focus()
+      searchInputRef.current?.select()
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [])
 
   const scheduleSearchSync = useCallback(
     (nextSearch: string) => {
@@ -129,33 +152,29 @@ export function BrowseFilters() {
 
   const clearSearch = useCallback(() => {
     clearPendingSearchSync()
-    if (searchInputRef.current) {
-      searchInputRef.current.value = ''
-    }
+    setSearchValue('')
     replaceFilters('', selectedCategory, selectedSort)
   }, [clearPendingSearchSync, replaceFilters, selectedCategory, selectedSort])
 
   const changeCategory = useCallback(
     (nextCategory: string) => {
       clearPendingSearchSync()
-      replaceFilters(getSearchValue(), nextCategory, selectedSort)
+      replaceFilters(searchValue, nextCategory, selectedSort)
     },
-    [clearPendingSearchSync, getSearchValue, replaceFilters, selectedSort],
+    [clearPendingSearchSync, searchValue, replaceFilters, selectedSort],
   )
 
   const changeSort = useCallback(
     (nextSort: AgentSort) => {
       clearPendingSearchSync()
-      replaceFilters(getSearchValue(), selectedCategory, nextSort)
+      replaceFilters(searchValue, selectedCategory, nextSort)
     },
-    [clearPendingSearchSync, getSearchValue, replaceFilters, selectedCategory],
+    [clearPendingSearchSync, searchValue, replaceFilters, selectedCategory],
   )
 
   const clearAll = useCallback(() => {
     clearPendingSearchSync()
-    if (searchInputRef.current) {
-      searchInputRef.current.value = ''
-    }
+    setSearchValue('')
     startTransition(() => {
       router.replace('/', { scroll: false })
     })
@@ -174,13 +193,16 @@ export function BrowseFilters() {
           </InputGroupAddon>
           <InputGroupInput
             aria-label="Search agents"
-            defaultValue={activeSearch}
-            onChange={(e) => scheduleSearchSync(e.target.value)}
+            onChange={(e) => {
+              setSearchValue(e.target.value)
+              scheduleSearchSync(e.target.value)
+            }}
             placeholder="Search agents..."
             ref={searchInputRef}
             type="search"
+            value={searchValue}
           />
-          {activeSearch ? (
+          {searchValue ? (
             <InputGroupAddon align="inline-end">
               <InputGroupButton
                 aria-label="Clear search"
@@ -190,7 +212,11 @@ export function BrowseFilters() {
                 <X aria-hidden="true" />
               </InputGroupButton>
             </InputGroupAddon>
-          ) : null}
+          ) : (
+            <InputGroupAddon align="inline-end" className="hidden sm:flex">
+              <Kbd aria-hidden="true">/</Kbd>
+            </InputGroupAddon>
+          )}
         </InputGroup>
         <div className="flex items-center gap-2">
           <span className="mono-label hidden text-muted-foreground sm:inline">
@@ -212,7 +238,9 @@ export function BrowseFilters() {
 
       <ToggleGroup
         className={cn(
-          'flex-wrap transition-opacity',
+          // Mobile: a single edge-to-edge swipeable strip so the categories
+          // never wrap into 3 stacked rows. sm+: wrap normally.
+          'scrollbar-hide edge-fade-x -mx-4 w-full flex-nowrap overflow-x-auto px-4 transition-opacity sm:mx-0 sm:w-fit sm:flex-wrap sm:overflow-visible sm:px-0',
           isPending && 'opacity-60',
         )}
         onValueChange={(values) =>
@@ -222,7 +250,7 @@ export function BrowseFilters() {
       >
         {FILTER_CATEGORIES.map((c) => (
           <ToggleGroupItem
-            className="mono-label rounded-md capitalize data-[state=on]:border-primary data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+            className="mono-label h-9 rounded-md capitalize data-[state=on]:border-primary data-[state=on]:bg-primary data-[state=on]:text-primary-foreground sm:h-8"
             key={c}
             size="sm"
             value={c}

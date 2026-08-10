@@ -1,0 +1,162 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "items": [
+    {
+      "name": "supabase-data-analyst",
+      "type": "registry:item",
+      "title": "Supabase Data Analyst",
+      "description": "A Slack-native Eve analyst for a single Supabase project that only runs read-only SQL queries. It exposes just supabase__list_tables and supabase__execute_sql through an MCP client connection to the hosted Supabase MCP server; no write, migration, Edge Function, branch, storage, logs, advisors, account, or docs tools are available.",
+      "author": "TommyBez",
+      "categories": [
+        "data"
+      ],
+      "dependencies": [
+        "@vercel/connect@^0.2.6",
+        "eve@^0.18.2"
+      ],
+      "files": [
+        {
+          "path": "agent/agent.ts",
+          "type": "registry:file",
+          "target": "~/agent/agent.ts"
+        },
+        {
+          "path": "agent/channels/slack.ts",
+          "type": "registry:file",
+          "target": "~/agent/channels/slack.ts"
+        },
+        {
+          "path": "agent/connections/supabase.ts",
+          "type": "registry:file",
+          "target": "~/agent/connections/supabase.ts"
+        },
+        {
+          "path": "agent/instructions.md",
+          "type": "registry:file",
+          "target": "~/agent/instructions.md"
+        },
+        {
+          "path": "agent/lib/supabase-config.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/supabase-config.ts"
+        },
+        {
+          "path": "evals/evals.config.ts",
+          "type": "registry:file",
+          "target": "~/evals/evals.config.ts"
+        },
+        {
+          "path": "evals/secret-redaction.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/secret-redaction.eval.ts"
+        },
+        {
+          "path": "evals/write-request-refusal.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/write-request-refusal.eval.ts"
+        },
+        {
+          "path": "README.md",
+          "type": "registry:file",
+          "target": "~/agent/README.md"
+        },
+        {
+          "path": ".env.example",
+          "type": "registry:file",
+          "target": "~/.env.example"
+        }
+      ],
+      "meta": {
+        "slug": "supabase-data-analyst",
+        "category": "data",
+        "createdAt": "2026-06-26T00:00:00.000Z",
+        "updatedAt": "2026-07-04T00:00:00.000Z",
+        "docs": {
+          "overview": [
+            "Supabase Data Analyst is an eve agent that lives in Slack and answers questions about a single Supabase project with read-only SQL. Mention it in a channel or send it a DM, and it inspects your schema, writes one focused query, runs it through the hosted Supabase MCP server, and replies with an aggregate answer in plain language instead of raw row dumps.",
+            "The agent is deliberately narrow: it exposes exactly two tools, supabase__list_tables for schema inspection and supabase__execute_sql for read-only SELECT queries. The MCP connection is pinned to read_only=true and features=database, a client-side allow list hides every other database tool, and the config loader rejects any attempt to set SUPABASE_DATA_ANALYST_READ_ONLY to false or request other feature groups at startup.",
+            "It is also scoped to one project by design. SUPABASE_DATA_ANALYST_PROJECT_REF is required whenever the MCP URL points at the hosted endpoint, so your account-level Supabase personal access token can never reach other projects in the account. That makes it a safe way to give a team self-serve analytics over a development or preview database."
+          ],
+          "howItWorks": [
+            "A teammate mentions the agent in a Slack channel or DMs it; events arrive on the /eve/v1/slack route through a Vercel Connect Slack client identified by SUPABASE_DATA_ANALYST_SLACK_CONNECT_UID.",
+            "The model, zai/glm-5.2, uses eve's built-in connection_search to discover the Supabase MCP connection, where only list_tables and execute_sql are visible thanks to the tools.allow list in agent/connections/supabase.ts.",
+            "For unfamiliar tables it first calls supabase__list_tables to inspect the schema, and asks a clarifying question if the metric, time range, or grain is ambiguous.",
+            "It then writes a single read-only SQL query and runs it with supabase__execute_sql against the hosted server at https://mcp.supabase.com/mcp, authenticated with your Supabase personal access token and scoped by project_ref, read_only=true, and features=database.",
+            "It interprets the result for Slack, stating assumptions, filters, units, and date windows, and it never pastes API keys, service role keys, or access tokens into the channel even if a query returns them.",
+            "Two bundled evals enforce this contract: one checks the agent refuses migration requests and proposes a read-only alternative, the other checks it redacts a leaked API key when summarizing query results."
+          ],
+          "useCases": [
+            {
+              "title": "Self-serve product metrics in Slack",
+              "body": "Let product managers ask questions like total signups by month for the last 6 months directly in a channel. The agent inspects the schema, runs one aggregate SELECT, and replies with the numbers plus the assumptions it made."
+            },
+            {
+              "title": "Schema exploration for new teammates",
+              "body": "New engineers can DM the agent to ask which tables exist and how they relate. supabase__list_tables gives them an instant map of a development project without dashboard access or a local database connection."
+            },
+            {
+              "title": "Safe analytics over a preview branch",
+              "body": "Point the agent at a development project or preview branch and give a whole workspace query access with no write risk: reads are enforced server-side by read_only=true and client-side by the two-tool allow list."
+            },
+            {
+              "title": "Guardrailed alternative to raw SQL access",
+              "body": "Instead of sharing database credentials, teams get an analyst that refuses writes, migrations, and admin operations by design, and suggests a read-only alternative whenever someone asks for something it cannot do."
+            }
+          ],
+          "requirements": [
+            {
+              "name": "SUPABASE_DATA_ANALYST_ACCESS_TOKEN",
+              "body": "A Supabase personal access token used as the Bearer token on every MCP request. Generate it in your Supabase account settings and name it for this agent. Startup fails without it."
+            },
+            {
+              "name": "SUPABASE_DATA_ANALYST_PROJECT_REF",
+              "body": "The ref of the one project the agent may query, copied from the Supabase dashboard URL or project settings. Required for the hosted MCP server; optional only when the MCP URL points at a local Supabase CLI server."
+            },
+            {
+              "name": "SUPABASE_DATA_ANALYST_MCP_URL",
+              "body": "The Supabase MCP endpoint, defaulting to https://mcp.supabase.com/mcp. Override it with http://localhost:54321/mcp to develop against a local Supabase CLI MCP server."
+            },
+            {
+              "name": "SUPABASE_DATA_ANALYST_READ_ONLY",
+              "body": "Must be true (the default). The config loader rejects false at startup, so every query executes as a read-only Postgres user on the server side."
+            },
+            {
+              "name": "SUPABASE_DATA_ANALYST_FEATURES",
+              "body": "Must be database (the default). Any other Supabase MCP feature group is rejected at startup because those groups expose non-query operations like migrations, Edge Functions, and account management."
+            },
+            {
+              "name": "SUPABASE_DATA_ANALYST_SLACK_CONNECT_UID",
+              "body": "The Vercel Connect UID for the Slack client, created with vercel connect create slack --triggers and attached to the /eve/v1/slack route. Defaults to slack/supabase-data-analyst."
+            },
+            {
+              "name": "@vercel/connect and eve",
+              "body": "Runtime dependencies: eve ^0.18.2 provides the agent framework, Slack channel, and MCP client connection; @vercel/connect ^0.2.6 supplies the Slack credentials via connectSlackCredentials. Node 24 or newer is required."
+            }
+          ],
+          "faqs": [
+            {
+              "question": "How do I install it?",
+              "answer": "Run npx shadcn@latest add @evex/supabase-data-analyst inside an existing eve app, install the listed dependencies, set the SUPABASE_DATA_ANALYST_* environment variables, deploy the app somewhere Slack can reach over HTTPS, and connect Slack with vercel connect create slack --triggers."
+            },
+            {
+              "question": "Can it modify my database?",
+              "answer": "No. The MCP connection is pinned to read_only=true so the server runs every query as a read-only Postgres user, only list_tables and execute_sql pass the client-side allow list, and the config loader refuses to start if you try to disable read-only mode. A bundled eval verifies it declines migration requests."
+            },
+            {
+              "question": "Which model does it use, and can I change it?",
+              "answer": "The agent is defined with zai/glm-5.2 in agent/agent.ts. Because it is a standard eve agent definition, you can swap the model string for any model your eve deployment supports and adjust agent/instructions.md to tune its analyst behavior."
+            },
+            {
+              "question": "Is it safe to point at production data?",
+              "answer": "The README advises against it. Supabase MCP is designed for development and testing, and read-only access can still expose sensitive rows. Use a development project, preview branch, or obfuscated data, and only in workspaces whose members may see that data."
+            },
+            {
+              "question": "Can it access other projects in my Supabase account?",
+              "answer": "No. The connection URL always sets project_ref, and the config loader fails startup if SUPABASE_DATA_ANALYST_PROJECT_REF is missing while the MCP URL points at a non-localhost host, precisely so the account-level personal access token cannot reach your other projects."
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

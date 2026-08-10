@@ -1,33 +1,25 @@
 'use client'
 
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { type FormEvent, useReducer } from 'react'
-import { BrandMark } from '@/components/brand-mark'
-import { GitHubIcon } from '@/components/github-icon'
-import { TextSwap } from '@/components/transitions/text-swap'
-import { useShake } from '@/components/transitions/use-shake'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-} from '@/components/ui/card'
+import { Alert, AlertDescription } from '@evex/ui/alert'
+import { Button } from '@evex/ui/button'
+import { Card, CardContent, CardDescription, CardHeader } from '@evex/ui/card'
 import {
   Field,
   FieldDescription,
   FieldGroup,
   FieldLabel,
   FieldSeparator,
-} from '@/components/ui/field'
-import { Input } from '@/components/ui/input'
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSlot,
-} from '@/components/ui/input-otp'
+} from '@evex/ui/field'
+import { Input } from '@evex/ui/input'
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '@evex/ui/input-otp'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import posthog from 'posthog-js'
+import { type FormEvent, useReducer } from 'react'
+import { BrandMark } from '@/components/brand-mark'
+import { GitHubIcon } from '@/components/github-icon'
+import { TextSwap } from '@/components/transitions/text-swap'
+import { useShake } from '@/components/transitions/use-shake'
 import { authClient } from '@/lib/auth-client'
 
 const OTP_LENGTH = 6
@@ -129,6 +121,7 @@ export function AuthForm({
       : `${switchPath}?redirect=${encodeURIComponent(redirectTo)}`
 
   const handleGitHub = async (): Promise<void> => {
+    posthog.capture('github_auth_started', { auth_mode: mode })
     dispatch({ type: 'patch', value: { error: null, githubLoading: true } })
     try {
       const { error } = await authClient.signIn.social({
@@ -167,6 +160,7 @@ export function AuthForm({
         return false
       }
 
+      posthog.capture('auth_otp_requested', { auth_mode: mode })
       dispatch({ type: 'otpSent' })
       return true
     } catch (error) {
@@ -217,6 +211,10 @@ export function AuthForm({
         return
       }
 
+      posthog.capture('authentication_completed', {
+        auth_method: 'email_otp',
+        auth_mode: mode,
+      })
       router.push(redirectTo)
       router.refresh()
     } catch (error) {

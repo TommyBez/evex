@@ -1,4 +1,4 @@
-import { cn } from '@/lib/utils'
+import { cn } from '@evex/ui/lib/utils'
 
 // transitions-dev "number pop-in": each character re-enters with a blurred
 // slide, and the last two characters stagger so the value feels alive on load.

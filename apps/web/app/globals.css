@@ -2,6 +2,8 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+@source "../../../packages/ui/src";
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -205,6 +207,8 @@
   * {
     letter-spacing: 0 !important;
     @apply border-border outline-ring/50;
+    /* Remove the grey flash when tapping links/buttons on touch devices. */
+    -webkit-tap-highlight-color: transparent;
   }
   body {
     @apply bg-background text-foreground;
@@ -212,9 +216,14 @@
   html {
     overflow-x: clip;
     @apply font-sans;
+    /* Stop iOS from inflating font sizes in landscape. */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
   }
   body {
     overflow-x: clip;
+    /* Prevent horizontal rubber-banding on small screens. */
+    overscroll-behavior-x: none;
   }
   h1,
   h2,
@@ -240,6 +249,37 @@
 }
 
 @layer components {
+  /* Hide the scrollbar on horizontally-swipeable strips (mobile filter rows,
+     etc.) while keeping the element scrollable. */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+    /* Momentum scrolling on the actual horizontal scroll containers (filter
+       strip, etc.) — meaningful here, unlike on the root document. */
+    -webkit-overflow-scrolling: touch;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  /* Fade the trailing edge of a horizontal scroll strip so it reads as
+     "swipe for more" on touch. Only applied below Tailwind's `sm` breakpoint
+     (40rem), expressed in rem so it tracks the theme scale. */
+  @media (width < 40rem) {
+    .edge-fade-x {
+      -webkit-mask-image: linear-gradient(
+        to right,
+        #000 0,
+        #000 calc(100% - 1.5rem),
+        transparent 100%
+      );
+      mask-image: linear-gradient(
+        to right,
+        #000 0,
+        #000 calc(100% - 1.5rem),
+        transparent 100%
+      );
+    }
+  }
   /* Compact metadata label. */
   .mono-label {
     font-family: var(--font-mono);
@@ -300,6 +340,17 @@
     font-weight: 500;
     line-height: 1;
     letter-spacing: 0;
+  }
+  /* Bulk expand/collapse in the file viewer applies instantly: a dozen
+     concurrent accordion height animations force a full-page relayout on
+     every frame. Items keep this mark for as long as their panel stays open —
+     restoring the animation on an open panel restarts it from zero height
+     (a visible closed→open flicker) — and are unmarked after closing, so
+     individual toggles animate normally. */
+  [data-instant-toggle] [data-slot="accordion-content"],
+  [data-instant-toggle] [data-slot="accordion-content"] > div {
+    transition-duration: 0s !important;
+    animation-duration: 0s !important;
   }
 }
 

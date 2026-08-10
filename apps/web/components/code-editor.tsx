@@ -1,5 +1,7 @@
 'use client'
 
+import { cn } from '@evex/ui/lib/utils'
+import { Textarea } from '@evex/ui/textarea'
 import { useTheme } from 'next-themes'
 import {
   type CSSProperties,
@@ -7,13 +9,11 @@ import {
   useState,
   useSyncExternalStore,
 } from 'react'
-import { Textarea } from '@/components/ui/textarea'
 import {
   languageFromPath,
   SyntaxHighlighter,
   syntaxHighlighterThemes,
 } from '@/lib/syntax-highlighter'
-import { cn } from '@/lib/utils'
 
 interface CodeEditorProps {
   'aria-label'?: string

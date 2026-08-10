@@ -1,7 +1,7 @@
+import { Button } from '@evex/ui/button'
 import { Star } from 'lucide-react'
 import Link from 'next/link'
 import { GitHubIcon } from '@/components/github-icon'
-import { Button } from '@/components/ui/button'
 
 const REPO_OWNER = 'TommyBez'
 const REPO_NAME = 'evex'

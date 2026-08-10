@@ -1,0 +1,208 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "items": [
+    {
+      "name": "programmatic-seo-agent",
+      "type": "registry:item",
+      "title": "Programmatic SEO Agent",
+      "description": "Weekly scheduled agent that grows a product's organic traffic with programmatic SEO: it checks the product's GitHub repository out into its sandbox, discovers and validates keyword opportunities with DataForSEO, researches each target with the Parallel web search API, generates batches of SEO-optimized pages matching the repo's content conventions, and pushes them as a pull request for human review.",
+      "categories": [
+        "marketing"
+      ],
+      "dependencies": [
+        "eve@^0.18.2",
+        "parallel-web@^1.1.0",
+        "zod@4.3.6"
+      ],
+      "files": [
+        {
+          "path": "agent/agent.ts",
+          "type": "registry:file",
+          "target": "~/agent/agent.ts"
+        },
+        {
+          "path": "agent/instructions.md",
+          "type": "registry:file",
+          "target": "~/agent/instructions.md"
+        },
+        {
+          "path": "agent/lib/dataforseo.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/dataforseo.ts"
+        },
+        {
+          "path": "agent/lib/pseo-config.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/pseo-config.ts"
+        },
+        {
+          "path": "agent/sandbox.ts",
+          "type": "registry:file",
+          "target": "~/agent/sandbox.ts"
+        },
+        {
+          "path": "agent/schedules/weekly-programmatic-seo.ts",
+          "type": "registry:file",
+          "target": "~/agent/schedules/weekly-programmatic-seo.ts"
+        },
+        {
+          "path": "agent/skills/programmatic-seo/references/keyword-research.md",
+          "type": "registry:file",
+          "target": "~/agent/skills/programmatic-seo/references/keyword-research.md"
+        },
+        {
+          "path": "agent/skills/programmatic-seo/references/page-quality.md",
+          "type": "registry:file",
+          "target": "~/agent/skills/programmatic-seo/references/page-quality.md"
+        },
+        {
+          "path": "agent/skills/programmatic-seo/references/playbooks.md",
+          "type": "registry:file",
+          "target": "~/agent/skills/programmatic-seo/references/playbooks.md"
+        },
+        {
+          "path": "agent/skills/programmatic-seo/SKILL.md",
+          "type": "registry:file",
+          "target": "~/agent/skills/programmatic-seo/SKILL.md"
+        },
+        {
+          "path": "agent/tools/discover_keywords.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/discover_keywords.ts"
+        },
+        {
+          "path": "agent/tools/research_keyword.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/research_keyword.ts"
+        },
+        {
+          "path": "agent/tools/validate_keywords.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/validate_keywords.ts"
+        },
+        {
+          "path": "evals/evals.config.ts",
+          "type": "registry:file",
+          "target": "~/evals/evals.config.ts"
+        },
+        {
+          "path": "evals/low-volume-run-is-skipped.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/low-volume-run-is-skipped.eval.ts"
+        },
+        {
+          "path": "evals/missing-config-does-not-publish.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/missing-config-does-not-publish.eval.ts"
+        },
+        {
+          "path": "evals/no-fabricated-volumes.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/no-fabricated-volumes.eval.ts"
+        },
+        {
+          "path": "README.md",
+          "type": "registry:file",
+          "target": "~/agent/README.md"
+        },
+        {
+          "path": ".env.example",
+          "type": "registry:file",
+          "target": "~/.env.example"
+        }
+      ],
+      "meta": {
+        "slug": "programmatic-seo-agent",
+        "category": "marketing",
+        "createdAt": "2026-07-02T22:16:06.740Z",
+        "updatedAt": "2026-07-04T00:00:00.000Z",
+        "docs": {
+          "overview": [
+            "Programmatic SEO Agent is a scheduled eve agent that grows organic traffic by shipping weekly batches of SEO-optimized pages to your product's GitHub repository. Each run clones the repo defined by PSEO_GITHUB_REPO into a Vercel sandbox, studies your product and existing content conventions, and writes new pages that match the format already in the repo, from frontmatter fields to internal-link style.",
+            "You interact with it through a cron schedule (PSEO_WEEKLY_CRON, Mondays at 07:00 UTC by default) rather than a chat channel, and everything it produces arrives as a pull request on an idempotent pseo/<year>-w<week> branch. It never merges anything, never touches files outside the configured target directory, and re-running the same week updates the existing PR instead of opening a duplicate.",
+            "What makes it useful is that every page is backed by data: keyword opportunities come from the DataForSEO Labs and Google Ads endpoints, factual claims are grounded in Parallel web search excerpts with provenance, and a bundled programmatic-seo skill enforces a quality bar that drops thin doorway pages. A week with no keywords above the volume threshold is deliberately skipped, not padded."
+          ],
+          "howItWorks": [
+            "At session start the sandbox clones PSEO_GITHUB_REPO into /workspace/repo with credential brokering: the GitHub token is injected at the sandbox firewall as Basic auth on github.com and Bearer auth on api.github.com, so it never enters the sandbox process or any command line.",
+            "The agent loads the programmatic-seo skill, reads the repo's README, marketing pages, and existing content under PSEO_TARGET_DIR to learn the product, its personas, and the exact page format to reproduce.",
+            "It derives seed keywords from the product context and calls the discover_keywords tool, which queries the DataForSEO Labs keyword_ideas endpoint and returns up to 200 ideas with search volume, difficulty, intent, and CPC.",
+            "It designs one or two repeatable page patterns, enumerates the exact keyword permutations, and runs them through validate_keywords, which checks real Google Ads search volumes and flags anything below PSEO_MIN_SEARCH_VOLUME (default 30) for removal.",
+            "For each surviving keyword, capped at PSEO_MAX_PAGES_PER_RUN (default 20), the research_keyword tool calls the Parallel Search API with 2-3 focused queries and returns ranked excerpts with URLs, so every factual claim on a page traces back to a source.",
+            "Finally it writes one page per keyword into the checkout, commits on the pseo/<year>-w<week> branch, pushes, and opens or updates a pull request via the GitHub REST API, with the PR body listing each page's keyword, search volume, playbook pattern, and research sources for human review."
+          ],
+          "useCases": [
+            {
+              "title": "Comparison and alternative pages for a developer tool",
+              "body": "Point the agent at your docs or marketing repo and let it build a validated set of product-vs-competitor and alternatives pages, each grounded in Parallel research and linked hub-and-spoke so authority consolidates instead of fragmenting."
+            },
+            {
+              "title": "Integration and use-case landing pages",
+              "body": "For products with many integrations or personas, the agent enumerates permutations like product for persona or product with tool, validates each against real Google Ads volumes, and only writes pages for queries people actually search."
+            },
+            {
+              "title": "Steady content pipeline without hiring",
+              "body": "A small team gets up to 20 reviewed, data-backed pages per week as pull requests. The human review gate stays in place: you read the PR, edit or reject pages, and merge on your own terms."
+            },
+            {
+              "title": "Glossary and long-tail coverage for a niche domain",
+              "body": "Using the skill's playbook catalog, the agent can build glossary or how-to page sets around your domain's terminology, skipping weeks when nothing clears the volume bar rather than shipping index bloat."
+            }
+          ],
+          "requirements": [
+            {
+              "name": "PSEO_GITHUB_REPO",
+              "body": "The product repository that receives generated pages, in owner/repo form. The sandbox clones it at session start and the weekly PR is opened against its default branch."
+            },
+            {
+              "name": "PSEO_GITHUB_TOKEN",
+              "body": "Fine-grained GitHub personal access token (or GitHub App installation token) with Contents and Pull requests read/write on that repo. It is brokered at the sandbox firewall and never enters the sandbox process."
+            },
+            {
+              "name": "DATAFORSEO_LOGIN",
+              "body": "DataForSEO API login from app.dataforseo.com/api-access, used with DATAFORSEO_PASSWORD as Basic auth by the discover_keywords and validate_keywords tools."
+            },
+            {
+              "name": "DATAFORSEO_PASSWORD",
+              "body": "DataForSEO API password paired with DATAFORSEO_LOGIN. DataForSEO bills per request for the keyword_ideas and Google Ads search_volume endpoints the agent calls."
+            },
+            {
+              "name": "PARALLEL_API_KEY",
+              "body": "API key from platform.parallel.ai for the Parallel Search API used by research_keyword. Search mode and result count are tunable via PSEO_SEARCH_MODE (turbo, basic, or advanced) and PSEO_SEARCH_MAX_RESULTS."
+            },
+            {
+              "name": "PSEO_TARGET_DIR",
+              "body": "Directory inside the product repo where generated pages are written, defaulting to content/programmatic. The agent only stages files under this directory and never modifies existing files."
+            },
+            {
+              "name": "PSEO_WEEKLY_CRON",
+              "body": "Optional 5-field cron expression for the weekly run, defaulting to 0 7 * * 1 (Mondays 07:00 UTC on Vercel). Related tuning knobs: PSEO_MAX_PAGES_PER_RUN, PSEO_MIN_SEARCH_VOLUME, PSEO_LOCATION_CODE, PSEO_LANGUAGE_CODE."
+            }
+          ],
+          "faqs": [
+            {
+              "question": "How do I install and run it?",
+              "answer": "Install with npx shadcn@latest add @evex/programmatic-seo-agent, copy .env.example into your eve app environment, and fill in the GitHub, DataForSEO, and Parallel credentials. In development you can trigger a run immediately by POSTing to /eve/v1/dev/schedules/weekly-programmatic-seo instead of waiting for the cron."
+            },
+            {
+              "question": "Can it merge changes or modify existing files in my repo?",
+              "answer": "No. The agent only writes new pages under PSEO_TARGET_DIR, commits to pseo/<year>-w<week> branches, and opens a pull request. It never pushes to the default branch and never merges; a human reviews every PR. Branch protection on the default branch remains your responsibility."
+            },
+            {
+              "question": "Which model does it use and can I change it?",
+              "answer": "The agent is defined with zai/glm-5.2 in agent/agent.ts. Since the eve agent definition is a one-line defineAgent call installed into your codebase, you can swap the model by editing that file."
+            },
+            {
+              "question": "What happens when no keyword is worth a page?",
+              "answer": "The run is skipped and reported as such. If nothing clears PSEO_MIN_SEARCH_VOLUME after deduplication and coverage checks against existing repo content, the agent stops without committing or opening a PR. Three bundled evals verify this behavior, including that volumes are never fabricated."
+            },
+            {
+              "question": "How do I control batch size, market, and research depth?",
+              "answer": "PSEO_MAX_PAGES_PER_RUN caps each batch at 20 pages by default, PSEO_MIN_SEARCH_VOLUME sets the demand floor at 30 monthly searches, PSEO_LOCATION_CODE and PSEO_LANGUAGE_CODE localize keyword data (defaults 2840 and en for the US), and PSEO_SEARCH_MODE plus PSEO_SEARCH_MAX_RESULTS tune Parallel research per keyword."
+            }
+          ]
+        }
+      },
+      "author": "TommyBez"
+    }
+  ]
+}

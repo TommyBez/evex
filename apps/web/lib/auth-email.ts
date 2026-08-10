@@ -6,6 +6,7 @@ import { createElement } from 'react'
 import { Resend } from 'resend'
 import { AuthOtpEmail } from '@/emails/auth-otp-email'
 import { shouldBypassAuthOtp } from '@/lib/auth-environment'
+import { env } from '@/lib/env'
 
 export const AUTH_OTP_EXPIRES_IN_SECONDS = 5 * 60
 export const AUTH_OTP_EXPIRES_IN_MINUTES = 5
@@ -29,7 +30,7 @@ function getResendClient(): Resend {
     return resend
   }
 
-  const apiKey = process.env.RESEND_API_KEY
+  const apiKey = env.RESEND_API_KEY
   if (!apiKey) {
     throw new Error('RESEND_API_KEY is required to send OTP emails')
   }
@@ -39,7 +40,7 @@ function getResendClient(): Resend {
 }
 
 function getSender(): string {
-  const from = process.env.RESEND_FROM_EMAIL
+  const from = env.RESEND_FROM_EMAIL
   if (!from) {
     throw new Error('RESEND_FROM_EMAIL is required to send OTP emails')
   }

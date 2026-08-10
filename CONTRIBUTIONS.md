@@ -4,181 +4,156 @@ evex agents are source-owned packages reviewed through pull requests. The
 database stores runtime state only; canonical agent metadata, files,
 dependencies, and author identity live in the agent package registry file.
 
+Every rule below is enforced automatically: `registry.json` is validated
+against a Zod schema (`packages/agent-registry/src/schema.ts`) by the
+registry generator, and CI runs the full validation, typecheck, test, and
+build pipeline on every pull request.
+
+## Quick start
+
+```bash
+# 1. Scaffold a complete agent package skeleton
+pnpm --filter @evex/agent-registry registry:new <slug> <github-username>
+
+# 2. Implement the agent under registry/<slug>/agent/ and update
+#    README.md + package.json dependencies (pnpm --dir registry install)
+
+# 3. Generate registry.json from the package sources
+pnpm --filter @evex/agent-registry registry:scaffold <slug>
+
+# 4. Review registry.json (categories, meta.category), then validate
+pnpm --filter @evex/agent-registry generate
+pnpm check && pnpm typecheck && pnpm test
+```
+
 ## Package layout
 
-Create each agent under:
+Each agent lives under:
 
 ```text
-packages/agent-registry/agents/<slug>/
+registry/<slug>/
   .env.example       # required when the agent reads environment variables
   package.json
+  tsconfig.json      # extends ../tsconfig.agent.json (repo-only, not published)
   README.md
   agent/
     agent.ts
     ...
+  evals/
+    evals.config.ts
+    *.eval.ts
   registry.json
 ```
 
 The `agent/` directory contains the Eve source that will be installed into a
-consumer Eve app. `README.md` is installed as the agent readme. If the agent
-reads required environment variables, include `.env.example` with placeholder
-values for each variable and publish it in the registry item. Do not include
-app-level project files such as `package.json`, `tsconfig.json`, or lockfiles in
-the public registry item.
+consumer Eve app. `README.md` is installed as the agent readme. Repo-only
+files (`package.json`, `tsconfig.json`, lockfiles) are never published.
+
+The catalog is its own pnpm workspace (`registry/pnpm-workspace.yaml`, with
+its own lockfile), so agent dependencies never weigh down the web app
+install. Run `pnpm registry:install` once from the repo root, then
+`pnpm --dir registry --filter <slug> dev` / `eval` / `typecheck` — or
+`pnpm typecheck:agents` for the whole catalog. A separate CI smoke test also
+installs each changed agent with `--ignore-workspace` to prove it works
+standalone.
 
 ## Author identity
 
 `registry.json` must define top-level `author` as the GitHub username of the
-agent author:
-
-```json
-{
-  "author": "githubUsername"
-}
-```
-
-This value is the canonical public author identity for the registry item.
-Reviewers must verify it during PR review. User/profile enrichment in the web
-app is joined only through a verified GitHub OAuth username stored on the user
+agent author. This is required by the schema and is the canonical public
+author identity for the registry item. `package.json.author` must match when
+present (the generator enforces it). User/profile enrichment in the web app
+is joined only through a verified GitHub OAuth username stored on the user
 account; manually edited profile links are never used for ownership.
-
-For scaffold convenience, put the same GitHub username in `package.json`:
-
-```json
-{
-  "author": "githubUsername"
-}
-```
-
-The scaffold also accepts:
-
-```json
-{
-  "author": {
-    "name": "githubUsername"
-  }
-}
-```
-
-If `package.json.author` is missing, the scaffold omits `author` from
-`registry.json`; the author can add it manually before opening the PR.
 
 ## Dependencies
 
-`package.json.dependencies` has two jobs:
+`registry.json.dependencies` (the public install list) and
+`package.json.dependencies` (local development) must stay in sync: the
+generator fails when a dependency is missing on either side or the versions
+diverge. Keep tooling and type-only packages in `devDependencies` — those are
+not published.
 
-- it makes the agent package usable during local development;
-- it gives the scaffold an initial list for `registry.json.dependencies`.
-
-After `registry.json` exists, the public registry reads
-`registry.json.dependencies`. The generator does not infer or overwrite
-dependencies from `package.json`; authors can edit the public dependency list
-manually.
-
-Use `dependencies` for packages needed at runtime by the installed agent. Keep
-tooling and type-only packages in `devDependencies`.
-
-## Scaffold flow
-
-Create the package source, then run:
+All agents must pin the same `eve` version; the generator rejects skew.
+Lockstep bumps are automated:
 
 ```bash
-pnpm --filter @evex/agent-registry registry:scaffold <slug>
-```
-
-The scaffold reads:
-
-- `README.md` for title and description fallbacks;
-- `package.json.description`;
-- `package.json.dependencies`;
-- `package.json.author` or `package.json.author.name`.
-
-It writes an editable `registry.json`. Treat that file as the source of truth
-from this point on.
-
-## Editing registry.json
-
-Each agent `registry.json` contains exactly one item:
-
-```json
-{
-  "$schema": "https://ui.shadcn.com/schema/registry.json",
-  "items": [
-    {
-      "name": "my-agent",
-      "type": "registry:item",
-      "title": "My Agent",
-      "description": "What the agent does.",
-      "author": "githubUsername",
-      "categories": ["coding"],
-      "dependencies": ["eve@^0.11.4", "zod@4.3.6"],
-      "files": [
-        {
-          "path": "agent/agent.ts",
-          "type": "registry:file",
-          "target": "~/agent/agent.ts"
-        },
-        {
-          "path": "README.md",
-          "type": "registry:file",
-          "target": "~/agent/README.md"
-        }
-      ],
-      "meta": {
-        "slug": "my-agent",
-        "category": "coding",
-        "createdAt": "2026-06-22T00:00:00.000Z",
-        "updatedAt": "2026-06-22T00:00:00.000Z"
-      }
-    }
-  ]
-}
-```
-
-Rules:
-
-- `name` must match the agent folder slug.
-- `author` is a GitHub username.
-- `dependencies` is the public install dependency list.
-- `files` declares every installed file.
-- declared file paths must be `README.md`, `.env.example`, or stay inside
-  `agent/`.
-- `.env.example` is required when installed files read environment variables.
-- `meta.author` is not used.
-
-The generator enriches item endpoints with file `content` by reading the
-declared files. The catalog endpoint keeps file descriptors only and does not
-include content.
-
-## Generate and validate
-
-After editing an agent registry file, regenerate the package output:
-
-```bash
+pnpm --filter @evex/agent-registry bump-eve ^0.19.0
+pnpm --dir registry install
 pnpm --filter @evex/agent-registry generate
 ```
 
-Then run:
+## Editing registry.json
+
+Each agent `registry.json` contains exactly one `registry:item` validated by
+the schema:
+
+- `name` and `meta.slug` must equal the agent folder slug (kebab-case).
+- `title`, `description`, and `author` are required and non-empty.
+- `categories` must include `meta.category`.
+- `meta.createdAt` / `meta.updatedAt` are ISO datetimes.
+- `meta.docs` holds the editorial documentation rendered on the agent's page
+  (overview, howItWorks, useCases, requirements, faqs — see the
+  evex-agent-authoring skill for the writing guide). The scaffold seeds
+  placeholders; replace all of them before opening a PR, and bump
+  `meta.updatedAt` whenever docs change.
+- `dependencies` entries use the `name@range` format.
+- `files` declares every installed file. Declared paths must be `README.md`,
+  `.env.example`, or live under `agent/` or `evals/`, and the list must match
+  the files on disk exactly — undeclared files on disk are an error, as are
+  declared files that do not exist.
+- `.env.example` is required when installed files read `process.env`, and it
+  must declare every referenced variable.
+- Unknown keys (including `meta.author`) are rejected.
+
+Re-running `registry:scaffold` on an existing agent requires `--force`, since
+it overwrites manual edits (categories, dates, curated dependency list).
+
+## Slugs
+
+The agent folder slug is the public install name (`@evex/<slug>`), claimed
+first-come by the PR that adds it. Pick a name that describes what the agent
+does; slugs that impersonate other people's products, squat obvious future
+names, or collide confusingly with existing agents will be rejected in
+review. Renaming a slug after merge is a breaking change for everyone who
+installed it — treat slugs as permanent.
+
+## Generated output
+
+The generator emits JSON artifacts to `packages/agent-registry/generated/`
+(`catalog.json`, `items/<slug>.json`, and a lazy loader index). These are
+**not committed** — they regenerate automatically on `pnpm install` (root
+postinstall) and by the package `build`. The item endpoints embed file
+contents, while the catalog endpoint keeps descriptors only.
+
+The committed `.github/CODEOWNERS` (one entry per agent, owned by its
+`registry.json` author) is written **only** by the explicit
+`pnpm --filter @evex/agent-registry generate` — never by install or build,
+so a lifecycle hook can't silently mask a stale committed file. Run
+`generate` after adding an agent or changing an author, and commit the
+CODEOWNERS update; CI fails when it is stale.
+
+## Validate
 
 ```bash
-pnpm --filter @evex/agent-registry run check
-pnpm check
-pnpm build
+pnpm --filter @evex/agent-registry generate   # validate + regenerate artifacts
+pnpm check                                    # lint + registry validation
+pnpm typecheck                                # web app + packages
+pnpm typecheck:agents                         # every agent in registry/
+pnpm test                                     # schema/generator/contract tests
+pnpm build                                    # full build
 ```
 
-For a narrow registry-only change, at minimum run the registry generate and
-registry check commands.
+CI runs the same pipeline on every pull request, plus the standalone
+install smoke test for changed agents.
 
 ## Review checklist
 
-Before merging a PR:
+Automation covers schema shape, file/dependency sync, and env coverage.
+Reviewers focus on what machines cannot judge:
 
-- `registry.json.author` is present and is the author's GitHub username.
-- `registry.json.dependencies` contains the public runtime dependencies.
-- `.env.example` is present and declares every required env var when the agent
-  reads credentials or configuration from `process.env`.
-- `package.json.dependencies` supports local agent development.
-- declared files are readable and stay under `agent/`, `README.md`, or
-  `.env.example`.
-- generated `packages/agent-registry/src/generated/registry.ts` is up to date.
-- the web build still passes if the change affects public rendering.
+- `author` really is the PR author's GitHub username.
+- The agent does what the README/description claims, and instructions and
+  skills are appropriate.
+- Declared dependencies are reasonable for what the agent does.
+- `.env.example` values are placeholders, never real credentials.

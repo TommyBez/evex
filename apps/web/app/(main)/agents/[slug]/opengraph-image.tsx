@@ -1,6 +1,6 @@
-import { getSiteHost } from '@/lib/metadata'
+import { getAgentBySlug } from '@/lib/data/agents'
 import { createOgImage, ogImageContentType, ogImageSize } from '@/lib/og-image'
-import { getAgentBySlug } from '@/lib/queries'
+import { getSiteHost } from '@/lib/site-url'
 
 export const alt = 'Agent on evex'
 export const size = ogImageSize

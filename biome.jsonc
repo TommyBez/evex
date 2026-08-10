@@ -18,8 +18,11 @@
       "!apps/agents/*/.eve",
       "!apps/agents/*/.output",
       "!apps/agents/*/.vercel",
-      "!apps/web/components/ui/*",
-      "!apps/web/.next"
+      "!packages/ui/src/components/*",
+      "!packages/agent-registry/generated",
+      "!apps/web/.next",
+      "!apps/video/src/components/remocn",
+      "!apps/video/src/lib/remocn-ui"
     ]
   }
 }

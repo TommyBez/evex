@@ -1,21 +1,36 @@
+import { Button } from '@evex/ui/button'
+import { Skeleton } from '@evex/ui/skeleton'
 import { PackageSearch } from 'lucide-react'
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Suspense } from 'react'
 import { AgentCard } from '@/components/agent-card'
 import { BrowseFilters } from '@/components/browse-filters'
+import { HomeFaq } from '@/components/home-faq'
+import { JsonLd } from '@/components/json-ld'
 import { RegistryEmptyState } from '@/components/registry-empty-state'
 import { PopInNumber } from '@/components/transitions/pop-in-number'
-import { Button } from '@/components/ui/button'
-import { Skeleton } from '@/components/ui/skeleton'
+import { parseSort, sortAgents } from '@/lib/agents'
 import {
   applyInstallCounts,
   getAgentRuntimeState,
   sumInstallCounts,
-} from '@/lib/agent-runtime'
-import { parseSort, sortAgents } from '@/lib/agents'
-import { getInstallCountMap } from '@/lib/queries'
+} from '@/lib/data/agents'
+import { getInstallCountMap } from '@/lib/data/install-metrics'
+import { createPageMetadata } from '@/lib/metadata'
+import { getStaticRegistryStats, listStaticAgents } from '@/lib/registry'
 import { buildInstallCommand } from '@/lib/site-url'
-import { getStaticRegistryStats, listStaticAgents } from '@/lib/static-agents'
+import {
+  createAgentListSchema,
+  createHomeFaqSchema,
+} from '@/lib/structured-data'
+
+export const metadata: Metadata = createPageMetadata({
+  title: 'Vercel eve Agent Registry: Install eve Agents with One Command',
+  description:
+    "Community registry for agents built on eve, Vercel's agent framework. Browse configurations, preview every file before install, and add any agent with npx shadcn add @evex/{slug}.",
+  path: '/',
+})
 
 const STATS_SKELETON_LABELS = ['Agents', 'Installs', 'Authors'] as const
 const FILTER_SKELETON_CHIP_IDS = [
@@ -39,8 +54,11 @@ export default function HomePage({
 }: {
   searchParams: Promise<{ q?: string; category?: string; sort?: string }>
 }) {
+  const agents = listStaticAgents()
+
   return (
     <>
+      <JsonLd data={[createHomeFaqSchema(), createAgentListSchema(agents)]} />
       <Hero />
       <main className="mx-auto w-full min-w-0 max-w-6xl px-4 pb-20" id="agents">
         <section className="flex flex-col gap-6">
@@ -51,6 +69,7 @@ export default function HomePage({
             <AgentResults searchParams={searchParams} />
           </Suspense>
         </section>
+        <HomeFaq />
       </main>
     </>
   )
@@ -69,43 +88,23 @@ function Hero() {
       />
       <div className="mx-auto grid w-full min-w-0 max-w-6xl items-center gap-8 px-4 py-8 sm:px-6 sm:py-12 lg:grid-cols-[1.05fr_0.95fr] lg:gap-10 lg:py-16">
         <div className="min-w-0">
-          <span className="mono-label inline-flex items-center gap-2 rounded-full border border-border bg-background/60 py-1 pr-3 pl-2.5 text-muted-foreground backdrop-blur-sm">
-            <span aria-hidden="true" className="relative flex size-1.5">
-              <span className="absolute inline-flex size-full animate-ping rounded-full bg-brand opacity-60" />
-              <span className="relative inline-flex size-1.5 rounded-full bg-brand" />
-            </span>
+          <span className="mono-label inline-flex items-center rounded-full border border-border bg-background/60 px-3 py-1 text-muted-foreground backdrop-blur-sm">
             evex · the eve agent registry
           </span>
           <h1 className="mt-5 text-balance font-semibold text-4xl text-foreground leading-[1.05] sm:text-5xl">
-            Install Community Agents with{' '}
+            Install eve Agents with{' '}
             <span className="text-brand">One Command</span>
           </h1>
           <p className="mt-5 max-w-md text-pretty text-base text-muted-foreground leading-relaxed sm:text-lg">
-            Browse agent configurations built for the eve framework, then add
-            any of them to your project. Add your own by opening a pull request.
+            The community registry for eve agents. Preview every file before
+            install, then add any agent with one shadcn command.
           </p>
-          <div className="mt-6 flex flex-wrap items-center gap-4 sm:mt-8">
+          <div className="mt-6 sm:mt-8">
             <Button
-              className="h-10 rounded-md px-4"
+              className="h-11 w-full rounded-md px-4 min-[400px]:w-auto"
               render={<a href="#agents">Browse Agents</a>}
               size="lg"
             />
-            <a
-              className="inline-flex items-center gap-1.5 font-medium text-foreground text-sm underline-offset-4 transition-colors hover:text-brand hover:underline"
-              href="https://github.com/TommyBez/evex"
-              rel="noreferrer noopener"
-              target="_blank"
-            >
-              Open Repository
-            </a>
-            <a
-              className="inline-flex items-center gap-1.5 font-medium text-foreground text-sm underline-offset-4 transition-colors hover:text-brand hover:underline"
-              href="https://eve.dev/docs/introduction"
-              rel="noreferrer noopener"
-              target="_blank"
-            >
-              Read Docs →
-            </a>
           </div>
           <Suspense fallback={<StatsSkeleton />}>
             <Stats />
@@ -165,24 +164,16 @@ function StatsSkeleton() {
 function HeroDemo() {
   return (
     <div className="graphite-band w-full min-w-0 overflow-hidden rounded-md border border-white/10 shadow-[var(--shadow-card)] ring-1 ring-white/5">
-      <div className="flex items-center gap-3 border-white/10 border-b px-4 py-2.5">
-        <span aria-hidden="true" className="flex items-center gap-1.5">
-          <span className="size-2.5 rounded-full bg-white/15" />
-          <span className="size-2.5 rounded-full bg-white/15" />
-          <span className="size-2.5 rounded-full bg-white/15" />
-        </span>
+      <div className="flex items-center border-white/10 border-b px-4 py-2.5">
         <span className="mono-label text-graphite-foreground/70">
           ~/my-eve-app
-        </span>
-        <span className="mono-label ml-auto rounded-md bg-white/10 px-2 py-0.5 text-brand">
-          200 OK
         </span>
       </div>
       <pre className="whitespace-pre-wrap break-words px-4 py-4 font-mono text-xs leading-relaxed sm:py-5 sm:text-sm">
         <code>
           <span className="text-brand">$</span>{' '}
           <span className="text-graphite-foreground">
-            {buildInstallCommand('https://evex.sh', 'code-reviewer')}
+            {buildInstallCommand('code-reviewer')}
           </span>
           {'\n'}
           <span className="text-graphite-foreground/50">
@@ -255,19 +246,7 @@ async function AgentResults({
       >
         {hasActiveFilter ? (
           <Button render={<Link href="/">Clear filters</Link>} />
-        ) : (
-          <Button
-            render={
-              <a
-                href="https://github.com/TommyBez/evex"
-                rel="noreferrer noopener"
-                target="_blank"
-              >
-                Open Repository
-              </a>
-            }
-          />
-        )}
+        ) : null}
       </RegistryEmptyState>
     )
   }

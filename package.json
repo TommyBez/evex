@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": false,
   "author": "TommyBez",
+  "license": "MIT",
   "homepage": "https://evex.sh",
   "packageManager": "pnpm@10.33.0",
   "engines": {
@@ -10,16 +11,23 @@
   },
   "scripts": {
     "build": "turbo run build",
-    "db:generate": "pnpm --filter @evex/web db:generate",
-    "db:migrate": "pnpm --filter @evex/web db:migrate",
-    "db:push": "pnpm --filter @evex/web db:push",
-    "db:studio": "pnpm --filter @evex/web db:studio",
+    "db:generate": "pnpm --filter ./apps/web db:generate",
+    "db:migrate": "pnpm --filter ./apps/web db:migrate",
+    "db:push": "pnpm --filter ./apps/web db:push",
+    "db:studio": "pnpm --filter ./apps/web db:studio",
     "check": "turbo run check",
-    "dev": "turbo run dev --filter=@evex/web",
-    "email:preview": "pnpm --filter @evex/web email:preview",
+    "dev": "turbo run dev --filter=./apps/web",
+    "email:preview": "pnpm --filter ./apps/web email:preview",
     "fix": "turbo run fix",
-    "start": "pnpm --filter @evex/web start",
-    "typecheck": "turbo run typecheck"
+    "postinstall": "node packages/agent-registry/scripts/generate-registry.mts",
+    "registry:install": "pnpm --dir registry install",
+    "start": "pnpm --filter ./apps/web start",
+    "test": "turbo run test",
+    "typecheck": "turbo run typecheck",
+    "typecheck:agents": "pnpm --dir registry --recursive run typecheck",
+    "video:dev": "pnpm --filter @evex/video dev",
+    "video:render": "pnpm --filter @evex/video render",
+    "video:render:all": "pnpm --filter @evex/video render:all"
   },
   "devDependencies": {
     "turbo": "^2.8.0"
@@ -28,9 +36,5 @@
     "overrides": {
       "hono": "4.12.25"
     }
-  },
-  "dependencies": {
-    "react-markdown": "^10.1.0",
-    "remark-gfm": "^4.0.1"
   }
 }

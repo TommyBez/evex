@@ -1,0 +1,233 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "items": [
+    {
+      "name": "x-draft-assistant",
+      "type": "registry:item",
+      "title": "X Draft Assistant",
+      "description": "A scheduled Eve agent that scans a configured set of X (Twitter) profiles every day, surfaces hot topics from their recent posts, researches each topic with the [Parallel](https://parallel.ai/) web search API, and creates **three draft candidates** for X in [Typefully](https://typefully.com) so a human can review and publish them.",
+      "categories": [
+        "general"
+      ],
+      "dependencies": [
+        "eve@^0.18.2",
+        "parallel-web@^1.1.0",
+        "zod@4.3.6"
+      ],
+      "files": [
+        {
+          "path": "agent/agent.ts",
+          "type": "registry:file",
+          "target": "~/agent/agent.ts"
+        },
+        {
+          "path": "agent/instructions.md",
+          "type": "registry:file",
+          "target": "~/agent/instructions.md"
+        },
+        {
+          "path": "agent/lib/hot-topic-config.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/hot-topic-config.ts"
+        },
+        {
+          "path": "agent/lib/typefully-client.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/typefully-client.ts"
+        },
+        {
+          "path": "agent/schedules/daily-x-drafts.ts",
+          "type": "registry:file",
+          "target": "~/agent/schedules/daily-x-drafts.ts"
+        },
+        {
+          "path": "agent/skills/social/references/platform-limits.md",
+          "type": "registry:file",
+          "target": "~/agent/skills/social/references/platform-limits.md"
+        },
+        {
+          "path": "agent/skills/social/references/post-templates.md",
+          "type": "registry:file",
+          "target": "~/agent/skills/social/references/post-templates.md"
+        },
+        {
+          "path": "agent/skills/social/SKILL.md",
+          "type": "registry:file",
+          "target": "~/agent/skills/social/SKILL.md"
+        },
+        {
+          "path": "agent/skills/typefully-best-practices/references/exactly-once.md",
+          "type": "registry:file",
+          "target": "~/agent/skills/typefully-best-practices/references/exactly-once.md"
+        },
+        {
+          "path": "agent/skills/typefully-best-practices/references/x-automation.md",
+          "type": "registry:file",
+          "target": "~/agent/skills/typefully-best-practices/references/x-automation.md"
+        },
+        {
+          "path": "agent/skills/typefully-best-practices/SKILL.md",
+          "type": "registry:file",
+          "target": "~/agent/skills/typefully-best-practices/SKILL.md"
+        },
+        {
+          "path": "agent/tools/create_typefully_tag.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/create_typefully_tag.ts"
+        },
+        {
+          "path": "agent/tools/create_x_drafts.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/create_x_drafts.ts"
+        },
+        {
+          "path": "agent/tools/list_typefully_tags.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/list_typefully_tags.ts"
+        },
+        {
+          "path": "agent/tools/preview_x_draft.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/preview_x_draft.ts"
+        },
+        {
+          "path": "agent/tools/research_hot_topics.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/research_hot_topics.ts"
+        },
+        {
+          "path": "agent/tools/scan_x_profiles.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/scan_x_profiles.ts"
+        },
+        {
+          "path": "evals/create-confirmation.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/create-confirmation.eval.ts"
+        },
+        {
+          "path": "evals/evals.config.ts",
+          "type": "registry:file",
+          "target": "~/evals/evals.config.ts"
+        },
+        {
+          "path": "evals/failed-create-no-retry.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/failed-create-no-retry.eval.ts"
+        },
+        {
+          "path": "evals/missing-config-does-not-create.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/missing-config-does-not-create.eval.ts"
+        },
+        {
+          "path": "evals/x-draft-assistant.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/x-draft-assistant.eval.ts"
+        },
+        {
+          "path": "README.md",
+          "type": "registry:file",
+          "target": "~/agent/README.md"
+        },
+        {
+          "path": ".env.example",
+          "type": "registry:file",
+          "target": "~/.env.example"
+        }
+      ],
+      "meta": {
+        "slug": "x-draft-assistant",
+        "category": "general",
+        "createdAt": "2026-06-26T16:19:57.402Z",
+        "updatedAt": "2026-07-04T00:00:00.000Z",
+        "docs": {
+          "overview": [
+            "X Draft Assistant is a scheduled eve agent that turns what a watched set of X (Twitter) accounts posted in the last 24 hours into three ready-to-review draft posts in Typefully. Every day it scans the handles listed in X_HOT_TOPIC_HANDLES via the X API v2, clusters their recent posts into hot topics, researches each topic with the Parallel web search API, and writes three distinct draft candidates with cited sources.",
+            "You interact with it through a cron schedule rather than chat: the daily-x-drafts schedule fires at 08:00 UTC by default (configurable with X_HOT_TOPIC_DAILY_CRON), and the output lands as unscheduled drafts in your Typefully social set. The agent never publishes, schedules, replies, or likes anything, so a human always makes the final call on what goes live.",
+            "The safety model around draft creation is what makes this workable for teams that review before publishing. The agent previews every candidate in dry-run mode first, only creates drafts after an explicit confirmCreate flag, and attaches a per-run idempotency key to each draft so a retried step never produces a duplicate in Typefully. It labels posts with the X made-with-AI disclosure by default."
+          ],
+          "howItWorks": [
+            "On each scheduled run, the scan_x_profiles tool pulls recent posts (excluding retweets) from every handle in X_HOT_TOPIC_HANDLES using X API v2 app-only bearer auth, scoped to the X_HOT_TOPIC_LOOKBACK_HOURS window (default 24 hours) so topics do not repeat day over day.",
+            "The agent clusters those posts into up to X_HOT_TOPIC_MAX_TOPICS hot topics (default 5), treating recurring themes, launches, debates, or posts with outsized engagement as candidates and merging near-duplicates.",
+            "For each topic, the research_hot_topics tool queries the Parallel Search API with 2-3 focused keyword queries and returns up to X_HOT_TOPIC_SEARCH_MAX_RESULTS ranked web sources with provenance, in turbo, basic, or advanced mode.",
+            "Before drafting, the agent loads two skills: typefully-best-practices for X automation compliance and the exactly-once creation model, and social for hook formulas, post templates, and platform limits.",
+            "It then writes exactly X_HOT_TOPIC_DRAFT_COUNT (default 3) distinct candidates, each a single tweet or a 1-5 post thread within the 280-character limit, citing only post URLs returned by scan_x_profiles, and previews everything with preview_x_draft.",
+            "Finally, create_x_drafts creates the drafts in Typefully only when called with confirmCreate true and a unique idempotency key per draft; a bundled eval suite verifies the confirmation gate, the no-retry rule on failed creates, and that missing configuration never results in created drafts."
+          ],
+          "useCases": [
+            {
+              "title": "Daily content pipeline for a startup account",
+              "body": "Watch your own company handle plus a few competitors and ecosystem accounts. Each morning three researched draft candidates appear in Typefully, so whoever runs the account starts the day choosing between angles instead of staring at a blank composer."
+            },
+            {
+              "title": "Riding launch and announcement waves",
+              "body": "Point X_HOT_TOPIC_HANDLES at accounts like vercel or anthropicai. When they ship something, the agent surfaces it as a hot topic, backs it with Parallel web sources, and drafts commentary while the news is still fresh."
+            },
+            {
+              "title": "Developer relations topic monitoring",
+              "body": "A DevRel team tracks framework maintainers and community voices. The agent condenses the last 24 hours into at most five topics with cited sources, giving the team both draft posts and a quick research digest per run."
+            },
+            {
+              "title": "Compliance-safe AI drafting",
+              "body": "Because the agent never publishes or schedules drafts, labels them with the X made-with-AI disclosure by default, and deduplicates them with idempotency keys, teams with review requirements can adopt LLM drafting without risking unreviewed or duplicate posts."
+            }
+          ],
+          "requirements": [
+            {
+              "name": "X_BEARER_TOKEN",
+              "body": "App-only bearer token used to read public posts through the X API v2. Create an app in the X Developer Console and copy its bearer token."
+            },
+            {
+              "name": "X_HOT_TOPIC_HANDLES",
+              "body": "Comma-separated list of X handles to scan, with or without the @ prefix (for example vercel,parallel_ai,anthropicai). The agent stops and reports missing configuration if this is empty."
+            },
+            {
+              "name": "PARALLEL_API_KEY",
+              "body": "API key for the Parallel Search API, used to research each hot topic with ranked web sources. Get one at platform.parallel.ai."
+            },
+            {
+              "name": "TYPEFULLY_API_KEY",
+              "body": "Typefully API key used to create drafts and manage tags. Generate it from the API section of your Typefully settings at typefully.com/?settings=api."
+            },
+            {
+              "name": "TYPEFULLY_SOCIAL_SET_ID",
+              "body": "The Typefully social set (account) the drafts are created under. Find it by listing your social sets via the Typefully API or copying it from the Typefully URL for that account."
+            },
+            {
+              "name": "X_HOT_TOPIC_DAILY_CRON",
+              "body": "Optional 5-field cron expression controlling when the daily run fires, evaluated in UTC on Vercel. Defaults to 0 8 * * * (08:00 UTC daily)."
+            },
+            {
+              "name": "X_HOT_TOPIC_DRAFT_TAG",
+              "body": "Optional Typefully tag slug attached to every created draft. If the tag does not exist yet, the agent can list tags and create it on demand. Leave empty to skip tagging."
+            }
+          ],
+          "faqs": [
+            {
+              "question": "How do I install and run it?",
+              "answer": "Install with npx shadcn@latest add @evex/x-draft-assistant, copy .env.example into your eve app environment, and fill in the X, Parallel, and Typefully credentials plus at least one handle. In dev you can trigger a run manually by POSTing to /eve/v1/dev/schedules/daily-x-drafts."
+            },
+            {
+              "question": "Can it publish or schedule posts on X?",
+              "answer": "No, by design. The agent only creates drafts in Typefully in draft status; it never publishes, schedules, replies, likes, or reposts. A human reviews the three candidates in Typefully and decides what to publish."
+            },
+            {
+              "question": "Which model does the agent use?",
+              "answer": "The agent config sets deepseek/deepseek-v4-flash as the model in agent.ts. Since it is a standard eve agent definition, you can swap in another model supported by your eve deployment by editing that single line."
+            },
+            {
+              "question": "How does it avoid creating duplicate drafts?",
+              "answer": "Creation is a two-step operation: preview_x_draft first, then create_x_drafts with confirmCreate true and a unique idempotency key per draft, derived from the run's lookback window start. Replays within the same Node process return the cached result instead of posting again; replays across a serverless cold start can still re-post, which a durable store would be needed to close."
+            },
+            {
+              "question": "What limits and quotas should I know about?",
+              "answer": "Posts per profile are clamped between 5 and the X API maximum of 100 (default 20), topics per run default to 5, and each post respects the 280-character X limit. If Typefully returns a 429 rate limit, the agent does not retry in the same step; it defers to a later run reusing the same idempotency keys."
+            }
+          ]
+        }
+      },
+      "author": "TommyBez"
+    }
+  ]
+}

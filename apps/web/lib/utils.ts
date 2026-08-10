@@ -1,10 +1,3 @@
-import { type ClassValue, clsx } from 'clsx'
-import { twMerge } from 'tailwind-merge'
-
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
-}
-
 // Only allow same-origin absolute paths as post-auth redirect targets.
 // Rejects external URLs and protocol-relative (//host) values so a crafted
 // `?redirect=` cannot turn sign-in into an open redirect.

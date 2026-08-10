@@ -1,3 +1,7 @@
+import { Badge } from '@evex/ui/badge'
+import { Card } from '@evex/ui/card'
+import { Separator } from '@evex/ui/separator'
+import { Skeleton } from '@evex/ui/skeleton'
 import { ArrowLeft, Download, Package } from 'lucide-react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
@@ -9,21 +13,30 @@ import { AgentFileViewer } from '@/components/agent-file-viewer'
 import { AuthorAvatar } from '@/components/author-avatar'
 import { FavoriteButton } from '@/components/favorite-button'
 import { InstallCommand } from '@/components/install-command'
-import { Badge } from '@/components/ui/badge'
-import { Card } from '@/components/ui/card'
-import { Separator } from '@/components/ui/separator'
-import { Skeleton } from '@/components/ui/skeleton'
-import { applyInstallCounts, getAgentRuntimeState } from '@/lib/agent-runtime'
+import { JsonLd } from '@/components/json-ld'
+import { MobileInstallBar } from '@/components/mobile-install-bar'
+import {
+  compareRelatedAgents,
+  countFilesByKind,
+  getAgentInstallSummaryDescription,
+  getAgentMetadataTitle,
+  pluralize,
+} from '@/lib/agent-detail'
 import type { AgentRegistryFile, AgentWithAuthor } from '@/lib/agent-types'
 import { parseDependencies } from '@/lib/agents'
-import { createPageMetadata, getSiteUrl, siteConfig } from '@/lib/metadata'
-import { buildInstallCommand } from '@/lib/site-url'
+import { applyInstallCounts, getAgentRuntimeState } from '@/lib/data/agents'
+import { siteConfig, siteTwitterHandle } from '@/lib/metadata'
 import {
   getStaticAgentBySlug,
   getStaticAgentFiles,
   getStaticAgentsByAuthorUsername,
   listStaticAgents,
-} from '@/lib/static-agents'
+} from '@/lib/registry'
+import {
+  createAgentBreadcrumbSchema,
+  createAgentFaqSchema,
+  createAgentSoftwareSchema,
+} from '@/lib/structured-data'
 
 export function generateStaticParams() {
   const agents = listStaticAgents()
@@ -31,122 +44,14 @@ export function generateStaticParams() {
 }
 
 const MAX_RELATED_AGENTS = 3
-const METADATA_TITLE_MAX_LENGTH = 60
-const SUBAGENT_PATH_REGEX = /^agent\/subagents\/([^/]+)/
-const SKILL_PATH_REGEX = /\/skills\//
-const TOOL_PATH_REGEX = /\/tools\//
 const UPDATED_DATE_FORMATTER = new Intl.DateTimeFormat('en', {
   day: 'numeric',
   month: 'short',
   year: 'numeric',
 })
 
-function pluralize(count: number, singular: string, plural = `${singular}s`) {
-  return `${count} ${count === 1 ? singular : plural}`
-}
-
 function formatUpdatedDate(date: Date): string {
   return UPDATED_DATE_FORMATTER.format(date)
-}
-
-function countFilesByKind(files: readonly AgentRegistryFile[]) {
-  const subagentNames = new Set<string>()
-  let skills = 0
-  let tools = 0
-
-  for (const file of files) {
-    const subagentMatch = file.path.match(SUBAGENT_PATH_REGEX)
-    if (subagentMatch?.[1]) {
-      subagentNames.add(subagentMatch[1])
-      continue
-    }
-
-    if (SKILL_PATH_REGEX.test(file.path)) {
-      skills += 1
-      continue
-    }
-
-    if (TOOL_PATH_REGEX.test(file.path)) {
-      tools += 1
-    }
-  }
-
-  return {
-    skills,
-    subagents: subagentNames.size,
-    tools,
-  }
-}
-
-function getAgentInstallSummaryDescription({
-  deps,
-  fileKinds,
-}: {
-  deps: readonly string[]
-  fileKinds: ReturnType<typeof countFilesByKind>
-}) {
-  const fileParts = [
-    fileKinds.subagents > 0 ? pluralize(fileKinds.subagents, 'subagent') : null,
-    fileKinds.skills > 0 ? pluralize(fileKinds.skills, 'skill file') : null,
-    fileKinds.tools > 0 ? pluralize(fileKinds.tools, 'tool') : null,
-  ].filter((part): part is string => Boolean(part))
-
-  return {
-    installs:
-      fileParts.length > 0 ? fileParts.join(' · ') : 'Core agent files only',
-    requires: deps.length > 0 ? deps.join(', ') : 'Runs on the eve baseline',
-  }
-}
-
-function getAgentMetadataTitle(agent: AgentWithAuthor): string {
-  const installTitle = `${agent.name} - install @evex/${agent.slug}`
-  if (installTitle.length <= METADATA_TITLE_MAX_LENGTH) {
-    return installTitle
-  }
-
-  const compactTitle = `${agent.name} - @evex/${agent.slug}`
-  if (compactTitle.length <= METADATA_TITLE_MAX_LENGTH) {
-    return compactTitle
-  }
-
-  return `${agent.name} | evex`
-}
-
-function compareRelatedAgents(
-  currentAgent: AgentWithAuthor,
-  installCounts: ReadonlyMap<string, number>,
-) {
-  return (left: AgentWithAuthor, right: AgentWithAuthor) => {
-    const leftCategoryMatch = left.category === currentAgent.category ? 1 : 0
-    const rightCategoryMatch = right.category === currentAgent.category ? 1 : 0
-
-    if (leftCategoryMatch !== rightCategoryMatch) {
-      return rightCategoryMatch - leftCategoryMatch
-    }
-
-    const leftInstalls = installCounts.get(left.id) ?? 0
-    const rightInstalls = installCounts.get(right.id) ?? 0
-    if (leftInstalls !== rightInstalls) {
-      return rightInstalls - leftInstalls
-    }
-
-    const leftUpdatedAt = left.updatedAt.getTime()
-    const rightUpdatedAt = right.updatedAt.getTime()
-    if (leftUpdatedAt !== rightUpdatedAt) {
-      return rightUpdatedAt - leftUpdatedAt
-    }
-
-    const currentAuthor = currentAgent.authorUsername?.toLowerCase() ?? ''
-    const leftAuthorMatch =
-      left.authorUsername?.toLowerCase() === currentAuthor ? 1 : 0
-    const rightAuthorMatch =
-      right.authorUsername?.toLowerCase() === currentAuthor ? 1 : 0
-    if (leftAuthorMatch !== rightAuthorMatch) {
-      return rightAuthorMatch - leftAuthorMatch
-    }
-
-    return left.name.localeCompare(right.name)
-  }
 }
 
 export async function generateMetadata({
@@ -157,12 +62,10 @@ export async function generateMetadata({
   const { slug } = await params
   const agent = getStaticAgentBySlug(slug)
   if (!agent) {
-    return createPageMetadata({
-      title: 'Agent not found',
-      description: 'This evex registry item is no longer available.',
-      path: `/agents/${slug}`,
-      noIndex: true,
-    })
+    // Unknown slugs render the not-found page. With cacheComponents the
+    // fallback shell still streams a 200, but Next injects a robots noindex
+    // meta into that response, keeping arbitrary URLs out of the index.
+    notFound()
   }
 
   const path = `/agents/${agent.slug}`
@@ -171,8 +74,19 @@ export async function generateMetadata({
   return {
     title,
     description: agent.description,
+    keywords: [
+      agent.name,
+      `@evex/${agent.slug}`,
+      agent.category,
+      'eve agent',
+      'vercel eve',
+      'shadcn registry',
+    ],
     alternates: {
       canonical: path,
+      types: {
+        'text/markdown': `${path}.md`,
+      },
     },
     openGraph: {
       title,
@@ -189,39 +103,41 @@ export async function generateMetadata({
     },
     twitter: {
       card: 'summary_large_image',
+      site: siteTwitterHandle,
+      creator: siteTwitterHandle,
       title,
       description: agent.description,
     },
   }
 }
 
-export default function AgentDetailPage({
+export default async function AgentDetailPage({
   params,
 }: {
   params: Promise<{ slug: string }>
 }) {
-  return (
-    <Suspense fallback={<AgentDetailSkeleton />}>
-      {params.then(({ slug }) => (
-        <AgentDetailContent slug={slug} />
-      ))}
-    </Suspense>
-  )
-}
-
-function AgentDetailContent({ slug }: { slug: string }) {
+  // Resolve the agent before the Suspense boundary so unknown slugs render
+  // the not-found page (with its noindex meta) instead of streaming the
+  // agent skeleton first.
+  const { slug } = await params
   const agent = getStaticAgentBySlug(slug)
   if (!agent) {
     notFound()
   }
 
-  const files = getStaticAgentFiles(agent.slug)
-  const baseUrl = getSiteUrl()
+  return (
+    <Suspense fallback={<AgentDetailSkeleton />}>
+      <AgentDetailContent agent={agent} />
+    </Suspense>
+  )
+}
+
+async function AgentDetailContent({ agent }: { agent: AgentWithAuthor }) {
+  const files = await getStaticAgentFiles(agent.slug)
   const authorAgents = agent.authorUsername
     ? getStaticAgentsByAuthorUsername(agent.authorUsername)
     : []
   const relatedCandidates = listStaticAgents().filter((a) => a.id !== agent.id)
-  const installCommand = buildInstallCommand(baseUrl, agent.slug)
   const deps = parseDependencies(agent.dependencies)
   const fileKinds = countFilesByKind(files)
   const moreFromAuthorCount = authorAgents.filter(
@@ -229,9 +145,9 @@ function AgentDetailContent({ slug }: { slug: string }) {
   ).length
 
   return (
-    <main className="mx-auto w-full min-w-0 max-w-4xl px-4 py-10">
+    <main className="mx-auto w-full min-w-0 max-w-4xl px-4 pt-10 pb-28 sm:pb-10">
       <Link
-        className="inline-flex items-center gap-1.5 text-muted-foreground text-sm hover:text-foreground"
+        className="inline-flex min-h-9 items-center gap-1.5 text-muted-foreground text-sm hover:text-foreground"
         href="/"
       >
         <ArrowLeft aria-hidden="true" className="size-4" />
@@ -247,11 +163,19 @@ function AgentDetailContent({ slug }: { slug: string }) {
             <h1 className="text-balance font-semibold text-2xl text-foreground">
               {agent.name}
             </h1>
-            <Badge className="capitalize" variant="secondary">
-              {agent.category}
-            </Badge>
+            <Link
+              aria-label={`Browse ${agent.category} agents`}
+              href={`/?category=${agent.category}`}
+            >
+              <Badge
+                className="capitalize transition-colors hover:bg-muted hover:text-foreground"
+                variant="secondary"
+              >
+                {agent.category}
+              </Badge>
+            </Link>
             <Suspense fallback={<AgentDetailRuntimeFallback />}>
-              <AgentDetailRuntimeControls agentId={agent.id} />
+              <AgentDetailRuntimeSection agent={agent} />
             </Suspense>
           </div>
           <p className="mt-1 max-w-2xl text-pretty text-muted-foreground">
@@ -295,8 +219,8 @@ function AgentDetailContent({ slug }: { slug: string }) {
         </p>
         <div className="mt-4">
           <InstallCommand
-            command={installCommand}
             label={`${agent.name} install command`}
+            slug={agent.slug}
           />
         </div>
         <AgentInstallSummary agent={agent} deps={deps} files={files} />
@@ -336,15 +260,11 @@ function AgentDetailContent({ slug }: { slug: string }) {
         )}
       </section>
 
+      <AgentDocsSection agent={agent} />
+
       <Separator className="my-8" />
 
       <section>
-        <div className="mb-4 flex items-center gap-2">
-          <h2 className="font-semibold text-foreground text-lg">Files</h2>
-          <span className="mono-label font-pixel text-muted-foreground/70 tabular-nums">
-            {files.length}
-          </span>
-        </div>
         <AgentFileViewer files={files} />
       </section>
 
@@ -359,7 +279,129 @@ function AgentDetailContent({ slug }: { slug: string }) {
           />
         </Suspense>
       )}
+
+      <MobileInstallBar
+        label={`${agent.name} install command (quick copy)`}
+        slug={agent.slug}
+      />
     </main>
+  )
+}
+
+function AgentDocsSection({ agent }: { agent: AgentWithAuthor }) {
+  const { docs } = agent
+  if (!docs) {
+    return null
+  }
+
+  const faqSchema = createAgentFaqSchema(agent)
+
+  return (
+    <>
+      {faqSchema ? <JsonLd data={faqSchema} /> : null}
+      <Separator className="my-8" />
+      <section>
+        <h2 className="font-semibold text-foreground text-lg">
+          About {agent.name}
+        </h2>
+        <div className="mt-3 grid gap-3 text-muted-foreground leading-relaxed">
+          {docs.overview.map((paragraph) => (
+            <p key={paragraph}>{paragraph}</p>
+          ))}
+        </div>
+      </section>
+
+      <section className="mt-8">
+        <h2 className="font-semibold text-foreground text-lg">How it works</h2>
+        <ol className="mt-3 grid list-decimal gap-2 pl-5 text-muted-foreground leading-relaxed">
+          {docs.howItWorks.map((step) => (
+            <li key={step}>{step}</li>
+          ))}
+        </ol>
+      </section>
+
+      <section className="mt-8">
+        <h2 className="font-semibold text-foreground text-lg">Use cases</h2>
+        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          {docs.useCases.map((useCase) => (
+            <div
+              className="rounded-md border border-border bg-background p-4"
+              key={useCase.title}
+            >
+              <h3 className="font-medium text-foreground">{useCase.title}</h3>
+              <p className="mt-1.5 text-muted-foreground text-sm leading-relaxed">
+                {useCase.body}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {docs.requirements.length > 0 && (
+        <section className="mt-8">
+          <h2 className="font-semibold text-foreground text-lg">
+            Requirements
+          </h2>
+          <dl className="mt-3 grid gap-px overflow-hidden rounded-md border border-border bg-border">
+            {docs.requirements.map((requirement) => (
+              <div className="bg-background p-3" key={requirement.name}>
+                <dt className="font-medium font-mono text-foreground text-sm">
+                  {requirement.name}
+                </dt>
+                <dd className="mt-1 text-muted-foreground text-sm leading-relaxed">
+                  {requirement.body}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+      )}
+
+      <section className="mt-8">
+        <h2 className="font-semibold text-foreground text-lg">FAQ</h2>
+        <div className="mt-3 divide-y divide-border rounded-md border border-border">
+          {docs.faqs.map((faq) => (
+            <div className="p-4" key={faq.question}>
+              <h3 className="font-medium text-foreground">{faq.question}</h3>
+              <p className="mt-2 text-muted-foreground text-sm leading-relaxed">
+                {faq.answer}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+    </>
+  )
+}
+
+async function AgentDetailRuntimeSection({
+  agent,
+}: {
+  agent: AgentWithAuthor
+}) {
+  const runtimeState = await getAgentRuntimeState([agent.id])
+  const installCount = runtimeState.installCounts.get(agent.id) ?? 0
+
+  return (
+    <>
+      <JsonLd
+        data={[
+          createAgentSoftwareSchema(agent, installCount),
+          createAgentBreadcrumbSchema(agent),
+        ]}
+      />
+      <FavoriteButton
+        agentId={agent.id}
+        initialIsFavorite={runtimeState.favoriteAgentIdSet.has(agent.id)}
+        isAuthenticated={runtimeState.isAuthenticated}
+        key={`${agent.id}:${runtimeState.favoriteAgentIdSet.has(agent.id)}`}
+        showLabel
+      />
+      <span className="flex items-center gap-1.5">
+        <Download aria-hidden="true" className="size-4" />
+        <span className="font-pixel tabular-nums">{installCount}</span> installs
+      </span>
+    </>
   )
 }
 
@@ -381,13 +423,16 @@ function AgentInstallSummary({
       description: `${agent.category} agents and workflows`,
     },
     {
-      label: 'Installs',
+      label: 'Files',
       value: pluralize(files.length, 'file'),
       description: descriptions.installs,
     },
     {
       label: 'Requires',
-      value: deps.length > 0 ? `${deps.length} dependencies` : 'No extras',
+      value:
+        deps.length > 0
+          ? pluralize(deps.length, 'dependency', 'dependencies')
+          : 'No extras',
       description: descriptions.requires,
     },
     {
@@ -421,27 +466,6 @@ function AgentDetailRuntimeFallback() {
       <span className="flex items-center gap-1.5">
         <Download aria-hidden="true" className="size-4" />
         <Skeleton className="h-4 w-16" />
-      </span>
-    </>
-  )
-}
-
-async function AgentDetailRuntimeControls({ agentId }: { agentId: string }) {
-  const runtimeState = await getAgentRuntimeState([agentId])
-  const installCount = runtimeState.installCounts.get(agentId) ?? 0
-
-  return (
-    <>
-      <FavoriteButton
-        agentId={agentId}
-        initialIsFavorite={runtimeState.favoriteAgentIdSet.has(agentId)}
-        isAuthenticated={runtimeState.isAuthenticated}
-        key={`${agentId}:${runtimeState.favoriteAgentIdSet.has(agentId)}`}
-        showLabel
-      />
-      <span className="flex items-center gap-1.5">
-        <Download aria-hidden="true" className="size-4" />
-        <span className="font-pixel tabular-nums">{installCount}</span> installs
       </span>
     </>
   )

@@ -1,9 +1,3 @@
-import { Download, Trophy } from 'lucide-react'
-import type { Metadata } from 'next'
-import Link from 'next/link'
-import { Suspense } from 'react'
-import { AuthorAvatar } from '@/components/author-avatar'
-import { RegistryEmptyMessage } from '@/components/registry-empty-state'
 import {
   Item,
   ItemActions,
@@ -12,15 +6,21 @@ import {
   ItemGroup,
   ItemMedia,
   ItemTitle,
-} from '@/components/ui/item'
-import { Skeleton } from '@/components/ui/skeleton'
+} from '@evex/ui/item'
+import { Skeleton } from '@evex/ui/skeleton'
+import { Download } from 'lucide-react'
+import type { Metadata } from 'next'
+import Link from 'next/link'
+import { Suspense } from 'react'
+import { AuthorAvatar } from '@/components/author-avatar'
+import { RegistryEmptyMessage } from '@/components/registry-empty-state'
+import { getTopAgents, getTopAuthors } from '@/lib/data/leaderboard'
 import { createPageMetadata } from '@/lib/metadata'
-import { getTopAgents, getTopAuthors } from '@/lib/queries'
 
 export const metadata: Metadata = createPageMetadata({
-  title: 'Leaderboard',
+  title: 'Leaderboard | Top eve Agents and Authors',
   description:
-    'The most installed agents and top authors on the evex registry.',
+    'See the most installed eve agents and top publishing authors on the evex community registry.',
   path: '/leaderboard',
 })
 
@@ -37,10 +37,6 @@ export default function LeaderboardPage() {
   return (
     <main className="mx-auto w-full min-w-0 max-w-5xl px-4 py-10">
       <header className="flex flex-col gap-3">
-        <span className="mono-label inline-flex items-center gap-2 text-muted-foreground">
-          <Trophy aria-hidden="true" className="size-4 text-brand" />
-          leaderboard
-        </span>
         <h1 className="text-balance font-semibold text-3xl text-foreground">
           Top Agents and Authors
         </h1>

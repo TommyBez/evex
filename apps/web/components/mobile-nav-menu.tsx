@@ -1,7 +1,17 @@
 'use client'
 
+import { Button } from '@evex/ui/button'
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from '@evex/ui/drawer'
 import {
   ExternalLink,
+  FileText,
   Heart,
   LogIn,
   Menu,
@@ -10,15 +20,6 @@ import {
   UserRound,
 } from 'lucide-react'
 import Link from 'next/link'
-import { Button } from '@/components/ui/button'
-import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from '@/components/ui/drawer'
 
 export function MobileNavMenu({
   isAuthenticated,
@@ -52,6 +53,18 @@ export function MobileNavMenu({
                 className="size-4 text-muted-foreground"
               />
               Browse
+            </Link>
+          </DrawerClose>
+          <DrawerClose asChild>
+            <Link
+              className="flex min-h-11 items-center gap-3 rounded-md px-3 font-medium text-sm transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+              href="/docs"
+            >
+              <FileText
+                aria-hidden="true"
+                className="size-4 text-muted-foreground"
+              />
+              Docs
             </Link>
           </DrawerClose>
           <DrawerClose asChild>

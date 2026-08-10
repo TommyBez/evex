@@ -1,0 +1,5 @@
+/* Referenced by components.json (shadcn CLI). Remotion compositions style
+   themselves inline, so this file only sets the color scheme. */
+:root {
+  color-scheme: dark;
+}

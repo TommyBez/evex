@@ -1,0 +1,103 @@
+# Standalone smoke test: installs each changed agent with
+# `pnpm install --ignore-workspace` and typechecks it in isolation, proving
+# the agent package works outside the monorepo — the situation a consumer is
+# in after `npx shadcn add @evex/<slug>`. Workspace-integrated typechecking of
+# all agents runs in ci.yml via `turbo run typecheck`.
+name: Agent standalone smoke test
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+    paths:
+      - "registry/**"
+      - "packages/agent-registry/scripts/typecheck-agents.mjs"
+      - ".github/workflows/typecheck-agents.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "registry/**"
+      - "packages/agent-registry/scripts/typecheck-agents.mjs"
+      - ".github/workflows/typecheck-agents.yml"
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    outputs:
+      agents: ${{ steps.list.outputs.agents }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          # Full history so the diff base (PR base branch / previous push
+          # commit) is available locally.
+          fetch-depth: 0
+      - id: list
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          BEFORE_SHA: ${{ github.event.before }}
+        run: |
+          set -euo pipefail
+
+          all_agents=$(ls -d registry/*/ | xargs -n1 basename | grep -v '^node_modules$')
+
+          list_changed_files() {
+            if [ "$EVENT_NAME" = "pull_request" ]; then
+              git diff --name-only "$BASE_SHA...HEAD"
+              return
+            fi
+            if [ -n "$BEFORE_SHA" ] \
+              && ! echo "$BEFORE_SHA" | grep -qE '^0+$' \
+              && git cat-file -e "$BEFORE_SHA^{commit}" 2>/dev/null; then
+              git diff --name-only "$BEFORE_SHA" HEAD
+              return
+            fi
+            # New branch or force push with an unknown base: check everything.
+            echo "__all__"
+          }
+
+          changed=$(list_changed_files)
+
+          # Changes to the typecheck script or this workflow affect every
+          # agent, so fall back to the full list.
+          if echo "$changed" | grep -qE '^(__all__|packages/agent-registry/scripts/typecheck-agents\.mjs|\.github/workflows/typecheck-agents\.yml)$'; then
+            agents="$all_agents"
+          else
+            touched=$(echo "$changed" \
+              | sed -n 's|^registry/\([^/]*\)/.*|\1|p' \
+              | sort -u)
+            # Keep only agents that still exist, skipping ones deleted here.
+            agents=$(comm -12 <(echo "$all_agents" | sort) <(echo "$touched"))
+          fi
+
+          echo "Agents to typecheck:"
+          echo "${agents:-<none>}"
+          echo "agents=$(echo "$agents" | grep . | jq -R . | jq -cs .)" >> "$GITHUB_OUTPUT"
+
+  typecheck:
+    needs: discover
+    if: needs.discover.outputs.agents != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        agent: ${{ fromJSON(needs.discover.outputs.agents) }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      # No version input: pnpm/action-setup reads the packageManager field
+      # from the root package.json; pinning both makes the action error out.
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: registry/${{ matrix.agent }}/package.json
+      - name: Typecheck ${{ matrix.agent }}
+        env:
+          AGENT: ${{ matrix.agent }}
+        run: node packages/agent-registry/scripts/typecheck-agents.mjs "$AGENT"

@@ -1,11 +1,19 @@
+import { Toaster } from '@evex/ui/sonner'
+import { TooltipProvider } from '@evex/ui/tooltip'
 import { Analytics } from '@vercel/analytics/next'
 import { GeistMono } from 'geist/font/mono'
 import { GeistPixelSquare } from 'geist/font/pixel'
 import { GeistSans } from 'geist/font/sans'
 import type { Metadata, Viewport } from 'next'
+import { JsonLd } from '@/components/json-ld'
 import { ThemeProvider } from '@/components/theme-provider'
-import { Toaster } from '@/components/ui/sonner'
-import { getMetadataBase, siteConfig } from '@/lib/metadata'
+import { isProduction } from '@/lib/env'
+import { siteConfig, siteTwitterHandle } from '@/lib/metadata'
+import { getMetadataBase } from '@/lib/site-url'
+import {
+  createOrganizationSchema,
+  createWebsiteSchema,
+} from '@/lib/structured-data'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -17,7 +25,20 @@ export const metadata: Metadata = {
   },
   description: siteConfig.description,
   generator: 'Next.js',
-  keywords: ['evex', 'eve', 'agents', 'registry', 'shadcn'],
+  keywords: [
+    'evex',
+    'eve',
+    'eve agents',
+    'eve framework',
+    'vercel eve',
+    'agent registry',
+    'shadcn registry',
+    'install eve agent',
+    'AI agents',
+    'AI agent recipes',
+    'npx shadcn add',
+    'developer tools',
+  ],
   authors: [{ name: siteConfig.name }],
   creator: siteConfig.name,
   publisher: siteConfig.name,
@@ -39,6 +60,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
+    site: siteTwitterHandle,
+    creator: siteTwitterHandle,
     title: siteConfig.title,
     description: siteConfig.description,
   },
@@ -57,6 +80,11 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   colorScheme: 'light dark',
+  width: 'device-width',
+  initialScale: 1,
+  // Let content extend under the notch/home indicator so `env(safe-area-inset-*)`
+  // padding can position sticky mobile UI correctly.
+  viewportFit: 'cover',
   themeColor: [
     { media: '(prefers-color-scheme: light)', color: 'white' },
     { media: '(prefers-color-scheme: dark)', color: 'black' },
@@ -75,10 +103,11 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="font-sans antialiased">
+        <JsonLd data={[createOrganizationSchema(), createWebsiteSchema()]} />
         <ThemeProvider>
-          {children}
+          <TooltipProvider>{children}</TooltipProvider>
           <Toaster />
-          {process.env.NODE_ENV === 'production' && <Analytics />}
+          {isProduction && <Analytics />}
         </ThemeProvider>
       </body>
     </html>

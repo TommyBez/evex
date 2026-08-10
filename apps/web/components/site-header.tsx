@@ -1,13 +1,13 @@
-import { headers } from 'next/headers'
+import { Button } from '@evex/ui/button'
+import { Skeleton } from '@evex/ui/skeleton'
 import Link from 'next/link'
 import { BrandMark } from '@/components/brand-mark'
 import { GitHubStarButton } from '@/components/github-star-button'
 import { MobileNavMenu } from '@/components/mobile-nav-menu'
+import { NavLink } from '@/components/nav-link'
 import { ThemeToggle } from '@/components/theme-toggle'
-import { Button } from '@/components/ui/button'
-import { Skeleton } from '@/components/ui/skeleton'
 import { UserMenu } from '@/components/user-menu'
-import { auth } from '@/lib/auth'
+import { getCurrentUser } from '@/lib/current-user'
 
 export function SiteHeaderFallback() {
   return (
@@ -23,6 +23,12 @@ export function SiteHeaderFallback() {
             href="/"
           >
             Browse
+          </Link>
+          <Link
+            className="hidden font-medium text-muted-foreground text-sm sm:inline-flex"
+            href="/docs"
+          >
+            Docs
           </Link>
           <Link
             className="hidden font-medium text-muted-foreground text-sm sm:inline-flex"
@@ -43,8 +49,7 @@ export function SiteHeaderFallback() {
 }
 
 export async function SiteHeader() {
-  const session = await auth.api.getSession({ headers: await headers() })
-  const user = session?.user
+  const user = await getCurrentUser()
 
   return (
     <header className="sticky top-0 z-40 w-full border-border border-b bg-background/90 backdrop-blur-md">
@@ -54,25 +59,23 @@ export async function SiteHeader() {
             <BrandMark />
             <span className="brand-wordmark">evex</span>
           </Link>
-          <Link
-            className="hidden font-medium text-muted-foreground text-sm transition-colors hover:text-foreground sm:inline-flex"
+          <NavLink
+            activePrefixes={['/agents', '/authors']}
+            className="hidden sm:inline-flex"
             href="/"
           >
             Browse
-          </Link>
-          <Link
-            className="hidden font-medium text-muted-foreground text-sm transition-colors hover:text-foreground sm:inline-flex"
-            href="/leaderboard"
-          >
+          </NavLink>
+          <NavLink className="hidden sm:inline-flex" href="/docs">
+            Docs
+          </NavLink>
+          <NavLink className="hidden sm:inline-flex" href="/leaderboard">
             Leaderboard
-          </Link>
+          </NavLink>
           {user ? (
-            <Link
-              className="hidden font-medium text-muted-foreground text-sm transition-colors hover:text-foreground sm:inline-flex"
-              href="/favorites"
-            >
+            <NavLink className="hidden sm:inline-flex" href="/favorites">
               Favorites
-            </Link>
+            </NavLink>
           ) : null}
         </div>
 

@@ -1,5 +1,5 @@
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { cn } from '@/lib/utils'
+import { Avatar, AvatarFallback, AvatarImage } from '@evex/ui/avatar'
+import { cn } from '@evex/ui/lib/utils'
 
 // Renders an author's avatar image, falling back to their initials.
 // Size and font scale are controlled via `className` (e.g. "size-5", "size-20 text-3xl").

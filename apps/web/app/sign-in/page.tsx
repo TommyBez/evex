@@ -1,9 +1,8 @@
-import { headers } from 'next/headers'
+import { Skeleton } from '@evex/ui/skeleton'
 import { redirect } from 'next/navigation'
 import { Suspense } from 'react'
 import { AuthForm } from '@/components/auth-form'
-import { Skeleton } from '@/components/ui/skeleton'
-import { auth } from '@/lib/auth'
+import { getCurrentUser } from '@/lib/current-user'
 import { createPageMetadata } from '@/lib/metadata'
 import { getSafeRedirectPath } from '@/lib/utils'
 
@@ -31,13 +30,12 @@ async function SignInContent({
 }: {
   searchParams: Promise<{ redirect?: string }>
 }) {
-  const [requestHeaders, { redirect: redirectParam }] = await Promise.all([
-    headers(),
+  const [user, { redirect: redirectParam }] = await Promise.all([
+    getCurrentUser(),
     searchParams,
   ])
-  const session = await auth.api.getSession({ headers: requestHeaders })
   const redirectTo = getSafeRedirectPath(redirectParam)
-  if (session?.user) {
+  if (user) {
     redirect(redirectTo)
   }
   return <AuthForm mode="sign-in" redirectTo={redirectTo} />

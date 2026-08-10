@@ -1,0 +1,37 @@
+{
+  "name": "@evex/video",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "check": "ultracite check",
+    "dev": "remotion studio",
+    "fix": "ultracite fix",
+    "render": "remotion render",
+    "render:all": "node scripts/render-all.mts",
+    "still": "remotion still",
+    "typecheck": "tsc --noEmit --pretty false"
+  },
+  "dependencies": {
+    "@paper-design/shaders-react": "^0.0.77",
+    "@remotion/cli": "4.0.484",
+    "@remotion/fonts": "4.0.484",
+    "@remotion/google-fonts": "4.0.484",
+    "@remotion/transitions": "4.0.484",
+    "culori": "^4.0.2",
+    "date-fns": "^4.4.0",
+    "geist": "1.7.2",
+    "lucide-react": "^1.17.0",
+    "react": "^19",
+    "react-dom": "^19",
+    "remotion": "4.0.484"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.4.16",
+    "@types/culori": "^4.0.1",
+    "@types/node": "^24",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "typescript": "5.7.3",
+    "ultracite": "7.8.3"
+  }
+}
