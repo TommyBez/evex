@@ -25,6 +25,7 @@ describe('shouldCountInstall', () => {
     expect(shouldCountInstall(GOOGLEBOT_USER_AGENT)).toBe(false)
     expect(shouldCountInstall(BINGBOT_USER_AGENT)).toBe(false)
     expect(shouldCountInstall(GPTBOT_USER_AGENT)).toBe(false)
+    expect(shouldCountInstall('curl/8.5.0 GoogleBot')).toBe(false)
   })
 
   it('counts the shadcn CLI fetch clients', () => {
