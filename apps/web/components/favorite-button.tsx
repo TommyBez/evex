@@ -12,16 +12,23 @@ import { toggleFavorite } from '@/app/actions/favorites'
 
 export function FavoriteButton({
   agentId,
+  agentAuthor = null,
   className,
   initialIsFavorite,
   isAuthenticated,
   showLabel = false,
+  viewerIsAuthor = null,
 }: {
   agentId: string
+  // Author attribution for analytics. Both default to null ("unknown")
+  // instead of false, so surfaces that cannot resolve the viewer's GitHub
+  // identity are visibly blind rather than silently reported as non-authors.
+  agentAuthor?: string | null
   className?: string
   initialIsFavorite: boolean
   isAuthenticated: boolean
   showLabel?: boolean
+  viewerIsAuthor?: boolean | null
 }) {
   const router = useRouter()
   const [isFavorite, setIsFavorite] = useState(() => initialIsFavorite)
@@ -53,8 +60,10 @@ export function FavoriteButton({
 
         setIsFavorite(result.isFavorite)
         posthog.capture('favorite_updated', {
+          agent_author: agentAuthor,
           agent_id: agentId,
           is_favorite: result.isFavorite,
+          viewer_is_author: viewerIsAuthor,
         })
         toast.success(
           result.isFavorite ? 'Saved to favorites' : 'Removed from favorites',

@@ -12,6 +12,7 @@ import { NativeSelect, NativeSelectOption } from '@evex/ui/native-select'
 import { ToggleGroup, ToggleGroupItem } from '@evex/ui/toggle-group'
 import { Search, X } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import posthog from 'posthog-js'
 import { useCallback, useEffect, useRef, useState, useTransition } from 'react'
 import {
   AGENT_CATEGORIES,
@@ -71,6 +72,9 @@ export function BrowseFilters() {
   const [isPending, startTransition] = useTransition()
   const searchInputRef = useRef<HTMLInputElement>(null)
   const searchTimeoutRef = useRef<number | null>(null)
+  // Last search term reported to analytics. Seeded from the URL so landing on
+  // /?q=foo does not report a search the visitor never typed.
+  const trackedSearchRef = useRef(params.get('q') ?? '')
 
   const activeCategory = params.get('category') ?? DEFAULT_CATEGORY
   const activeSearch = params.get('q') ?? ''
@@ -111,6 +115,9 @@ export function BrowseFilters() {
   // Adopt external URL changes (back/forward navigation, "clear all") unless
   // the user is actively typing in the field.
   useEffect(() => {
+    // Always follow the applied query, even while typing: re-typing a term
+    // after it was cleared elsewhere is a new search and must be reported.
+    trackedSearchRef.current = activeSearch
     if (document.activeElement === searchInputRef.current) {
       return
     }
@@ -143,8 +150,21 @@ export function BrowseFilters() {
     (nextSearch: string) => {
       clearPendingSearchSync()
       searchTimeoutRef.current = window.setTimeout(() => {
-        replaceFilters(nextSearch, selectedCategory, selectedSort)
         searchTimeoutRef.current = null
+        const searchChanged = nextSearch !== trackedSearchRef.current
+        replaceFilters(nextSearch, selectedCategory, selectedSort)
+        if (!searchChanged) {
+          return
+        }
+        // Fires on the settled term only: the debounce keeps keystrokes out,
+        // and this runs solely from a typed change, never on mount.
+        trackedSearchRef.current = nextSearch
+        posthog.capture('catalog_search', {
+          category: selectedCategory,
+          has_query: nextSearch.length > 0,
+          search_query: nextSearch,
+          sort: selectedSort,
+        })
       }, SEARCH_URL_SYNC_DELAY_MS)
     },
     [clearPendingSearchSync, replaceFilters, selectedCategory, selectedSort],
