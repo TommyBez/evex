@@ -16,7 +16,7 @@ async function writeAgentFixture(
   slug: string,
   options: AgentFixtureOptions = {},
 ): Promise<string> {
-  const dependencies = options.dependencies ?? { eve: '^0.18.2' }
+  const dependencies = options.dependencies ?? { eve: '^0.31.3' }
   const agentRoot = path.join(agentsDir, slug)
   await fs.mkdir(path.join(agentRoot, 'agent'), { recursive: true })
 
@@ -151,7 +151,7 @@ describe('buildRegistry', () => {
   it('reports registry.json dependencies that diverge from package.json', async () => {
     await writeAgentFixture('dep-mismatch', {
       registryOverrides: {
-        dependencies: ['eve@^0.18.2', 'zod@4.3.6'],
+        dependencies: ['eve@^0.31.3', 'zod@4.3.6'],
       },
     })
 
@@ -164,9 +164,9 @@ describe('buildRegistry', () => {
 
   it('reports a version mismatch for a shared dependency', async () => {
     await writeAgentFixture('version-skew', {
-      dependencies: { eve: '^0.18.2', zod: '4.4.3' },
+      dependencies: { eve: '^0.31.3', zod: '4.4.3' },
       registryOverrides: {
-        dependencies: ['eve@^0.18.2', 'zod@4.3.6'],
+        dependencies: ['eve@^0.31.3', 'zod@4.3.6'],
       },
     })
 
@@ -176,7 +176,7 @@ describe('buildRegistry', () => {
   })
 
   it('reports agents pinning different eve versions', async () => {
-    await writeAgentFixture('eve-a', { dependencies: { eve: '^0.18.2' } })
+    await writeAgentFixture('eve-a', { dependencies: { eve: '^0.31.3' } })
     await writeAgentFixture('eve-b', { dependencies: { eve: '^0.19.0' } })
 
     const result = await buildRegistry(agentsDir)

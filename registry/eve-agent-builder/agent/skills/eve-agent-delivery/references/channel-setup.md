@@ -13,7 +13,12 @@ channel you are adding:
 Start with `node_modules/eve/docs/channels/overview.mdx` when choosing a
 channel.
 
-Scaffold channel files with `run_eve_cli` (`channels add`), not ordinary shell.
+Use `run_eve_cli` only for the file-only web scaffold
+(`add channel/web --skip-setup`). In Eve 0.31, the GitHub, Linear, and Slack
+registry items create their channel files inside their setup flows, so
+`--skip-setup` does not scaffold those integrations. Do not run their
+interactive setup commands through ordinary shell. Follow the current channel
+doc and keep every external setup choice explicit.
 
 ## Agent-specific: Slack via Vercel Connect
 
@@ -24,12 +29,20 @@ raw `vercel connect` commands:
 2. `connect_detach` — detach from the default destination
 3. `connect_attach_slack` — attach to `/eve/v1/slack` with triggers
 
-Store the returned Connect UID in `.env.example`. Read
+After `connect_create_slack`, write the documented `agent/channels/slack.ts`
+using the returned Connect UID in `connectSlackCredentials("slack/...")`.
+Do not put that UID in `.env.example`; that file is only for the portable
+`SLACK_BOT_TOKEN` and `SLACK_SIGNING_SECRET` path. Read
 `node_modules/eve/docs/channels/slack.mdx` for why `--triggers` and detach/
 attach are required.
 
-GitHub and Linear channel setup are configured in their respective platforms and
-env vars — see the Eve channel docs above, not Vercel Connect.
+The official GitHub and Linear channel items can also use Guided Vercel Connect
+setup. This builder automates only the Slack Connect operations listed above;
+for GitHub or Linear, stop and ask the user to complete the documented Guided
+Connect flow or provide the documented portable provider credentials, then
+author the channel exactly as the current doc specifies. Do not report the
+channel as ready until its file exists, external setup is complete, and its
+webhook smoke test passes.
 
 ## Completion
 
@@ -37,7 +50,11 @@ env vars — see the Eve channel docs above, not Vercel Connect.
 Eve doc, and the external webhook (GitHub App, Linear app, or Slack Connect)
 points at `https://<deployment><route>`.
 
-Post-deploy health and session checks: `node_modules/eve/docs/guides/deployment.md`
-(section 9). For protected Vercel previews, use `verify_vercel_preview` instead
-of raw curl — it brokers `VERCEL_AUTOMATION_BYPASS_SECRET`, runs a smoke session,
-and clears the bypass transform before returning.
+Post-deploy health and session checks:
+`node_modules/eve/docs/guides/deployment/overview.md` and
+`node_modules/eve/docs/guides/deployment/vercel.mdx`. For protected Vercel
+previews, use `verify_vercel_preview` instead of raw curl — it brokers
+`VERCEL_AUTOMATION_BYPASS_SECRET` and `EVE_ROUTE_AUTHORIZATION` only to exact
+HTTPS targets in `EVE_VERIFICATION_ALLOWED_ORIGINS`, runs a smoke session,
+validates the health/session/stream status, and clears the credential transform
+before returning.

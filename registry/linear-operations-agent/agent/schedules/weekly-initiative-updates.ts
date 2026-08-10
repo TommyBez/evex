@@ -11,7 +11,7 @@ const getEnabledInitiatives = () =>
 
 export default defineSchedule({
   cron: linearOperationsConfig.schedules.weeklyInitiativeUpdates,
-  async run({ receive, waitUntil, appAuth }) {
+  async run({ to, waitUntil, appAuth }) {
     const initiatives = getEnabledInitiatives();
     if (initiatives.length === 0) return;
 
@@ -20,17 +20,16 @@ export default defineSchedule({
       if (!channelId) continue;
 
       waitUntil(
-        receive(slack, {
-          auth: appAuth,
-          target: { channelId },
-          message: [
+        to(slack, { channelId }).send(
+          [
             "Create a weekly Linear initiative update for this explicitly configured initiative only.",
             `Configured initiative: ${initiative.idOrName}.`,
             "Analyze related issues, projects, recent completions, open work, blockers, risks, dependencies, pending decisions, scope changes, and recommended next steps.",
             'Write the final update directly to Linear with save_status_update({ type: "initiative" }).',
             "If Linear reports that roadmaps or initiatives are not enabled in this workspace, post a clear Slack error to this configured channel instead of producing a generic digest.",
           ].join("\n"),
-        }),
+          { auth: appAuth }
+        ),
       );
     }
   },

@@ -30,8 +30,8 @@ function makeAgent(overrides: Partial<AgentWithAuthor>): AgentWithAuthor {
 
 describe('parseDependencies', () => {
   it('splits on commas and whitespace, dropping empties', () => {
-    expect(parseDependencies('eve@^0.18.2,zod@4.3.6')).toEqual([
-      'eve@^0.18.2',
+    expect(parseDependencies('eve@^0.31.3,zod@4.3.6')).toEqual([
+      'eve@^0.31.3',
       'zod@4.3.6',
     ])
     expect(parseDependencies('')).toEqual([])

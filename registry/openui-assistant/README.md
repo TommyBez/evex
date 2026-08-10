@@ -29,7 +29,7 @@ npx shadcn@latest add @evex/openui-assistant
 Install the registry dependencies in your Eve app if they are not already present:
 
 ```bash
-npm install @openuidev/react-ui @openuidev/react-lang eve just-bash zod
+npm install @openuidev/react-ui @openuidev/react-lang ai eve just-bash zod
 ```
 
 ## Configuration
@@ -65,13 +65,16 @@ bundled search tool is deterministic and does not call a live provider.
 To render generative UI in the browser:
 
 1. Ensure your Next.js app uses `withEve()` from `eve/next`.
-2. Copy `agent/skills/openui/references/openui-eve-chat.tsx` into your app
+2. Configure production route authentication for the Eve HTTP channel; the
+   framework rejects anonymous production sessions by default.
+3. Copy `agent/skills/openui/references/openui-eve-chat.tsx` into your app
    components folder.
-3. Render `<OpenUIEveChat />` on a page.
+4. Render `<OpenUIEveChat />` on a page.
 
 See `agent/skills/openui/references/frontend-wiring.md` for the full wiring
 guide and an `AgentInterface` alternative that matches the upstream OpenUI chat
-shell.
+shell. Read `node_modules/eve/docs/guides/auth-and-route-protection.md` for the
+host app's route-auth policy.
 
 ## Smoke test
 

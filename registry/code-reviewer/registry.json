@@ -12,7 +12,8 @@
       "dependencies": [
         "@upstash/ratelimit@^2.0.8",
         "@upstash/redis@^1.38.0",
-        "eve@^0.18.2",
+        "ai@^7.0.38",
+        "eve@^0.31.3",
         "zod@4.3.6"
       ],
       "files": [

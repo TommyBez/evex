@@ -65,7 +65,8 @@ Follow [testing-sequence](./references/testing-sequence.md).
 
 ## Vercel deployment
 
-Read `node_modules/eve/docs/guides/deployment.md` for build, env, sandbox,
+Read `node_modules/eve/docs/guides/deployment/overview.md` and
+`node_modules/eve/docs/guides/deployment/vercel.mdx` for build, env, sandbox,
 auth, deploy, and verify. Before deploying, confirm the target project or team,
 preview vs production, model credentials, channel webhooks, and route auth.
 

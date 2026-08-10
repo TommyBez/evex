@@ -9,15 +9,18 @@ example, but route turns through Eve's built-in HTTP channel instead of a custom
 ## Required app dependencies
 
 ```bash
-npm install @openuidev/react-lang @openuidev/react-ui eve
+npm install @openuidev/react-lang @openuidev/react-ui ai eve
 ```
 
 ## Next.js setup
 
 1. Wrap `next.config.ts` with `withEve()` from `eve/next`.
-2. Copy `openui-eve-chat.tsx` into your app, for example
+2. Configure the host app's Eve route auth before production; anonymous
+   production sessions are rejected by default. Follow
+   `node_modules/eve/docs/guides/auth-and-route-protection.md`.
+3. Copy `openui-eve-chat.tsx` into your app, for example
    `app/_components/openui-eve-chat.tsx`.
-3. Render it from `app/page.tsx`.
+4. Render it from `app/page.tsx`.
 
 The component uses `useEveAgent()` for session streaming and `@openuidev/react-lang`
 `Renderer` with `openuiChatLibrary` to turn assistant text into live UI.

@@ -13,7 +13,12 @@ async function readJson(filePath) {
 async function listAgentSlugs() {
   const entries = await fs.readdir(agentsDir, { withFileTypes: true })
   return entries
-    .filter((entry) => entry.isDirectory() && !entry.name.startsWith('.'))
+    .filter(
+      (entry) =>
+        entry.isDirectory() &&
+        !entry.name.startsWith('.') &&
+        entry.name !== 'node_modules',
+    )
     .map((entry) => entry.name)
     .toSorted((left, right) => left.localeCompare(right))
 }

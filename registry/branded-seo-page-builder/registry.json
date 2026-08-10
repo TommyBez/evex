@@ -10,7 +10,8 @@
         "marketing"
       ],
       "dependencies": [
-        "eve@^0.18.2"
+        "ai@^7.0.38",
+        "eve@^0.31.3"
       ],
       "files": [
         {
@@ -141,7 +142,7 @@
               "body": "Optional fallback variable read when CONTEXT_DEV_API_KEY is unset, for projects that already use this name. CONTEXT_DEV_API_KEY is the documented standard; set only one of the two."
             },
             {
-              "name": "eve@^0.18.2",
+              "name": "eve@^0.31.3",
               "body": "The eve framework runtime that hosts the agent, its MCP client connection, skills, and evals. Installed as the registry item's dependency; the agent package requires Node 24 or newer."
             }
           ],

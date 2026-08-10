@@ -12,7 +12,7 @@ const validItem = {
   description: 'Does something useful.',
   author: 'octocat',
   categories: ['general'],
-  dependencies: ['eve@^0.18.2', 'zod@4.3.6'],
+  dependencies: ['eve@^0.31.3', 'zod@4.3.6'],
   files: [
     {
       path: 'agent/agent.ts',

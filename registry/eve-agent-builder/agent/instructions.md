@@ -21,8 +21,9 @@ routes. Treat the repository in `/workspace` as the source of truth.
   and protected preview fetching when those tools fit the task.
 - Use `bash` for normal repository shell work. Do not use it for Vercel CLI,
   Eve deploy, Eve link, Eve channel setup, or commands that pass Vercel tokens.
-  The `bash` tool denies those commands so they can be routed through
-  `run_eve_cli` or `run_vercel_cli`.
+  The `bash` tool denies those commands so local web scaffolding can be routed
+  through `run_eve_cli`, documented integration setup stays explicit, and
+  Vercel operations go through `run_vercel_cli`.
 - `run_vercel_cli` action `whoami` is a read-only auth check and does not need
   approval. Vercel Connect setup, project linking, preview deploys, and
   production deploys require human approval through `run_vercel_cli`.
@@ -52,7 +53,11 @@ delivery evidence in the `reason` field when requesting deploy approval.
 - Use `bash` for ordinary repository work: installs, inspection, typecheck,
   lint, build, tests, and local smoke tests.
 - Use `run_eve_cli` for structured Eve local commands: `info`, `build`, `eval`,
-  and `channels add`. `bash` denies channel setup so the intent stays explicit.
+  and the file-only `add channel/web --skip-setup` scaffold. In Eve 0.31,
+  GitHub, Linear, and Slack channel items create their files inside the setup
+  flow; skipping setup does not scaffold them. Follow the current bundled
+  channel doc and keep external setup explicit. `bash` denies channel setup so
+  it cannot silently run a Guided Connect flow.
 - Use `run_vercel_cli` for Vercel Connect setup, project linking, preview
   deploys, and production deploys. Explain the exact operation and why it is
   needed before calling it so the user can approve or deny the tool call.
@@ -61,8 +66,11 @@ delivery evidence in the `reason` field when requesting deploy approval.
   Vercel Connect actions that are not available through MCP.
 - Use `verify_vercel_preview` for deployment health/session/stream checks. It
   brokers `VERCEL_AUTOMATION_BYPASS_SECRET` when the deployment is protected
-  and verifies unprotected deployments without it. Do not pass
-  `VERCEL_AUTOMATION_BYPASS_SECRET` through raw curl.
+  and `EVE_ROUTE_AUTHORIZATION` when the target Eve channel requires an
+  Authorization header, but only to exact HTTPS origins configured in
+  `EVE_VERIFICATION_ALLOWED_ORIGINS`. Do not pass either value through raw
+  curl. A missing route credential is acceptable only when the target
+  explicitly allows unauthenticated HTTP sessions.
 
 # Workflow
 1. Make a short todo list that covers discovery, implementation, tests, Vercel
@@ -75,10 +83,13 @@ delivery evidence in the `reason` field when requesting deploy approval.
    channels, evals, CLI, and deployment.
 4. Author the smallest Eve surface that fits the request: instructions, config,
    skills, tools, connections, channels, schedules, subagents, and evals.
-5. If a channel needs a Vercel-managed integration, add the channel files with
-   `run_eve_cli`, then set up the Vercel integration with `run_vercel_cli` after
-   approval. For Slack, follow the Eve docs: create the Connect client, detach
-   the default destination, attach it to `/eve/v1/slack`, and enable triggers.
+5. Add the web channel scaffold with `run_eve_cli`. For GitHub, Linear, or
+   Slack, read the current channel doc and do not call its interactive setup
+   through `bash`. For Slack Connect, create the client with `run_vercel_cli`
+   after approval, write the documented channel file with the returned Connect
+   UID, detach the default destination, attach it to `/eve/v1/slack`, and enable
+   triggers. For GitHub or Linear Guided Connect, ask the user to complete the
+   documented external setup or provide the documented portable credentials.
 6. Test the implementation locally before any preview deploy. Follow the
    testing-sequence reference in the `eve-agent-delivery` skill step by step;
    it is the single source of truth for the local testing order.
@@ -94,9 +105,10 @@ delivery evidence in the `reason` field when requesting deploy approval.
      Telegram, Discord, or another webhook
    - prefer Vercel MCP `web_fetch_vercel_url` for protected Vercel URL fetches
      when it is available
-   - for protected Vercel previews, use `verify_vercel_preview` instead of raw
-     curl so `VERCEL_AUTOMATION_BYPASS_SECRET` is brokered through the sandbox
-     network policy and cleared after verification
+   - use `verify_vercel_preview` instead of raw curl so Deployment Protection
+     and route-auth credentials are brokered through the sandbox network policy
+     only for an exact origin in `EVE_VERIFICATION_ALLOWED_ORIGINS`, then
+     cleared after verification
 
 # Delivery standards
 - Prefer concrete commands and evidence over broad claims.
@@ -105,8 +117,9 @@ delivery evidence in the `reason` field when requesting deploy approval.
   coverage, logs, and `node_modules/` out of source unless the user explicitly
   asks for them.
 - If Vercel broker credentials, preview bypass credentials, channel
-  credentials, model credentials, or route auth are missing, stop before
-  deployment and give exact environment variables and setup steps.
+  credentials, model credentials, required route auth, or the exact
+  `EVE_VERIFICATION_ALLOWED_ORIGINS` target are missing, stop before the
+  affected operation and give exact environment variables and setup steps.
 - If Vercel Sandbox cannot be created, local implementation testing is blocked;
   do not substitute a no-binaries sandbox and call that complete.
 - Final reports must include changed files, commands run, approval-gated Vercel

@@ -8,7 +8,7 @@ import {
 } from "../lib/vercel-brokered-cli";
 
 const eveAction = z.enum(["info", "build", "eval", "channels_add"]);
-const channelKind = z.enum(["slack", "web"]);
+const channelKind = z.literal("web");
 
 const inputSchema = z.object({
   action: eveAction,
@@ -24,7 +24,7 @@ const inputSchema = z.object({
 
 export default defineTool({
   description:
-    "Run documented Eve CLI operations in the sandbox. Use this for eve info, build, eval, or channels add. Do not use it for deploy or link; those go through run_vercel_cli so approval and brokered Vercel auth are applied.",
+    "Run documented Eve CLI operations in the sandbox. Use this for eve info, build, eval, or installing the local web channel scaffold without running setup. GitHub, Linear, and Slack channel files are created by their setup flows, so follow the bundled channel docs instead of treating --skip-setup as a scaffold. Do not use this tool for deploy or link; those go through run_vercel_cli so approval and brokered Vercel auth are applied.",
   inputSchema,
   async execute(input, ctx) {
     const command = buildEveCommand(input);
@@ -42,7 +42,7 @@ function buildEveCommand(input: z.infer<typeof inputSchema>): string {
     case "eval":
       return buildEvalCommand(input);
     case "channels_add":
-      return buildChannelsAddCommand(input);
+      return buildChannelAddCommand(input);
   }
 }
 
@@ -52,10 +52,10 @@ function buildEvalCommand(input: z.infer<typeof inputSchema>): string {
   return `npx eve eval${ids ? ` ${ids}` : ""}${reportFlag}`;
 }
 
-function buildChannelsAddCommand(input: z.infer<typeof inputSchema>): string {
+function buildChannelAddCommand(input: z.infer<typeof inputSchema>): string {
   if (!input.channelKind) {
     throw new Error("channelKind is required when action is channels_add.");
   }
 
-  return `npx eve channels add ${shellQuote(input.channelKind)} -y`;
+  return `npx eve add ${shellQuote(`channel/${input.channelKind}`)} --skip-setup`;
 }
