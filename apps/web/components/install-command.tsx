@@ -3,6 +3,7 @@
 import { Button } from '@evex/ui/button'
 import { cn } from '@evex/ui/lib/utils'
 import { Check, Copy } from 'lucide-react'
+import posthog from 'posthog-js'
 import { useLayoutEffect, useRef, useState } from 'react'
 import { TextSwap } from '@/components/transitions/text-swap'
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard'
@@ -85,8 +86,17 @@ export function InstallCommand({
     return () => observer.disconnect()
   }, [packageManager])
 
-  const copy = () => {
-    copyToClipboard(command, { successMessage: 'Copied install command' })
+  const copy = async () => {
+    const copied = await copyToClipboard(command, {
+      successMessage: 'Copied install command',
+    })
+    if (copied) {
+      posthog.capture('agent_install_command_copied', {
+        agent_slug: slug,
+        package_manager: packageManager,
+        surface: 'install_command',
+      })
+    }
   }
 
   const copyLabel = getCopyLabel({ copyState, label })

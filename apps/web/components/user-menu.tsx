@@ -12,14 +12,16 @@ import {
 } from '@evex/ui/dropdown-menu'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import posthog from 'posthog-js'
 import { AuthorAvatar } from '@/components/author-avatar'
 import { authClient } from '@/lib/auth-client'
 
-export function UserMenu({ name, email }: { name: string; email: string }) {
+export function UserMenu({ email, name }: { email: string; name: string }) {
   const router = useRouter()
 
   const handleSignOut = async () => {
     await authClient.signOut()
+    posthog.reset()
     router.push('/')
     router.refresh()
   }
