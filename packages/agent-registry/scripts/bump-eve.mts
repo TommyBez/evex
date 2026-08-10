@@ -45,7 +45,7 @@ async function main(): Promise<void> {
   const range = process.argv.at(2)
   if (!range) {
     throw new Error(
-      'Usage: pnpm --filter @evex/agent-registry bump-eve <range>   (e.g. bump-eve ^0.19.0)',
+      'Usage: pnpm --filter @evex/agent-registry bump-eve <range>   (e.g. bump-eve ^0.31.3)',
     )
   }
 

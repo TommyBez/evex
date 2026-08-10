@@ -19,7 +19,7 @@ export default defineSandbox({
       await sandbox.run({
         abortSignal: AbortSignal.timeout(PREWARM_TIMEOUT_MS),
         command:
-          "(npx --yes eve@0.18.2 --version && npx --yes vercel@latest --version) || echo 'CLI prewarm skipped'",
+          "(npx --yes eve@0.31.3 --version && npx --yes vercel@latest --version) || echo 'CLI prewarm skipped'",
       });
     } catch {
       // Sessions fall back to downloading the CLIs on first use.

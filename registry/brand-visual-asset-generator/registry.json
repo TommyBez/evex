@@ -10,8 +10,8 @@
         "marketing"
       ],
       "dependencies": [
-        "ai@^7.0.11",
-        "eve@^0.18.2",
+        "ai@^7.0.38",
+        "eve@^0.31.3",
         "zod@4.4.3"
       ],
       "files": [
@@ -148,7 +148,7 @@
             },
             {
               "name": "eve, ai, zod",
-              "body": "Runtime dependencies installed with the registry item: the eve framework (^0.18.2), the ai SDK (^7.0.11) for generateImage, and zod 4.4.3 for tool input validation. Node.js 24 or newer is required."
+              "body": "Runtime dependencies installed with the registry item: the eve framework (^0.31.3), the ai SDK (^7.0.38) for generateImage, and zod 4.4.3 for tool input validation. Node.js 24 or newer is required."
             }
           ],
           "faqs": [

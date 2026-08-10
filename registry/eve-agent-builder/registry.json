@@ -10,7 +10,8 @@
         "coding"
       ],
       "dependencies": [
-        "eve@^0.18.2",
+        "ai@^7.0.38",
+        "eve@^0.31.3",
         "zod@^4.4.3"
       ],
       "files": [
@@ -135,6 +136,11 @@
           "target": "~/evals/no-deploy-before-local-testing.eval.ts"
         },
         {
+          "path": "evals/verification-command-contract.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/verification-command-contract.eval.ts"
+        },
+        {
           "path": "README.md",
           "type": "registry:file",
           "target": "~/agent/README.md"
@@ -149,7 +155,7 @@
         "slug": "eve-agent-builder",
         "category": "coding",
         "createdAt": "2026-06-30T10:23:00.000Z",
-        "updatedAt": "2026-07-03T00:00:00.000Z",
+        "updatedAt": "2026-08-10T00:00:00.000Z",
         "docs": {
           "overview": [
             "Eve Agent Builder turns a plain request like 'create an agent that answers onboarding questions' into a tested, deployed Eve agent, so you review approvals and results instead of running the delivery checklist yourself. Install it into an existing Eve app and talk to it through whatever channel that app already exposes: web chat, the Eve session API, Slack, or GitHub.",
@@ -162,7 +168,7 @@
             "It tests the result locally in a Vercel Sandbox (Node 24, 2 vCPUs) through the run_eve_cli tool, running eve info --json, eve build, and eve eval, while the record-check-evidence hook stores each command's exit code in session state.",
             "A runtime-status block regenerated every turn reports which credentials are present (never their values) plus the recorded check results, and the agent quotes that evidence when it requests deploy approval.",
             "Once you approve, run_vercel_cli links the target project and runs the preview or production deploy with VERCEL_TOKEN injected at the sandbox firewall, never in command text or generated files.",
-            "Finally, verify_vercel_preview checks GET /eve/v1/health, creates a smoke-test session, and reads the session stream, brokering VERCEL_AUTOMATION_BYPASS_SECRET when the preview is protected by Vercel Deployment Protection."
+            "Finally, verify_vercel_preview checks GET /eve/v1/health, creates a smoke-test session, and reads the session stream. It fails on non-2xx or incomplete checks and brokers preview-bypass or route-auth credentials only to an exact HTTPS origin configured in EVE_VERIFICATION_ALLOWED_ORIGINS."
           ],
           "useCases": [
             {
@@ -171,7 +177,7 @@
             },
             {
               "title": "Wire up a Slack channel end to end",
-              "body": "The builder adds the Slack channel with run_eve_cli, then walks the Vercel Connect flow: create the Slack client, detach the default destination, attach it to /eve/v1/slack with triggers, deploy, and smoke-test delivery. You approve each Vercel step."
+              "body": "The builder follows the installed Eve Slack guide, creates the approved Vercel Connect client, writes the documented channel file with its Connect UID, detaches the default destination, attaches it to /eve/v1/slack with triggers, deploys, and smoke-tests delivery. You approve each Vercel step."
             },
             {
               "title": "Run it as a remote build service",
@@ -196,12 +202,20 @@
               "body": "Optional. Lets verify_vercel_preview check previews protected by Vercel Deployment Protection by injecting the x-vercel-protection-bypass header at the sandbox firewall. Copy it from the project's Deployment Protection settings."
             },
             {
+              "name": "EVE_VERIFICATION_ALLOWED_ORIGINS",
+              "body": "Comma-separated exact HTTPS origins allowed to receive brokered preview-bypass or Eve route-auth credentials, for example https://my-preview.vercel.app. Required whenever either credential is set; tool input alone cannot authorize a new destination."
+            },
+            {
+              "name": "EVE_ROUTE_AUTHORIZATION",
+              "body": "Optional full Authorization header value accepted by the target Eve channel, such as Bearer <token>. verify_vercel_preview injects it at the sandbox firewall only for an allowlisted origin, so it never enters command text or sandbox files. Leave it unset only when the target deliberately allows unauthenticated HTTP sessions."
+            },
+            {
               "name": "VERCEL_MCP_URL",
               "body": "Optional override for the hosted Vercel MCP endpoint. Defaults to https://mcp.vercel.com; change it only if you operate a compatible endpoint."
             },
             {
-              "name": "eve@^0.18.2",
-              "body": "The eve framework the agent is built on, installed as an npm dependency alongside zod ^4.4.3 when you add the registry item. The sandbox prewarms the eve 0.18.2 and Vercel CLIs so first commands skip the cold download."
+              "name": "eve@^0.31.3",
+              "body": "The eve framework the agent is built on, installed alongside ai ^7.0.38 and zod ^4.4.3 when you add the registry item. The sandbox prewarms the eve 0.31.3 and Vercel CLIs so first commands skip the cold download."
             }
           ],
           "faqs": [
@@ -211,11 +225,11 @@
             },
             {
               "question": "Does the agent or its sandbox ever see my Vercel token?",
-              "answer": "No. Eve injects VERCEL_TOKEN at the sandbox network policy, so it never enters command text, sandbox files, or generated source, and the bash tool denies any command that sets VERCEL_TOKEN. The preview bypass secret gets the same treatment and is cleared after verification."
+              "answer": "No. Eve injects VERCEL_TOKEN at the sandbox network policy, so it never enters command text, sandbox files, or generated source, and the bash tool denies any command that sets VERCEL_TOKEN. Preview-bypass and route-auth credentials get the same treatment, can only target an exact HTTPS origin in EVE_VERIFICATION_ALLOWED_ORIGINS, and are cleared after verification."
             },
             {
               "question": "What stops it from claiming tests passed when they did not?",
-              "answer": "A hook records the real exit code of every eve info, build, and eval call, and the runtime-status block replays that evidence to the agent each turn. Seven bundled evals also regression-test the guardrails, including that it never deploys before local testing and that it stops when credentials are missing."
+              "answer": "A hook records the real exit code of every eve info, build, and eval call, and the runtime-status block replays that evidence to the agent each turn. Eight bundled evals also regression-test the guardrails, including that it never deploys before local testing, stops when credentials are missing, and fails closed on incomplete deployment verification."
             },
             {
               "question": "Which model does it run on, and can I swap it?",

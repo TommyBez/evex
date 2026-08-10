@@ -72,7 +72,7 @@ export function OpenUIEveChat() {
             setSubmitError(null);
 
             try {
-              await agent.send({ message });
+              await agent.send(message);
               formElement.reset();
             } catch (error) {
               const errorMessage =

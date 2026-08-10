@@ -41,9 +41,11 @@ using this skill. Do not restate Eve docs here.
   the sandbox workspace.
 - Declare every environment variable in `.env.example` or the app's existing env
   documentation.
-- Use `run_eve_cli` for Eve CLI operations. Use `run_vercel_cli` for Vercel
-  Connect setup, linking, and deploys. Do not route those through ordinary shell
-  commands.
+- Use `run_eve_cli` for its supported structured, one-shot Eve operations:
+  `info`, `build`, `eval`, and the file-only web channel scaffold. Use `bash`
+  for bounded local-server smoke tests. Use `run_vercel_cli` for Vercel Connect
+  setup, linking, and deploys; do not route those managed operations through
+  ordinary shell commands.
 - Prefer the Vercel MCP connection for read-only project/deployment/log work.
   Keep Vercel CLI for local `vercel link` and Connect commands that MCP does
   not expose.
@@ -65,7 +67,8 @@ Follow [testing-sequence](./references/testing-sequence.md).
 
 ## Vercel deployment
 
-Read `node_modules/eve/docs/guides/deployment.md` for build, env, sandbox,
+Read `node_modules/eve/docs/guides/deployment/overview.md` and
+`node_modules/eve/docs/guides/deployment/vercel.mdx` for build, env, sandbox,
 auth, deploy, and verify. Before deploying, confirm the target project or team,
 preview vs production, model credentials, channel webhooks, and route auth.
 

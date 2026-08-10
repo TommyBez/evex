@@ -37,6 +37,7 @@
     "vaul": "^1.1.2"
   },
   "devDependencies": {
+    "ai": "^7.0.38",
     "@biomejs/biome": "2.4.16",
     "@react-email/ui": "6.6.3",
     "@tailwindcss/postcss": "^4.2.0",
@@ -46,7 +47,7 @@
     "@types/react-dom": "^19",
     "@types/react-syntax-highlighter": "^15.5.13",
     "drizzle-kit": "^0.31.10",
-    "eve": "^0.18.2",
+    "eve": "^0.31.3",
     "postcss": "^8.5",
     "postcss-loader": "^8.2.1",
     "tailwindcss": "^4.2.0",

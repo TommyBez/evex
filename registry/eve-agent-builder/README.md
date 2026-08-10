@@ -36,7 +36,8 @@ Slack channel.
   Vercel URLs through the `vercel` MCP connection
 - run normal repo commands through Eve's `bash` tool
 - run structured `eve info --json`, `eve build`, `eve eval --skip-report`, and
-  `eve channels add` operations through `run_eve_cli`
+  the file-only `eve add channel/web --skip-setup` scaffold through
+  `run_eve_cli`
 - set up Vercel Connect integrations and deploy through approved
   `run_vercel_cli` calls
 - link a Vercel project to retrieve `VERCEL_OIDC_TOKEN` for local AI Gateway
@@ -49,10 +50,16 @@ Slack channel.
   schedule, or remote job)
 
 The `bash` tool stays available for ordinary shell work. It denies Vercel CLI,
-Eve deploy/link, Eve channel setup, and Vercel token commands, so those actions
-must use `run_eve_cli` or `run_vercel_cli`. `run_vercel_cli` allows read-only
-`whoami` checks without approval. Vercel Connect setup, project linking, preview
-deploys, and production deploys require human approval before execution.
+Eve deploy/link, Eve channel setup, and Vercel token commands. Use
+`run_eve_cli` for the local web scaffold, the bundled channel guide for
+integration files and provider setup, and `run_vercel_cli` for approved Vercel
+operations. `run_vercel_cli` allows read-only `whoami` checks without approval.
+Vercel Connect setup, project linking, preview deploys, and production deploys
+require human approval before execution.
+The web scaffold deliberately skips setup. GitHub, Linear, and Slack create
+their channel files during setup in Eve 0.31, so the builder follows their
+bundled guides and keeps Vercel Connect or portable-provider setup as a
+separate, explicit operation.
 
 ## Environment
 
@@ -63,6 +70,8 @@ AI_GATEWAY_API_KEY=
 VERCEL_TOKEN=
 VERCEL_MCP_URL=https://mcp.vercel.com
 VERCEL_AUTOMATION_BYPASS_SECRET=
+EVE_VERIFICATION_ALLOWED_ORIGINS=
+EVE_ROUTE_AUTHORIZATION=
 ```
 
 On Vercel, the simplest model setup is Vercel AI Gateway OIDC through a linked
@@ -141,19 +150,21 @@ actions that require local filesystem state or are not exposed by the MCP server
 Use `run_vercel_cli` for Vercel-managed integrations. For Slack, the agent
 follows the Eve Slack docs:
 
-1. Add the Slack channel with `run_eve_cli`.
+1. Read the installed Eve Slack guide and confirm the Connect target.
 2. Create a Slack Connect client with `run_vercel_cli` action
    `connect_create_slack`.
-3. Detach the returned Connect UID from its default destination.
-4. Attach that UID to `/eve/v1/slack` with triggers enabled.
-5. Deploy and smoke-test Slack delivery.
+3. Write `agent/channels/slack.ts` from the guide, passing the returned UID to
+   `connectSlackCredentials`.
+4. Detach the returned Connect UID from its default destination.
+5. Attach that UID to `/eve/v1/slack` with triggers enabled.
+6. Deploy and smoke-test Slack delivery.
 
 Vercel Connect setup, project linking, and deploy actions pause for approval
 first. `whoami` does not. Deploy actions require the workspace to already be
 linked to a Vercel project (`.vercel/project.json`), so a deploy can never
 silently create or target a project the user did not confirm.
 
-## Protected preview verification
+## Deployment verification
 
 Use `verify_vercel_preview` to check a deployment's Eve routes. When
 `VERCEL_AUTOMATION_BYPASS_SECRET` is set in the app runtime, the tool injects
@@ -162,14 +173,30 @@ transform after verification, so previews protected by Vercel Deployment
 Protection can be verified without exposing the secret. Without the secret it
 verifies unprotected deployments directly.
 
+Before either verification credential can be brokered, add the target to
+`EVE_VERIFICATION_ALLOWED_ORIGINS` as a comma-separated list of exact HTTPS
+origins, for example `https://my-preview.vercel.app`. The verifier rejects
+HTTP, custom ports, URL credentials, and any credentialed target outside that
+allowlist, so tool input alone can never choose where a secret is injected.
+
+Eve production routes fail closed by default. When the target accepts an
+Authorization header, set its full value in `EVE_ROUTE_AUTHORIZATION` (for
+example, `Bearer <token>`). The verifier brokers that header at the firewall as
+well. Leave it unset only when the target deliberately allows unauthenticated
+HTTP sessions; the health route remains public either way.
+
 It verifies:
 
 1. `GET /eve/v1/health`
 2. `POST /eve/v1/session` with a smoke-test message
 3. `GET /eve/v1/session/<sessionId>/stream`
 
-Do not put `VERCEL_AUTOMATION_BYPASS_SECRET` in command text, generated files, or
-sandbox environment variables.
+Every route must return 2xx, session creation must return a `sessionId`, and the
+stream must produce data. A `401`, missing session ID, empty stream, network
+failure, or timeout before any stream data makes the tool exit non-zero.
+
+Do not put `VERCEL_AUTOMATION_BYPASS_SECRET` or `EVE_ROUTE_AUTHORIZATION` in
+command text, generated files, or sandbox environment variables.
 
 ## Local testing before preview
 
@@ -217,6 +244,10 @@ curl -X POST https://<deployment>/eve/v1/session \
   -d '{"message":"Smoke test the new agent."}'
 ```
 
+The session request needs an Authorization header unless the deployed Eve
+channel explicitly permits anonymous access. Prefer `verify_vercel_preview` so
+the credential stays outside command text.
+
 If the app uses a channel, test that route too. Common routes:
 
 - GitHub: `/eve/v1/github`
@@ -234,4 +265,6 @@ If the app uses a channel, test that route too. Common routes:
 - Model calls fail locally: set `AI_GATEWAY_API_KEY` or use a direct provider
   model with the matching provider key.
 - Preview smoke tests return auth HTML: set `VERCEL_AUTOMATION_BYPASS_SECRET`
-  in the app runtime and use `verify_vercel_preview` instead of raw curl.
+  in the app runtime, add the exact HTTPS origin to
+  `EVE_VERIFICATION_ALLOWED_ORIGINS`, and use `verify_vercel_preview` instead
+  of raw curl.

@@ -78,7 +78,7 @@ All agents must pin the same `eve` version; the generator rejects skew.
 Lockstep bumps are automated:
 
 ```bash
-pnpm --filter @evex/agent-registry bump-eve ^0.19.0
+pnpm --filter @evex/agent-registry bump-eve ^0.31.3
 pnpm --dir registry install
 pnpm --filter @evex/agent-registry generate
 ```

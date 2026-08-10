@@ -12,7 +12,8 @@
       "dependencies": [
         "@openuidev/react-lang@^0.2.8",
         "@openuidev/react-ui@^0.12.1",
-        "eve@^0.18.2",
+        "ai@^7.0.38",
+        "eve@^0.31.3",
         "just-bash@^3.0.2",
         "zod@^4.4.3"
       ],
@@ -107,7 +108,7 @@
         "slug": "openui-assistant",
         "category": "general",
         "createdAt": "2026-06-30T21:52:44.748Z",
-        "updatedAt": "2026-07-04T00:00:00.000Z",
+        "updatedAt": "2026-08-10T00:00:00.000Z",
         "docs": {
           "overview": [
             "OpenUI Assistant is an eve agent that answers every chat turn with OpenUI Lang, a structured generative UI language, so your chat streams rendered cards, tables, and follow-up buttons instead of markdown prose. It builds its system prompt at build time by calling openuiChatLibrary.prompt(openuiChatPromptOptions) from @openuidev/react-ui, the same library and prompt options the official openui-chat example app uses, so its output stays compatible with the upstream renderer.",
@@ -151,13 +152,13 @@
             },
             {
               "name": "eve",
-              "body": "The eve agent framework (^0.18.2) that runs the agent, tools, skill, and evals; the web integration also relies on withEve() from eve/next and the useEveAgent() hook. Requires Node 24 or newer."
+              "body": "The eve agent framework (^0.31.3) that runs the agent, tools, skill, and evals; the web integration also relies on withEve() from eve/next and the useEveAgent() hook. Requires Node 24 or newer."
             }
           ],
           "faqs": [
             {
               "question": "How do I install the agent?",
-              "answer": "Run npx shadcn@latest add @evex/openui-assistant in your eve app, then install the registry dependencies (@openuidev/react-ui, @openuidev/react-lang, eve, just-bash, zod) if they are not already present. Start it with pnpm dev or eve dev."
+              "answer": "Run npx shadcn@latest add @evex/openui-assistant in your eve app, then install the registry dependencies (@openuidev/react-lang@^0.2.8, @openuidev/react-ui@^0.12.1, ai@^7.0.38, eve@^0.31.3, just-bash@^3.0.2, zod@^4.4.3) if they are not already present. Start it with pnpm dev or eve dev."
             },
             {
               "question": "Which model does it use, and can I change it?",
@@ -173,7 +174,7 @@
             },
             {
               "question": "How do I render the UI in my own Next.js app?",
-              "answer": "Wrap your app with withEve() from eve/next, copy the openui-eve-chat.tsx reference into your components folder, and render OpenUIEveChat on a page. The frontend-wiring.md reference covers full setup plus an AgentInterface alternative matching the upstream chat shell."
+              "answer": "Wrap your app with withEve() from eve/next, configure the Eve HTTP channel's production route auth, copy the openui-eve-chat.tsx reference into your components folder, and render OpenUIEveChat on a page. The frontend-wiring.md reference covers full setup plus an AgentInterface alternative matching the upstream chat shell."
             }
           ]
         }

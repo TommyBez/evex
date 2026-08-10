@@ -67,11 +67,11 @@ describe('getAgentInstallSummaryDescription', () => {
 
   it('lists shipped kinds and dependencies', () => {
     const summary = getAgentInstallSummaryDescription({
-      deps: ['eve@^0.18.2'],
+      deps: ['eve@^0.31.3'],
       fileKinds: { skills: 2, subagents: 1, tools: 3 },
     })
     expect(summary.installs).toBe('1 subagent · 2 skill files · 3 tools')
-    expect(summary.requires).toBe('eve@^0.18.2')
+    expect(summary.requires).toBe('eve@^0.31.3')
   })
 })
 

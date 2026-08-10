@@ -73,7 +73,7 @@ export const DOCS_PAGES: readonly DocsPage[] = [
     title: 'evex documentation: the community registry for eve agents',
   },
   {
-    dateModified: '2026-07-04',
+    dateModified: '2026-08-10',
     datePublished: '2026-07-04',
     description:
       'Add any evex agent to your eve project with npx shadcn add. Prerequisites, what the CLI writes, and how to configure and verify the agent after install.',
@@ -140,7 +140,7 @@ export const DOCS_PAGES: readonly DocsPage[] = [
       },
       {
         body: [
-          'If the CLI writes files somewhere unexpected or the agent fails to load, check that you ran the command from the root of an eve app. The installed files assume the eve framework is present: create a project with npx eve@latest init, or add eve to an existing package with npm install eve@latest, then rerun the install.',
+          'If the CLI writes files somewhere unexpected or the agent fails to load, check that you ran the command from the root of an eve app. The installed files assume the eve framework and its AI SDK peer are present: create a project with npx eve@latest init, or run npm install eve@latest ai in an existing package, then rerun the install.',
           'If the CLI prompts you to install npm packages, those are the dependencies the agent declares in its registry item. The list matches the dependencies shown on the agent page, so review it there first and accept the prompt to complete the install.',
         ],
         heading: 'Troubleshooting',

@@ -5,17 +5,15 @@ import { getSlackChannelId, linearOperationsConfig } from "../lib/linear-operati
 
 export default defineSchedule({
   cron: linearOperationsConfig.schedules.cycleHealth,
-  async run({ receive, waitUntil, appAuth }) {
+  async run({ to, waitUntil, appAuth }) {
     const channelId = getSlackChannelId("cycle");
     if (!channelId) return;
 
     waitUntil(
-      receive(slack, {
-        auth: appAuth,
-        target: { channelId },
-        message:
-          "Run the Linear cycle health report for configured teams and current cycles. Check blocked issues, stale P0/P1 issues, owner overload, work added after the cycle started, scope creep, and completed work not closed. Deliver the operational report to Slack. Do not apply Linear updates automatically.",
-      }),
+      to(slack, { channelId }).send(
+        "Run the Linear cycle health report for configured teams and current cycles. Check blocked issues, stale P0/P1 issues, owner overload, work added after the cycle started, scope creep, and completed work not closed. Deliver the operational report to Slack. Do not apply Linear updates automatically.",
+        { auth: appAuth }
+      ),
     );
   },
 });

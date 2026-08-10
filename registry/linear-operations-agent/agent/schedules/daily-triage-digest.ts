@@ -5,17 +5,15 @@ import { getSlackChannelId, linearOperationsConfig } from "../lib/linear-operati
 
 export default defineSchedule({
   cron: linearOperationsConfig.schedules.dailyTriageDigest,
-  async run({ receive, waitUntil, appAuth }) {
+  async run({ to, waitUntil, appAuth }) {
     const channelId = getSlackChannelId("triage");
     if (!channelId) return;
 
     waitUntil(
-      receive(slack, {
-        auth: appAuth,
-        target: { channelId },
-        message:
-          "Run the daily Linear triage digest in read-only mode. Highlight only issues that need attention: in triage too long, missing owner, missing priority, stale updates, likely duplicates, or blocked work. Deliver a concise Slack digest with concrete next steps. Do not modify Linear objects.",
-      }),
+      to(slack, { channelId }).send(
+        "Run the daily Linear triage digest in read-only mode. Highlight only issues that need attention: in triage too long, missing owner, missing priority, stale updates, likely duplicates, or blocked work. Deliver a concise Slack digest with concrete next steps. Do not modify Linear objects.",
+        { auth: appAuth }
+      ),
     );
   },
 });

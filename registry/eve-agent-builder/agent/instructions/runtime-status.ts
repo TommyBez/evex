@@ -26,6 +26,16 @@ const READINESS_CHECKS = [
       "missing — protected Vercel previews cannot be verified; unprotected deployments still can",
     names: ["VERCEL_AUTOMATION_BYPASS_SECRET"],
   },
+  {
+    missing:
+      "missing — session and stream verification only works when the target explicitly permits unauthenticated Eve HTTP traffic",
+    names: ["EVE_ROUTE_AUTHORIZATION"],
+  },
+  {
+    missing:
+      "missing — preview bypass and route-auth credentials cannot be brokered until exact HTTPS target origins are configured",
+    names: ["EVE_VERIFICATION_ALLOWED_ORIGINS"],
+  },
 ] as const;
 
 function isPresent(name: string): boolean {
