@@ -146,28 +146,43 @@ export function BrowseFilters() {
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [])
 
+  // Reports the term that is actually applied to the catalog. Every path that
+  // commits `searchValue` to the URL calls this, so a term is never lost when a
+  // category or sort change pre-empts the pending debounce. Keystrokes and
+  // mounts never reach here, and an unchanged term is ignored.
+  const trackSearchIfChanged = useCallback(
+    (nextSearch: string, category: string, sort: AgentSort) => {
+      if (nextSearch === trackedSearchRef.current) {
+        return
+      }
+      trackedSearchRef.current = nextSearch
+      posthog.capture('catalog_search', {
+        category,
+        has_query: nextSearch.length > 0,
+        search_query: nextSearch,
+        sort,
+      })
+    },
+    [],
+  )
+
   const scheduleSearchSync = useCallback(
     (nextSearch: string) => {
       clearPendingSearchSync()
       searchTimeoutRef.current = window.setTimeout(() => {
         searchTimeoutRef.current = null
-        const searchChanged = nextSearch !== trackedSearchRef.current
         replaceFilters(nextSearch, selectedCategory, selectedSort)
-        if (!searchChanged) {
-          return
-        }
-        // Fires on the settled term only: the debounce keeps keystrokes out,
-        // and this runs solely from a typed change, never on mount.
-        trackedSearchRef.current = nextSearch
-        posthog.capture('catalog_search', {
-          category: selectedCategory,
-          has_query: nextSearch.length > 0,
-          search_query: nextSearch,
-          sort: selectedSort,
-        })
+        // Fires on the settled term only: the debounce keeps keystrokes out.
+        trackSearchIfChanged(nextSearch, selectedCategory, selectedSort)
       }, SEARCH_URL_SYNC_DELAY_MS)
     },
-    [clearPendingSearchSync, replaceFilters, selectedCategory, selectedSort],
+    [
+      clearPendingSearchSync,
+      replaceFilters,
+      selectedCategory,
+      selectedSort,
+      trackSearchIfChanged,
+    ],
   )
 
   const clearSearch = useCallback(() => {
@@ -178,18 +193,37 @@ export function BrowseFilters() {
 
   const changeCategory = useCallback(
     (nextCategory: string) => {
+      // Picking a category also commits whatever is in the search box, so the
+      // pending debounce is dropped and the term is reported here instead,
+      // against the category that is actually being applied.
       clearPendingSearchSync()
       replaceFilters(searchValue, nextCategory, selectedSort)
+      trackSearchIfChanged(searchValue, nextCategory, selectedSort)
     },
-    [clearPendingSearchSync, searchValue, replaceFilters, selectedSort],
+    [
+      clearPendingSearchSync,
+      searchValue,
+      replaceFilters,
+      selectedSort,
+      trackSearchIfChanged,
+    ],
   )
 
   const changeSort = useCallback(
     (nextSort: AgentSort) => {
+      // Same as changing category: this commits the current search box value,
+      // so the term is reported against the sort that is actually applied.
       clearPendingSearchSync()
       replaceFilters(searchValue, selectedCategory, nextSort)
+      trackSearchIfChanged(searchValue, selectedCategory, nextSort)
     },
-    [clearPendingSearchSync, searchValue, replaceFilters, selectedCategory],
+    [
+      clearPendingSearchSync,
+      searchValue,
+      replaceFilters,
+      selectedCategory,
+      trackSearchIfChanged,
+    ],
   )
 
   const clearAll = useCallback(() => {
