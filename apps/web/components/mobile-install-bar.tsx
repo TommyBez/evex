@@ -2,6 +2,7 @@
 
 import { Button } from '@evex/ui/button'
 import { Check, Copy } from 'lucide-react'
+import posthog from 'posthog-js'
 import { TextSwap } from '@/components/transitions/text-swap'
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard'
 import { usePackageManager } from '@/hooks/use-package-manager'
@@ -24,8 +25,17 @@ export function MobileInstallBar({
   const [packageManager] = usePackageManager()
   const command = buildInstallCommandForManager(packageManager, slug)
 
-  const handleCopy = () => {
-    copy(command, { successMessage: 'Copied install command' })
+  const handleCopy = async () => {
+    const copied = await copy(command, {
+      successMessage: 'Copied install command',
+    })
+    if (copied) {
+      posthog.capture('agent_install_command_copied', {
+        agent_slug: slug,
+        package_manager: packageManager,
+        surface: 'mobile_install_bar',
+      })
+    }
   }
 
   return (

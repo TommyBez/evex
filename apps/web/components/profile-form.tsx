@@ -13,6 +13,7 @@ import { Input } from '@evex/ui/input'
 import { Textarea } from '@evex/ui/textarea'
 import { Globe, Upload } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import posthog from 'posthog-js'
 import { useEffect, useReducer, useRef, useTransition } from 'react'
 import { toast } from 'sonner'
 import { type ProfileData, saveProfile } from '@/app/actions/profile'
@@ -121,6 +122,18 @@ export function ProfileForm({
     startTransition(async () => {
       const result = await saveProfile(formData)
       if (result.ok) {
+        const avatar = formData.get('avatar')
+        const uploadedAvatar = avatar instanceof File && avatar.size > 0
+        posthog.capture('profile_saved', {
+          has_avatar: uploadedAvatar || Boolean(preview),
+          has_bio: Boolean(formData.get('bio')),
+          has_social_links: Boolean(
+            formData.get('websiteUrl') ||
+              formData.get('githubUrl') ||
+              formData.get('twitterUrl') ||
+              formData.get('linkedinUrl'),
+          ),
+        })
         toast.success('Profile saved')
         router.refresh()
       } else {
