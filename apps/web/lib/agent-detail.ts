@@ -3,7 +3,12 @@
 
 import type { AgentRegistryFile, AgentWithAuthor } from '@/lib/agent-types'
 
+// The root layout appends this suffix through `title.template`, so the title
+// a page returns has to fit the display budget minus the suffix.
+export const METADATA_TITLE_SUFFIX = ' · evex'
 export const METADATA_TITLE_MAX_LENGTH = 60
+export const METADATA_TITLE_BUDGET =
+  METADATA_TITLE_MAX_LENGTH - METADATA_TITLE_SUFFIX.length
 const SUBAGENT_PATH_REGEX = /^agent\/subagents\/([^/]+)/
 const SKILL_PATH_REGEX = /\/skills\//
 const TOOL_PATH_REGEX = /\/tools\//
@@ -75,16 +80,18 @@ export function getAgentInstallSummaryDescription({
 
 export function getAgentMetadataTitle(agent: AgentWithAuthor): string {
   const installTitle = `${agent.name} - install @evex/${agent.slug}`
-  if (installTitle.length <= METADATA_TITLE_MAX_LENGTH) {
+  if (installTitle.length <= METADATA_TITLE_BUDGET) {
     return installTitle
   }
 
   const compactTitle = `${agent.name} - @evex/${agent.slug}`
-  if (compactTitle.length <= METADATA_TITLE_MAX_LENGTH) {
+  if (compactTitle.length <= METADATA_TITLE_BUDGET) {
     return compactTitle
   }
 
-  return `${agent.name} | evex`
+  // The layout template already appends the brand, so the fallback stays bare
+  // to avoid rendering it twice.
+  return agent.name
 }
 
 // Rank related agents: same category first, then installs, recency, same

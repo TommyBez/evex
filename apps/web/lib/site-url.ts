@@ -2,7 +2,10 @@ import 'server-only'
 
 import { env } from '@/lib/env'
 
-const DEFAULT_SITE_URL = 'https://evex.sh'
+// The apex host 308-redirects to the www host, so the default has to be the
+// www host: a redirecting canonical, OG url, or sitemap entry wastes crawl
+// budget and weakens the canonical signal.
+const DEFAULT_SITE_URL = 'https://www.evex.sh'
 const TRAILING_SLASHES = /\/+$/
 const URL_PROTOCOL = /^https?:\/\//
 
