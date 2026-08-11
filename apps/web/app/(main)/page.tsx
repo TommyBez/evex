@@ -27,6 +27,10 @@ import {
 
 export const metadata: Metadata = createPageMetadata({
   title: 'Vercel eve Agent Registry: Install eve Agents with One Command',
+  // The SEO title keeps the "vercel eve" keyword that ranks in search; the
+  // social card leads with the evex brand instead.
+  socialTitle:
+    'evex: the eve Agent Registry. Install eve Agents with One Command',
   description:
     "Community registry for agents built on eve, Vercel's agent framework. Browse configurations, preview every file before install, and add any agent with npx shadcn add @evex/{slug}.",
   path: '/',
