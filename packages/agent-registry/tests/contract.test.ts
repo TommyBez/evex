@@ -19,7 +19,9 @@ describe('registry catalog contract', () => {
   it('publishes root manifest metadata for registry indexers', () => {
     expect(catalog.name).toBe('evex')
     expect(catalog.homepage).toBe('https://www.evex.sh')
-    expect(catalog.description).toBeTruthy()
+    expect(catalog.description).toBe(
+      'evex is the open source community registry for Eve agents. Browse agents built by the community and install them into your Eve app with one command.'
+    )
   })
 
   it('keeps catalog entries content-free', () => {
