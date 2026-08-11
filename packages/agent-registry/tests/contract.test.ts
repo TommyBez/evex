@@ -16,6 +16,12 @@ describe('registry catalog contract', () => {
     expect(catalog.items.length).toBeGreaterThan(0)
   })
 
+  it('publishes root manifest metadata for registry indexers', () => {
+    expect(catalog.name).toBe('evex')
+    expect(catalog.homepage).toBe('https://www.evex.sh')
+    expect(catalog.description).toBeTruthy()
+  })
+
   it('keeps catalog entries content-free', () => {
     for (const item of catalog.items) {
       for (const file of item.files) {
