@@ -60,15 +60,21 @@ export function createPageMetadata({
       description,
       images: [defaultTwitterImage],
     },
-    robots: noIndex
+    // Only add `robots` when the page opts out of indexing. Passing the key
+    // with an `undefined` value still overrides the root layout robots block
+    // when Next merges metadata, which drops `index, follow` plus the
+    // googleBot preview directives from every page built with this helper.
+    ...(noIndex
       ? {
-          index: false,
-          follow: false,
-          googleBot: {
+          robots: {
             index: false,
             follow: false,
+            googleBot: {
+              index: false,
+              follow: false,
+            },
           },
         }
-      : undefined,
+      : {}),
   }
 }

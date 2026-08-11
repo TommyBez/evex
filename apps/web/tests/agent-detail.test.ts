@@ -4,10 +4,13 @@ import {
   countFilesByKind,
   getAgentInstallSummaryDescription,
   getAgentMetadataTitle,
+  METADATA_TITLE_BUDGET,
   METADATA_TITLE_MAX_LENGTH,
+  METADATA_TITLE_SUFFIX,
   pluralize,
 } from '@/lib/agent-detail'
 import type { AgentRegistryFile, AgentWithAuthor } from '@/lib/agent-types'
+import { listStaticAgents } from '@/lib/registry'
 
 function makeFile(path: string): AgentRegistryFile {
   return { content: '', id: `x:${path}`, path, type: 'registry:file' }
@@ -87,9 +90,39 @@ describe('getAgentMetadataTitle', () => {
       slug: 'a-very-long-agent-slug-that-also-keeps-going',
     })
     expect(getAgentMetadataTitle(agent).length).toBeLessThanOrEqual(
-      METADATA_TITLE_MAX_LENGTH,
+      METADATA_TITLE_BUDGET,
     )
   })
+
+  it('drops the brand from the fallback so the layout template owns it', () => {
+    const agent = makeAgent({
+      name: 'Brand Visual Asset Generator',
+      slug: 'brand-visual-asset-generator',
+    })
+    expect(getAgentMetadataTitle(agent)).toBe('Brand Visual Asset Generator')
+  })
+})
+
+// The root layout renders `<title>{pageTitle} · evex</title>`, so the budget
+// that matters is the rendered one, and the page title must not carry a second
+// copy of the brand.
+describe('registry agent titles fit the rendered title tag', () => {
+  const registryAgents = listStaticAgents()
+
+  it('has agents to check', () => {
+    expect(registryAgents.length).toBeGreaterThan(0)
+  })
+
+  for (const agent of registryAgents) {
+    it(`renders within the title budget for ${agent.slug}`, () => {
+      const title = getAgentMetadataTitle(agent)
+      const rendered = `${title}${METADATA_TITLE_SUFFIX}`
+
+      expect(rendered.length).toBeLessThanOrEqual(METADATA_TITLE_MAX_LENGTH)
+      expect(title).not.toContain('| evex')
+      expect(title.startsWith(agent.name)).toBe(true)
+    })
+  }
 })
 
 describe('compareRelatedAgents', () => {
