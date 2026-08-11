@@ -1,5 +1,5 @@
 // Contract tests over the real generated registry: these guarantees are what
-// `npx shadcn add @evex/<slug>` and the evex.sh catalog pages rely on.
+// `eve add https://www.evex.sh/r/<slug>.json` and the evex.sh catalog pages rely on.
 import { describe, expect, it } from 'vitest'
 import {
   EVEX_REGISTRY_NAME,

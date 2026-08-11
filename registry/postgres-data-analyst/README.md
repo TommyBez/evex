@@ -9,7 +9,7 @@ through authored tools.
 Install this registry item into an existing Eve app:
 
 ```bash
-npx shadcn@latest add @evex/postgres-data-analyst
+eve add https://www.evex.sh/r/postgres-data-analyst.json
 ```
 
 Then install the public runtime dependencies listed by the registry item.

@@ -76,7 +76,7 @@ the registry description shown on evex.sh.
 ## Setup
 
 \`\`\`bash
-npx shadcn@latest add @evex/${slug}
+eve add https://www.evex.sh/r/${slug}.json
 \`\`\`
 `
 }

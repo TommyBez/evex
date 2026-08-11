@@ -111,12 +111,13 @@ it overwrites manual edits (categories, dates, curated dependency list).
 
 ## Slugs
 
-The agent folder slug is the public install name (`@evex/<slug>`), claimed
-first-come by the PR that adds it. Pick a name that describes what the agent
-does; slugs that impersonate other people's products, squat obvious future
-names, or collide confusingly with existing agents will be rejected in
-review. Renaming a slug after merge is a breaking change for everyone who
-installed it — treat slugs as permanent.
+The agent folder slug becomes the public registry item URL used by
+`eve add https://www.evex.sh/r/<slug>.json`, and is claimed first-come by the PR
+that adds it. Pick a name that describes what the agent does; slugs that
+impersonate other people's products, squat obvious future names, or collide
+confusingly with existing agents will be rejected in review. Renaming a slug
+after merge is a breaking change for everyone who installed it — treat slugs
+as permanent.
 
 ## Generated output
 

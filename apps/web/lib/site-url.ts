@@ -13,7 +13,7 @@ const URL_PROTOCOL = /^https?:\/\//
 // VERCEL_PROJECT_PRODUCTION_URL is set to the production host on every
 // deployment — including previews. Prefer it only in production so previews
 // resolve to their own deployment URL. This matters for copied install
-// commands (`<host>/r/<slug>`): they must point at a host that actually
+// commands (`<host>/r/<slug>.json`): they must point at a host that actually
 // serves the agent being viewed, otherwise a not-yet-merged agent 404s when
 // installed from a preview.
 export function getSiteUrl(): string {
@@ -50,8 +50,12 @@ export function getSiteHost(): string {
   return getSiteUrl().replace(URL_PROTOCOL, '')
 }
 
+export function getRegistryItemUrl(slug: string): string {
+  return `${getSiteUrl()}/r/${slug}.json`
+}
+
 export function buildInstallCommand(slug: string): string {
-  return `npx shadcn@latest add @evex/${slug}`
+  return `eve add ${getRegistryItemUrl(slug)}`
 }
 
 export function getAgentUrl(slug: string): string {

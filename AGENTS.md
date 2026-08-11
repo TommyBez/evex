@@ -138,7 +138,7 @@ Most formatting and common issues are automatically fixed by Biome. Run `pnpm dl
 - CI (`.github/workflows/ci.yml`) runs check (incl. registry + CODEOWNERS freshness) + typecheck + agent typecheck + test + migrate + build against a Postgres service on every PR; `typecheck-agents.yml` additionally smoke-tests changed agents standalone (`pnpm install --ignore-workspace`).
 
 ### Install command
-- The public, product-facing install command is `npx shadcn@latest add @evex/{slug}`, built by `buildInstallCommand` in `apps/web/lib/site-url.ts` and shown on every agent page and the home hero. evex is part of the official shadcn community registry; the `@evex` entry in `apps/web/components.json` points at the hosted registry items.
+- The public, product-facing install command is `eve add <site-url>/r/{slug}.json`, built by `buildInstallCommand` in `apps/web/lib/site-url.ts` and shown on every agent page and the home hero. The site URL stays preview-aware so an unmerged agent installs from the deployment that serves it. Registry payloads remain shadcn-compatible internally, and the legacy `@evex` mapping in `apps/web/components.json` is retained for protocol compatibility, but shadcn commands are not public install copy.
 
 ### Database (required to run the app)
 - `apps/web` reads `DATABASE_URL` for auth, profiles, favorites, and install metrics. Public agent metadata/files come from the source-owned shadcn registry files.

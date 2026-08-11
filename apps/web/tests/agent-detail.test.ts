@@ -81,7 +81,7 @@ describe('getAgentInstallSummaryDescription', () => {
 describe('getAgentMetadataTitle', () => {
   it('prefers the full install title when it fits', () => {
     const agent = makeAgent({ name: 'Short', slug: 'short' })
-    expect(getAgentMetadataTitle(agent)).toBe('Short - install @evex/short')
+    expect(getAgentMetadataTitle(agent)).toBe('Short - install with eve')
   })
 
   it('never exceeds the metadata length budget', () => {
@@ -96,10 +96,12 @@ describe('getAgentMetadataTitle', () => {
 
   it('drops the brand from the fallback so the layout template owns it', () => {
     const agent = makeAgent({
-      name: 'Brand Visual Asset Generator',
-      slug: 'brand-visual-asset-generator',
+      name: 'A very descriptive registry agent display name',
+      slug: 'descriptive-registry-agent',
     })
-    expect(getAgentMetadataTitle(agent)).toBe('Brand Visual Asset Generator')
+    expect(getAgentMetadataTitle(agent)).toBe(
+      'A very descriptive registry agent display name',
+    )
   })
 })
 

@@ -34,7 +34,7 @@ digital products. It uses Context.dev MCP for brand extraction and calls a
 ## Installation
 
 ```bash
-npx shadcn@latest add @evex/brand-visual-asset-generator
+eve add https://www.evex.sh/r/brand-visual-asset-generator.json
 ```
 
 Install the public runtime dependencies listed by the registry item if your Eve

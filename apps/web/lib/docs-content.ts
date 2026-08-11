@@ -26,7 +26,7 @@ const DOCS_INDEX_SLUG = 'introduction'
 
 export const DOCS_PAGES: readonly DocsPage[] = [
   {
-    dateModified: '2026-07-04',
+    dateModified: '2026-08-11',
     datePublished: '2026-07-04',
     description:
       'Install community eve agents into your project with one command and own every file they write. What evex is and how the shadcn-compatible registry works.',
@@ -34,7 +34,7 @@ export const DOCS_PAGES: readonly DocsPage[] = [
       {
         body: [
           'evex is the community registry for eve agents. Each agent is a source-owned package: its files, metadata, dependencies, and author identity live in a public GitHub repository, and every agent enters or changes the catalog through a reviewed pull request.',
-          'The registry speaks the shadcn registry format, so the same CLI that installs UI components installs agents. There is no upload form and no opaque bundle. What you see in the repository is exactly what an install writes into your project.',
+          'The registry speaks the standard shadcn registry format that the eve CLI consumes. There is no upload form and no opaque bundle. What you see in the repository is exactly what an install writes into your project.',
           'The evex database stores runtime state only, such as install counts and favorites. The canonical definition of every agent is the code in the repository, which means you can audit an agent before you trust it.',
         ],
         heading: 'What evex is',
@@ -73,15 +73,15 @@ export const DOCS_PAGES: readonly DocsPage[] = [
     title: 'evex documentation: the community registry for eve agents',
   },
   {
-    dateModified: '2026-08-10',
+    dateModified: '2026-08-11',
     datePublished: '2026-07-04',
     description:
-      'Add any evex agent to your eve project with npx shadcn add. Prerequisites, what the CLI writes, and how to configure and verify the agent after install.',
+      'Add any evex agent to your eve project with eve add. Prerequisites, what the CLI writes, and how to configure and verify the agent after install.',
     sections: [
       {
         body: [
           'Agents install into an eve project: the CLI writes the agent/ directory layout that the eve framework loads at runtime. If you do not have an eve app yet, create one first and run every install command from its root.',
-          'eve requires Node.js 24 or newer. npx, bundled with Node, downloads and runs both the eve and shadcn CLIs on demand, so no global installs are needed.',
+          'eve requires Node.js 24 or newer. The eve CLI is part of an eve project, so run the install command from the same project root where you run eve dev and eve build.',
         ],
         code: [
           {
@@ -100,16 +100,16 @@ export const DOCS_PAGES: readonly DocsPage[] = [
       {
         body: [
           'Every agent installs with a single command. Replace the slug with the agent you picked from the catalog; the exact command is shown on every agent page.',
-          'evex is part of the official shadcn community registry, so the @evex namespace resolves without any registry configuration on your side.',
+          'The command points the eve CLI directly at the agent item served by evex, so it needs no registry configuration or separate installer.',
         ],
         code: [
           {
-            code: 'npx shadcn@latest add @evex/{slug}',
+            code: 'eve add https://www.evex.sh/r/{slug}.json',
             label: 'Install an agent',
             language: 'bash',
           },
           {
-            code: 'npx shadcn@latest add @evex/code-reviewer',
+            code: 'eve add https://www.evex.sh/r/code-reviewer.json',
             label: 'Example',
             language: 'bash',
           },
@@ -149,14 +149,14 @@ export const DOCS_PAGES: readonly DocsPage[] = [
     shortTitle: 'Installation',
     slug: 'installation',
     summary:
-      'Run npx shadcn@latest add @evex/{slug} from the root of your eve app. The CLI writes the agent source into your project and prompts for any npm dependencies.',
-    title: 'Install eve agents with the shadcn CLI',
+      'Run eve add https://www.evex.sh/r/{slug}.json from the root of your eve app. The CLI writes the agent source into your project and installs its npm dependencies.',
+    title: 'Install eve agents with the eve CLI',
   },
   {
-    dateModified: '2026-07-04',
+    dateModified: '2026-08-11',
     datePublished: '2026-07-04',
     description:
-      'Fetch the evex catalog at /r/registry.json and any agent at /r/{slug}. Endpoints, the @evex shadcn namespace, and machine-readable llms.txt resources.',
+      'Fetch the evex catalog at /r/registry.json and any agent at /r/{slug}. Eve install URLs, registry endpoints, and machine-readable llms.txt resources.',
     sections: [
       {
         body: [
@@ -173,7 +173,7 @@ export const DOCS_PAGES: readonly DocsPage[] = [
       },
       {
         body: [
-          'The registry serves each agent as a complete shadcn registry item at its slug. The item embeds the contents of every file the install will write, plus the declared npm dependencies. This is the same payload the shadcn CLI fetches when you install the agent.',
+          'The registry serves each agent as a complete shadcn registry item at its slug. The item embeds the contents of every file the install will write, plus the declared npm dependencies. This is the payload the eve CLI fetches when you install the agent.',
         ],
         code: [
           {
@@ -191,16 +191,16 @@ export const DOCS_PAGES: readonly DocsPage[] = [
       },
       {
         body: [
-          'evex is part of the official shadcn community registry, so the shadcn CLI resolves @evex/{slug} to these endpoints with no configuration. The namespace works anywhere the CLI does, including editor integrations built on it.',
+          'Pass the item URL directly to eve add. The .json endpoint is a complete, self-contained install target, so the command works without adding a registry mapping to the consumer project.',
         ],
         code: [
           {
-            code: 'npx shadcn@latest add @evex/{slug}',
-            label: 'Install through the @evex namespace',
+            code: 'eve add https://www.evex.sh/r/{slug}.json',
+            label: 'Install with eve',
             language: 'bash',
           },
         ],
-        heading: 'The @evex namespace',
+        heading: 'Eve install URLs',
       },
       {
         body: [
@@ -229,11 +229,11 @@ export const DOCS_PAGES: readonly DocsPage[] = [
     shortTitle: 'Registry',
     slug: 'registry',
     summary:
-      'evex serves every agent as a standard shadcn registry item over HTTPS. Fetch the catalog at /r/registry.json, fetch items at /r/{slug}, or address them as @evex/{slug} in the shadcn CLI.',
+      'evex serves every agent as a standard shadcn registry item over HTTPS. Fetch the catalog at /r/registry.json, inspect items at /r/{slug}, or install one by passing its .json URL to eve add.',
     title: 'Registry API: shadcn-compatible endpoints for eve agents',
   },
   {
-    dateModified: '2026-07-04',
+    dateModified: '2026-08-11',
     datePublished: '2026-07-04',
     description:
       'Browse and install evex agents from Cursor, VS Code, or Claude Code through the shadcn MCP server. Setup steps and example prompts for @evex/{slug} items.',
@@ -247,7 +247,7 @@ export const DOCS_PAGES: readonly DocsPage[] = [
       },
       {
         body: [
-          'Configure the shadcn MCP server in your editor by following the official setup guide for your client. Once you register the server, your assistant resolves @evex items the same way the CLI does.',
+          'Configure the shadcn MCP server in your editor by following the official setup guide for your client. Once you register the server, your assistant resolves @evex items through the shadcn community registry namespace.',
         ],
         code: [
           {
@@ -272,7 +272,7 @@ export const DOCS_PAGES: readonly DocsPage[] = [
       },
       {
         body: [
-          'An MCP-driven install produces the same result as running the shadcn CLI yourself: the agent source lands under agent/ in your project, along with evals, the README, and any .env.example. Review the written files, fill in credentials from the environment template, and run the evals before relying on the agent.',
+          'An MCP-driven install produces the same result as running eve add yourself: the agent source lands under agent/ in your project, along with evals, the README, and any .env.example. Review the written files, fill in credentials from the environment template, and run the evals before relying on the agent.',
         ],
         heading: 'What happens on install',
       },
@@ -284,7 +284,7 @@ export const DOCS_PAGES: readonly DocsPage[] = [
     title: 'Use evex agents from your editor with the shadcn MCP server',
   },
   {
-    dateModified: '2026-07-04',
+    dateModified: '2026-08-11',
     datePublished: '2026-07-04',
     description:
       'Add your agent to evex by pull request: scaffold with registry:new, fill in meta.docs, validate with the generator, and pass CODEOWNERS and review.',
@@ -292,7 +292,7 @@ export const DOCS_PAGES: readonly DocsPage[] = [
       {
         body: [
           'Agents join the catalog through pull requests to the evex repository. Start by scaffolding a complete package skeleton with your agent slug and GitHub username.',
-          'The slug becomes the public install name, @evex/{slug}, claimed first-come by the pull request that adds it. Pick a name that describes what the agent does, and treat it as permanent: renaming after merge breaks the install command for everyone who used it.',
+          'The slug becomes part of the public eve add URL, https://www.evex.sh/r/{slug}.json, and is claimed first-come by the pull request that adds it. Pick a name that describes what the agent does, and treat it as permanent: renaming after merge breaks the install command for everyone who used it.',
         ],
         code: [
           {

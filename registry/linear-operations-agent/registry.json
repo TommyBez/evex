@@ -155,7 +155,7 @@
         "slug": "linear-operations-agent",
         "category": "productivity",
         "createdAt": "2026-06-20T00:00:00.000Z",
-        "updatedAt": "2026-07-04T00:00:00.000Z",
+      "updatedAt": "2026-08-11T00:00:00.000Z",
         "docs": {
           "overview": [
             "Linear Operations Agent is an eve agent that keeps Linear as the operational source of truth while meeting your team where work actually starts. You mention or delegate to it inside Linear Agent Sessions, mention or DM it in Slack threads, or let six built-in schedules run digests for triage, cycle health, backlog hygiene, project summaries, P0/P1 monitoring, and weekly initiative updates.",
@@ -221,7 +221,7 @@
           "faqs": [
             {
               "question": "How do I install and verify it?",
-              "answer": "Run npx shadcn@latest add @evex/linear-operations-agent in an existing Eve app, then pnpm install. After configuring the connectors, pnpm info should list the linear and slack channels, one MCP connection named linear, six schedules, and ten skills, with no custom Linear SDK tools."
+              "answer": "Run eve add https://www.evex.sh/r/linear-operations-agent.json in an existing Eve app, then pnpm install. After configuring the connectors, pnpm info should list the linear and slack channels, one MCP connection named linear, six schedules, and ten skills, with no custom Linear SDK tools."
             },
             {
               "question": "Which model does it use and can I change it?",

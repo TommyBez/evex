@@ -22,8 +22,8 @@ This skill carries evex repository standards only. It never restates:
 Ground rules for every branch:
 
 - Agents install into an existing Eve app via
-  `npx shadcn@latest add @evex/<slug>`. Never scaffold a standalone app or
-  publish app-level project files.
+  `eve add https://www.evex.sh/r/<slug>.json`. Never scaffold a standalone app
+  or publish app-level project files.
 - Canonical metadata and installable files are source-owned under
   `registry/<slug>/`; the runtime database is never the source of truth.
 - `registry/` is its own pnpm workspace with its own lockfile. Run
@@ -137,9 +137,10 @@ change. The scaffold seeds placeholders — replacing all of them is part of
 
 ## 6. README
 
-Write for the consumer who ran `npx shadcn@latest add @evex/<slug>`. It
-installs as `~/agent/README.md`, and its title and first paragraph seed the
-registry `title`/`description` shown on evex.sh. Include:
+Write for the consumer who ran
+`eve add https://www.evex.sh/r/<slug>.json`. It installs as
+`~/agent/README.md`, and its title and first paragraph seed the registry
+`title`/`description` shown on evex.sh. Include:
 
 - What the agent does and the surface it runs on.
 - Required channels, connectors, webhooks, permissions, and routes.
@@ -148,9 +149,10 @@ registry `title`/`description` shown on evex.sh. Include:
 - Smoke tests using realistic prompts or webhook events.
 - Troubleshooting for the most likely setup failures.
 
-Do not describe installing a full app from scratch, and keep all
-user-facing install copy on the `@evex/<slug>` shadcn path — never the
-app's `components.json` or a root registry path.
+Do not describe installing a full app from scratch. Keep all user-facing
+install copy on the full `eve add https://www.evex.sh/r/<slug>.json` command;
+never substitute a shadcn command, a bare slug, `components.json`, or an
+unqualified registry path.
 
 Done when every setup step matches a channel, connection, route, or
 credential that exists in the code.

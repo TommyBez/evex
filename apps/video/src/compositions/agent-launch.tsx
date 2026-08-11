@@ -207,7 +207,7 @@ const CapabilitiesScene = ({ agent }: { agent: AgentLaunchData }) => (
 
 const installLines = (agent: AgentLaunchData): TerminalLine[] => [
   {
-    text: `npx shadcn@latest add @evex/${agent.slug}`,
+    text: `eve add https://www.evex.sh/r/${agent.slug}.json`,
     type: 'command',
   },
   { delay: 8, text: '✔ Checking registry.', type: 'log' },

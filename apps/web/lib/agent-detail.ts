@@ -79,12 +79,12 @@ export function getAgentInstallSummaryDescription({
 }
 
 export function getAgentMetadataTitle(agent: AgentWithAuthor): string {
-  const installTitle = `${agent.name} - install @evex/${agent.slug}`
+  const installTitle = `${agent.name} - install with eve`
   if (installTitle.length <= METADATA_TITLE_BUDGET) {
     return installTitle
   }
 
-  const compactTitle = `${agent.name} - @evex/${agent.slug}`
+  const compactTitle = `${agent.name} - eve agent`
   if (compactTitle.length <= METADATA_TITLE_BUDGET) {
     return compactTitle
   }

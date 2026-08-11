@@ -18,7 +18,7 @@ run evals before any preview deploy.
 Run this in an existing Eve app:
 
 ```bash
-npx shadcn@latest add @evex/eve-agent-builder
+eve add https://www.evex.sh/r/eve-agent-builder.json
 ```
 
 This package does not add a channel. Use your existing app UI or channel. If the

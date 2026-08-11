@@ -71,7 +71,7 @@
         "slug": "supabase-data-analyst",
         "category": "data",
         "createdAt": "2026-06-26T00:00:00.000Z",
-        "updatedAt": "2026-07-04T00:00:00.000Z",
+      "updatedAt": "2026-08-11T00:00:00.000Z",
         "docs": {
           "overview": [
             "Supabase Data Analyst is an eve agent that lives in Slack and answers questions about a single Supabase project with read-only SQL. Mention it in a channel or send it a DM, and it inspects your schema, writes one focused query, runs it through the hosted Supabase MCP server, and replies with an aggregate answer in plain language instead of raw row dumps.",
@@ -137,7 +137,7 @@
           "faqs": [
             {
               "question": "How do I install it?",
-              "answer": "Run npx shadcn@latest add @evex/supabase-data-analyst inside an existing eve app, install the listed dependencies, set the SUPABASE_DATA_ANALYST_* environment variables, deploy the app somewhere Slack can reach over HTTPS, and connect Slack with vercel connect create slack --triggers."
+              "answer": "Run eve add https://www.evex.sh/r/supabase-data-analyst.json inside an existing eve app, install the listed dependencies, set the SUPABASE_DATA_ANALYST_* environment variables, deploy the app somewhere Slack can reach over HTTPS, and connect Slack with vercel connect create slack --triggers."
             },
             {
               "question": "Can it modify my database?",

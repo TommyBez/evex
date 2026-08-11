@@ -20,7 +20,7 @@ It runs on a cron schedule, reads only public posts via the X API v2, previews e
 ## Installation
 
 ```bash
-npx shadcn@latest add @evex/x-draft-assistant
+eve add https://www.evex.sh/r/x-draft-assistant.json
 ```
 
 ## Configuration

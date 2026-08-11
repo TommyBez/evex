@@ -6,7 +6,7 @@ Each agent in `registry/<slug>` gets one 1280×720 @ 30fps composition (~14s) wi
 
 1. **Intro** — kicker, agent name, and category over a muted neuro-noise shader.
 2. **Payoff** — one benefit line with the key phrase shifting to the category accent color.
-3. **Install CTA** — a terminal typing `npx shadcn@latest add @evex/<slug>`, closing on `evex.sh`.
+3. **Install CTA** — a terminal typing `eve add https://www.evex.sh/r/<slug>.json`, closing on `evex.sh`.
 
 ## Commands
 

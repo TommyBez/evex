@@ -1,0 +1,37 @@
+I moved Evex GTM ops off Claude Cowork onto Grok Bot today.
+
+Not a slide deck. Real ownership: Chief of Staff + a GTM team, live on launch day.
+
+https://evex.sh
+
+---
+
+Before: Cowork tasks on a pulse cadence.
+
+After: the same rhythm on Grok Bot. Weekday pulses at 08:20, 13:20, 21:20 Europe/Rome. Sunday backup. Writeups land in Slack #evex-gtm.
+
+---
+
+Source of truth stayed put. gtm/STATE.md and gtm/LOG.md still run the show. Tommy edits win. Agents read, propose, ship drafts. Nobody invents metrics.
+
+---
+
+Skill-first is still mandatory. marketingskills under .agents/skills/, product-marketing brief refreshed today.
+
+Copy rules are boring on purpose: X in English, LinkedIn in Italian, no em dashes, install only as npx shadcn@latest add @evex/<slug>.
+
+---
+
+Connectors that actually matter for the pulse: PostHog for the north star (non-author install-command copies), Vercel for deploys and logs, Slack for the channel. Same jobs. Cleaner handoff.
+
+---
+
+What got easier: one room for the GTM agents, a clear owner (Chief of Staff), social stays draft-only (Tommy publishes), and no double-running Cowork + Grok.
+
+---
+
+evex is the open registry for Eve agents. Browse, inspect every file, then install with one shadcn command.
+
+https://github.com/TommyBez/evex
+
+If you run GTM with agents, what's your source-of-truth file?

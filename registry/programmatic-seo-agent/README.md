@@ -24,7 +24,7 @@ DataForSEO and Parallel are wrapped as authored tools rather than OpenAPI/MCP co
 ## Installation
 
 ```bash
-npx shadcn@latest add @evex/programmatic-seo-agent
+eve add https://www.evex.sh/r/programmatic-seo-agent.json
 ```
 
 ## Configuration

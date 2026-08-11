@@ -6,13 +6,13 @@
 
 <p align="center">
   <strong>Install community agents for the eve framework with one command.</strong><br />
-  Discover agents built by the community, drop them into your app with <code>shadcn</code>, and publish your own.
+  Discover agents built by the community, add them with the <code>eve</code> CLI, and publish your own.
 </p>
 
 <p align="center">
   <a href="https://evex.sh"><img alt="Live at evex.sh" src="https://shieldcn.dev/badge/live-evex.sh-22c55e.svg?statusDot=true" /></a>
   <a href="https://github.com/TommyBez/evex"><img alt="GitHub stars" src="https://shieldcn.dev/github/stars/TommyBez/evex.svg" /></a>
-  <a href="#install-an-agent"><img alt="Install with shadcn" src="https://shieldcn.dev/badge/install-shadcn-000000.svg?logo=shadcnui&logoColor=ffffff" /></a>
+  <a href="#install-an-agent"><img alt="Install with eve" src="https://shieldcn.dev/badge/install-eve-006bff.svg" /></a>
   <a href="./CONTRIBUTIONS.md"><img alt="Pull requests welcome" src="https://shieldcn.dev/badge/PRs-welcome-006bff.svg" /></a>
 </p>
 
@@ -30,12 +30,12 @@
 
 **evex** is the open registry for [Eve](https://eve.dev) agents. Browse agent
 configurations built by the community, add any of them to an existing Eve app
-with a single `shadcn` command, and publish your own by opening a pull request —
+with a single `eve add` command, and publish your own by opening a pull request —
 every agent stays code-owned and reviewed.
 
 ## Highlights
 
-- **One command to install** — `npx shadcn@latest add @evex/<agent>` drops an agent's files straight into your Eve app.
+- **One command to install** — `eve add https://www.evex.sh/r/<agent>.json` drops an agent's files straight into your Eve app.
 - **Code-owned and reviewed** — agents live in source and ship through pull requests; the database only holds runtime state.
 - **Browse and discover** — search the catalog, filter by category, and sort by most installed, newest, or name.
 - **Inspect before you install** — every agent page lists its files, dependencies, author, and install command.
@@ -44,11 +44,11 @@ every agent stays code-owned and reviewed.
 
 ## Install an agent
 
-Every agent has a one-line install. Add one to your project with the `shadcn`
+Every agent has a one-line install. Add one to your project with the `eve`
 CLI — the same command shown on each agent's page:
 
 ```bash
-npx shadcn@latest add @evex/code-reviewer
+eve add https://www.evex.sh/r/code-reviewer.json
 ```
 
 Swap `code-reviewer` for any agent slug from the catalog. Agents span categories

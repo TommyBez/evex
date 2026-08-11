@@ -155,7 +155,7 @@
         "slug": "eve-agent-builder",
         "category": "coding",
         "createdAt": "2026-06-30T10:23:00.000Z",
-        "updatedAt": "2026-08-10T00:00:00.000Z",
+      "updatedAt": "2026-08-11T00:00:00.000Z",
         "docs": {
           "overview": [
             "Eve Agent Builder turns a plain request like 'create an agent that answers onboarding questions' into a tested, deployed Eve agent, so you review approvals and results instead of running the delivery checklist yourself. Install it into an existing Eve app and talk to it through whatever channel that app already exposes: web chat, the Eve session API, Slack, or GitHub.",
@@ -163,7 +163,7 @@
             "Deployment stays under your control. The bash tool denies Vercel CLI commands outright and routes them through run_vercel_cli, which pauses for human approval on every Connect setup, project link, and deploy, and refuses to deploy a workspace that is not already linked to a Vercel project. After deploying, it verifies the live health, session, and stream routes."
           ],
           "howItWorks": [
-            "You install the agent into an existing Eve app with npx shadcn@latest add @evex/eve-agent-builder; it adds no channel of its own, so you reach it through the app's existing web, Slack, GitHub, or session API surface.",
+            "You install the agent into an existing Eve app with eve add https://www.evex.sh/r/eve-agent-builder.json; it adds no channel of its own, so you reach it through the app's existing web, Slack, GitHub, or session API surface.",
             "On each request it loads the bundled eve and eve-agent-delivery skills, reads the local Eve docs in node_modules/eve/docs, and writes the smallest set of instructions, tools, channels, schedules, and evals that satisfies the request.",
             "It tests the result locally in a Vercel Sandbox (Node 24, 2 vCPUs) through the run_eve_cli tool, running eve info --json, eve build, and eve eval, while the record-check-evidence hook stores each command's exit code in session state.",
             "A runtime-status block regenerated every turn reports which credentials are present (never their values) plus the recorded check results, and the agent quotes that evidence when it requests deploy approval.",
@@ -237,7 +237,7 @@
             },
             {
               "question": "How do I install it, and what does it need to run?",
-              "answer": "Run npx shadcn@latest add @evex/eve-agent-builder inside an existing Eve app, then set VERCEL_TOKEN in the app runtime. The package adds no channel of its own; if your app has no interactive surface yet, add a web or Slack channel first."
+              "answer": "Run eve add https://www.evex.sh/r/eve-agent-builder.json inside an existing Eve app, then set VERCEL_TOKEN in the app runtime. The package adds no channel of its own; if your app has no interactive surface yet, add a web or Slack channel first."
             }
           ]
         }

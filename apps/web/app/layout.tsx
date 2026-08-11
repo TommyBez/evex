@@ -36,7 +36,7 @@ export const metadata: Metadata = {
     'install eve agent',
     'AI agents',
     'AI agent recipes',
-    'npx shadcn add',
+    'eve add',
     'developer tools',
   ],
   authors: [{ name: siteConfig.name }],

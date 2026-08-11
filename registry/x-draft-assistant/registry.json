@@ -141,7 +141,7 @@
         "slug": "x-draft-assistant",
         "category": "general",
         "createdAt": "2026-06-26T16:19:57.402Z",
-        "updatedAt": "2026-07-04T00:00:00.000Z",
+      "updatedAt": "2026-08-11T00:00:00.000Z",
         "docs": {
           "overview": [
             "X Draft Assistant is a scheduled eve agent that turns what a watched set of X (Twitter) accounts posted in the last 24 hours into three ready-to-review draft posts in Typefully. Every day it scans the handles listed in X_HOT_TOPIC_HANDLES via the X API v2, clusters their recent posts into hot topics, researches each topic with the Parallel web search API, and writes three distinct draft candidates with cited sources.",
@@ -207,7 +207,7 @@
           "faqs": [
             {
               "question": "How do I install and run it?",
-              "answer": "Install with npx shadcn@latest add @evex/x-draft-assistant, copy .env.example into your eve app environment, and fill in the X, Parallel, and Typefully credentials plus at least one handle. In dev you can trigger a run manually by POSTing to /eve/v1/dev/schedules/daily-x-drafts."
+              "answer": "Install with eve add https://www.evex.sh/r/x-draft-assistant.json, copy .env.example into your eve app environment, and fill in the X, Parallel, and Typefully credentials plus at least one handle. In dev you can trigger a run manually by POSTing to /eve/v1/dev/schedules/daily-x-drafts."
             },
             {
               "question": "Can it publish or schedule posts on X?",

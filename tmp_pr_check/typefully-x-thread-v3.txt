@@ -1,0 +1,44 @@
+I handed Evex GTM to Grok Bot tonight.
+
+The whole ask was two lines:
+1. build a GTM team from Corey Haines' marketing skills
+2. point it at my Evex repo
+
+https://evex.sh
+
+---
+
+Step 1: I dropped the GitHub link
+https://github.com/coreyhaines31/marketingskills
+
+Chief of Staff mapped the skill categories into bots (PMM, Content, SEO, CRO, Paid, Growth, Sales, Strategy) and stood them up.
+
+---
+
+Step 2: I pointed at the project path.
+
+It read README, gtm/STATE.md, gtm/LOG.md, refreshed product-marketing via the skill, installed the full marketingskills set into .agents/skills/.
+
+Same source of truth Cowork already used. No new religion.
+
+---
+
+Step 3: "take over GTM from Claude Cowork."
+
+It copied the pulse cadence (08:20 / 13:20 / 21:20), wired Slack #evex-gtm, connected PostHog + Vercel, and kept north star + copy rules intact.
+
+---
+
+Wall clock from "build the team" to "routines live": about 15 minutes tonight.
+
+Not because AI is magic. Because the process already lived in files, and swapping the runner was the hard part we skipped.
+
+---
+
+If your GTM already has STATE, LOG, and skills: you do not rebuild.
+
+You point a new agent stack at the same files and keep shipping.
+
+https://evex.sh
+
+https://github.com/TommyBez/evex

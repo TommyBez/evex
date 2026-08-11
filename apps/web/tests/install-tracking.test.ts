@@ -39,7 +39,7 @@ describe('shouldCountInstall', () => {
     expect(shouldCountInstall('Indexer/3.1 +HTTPS://EXAMPLE.COM')).toBe(false)
   })
 
-  it('counts the shadcn CLI fetch clients', () => {
+  it('counts CLI fetch clients', () => {
     expect(shouldCountInstall('undici')).toBe(true)
     expect(shouldCountInstall('node')).toBe(true)
     expect(shouldCountInstall('node-fetch/3.3.2')).toBe(true)

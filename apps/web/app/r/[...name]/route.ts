@@ -52,7 +52,7 @@ function logRegistryHit({
   )
 }
 
-// Public shadcn registry item endpoint. The registry package embeds file
+// Public registry item endpoint. The registry package embeds file
 // contents at build time while preserving best-effort install/download counts.
 // Only non-browser, non-crawler requests increment the counter; the response is
 // identical either way.

@@ -6,6 +6,7 @@ import { AuthorAvatar } from '@/components/author-avatar'
 import { FavoriteButton } from '@/components/favorite-button'
 import { InstallCopyButton } from '@/components/install-copy-button'
 import type { AgentWithAuthor } from '@/lib/agent-types'
+import { buildInstallCommand } from '@/lib/site-url'
 
 export function AgentCard({
   agent,
@@ -39,8 +40,8 @@ export function AgentCard({
           </span>
           <InstallCopyButton
             className="relative z-10"
+            command={buildInstallCommand(agent.slug)}
             name={agent.name}
-            slug={agent.slug}
           />
           <FavoriteButton
             agentAuthor={agent.authorUsername}

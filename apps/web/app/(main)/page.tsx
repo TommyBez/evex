@@ -32,7 +32,7 @@ export const metadata: Metadata = createPageMetadata({
   socialTitle:
     'evex: the eve Agent Registry. Install eve Agents with One Command',
   description:
-    "Community registry for agents built on eve, Vercel's agent framework. Browse configurations, preview every file before install, and add any agent with npx shadcn add @evex/{slug}.",
+    "Community registry for agents built on eve, Vercel's agent framework. Browse configurations, preview every file before install, and add any agent with eve add.",
   path: '/',
 })
 
@@ -101,7 +101,7 @@ function Hero() {
           </h1>
           <p className="mt-5 max-w-md text-pretty text-base text-muted-foreground leading-relaxed sm:text-lg">
             The community registry for eve agents. Preview every file before
-            install, then add any agent with one shadcn command.
+            install, then add any agent with one eve command.
           </p>
           <div className="mt-6 sm:mt-8">
             <Button

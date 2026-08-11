@@ -88,7 +88,7 @@
         "slug": "postgres-data-analyst",
         "category": "data",
         "createdAt": "2026-06-23T00:00:00.000Z",
-        "updatedAt": "2026-07-04T00:00:00.000Z",
+      "updatedAt": "2026-08-11T00:00:00.000Z",
         "docs": {
           "overview": [
             "Postgres Data Analyst is an eve agent that lives in your Slack workspace and answers questions about a single Postgres database. Mention it in a channel or send it a DM, ask something like show total signups by month for the last 6 months, and it inspects the schema, writes one read-only SQL query, runs it, and replies with an interpreted answer rather than a raw row dump.",
@@ -150,7 +150,7 @@
           "faqs": [
             {
               "question": "How do I install it?",
-              "answer": "Run npx shadcn@latest add @evex/postgres-data-analyst inside an existing eve app, install the listed dependencies (eve, pg, pgsql-ast-parser, zod, @vercel/connect), fill in the DATA_ANALYST_* environment variables, deploy, then connect Slack with vercel connect create slack --triggers."
+              "answer": "Run eve add https://www.evex.sh/r/postgres-data-analyst.json inside an existing eve app, install the listed dependencies (eve, pg, pgsql-ast-parser, zod, @vercel/connect), fill in the DATA_ANALYST_* environment variables, deploy, then connect Slack with vercel connect create slack --triggers."
             },
             {
               "question": "Can it modify or delete data?",

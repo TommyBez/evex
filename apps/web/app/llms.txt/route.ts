@@ -46,7 +46,7 @@ function buildLlmsTxt(): string {
 
 > ${siteConfig.description}
 
-evex is the community registry for reusable eve agent configurations. Developers browse agents, preview every file an install will write, and add agents to eve projects with a single shadcn command.
+evex is the community registry for reusable eve agent configurations. Developers browse agents, preview every file an install will write, and add agents to eve projects with a single eve command.
 
 ## What is evex?
 
@@ -54,7 +54,7 @@ evex is a shadcn-compatible registry for eve agents. Each registry item packages
 
 ## How to install an agent
 
-1. Run \`npx shadcn@latest add @evex/{slug}\` from your eve app root.
+1. Run \`eve add ${siteUrl}/r/{slug}.json\` from your eve app root.
 2. Review the generated files and configure any required credentials before running the agent.
 
 ## Key pages

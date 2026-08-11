@@ -23,7 +23,7 @@ reference app: the model streams structured UI instead of markdown, and a React
 ## Installation
 
 ```bash
-npx shadcn@latest add @evex/openui-assistant
+eve add https://www.evex.sh/r/openui-assistant.json
 ```
 
 Install the registry dependencies in your Eve app if they are not already present:

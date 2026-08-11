@@ -34,6 +34,7 @@ import {
   getStaticAgentsByAuthorUsername,
   listStaticAgents,
 } from '@/lib/registry'
+import { buildInstallCommand } from '@/lib/site-url'
 import {
   createAgentBreadcrumbSchema,
   createAgentFaqSchema,
@@ -155,6 +156,7 @@ async function AgentDetailContent({ agent }: { agent: AgentWithAuthor }) {
     : []
   const relatedCandidates = listStaticAgents().filter((a) => a.id !== agent.id)
   const deps = parseDependencies(agent.dependencies)
+  const installCommand = buildInstallCommand(agent.slug)
   const fileKinds = countFilesByKind(files)
   const moreFromAuthorCount = authorAgents.filter(
     (a) => a.id !== agent.id,
@@ -239,6 +241,7 @@ async function AgentDetailContent({ agent }: { agent: AgentWithAuthor }) {
         <div className="mt-4">
           <InstallCommand
             agentAuthor={agent.authorUsername}
+            command={installCommand}
             label={`${agent.name} install command`}
             slug={agent.slug}
             viewerIsAuthor={viewerIsAuthor}
@@ -304,6 +307,7 @@ async function AgentDetailContent({ agent }: { agent: AgentWithAuthor }) {
 
       <MobileInstallBar
         agentAuthor={agent.authorUsername}
+        command={installCommand}
         label={`${agent.name} install command (quick copy)`}
         slug={agent.slug}
         viewerIsAuthor={viewerIsAuthor}

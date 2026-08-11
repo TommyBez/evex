@@ -1,15 +1,15 @@
 // The install counter is public (agent cards, leaderboard, agent pages), so it
 // should approximate real installs instead of raw traffic. `/r/*` is
-// deliberately left outside the botid protection: the shadcn CLI is itself a
+// deliberately left outside the botid protection: the Eve CLI is itself a
 // non-browser client and would be blocked by it. This filter is the
 // alternative, and it is best-effort hygiene rather than anti-fraud. It drops
 // interactive browsers and self-identifying crawlers, and keeps programmatic
-// clients such as the shadcn CLI (Node fetch / undici) counted.
+// clients such as the Eve CLI (Node fetch / undici) counted.
 
 const BROWSER_USER_AGENT_PREFIX = 'Mozilla/'
 
 // Case-insensitive markers of crawlers, link previewers, and headless browsers.
-// Kept deliberately narrow: no pattern here may match the shadcn CLI user
+// Kept deliberately narrow: no pattern here may match the Eve CLI user
 // agents (`undici`, `node`, `node-fetch`), which is why plain `fetch` is not on
 // the list.
 const CRAWLER_USER_AGENT_PATTERNS = [
@@ -26,8 +26,8 @@ const CRAWLER_USER_AGENT_PATTERNS = [
 ] as const
 
 // Bots conventionally point at a contact or documentation URL inside their user
-// agent (`+https://example.com/bot`). No install client does that: the shadcn
-// CLI ships bare tokens such as `undici` or `node-fetch/3.3.2`.
+// agent (`+https://example.com/bot`). The Eve CLI uses bare tokens such as
+// `undici` or `node-fetch/3.3.2` instead.
 const CRAWLER_USER_AGENT_URL_MARKERS = ['http://', 'https://'] as const
 
 // Returns true when the request looks like a programmatic install rather than a

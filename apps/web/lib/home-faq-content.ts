@@ -7,7 +7,7 @@ export const HOME_FAQ_ITEMS = [
   {
     question: 'How do I install an eve agent?',
     answer:
-      'Run npx shadcn@latest add @evex/{slug} from your eve app root. The command writes the agent files under agent/ in the layout expected by eve.',
+      'Run eve add https://www.evex.sh/r/{slug}.json from your eve app root. The command writes the agent files under agent/ in the layout expected by eve.',
   },
   {
     question: 'How do I publish an agent?',

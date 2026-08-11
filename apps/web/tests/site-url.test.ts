@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   buildInstallCommand,
   getAgentUrl,
+  getRegistryItemUrl,
   getSiteHost,
   getSiteUrl,
 } from '@/lib/site-url'
@@ -22,12 +23,18 @@ describe('site URL derivation', () => {
       'https://www.evex.sh/agents/code-reviewer',
     )
   })
+
+  it('builds absolute registry item URLs with a JSON extension', () => {
+    expect(getRegistryItemUrl('code-reviewer')).toBe(
+      'https://www.evex.sh/r/code-reviewer.json',
+    )
+  })
 })
 
 describe('buildInstallCommand', () => {
-  it('targets the @evex shadcn namespace', () => {
+  it('installs the absolute registry item URL with the eve CLI', () => {
     expect(buildInstallCommand('code-reviewer')).toBe(
-      'npx shadcn@latest add @evex/code-reviewer',
+      'eve add https://www.evex.sh/r/code-reviewer.json',
     )
   })
 })
