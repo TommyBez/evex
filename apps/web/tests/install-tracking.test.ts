@@ -13,6 +13,8 @@ const BINGBOT_USER_AGENT =
   'Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)'
 const GPTBOT_USER_AGENT =
   'Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko); compatible; GPTBot/1.2; +https://openai.com/gptbot'
+const BLOCKDEX_USER_AGENT =
+  'BlockDex/1.0 (+https://blockdex.kynth.studio; indexes public shadcn registries; hello@kynth.studio)'
 
 describe('shouldCountInstall', () => {
   it('ignores interactive browsers', () => {
@@ -28,11 +30,21 @@ describe('shouldCountInstall', () => {
     expect(shouldCountInstall('curl/8.5.0 GoogleBot')).toBe(false)
   })
 
+  it('ignores crawlers that advertise a URL in their user agent', () => {
+    expect(shouldCountInstall(BLOCKDEX_USER_AGENT)).toBe(false)
+    expect(shouldCountInstall('SomeBot/2.0 (+https://example.com/bot)')).toBe(
+      false,
+    )
+    expect(shouldCountInstall('tool/1.0 (http://example.com)')).toBe(false)
+    expect(shouldCountInstall('Indexer/3.1 +HTTPS://EXAMPLE.COM')).toBe(false)
+  })
+
   it('counts the shadcn CLI fetch clients', () => {
     expect(shouldCountInstall('undici')).toBe(true)
     expect(shouldCountInstall('node')).toBe(true)
     expect(shouldCountInstall('node-fetch/3.3.2')).toBe(true)
     expect(shouldCountInstall('npm/10.9.0 node/v24.0.0')).toBe(true)
+    expect(shouldCountInstall('npm/10.0.0')).toBe(true)
   })
 
   it('counts requests without a usable user agent', () => {

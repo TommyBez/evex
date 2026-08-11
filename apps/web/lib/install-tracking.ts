@@ -25,6 +25,11 @@ const CRAWLER_USER_AGENT_PATTERNS = [
   'scanner',
 ] as const
 
+// Bots conventionally point at a contact or documentation URL inside their user
+// agent (`+https://example.com/bot`). No install client does that: the shadcn
+// CLI ships bare tokens such as `undici` or `node-fetch/3.3.2`.
+const CRAWLER_USER_AGENT_URL_MARKERS = ['http://', 'https://'] as const
+
 // Returns true when the request looks like a programmatic install rather than a
 // browser visit or a crawler sweep. A missing or empty user agent counts: many
 // CLI clients send none, while browsers and crawlers always identify
@@ -39,6 +44,13 @@ export function shouldCountInstall(userAgent: string | null): boolean {
   }
 
   const lowercased = normalized.toLowerCase()
+
+  // A user agent carrying its own URL is a crawler identifying itself.
+  if (
+    CRAWLER_USER_AGENT_URL_MARKERS.some((marker) => lowercased.includes(marker))
+  ) {
+    return false
+  }
 
   return !CRAWLER_USER_AGENT_PATTERNS.some((pattern) =>
     lowercased.includes(pattern),
