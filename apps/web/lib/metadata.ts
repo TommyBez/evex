@@ -29,13 +29,19 @@ export function createPageMetadata({
   path,
   noIndex = false,
   markdownPath,
+  socialTitle,
 }: {
   title: string
   description: string
   path: string
   noIndex?: boolean
   markdownPath?: string
+  // Overrides og:title and twitter:title when the social card should read
+  // differently from the SEO title. The rendered <title> is untouched.
+  socialTitle?: string
 }): Metadata {
+  const cardTitle = socialTitle ?? title
+
   return {
     title,
     description,
@@ -44,7 +50,7 @@ export function createPageMetadata({
       ...(markdownPath ? { types: { 'text/markdown': markdownPath } } : {}),
     },
     openGraph: {
-      title,
+      title: cardTitle,
       description,
       url: path,
       siteName: siteConfig.name,
@@ -56,7 +62,7 @@ export function createPageMetadata({
       card: 'summary_large_image',
       site: siteTwitterHandle,
       creator: siteTwitterHandle,
-      title,
+      title: cardTitle,
       description,
       images: [defaultTwitterImage],
     },
