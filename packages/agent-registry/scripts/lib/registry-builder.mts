@@ -19,6 +19,15 @@ const PROCESS_ENV_BRACKET_PATTERN =
 const PROCESS_ENV_DOT_PATTERN = /\bprocess\.env\.([A-Za-z_][A-Za-z0-9_]*)/g
 const EVE_DEPENDENCY = 'eve'
 
+// Root manifest metadata. shadcn only requires name and homepage, but external
+// registry indexers read a top-level description to present the registry
+// itself, so evex publishes one. The homepage is the www host because the
+// apex 308-redirects to it.
+const REGISTRY_NAME = 'evex'
+const REGISTRY_HOMEPAGE = 'https://www.evex.sh'
+const REGISTRY_DESCRIPTION =
+  'evex is the open source community registry for Eve agents. Browse agents built by the community and install them into your Eve app with one command.'
+
 export interface RegistryBuildResult {
   readonly agentSlugs: readonly string[]
   readonly catalog: RegistryCatalog
@@ -461,8 +470,9 @@ export async function buildRegistry(
 
   const catalog: RegistryCatalog = {
     $schema: REGISTRY_SCHEMA_URL,
-    name: 'evex',
-    homepage: 'https://evex.sh',
+    name: REGISTRY_NAME,
+    homepage: REGISTRY_HOMEPAGE,
+    description: REGISTRY_DESCRIPTION,
     items: catalogItems,
   }
 

@@ -16,6 +16,7 @@ export type RegistryItem = Omit<RegistrySourceItem, 'files'> & {
 
 export interface RegistryCatalog {
   readonly $schema?: string
+  readonly description?: string
   readonly homepage?: string
   readonly items: readonly RegistryItem[]
   readonly name: string
