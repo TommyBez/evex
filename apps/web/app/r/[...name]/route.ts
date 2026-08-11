@@ -40,10 +40,25 @@ export async function GET(
 
   await connection()
 
+  const userAgent = request.headers.get('user-agent')
+  const counted = shouldCountInstall(userAgent)
+
+  // Diagnostic: Vercel runtime logs omit the user agent, so the clients that
+  // slip past the install filter cannot be identified from traffic alone. One
+  // structured line per hit makes them visible without changing the response.
+  console.log(
+    JSON.stringify({
+      evt: 'registry_hit',
+      slug: name,
+      ua: (userAgent ?? '').slice(0, 150),
+      counted,
+    }),
+  )
+
   try {
     const item = await getRegistryItem(name)
 
-    if (shouldCountInstall(request.headers.get('user-agent'))) {
+    if (counted) {
       after(async () => {
         try {
           await incrementInstallCount(name)
