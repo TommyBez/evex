@@ -7,6 +7,7 @@ import { incrementInstallCount } from '@/lib/data/install-metrics'
 import { shouldCountInstall } from '@/lib/install-tracking'
 
 const JSON_EXTENSION = '.json'
+const MAX_LOGGED_USER_AGENT_LENGTH = 150
 
 function normalizeRegistryItemName(segments: string[]): string | null {
   if (segments.length !== 1) {
@@ -21,6 +22,34 @@ function normalizeRegistryItemName(segments: string[]): string | null {
   return segment.endsWith(JSON_EXTENSION)
     ? segment.slice(0, -JSON_EXTENSION.length)
     : segment
+}
+
+// Diagnostic: Vercel runtime logs omit the user agent, so the clients that
+// slip past the install filter cannot be identified from traffic alone. One
+// structured line per hit makes them visible without changing the response.
+// `counted` records the user agent decision only: the install increment is
+// scheduled just for successful lookups, and `found` separates the two cases
+// so that sweepers probing slugs that do not exist stay visible as well.
+function logRegistryHit({
+  slug,
+  userAgent,
+  counted,
+  found,
+}: {
+  slug: string
+  userAgent: string | null
+  counted: boolean
+  found: boolean
+}): void {
+  console.info(
+    JSON.stringify({
+      evt: 'registry_hit',
+      slug,
+      ua: (userAgent ?? '').slice(0, MAX_LOGGED_USER_AGENT_LENGTH),
+      counted,
+      found,
+    }),
+  )
 }
 
 // Public shadcn registry item endpoint. The registry package embeds file
@@ -43,20 +72,10 @@ export async function GET(
   const userAgent = request.headers.get('user-agent')
   const counted = shouldCountInstall(userAgent)
 
-  // Diagnostic: Vercel runtime logs omit the user agent, so the clients that
-  // slip past the install filter cannot be identified from traffic alone. One
-  // structured line per hit makes them visible without changing the response.
-  console.log(
-    JSON.stringify({
-      evt: 'registry_hit',
-      slug: name,
-      ua: (userAgent ?? '').slice(0, 150),
-      counted,
-    }),
-  )
-
   try {
     const item = await getRegistryItem(name)
+
+    logRegistryHit({ slug: name, userAgent, counted, found: true })
 
     if (counted) {
       after(async () => {
@@ -75,6 +94,8 @@ export async function GET(
     })
   } catch (error) {
     if (error instanceof RegistryItemNotFoundError) {
+      logRegistryHit({ slug: name, userAgent, counted, found: false })
+
       return NextResponse.json({ error: 'Agent not found' }, { status: 404 })
     }
 
