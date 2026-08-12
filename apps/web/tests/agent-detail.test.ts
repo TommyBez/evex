@@ -3,7 +3,10 @@ import {
   compareRelatedAgents,
   countFilesByKind,
   getAgentInstallSummaryDescription,
+  getAgentMetaDescription,
   getAgentMetadataTitle,
+  getAgentOgImageAlt,
+  METADATA_DESCRIPTION_MAX_LENGTH,
   METADATA_TITLE_BUDGET,
   METADATA_TITLE_MAX_LENGTH,
   METADATA_TITLE_SUFFIX,
@@ -11,6 +14,16 @@ import {
 } from '@/lib/agent-detail'
 import type { AgentRegistryFile, AgentWithAuthor } from '@/lib/agent-types'
 import { listStaticAgents } from '@/lib/registry'
+import { buildInstallCommand } from '@/lib/site-url'
+import {
+  createAgentListSchema,
+  createAgentSoftwareSchema,
+} from '@/lib/structured-data'
+
+const RAW_MARKDOWN_MARKERS = /`|\*\*|\[rate limits\]\(/
+const RAW_MARKDOWN_OR_CODE = /`|\*\*/
+const RAW_MARKDOWN_ANY = /`|\*\*|\[.*?\]\(.*?\)/
+const STRAY_PAREN_AROUND_NOTATION = /\)\s*notation|notation\s*\)/
 
 function makeFile(path: string): AgentRegistryFile {
   return { content: '', id: `x:${path}`, path, type: 'registry:file' }
@@ -101,6 +114,135 @@ describe('getAgentMetadataTitle', () => {
     })
     expect(getAgentMetadataTitle(agent)).toBe('Brand Visual Asset Generator')
   })
+})
+
+describe('getAgentMetaDescription', () => {
+  it('strips inline Markdown markers from the SERP description', () => {
+    const agent = makeAgent({
+      description:
+        'Review PRs with `inline` comments, **suggestion** blocks, and [rate limits](https://example.com).',
+      slug: 'code-reviewer',
+    })
+    const description = getAgentMetaDescription(agent)
+
+    expect(description).not.toMatch(RAW_MARKDOWN_MARKERS)
+    expect(description).toContain('inline')
+    expect(description).toContain('suggestion')
+    expect(description).toContain('rate limits')
+  })
+
+  it('strips Markdown links whose destinations contain balanced parentheses', () => {
+    const agent = makeAgent({
+      description:
+        'Explains [function](https://example.com/Function_(mathematics)) notation for agent prompts.',
+      slug: 'code-reviewer',
+    })
+    const description = getAgentMetaDescription(agent)
+
+    expect(description).toContain('function')
+    expect(description).not.toContain('https://example.com')
+    expect(description).not.toContain('Function_(mathematics)')
+    expect(description).not.toMatch(STRAY_PAREN_AROUND_NOTATION)
+  })
+
+  it('stays within the SERP description budget', () => {
+    const agent = makeAgent({
+      description:
+        'Review GitHub pull requests from a native GitHub App channel. Mention `@code-reviewer` on a pull request to publish a GitHub review with inline comments, optional suggestion blocks, and Upstash-backed rate limiting for public repositories.',
+      slug: 'code-reviewer',
+    })
+    const description = getAgentMetaDescription(agent)
+
+    expect(description.length).toBeLessThanOrEqual(
+      METADATA_DESCRIPTION_MAX_LENGTH,
+    )
+  })
+
+  it('appends the shadcn install command when space allows', () => {
+    const agent = makeAgent({
+      description:
+        'Review GitHub pull requests from a native GitHub App channel. Mention `@code-reviewer` on a pull request to publish a GitHub review with inline comments, optional suggestion blocks, and Upstash-backed rate limiting for public repositories.',
+      slug: 'code-reviewer',
+    })
+    const description = getAgentMetaDescription(agent)
+    const install = buildInstallCommand('code-reviewer')
+
+    expect(install).toBe('npx shadcn@latest add @evex/code-reviewer')
+    expect(description).toContain(`Install with ${install}`)
+    expect(description.endsWith('.')).toBe(true)
+  })
+
+  it('skips the install CTA when the slug leaves no room for a lead-in', () => {
+    const longSlug = 'a'.repeat(120)
+    const agent = makeAgent({
+      description: 'Short useful summary for an eve agent.',
+      slug: longSlug,
+    })
+    const description = getAgentMetaDescription(agent)
+
+    expect(description.length).toBeLessThanOrEqual(
+      METADATA_DESCRIPTION_MAX_LENGTH,
+    )
+    expect(description).not.toContain('Install with')
+    expect(description).toContain('Short useful summary')
+  })
+})
+
+describe('getAgentOgImageAlt', () => {
+  it('names the agent and the registry', () => {
+    expect(getAgentOgImageAlt(makeAgent({ name: 'Code Reviewer' }))).toBe(
+      'Code Reviewer: eve agent on evex',
+    )
+  })
+})
+
+describe('structured data descriptions', () => {
+  it('uses cleaned meta descriptions on SoftwareApplication and ItemList', () => {
+    const agent = makeAgent({
+      description: 'Ship reviews with `inline` comments and **suggestions**.',
+      name: 'Code Reviewer',
+      slug: 'code-reviewer',
+    })
+    const software = createAgentSoftwareSchema(agent, 0)
+    const list = createAgentListSchema([agent])
+    const listItem = (list.itemListElement as Record<string, unknown>[])[0]
+
+    expect(software.description).toBe(getAgentMetaDescription(agent))
+    expect(listItem?.description).toBe(getAgentMetaDescription(agent))
+    expect(String(software.description)).not.toMatch(RAW_MARKDOWN_OR_CODE)
+    expect(String(listItem?.description)).toContain(
+      buildInstallCommand('code-reviewer'),
+    )
+  })
+})
+
+// Agent OG cards should show the shadcn install command (not a bare /r URL).
+describe('agent OG install command', () => {
+  it('matches buildInstallCommand for registry slugs', () => {
+    for (const agent of listStaticAgents()) {
+      const command = buildInstallCommand(agent.slug)
+      expect(command).toBe(`npx shadcn@latest add @evex/${agent.slug}`)
+      expect(command).not.toBe(`www.evex.sh/r/${agent.slug}`)
+    }
+  })
+})
+
+describe('registry agent meta descriptions fit the SERP budget', () => {
+  const registryAgents = listStaticAgents()
+
+  it('has agents to check', () => {
+    expect(registryAgents.length).toBeGreaterThan(0)
+  })
+
+  for (const agent of registryAgents) {
+    it(`stays within the description budget for ${agent.slug}`, () => {
+      const description = getAgentMetaDescription(agent)
+      expect(description.length).toBeLessThanOrEqual(
+        METADATA_DESCRIPTION_MAX_LENGTH,
+      )
+      expect(description).not.toMatch(RAW_MARKDOWN_ANY)
+    })
+  }
 })
 
 // The root layout renders `<title>{pageTitle} · evex</title>`, so the budget
