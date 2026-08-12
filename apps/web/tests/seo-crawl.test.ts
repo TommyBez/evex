@@ -3,6 +3,10 @@ import { GET as getRegistryCatalog } from '@/app/r/registry.json/route'
 import { GET as getRobotsTxt } from '@/app/robots.txt/route'
 import { metadata as signInMetadata } from '@/app/sign-in/page'
 import { metadata as signUpMetadata } from '@/app/sign-up/page'
+import {
+  METADATA_TITLE_MAX_LENGTH,
+  METADATA_TITLE_SUFFIX,
+} from '@/lib/agent-detail'
 import type { AgentWithAuthor } from '@/lib/agent-types'
 import {
   getAuthorMetaDescription,
@@ -90,8 +94,33 @@ describe('robots.txt', () => {
 describe('author metadata helpers', () => {
   it('builds a title that relies on the layout brand suffix', () => {
     expect(getAuthorMetadataTitle({ name: 'Ada Lovelace' })).toBe(
-      'Ada Lovelace: eve agents on evex',
+      'Ada Lovelace: eve agents',
     )
+  })
+
+  it('keeps the rendered title within the SERP budget', () => {
+    const title = getAuthorMetadataTitle({ name: 'Ada Lovelace' })
+
+    expect(`${title}${METADATA_TITLE_SUFFIX}`.length).toBeLessThanOrEqual(
+      METADATA_TITLE_MAX_LENGTH,
+    )
+    expect(title).not.toContain('on evex')
+    expect(title.endsWith('evex')).toBe(false)
+  })
+
+  it('compacts long display names before falling back to the bare name', () => {
+    // 42 chars: descriptive (`: eve agents`, 12) exceeds the 53-char budget.
+    const longName = 'A'.repeat(42)
+    const compactTitle = getAuthorMetadataTitle({ name: longName })
+
+    expect(compactTitle).toBe(`${longName}: agents`)
+    expect(
+      `${compactTitle}${METADATA_TITLE_SUFFIX}`.length,
+    ).toBeLessThanOrEqual(METADATA_TITLE_MAX_LENGTH)
+
+    // 50 chars: even the compact form exceeds the budget.
+    const longerName = 'B'.repeat(50)
+    expect(getAuthorMetadataTitle({ name: longerName })).toBe(longerName)
   })
 
   it('prefers the author bio for the description', () => {
