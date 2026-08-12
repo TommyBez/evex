@@ -12,6 +12,10 @@ import { JsonLd } from '@/components/json-ld'
 import { LinkedInIcon } from '@/components/linkedin-icon'
 import { XIcon } from '@/components/x-icon'
 import type { AgentWithAuthor, StaticAuthorProfile } from '@/lib/agent-types'
+import {
+  getAuthorMetaDescription,
+  getAuthorMetadataTitle,
+} from '@/lib/author-detail'
 import { applyInstallCounts, getAgentRuntimeState } from '@/lib/data/agents'
 import { getAuthorProfile } from '@/lib/data/authors'
 import {
@@ -24,7 +28,10 @@ import {
   getStaticAgentsByAuthorUsername,
   listStaticAgents,
 } from '@/lib/registry'
-import { createAuthorProfileSchema } from '@/lib/structured-data'
+import {
+  createAuthorBreadcrumbSchema,
+  createAuthorProfileSchema,
+} from '@/lib/structured-data'
 
 export function generateStaticParams() {
   const agents = listStaticAgents()
@@ -53,17 +60,18 @@ export async function generateMetadata({
     notFound()
   }
 
-  const description = author.bio || `${author.name}'s eve agents on evex`
+  const title = getAuthorMetadataTitle(author)
+  const description = getAuthorMetaDescription(author)
   const path = `/authors/${author.githubUsername}`
 
   return {
-    title: author.name,
+    title,
     description,
     alternates: {
       canonical: path,
     },
     openGraph: {
-      title: author.name,
+      title,
       description,
       url: path,
       siteName: siteConfig.name,
@@ -75,7 +83,7 @@ export async function generateMetadata({
       card: 'summary_large_image',
       site: siteTwitterHandle,
       creator: siteTwitterHandle,
-      title: author.name,
+      title,
       description,
       images: [defaultTwitterImage],
     },
@@ -114,16 +122,22 @@ async function AuthorContent({ githubUsername }: { githubUsername: string }) {
   return (
     <>
       <JsonLd
-        data={createAuthorProfileSchema(
-          {
-            agentCount: author.agentCount,
-            bio: author.bio,
+        data={[
+          createAuthorProfileSchema(
+            {
+              agentCount: author.agentCount,
+              bio: author.bio,
+              githubUsername: author.githubUsername,
+              name: author.name,
+              totalInstalls: author.totalInstalls,
+            },
+            agents,
+          ),
+          createAuthorBreadcrumbSchema({
             githubUsername: author.githubUsername,
             name: author.name,
-            totalInstalls: author.totalInstalls,
-          },
-          agents,
-        )}
+          }),
+        ]}
       />
       <main className="mx-auto w-full min-w-0 max-w-4xl px-4 py-10">
         <Link

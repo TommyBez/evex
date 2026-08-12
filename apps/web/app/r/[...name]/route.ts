@@ -90,6 +90,9 @@ export async function GET(
     return NextResponse.json(item, {
       headers: {
         'Cache-Control': 'no-store',
+        // JSON install endpoints are not landing pages. noindex via header so
+        // crawlers that still discover the URL do not index an empty SERP.
+        'X-Robots-Tag': 'noindex',
       },
     })
   } catch (error) {

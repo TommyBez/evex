@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest'
 import {
   buildInstallCommand,
   getAgentUrl,
+  getLeaderboardUrl,
+  getRegistryItemUrl,
   getSiteHost,
   getSiteUrl,
 } from '@/lib/site-url'
@@ -21,6 +23,13 @@ describe('site URL derivation', () => {
     expect(getAgentUrl('code-reviewer')).toBe(
       'https://www.evex.sh/agents/code-reviewer',
     )
+  })
+
+  it('builds registry item and leaderboard URLs on the site host', () => {
+    expect(getRegistryItemUrl('code-reviewer')).toBe(
+      'https://www.evex.sh/r/code-reviewer.json',
+    )
+    expect(getLeaderboardUrl()).toBe('https://www.evex.sh/leaderboard')
   })
 })
 
