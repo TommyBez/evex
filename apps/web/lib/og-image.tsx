@@ -57,6 +57,18 @@ function getTitleSize(length: number): number {
   return 78
 }
 
+// Canonical install commands include the full registry URL, so long slugs need
+// a smaller install-row font to stay on one line in the card.
+function getInstallFontSize(length: number): number {
+  if (length > 64) {
+    return 16
+  }
+  if (length > 48) {
+    return 18
+  }
+  return 22
+}
+
 const TAGLINE = 'the eve agent registry'
 
 function initialsFromName(name: string): string {
@@ -78,6 +90,7 @@ export async function createOgImage(
   const safeTitle = truncate(title, 80)
   const safeDescription = description ? truncate(description, 150) : undefined
   const titleSize = getTitleSize(safeTitle.length)
+  const installFontSize = install ? getInstallFontSize(install.length) : 22
   const pixelFont = await loadPixelFont()
 
   return new ImageResponse(
@@ -222,7 +235,7 @@ export async function createOgImage(
               backgroundColor: colors.card,
               color: colors.foreground,
               fontFamily: PIXEL_FONT_FAMILY,
-              fontSize: 22,
+              fontSize: installFontSize,
               padding: '14px 18px',
               lineHeight: 1,
             }}

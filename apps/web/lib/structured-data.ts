@@ -1,3 +1,4 @@
+import { getAgentMetaDescription } from '@/lib/agent-detail'
 import type { AgentWithAuthor } from '@/lib/agent-types'
 import type { DocsPage } from '@/lib/docs-content'
 import { HOME_FAQ_ITEMS } from '@/lib/home-faq-content'
@@ -81,6 +82,7 @@ export function createAgentListSchema(
       position: index + 1,
       url: getAgentUrl(agent.slug),
       name: agent.name,
+      description: getAgentMetaDescription(agent),
     })),
   }
 }
@@ -114,7 +116,7 @@ export function createAgentSoftwareSchema(
     '@context': SCHEMA_CONTEXT,
     '@type': 'SoftwareApplication',
     name: agent.name,
-    description: agent.description,
+    description: getAgentMetaDescription(agent),
     url: agentUrl,
     applicationCategory: 'DeveloperApplication',
     operatingSystem: 'Cross-platform',

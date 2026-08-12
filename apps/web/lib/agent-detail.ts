@@ -1,7 +1,8 @@
 // Pure presentation logic for the agent detail page: file taxonomy, install
-// summary copy, metadata title fitting, and related-agent ranking.
+// summary copy, metadata title/description fitting, and related-agent ranking.
 
 import type { AgentRegistryFile, AgentWithAuthor } from '@/lib/agent-types'
+import { buildInstallCommand } from '@/lib/site-url'
 
 // The root layout appends this suffix through `title.template`, so the title
 // a page returns has to fit the display budget minus the suffix.
@@ -9,9 +10,18 @@ export const METADATA_TITLE_SUFFIX = ' · evex'
 export const METADATA_TITLE_MAX_LENGTH = 60
 export const METADATA_TITLE_BUDGET =
   METADATA_TITLE_MAX_LENGTH - METADATA_TITLE_SUFFIX.length
+// Google typically shows ~150-160 characters; keep a fixed SERP budget.
+export const METADATA_DESCRIPTION_MAX_LENGTH = 155
 const SUBAGENT_PATH_REGEX = /^agent\/subagents\/([^/]+)/
 const SKILL_PATH_REGEX = /\/skills\//
 const TOOL_PATH_REGEX = /\/tools\//
+const MARKDOWN_LINK = /\[([^\]]+)\]\([^)]+\)/g
+const MARKDOWN_BOLD = /(\*\*|__)(.*?)\1/g
+const MARKDOWN_ITALIC = /(\*|_)([^*_]+)\1/g
+const MARKDOWN_INLINE_CODE = /`([^`]+)`/g
+const WHITESPACE_RUNS = /\s+/g
+const TRAILING_CLAUSE_PUNCTUATION = /[,:;]+$/
+const SENTENCE_END = /[.!?]$/
 
 export function pluralize(
   count: number,
@@ -92,6 +102,95 @@ export function getAgentMetadataTitle(agent: AgentWithAuthor): string {
   // The layout template already appends the brand, so the fallback stays bare
   // to avoid rendering it twice.
   return agent.name
+}
+
+function stripInlineMarkdown(value: string): string {
+  return value
+    .replace(MARKDOWN_LINK, '$1')
+    .replace(MARKDOWN_BOLD, '$2')
+    .replace(MARKDOWN_ITALIC, '$2')
+    .replace(MARKDOWN_INLINE_CODE, '$1')
+    .replace(WHITESPACE_RUNS, ' ')
+    .trim()
+}
+
+function truncateAtBoundary(value: string, maxLength: number): string {
+  if (value.length <= maxLength) {
+    return value
+  }
+
+  const slice = value.slice(0, maxLength)
+  const minKeep = Math.floor(maxLength * 0.5)
+
+  const sentenceEnd = Math.max(
+    slice.lastIndexOf('. '),
+    slice.lastIndexOf('! '),
+    slice.lastIndexOf('? '),
+  )
+  if (sentenceEnd >= minKeep) {
+    return slice.slice(0, sentenceEnd + 1).trimEnd()
+  }
+
+  const lastSpace = slice.lastIndexOf(' ')
+  if (lastSpace >= minKeep) {
+    return slice
+      .slice(0, lastSpace)
+      .trimEnd()
+      .replace(TRAILING_CLAUSE_PUNCTUATION, '')
+  }
+
+  return slice.trimEnd()
+}
+
+function ensureSentenceEnd(value: string): string {
+  if (value.length === 0) {
+    return value
+  }
+  return SENTENCE_END.test(value) ? value : `${value}.`
+}
+
+// SERP/OG/JSON-LD description: strip inline Markdown, fit ~155 chars, and
+// append the canonical install command when there is room. Optional
+// `meta.docs.seoDescription` overrides are out of scope for now.
+export function getAgentMetaDescription(
+  agent: Pick<AgentWithAuthor, 'description' | 'slug'>,
+): string {
+  const cleaned = stripInlineMarkdown(agent.description)
+  if (cleaned.length === 0) {
+    return ''
+  }
+
+  const installCommand = buildInstallCommand(agent.slug)
+  const cta = ` Install with ${installCommand}.`
+  const maxLength = METADATA_DESCRIPTION_MAX_LENGTH
+
+  // Prefer keeping a real description lead-in; skip the CTA if the command
+  // alone would crowd out almost everything.
+  const minDescriptionLength = 40
+  if (cta.length <= maxLength - minDescriptionLength) {
+    const descriptionBudget = maxLength - cta.length
+    let lead = truncateAtBoundary(cleaned, descriptionBudget)
+    if (lead.length > 0) {
+      if (!SENTENCE_END.test(lead)) {
+        // Reserve one character so adding the period cannot overflow the budget.
+        lead = ensureSentenceEnd(
+          truncateAtBoundary(cleaned, Math.max(1, descriptionBudget - 1)),
+        )
+      }
+      const withInstall = `${lead}${cta}`
+      if (withInstall.length <= maxLength) {
+        return withInstall
+      }
+    }
+  }
+
+  return truncateAtBoundary(cleaned, maxLength)
+}
+
+export function getAgentOgImageAlt(
+  agent: Pick<AgentWithAuthor, 'name'>,
+): string {
+  return `${agent.name}: eve agent on evex`
 }
 
 // Rank related agents: same category first, then installs, recency, same

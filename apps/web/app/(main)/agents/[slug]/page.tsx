@@ -19,7 +19,9 @@ import {
   compareRelatedAgents,
   countFilesByKind,
   getAgentInstallSummaryDescription,
+  getAgentMetaDescription,
   getAgentMetadataTitle,
+  getAgentOgImageAlt,
   pluralize,
 } from '@/lib/agent-detail'
 import type { AgentRegistryFile, AgentWithAuthor } from '@/lib/agent-types'
@@ -72,10 +74,17 @@ export async function generateMetadata({
 
   const path = `/agents/${agent.slug}`
   const title = getAgentMetadataTitle(agent)
+  const description = getAgentMetaDescription(agent)
+  const ogImage = {
+    url: `${path}/opengraph-image`,
+    width: 1200,
+    height: 630,
+    alt: getAgentOgImageAlt(agent),
+  }
 
   return {
     title,
-    description: agent.description,
+    description,
     keywords: [
       agent.name,
       `@evex/${agent.slug}`,
@@ -92,7 +101,7 @@ export async function generateMetadata({
     },
     openGraph: {
       title,
-      description: agent.description,
+      description,
       url: path,
       siteName: siteConfig.name,
       locale: 'en_US',
@@ -102,13 +111,15 @@ export async function generateMetadata({
       authors: [agent.authorName],
       section: agent.category,
       tags: [agent.category, 'eve agent', 'evex'],
+      images: [ogImage],
     },
     twitter: {
       card: 'summary_large_image',
       site: siteTwitterHandle,
       creator: siteTwitterHandle,
       title,
-      description: agent.description,
+      description,
+      images: [ogImage],
     },
   }
 }
