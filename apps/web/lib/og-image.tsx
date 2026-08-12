@@ -57,8 +57,8 @@ function getTitleSize(length: number): number {
   return 78
 }
 
-// Canonical install commands include the full registry URL, so long slugs need
-// a smaller install-row font to stay on one line in the card.
+// Long @evex/<slug> install commands need a smaller install-row font to stay
+// on one line in the card.
 function getInstallFontSize(length: number): number {
   if (length > 64) {
     return 16

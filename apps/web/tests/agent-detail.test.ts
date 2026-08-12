@@ -143,7 +143,7 @@ describe('getAgentMetaDescription', () => {
     )
   })
 
-  it('appends the canonical eve install command when space allows', () => {
+  it('appends the shadcn install command when space allows', () => {
     const agent = makeAgent({
       description:
         'Review GitHub pull requests from a native GitHub App channel. Mention `@code-reviewer` on a pull request to publish a GitHub review with inline comments, optional suggestion blocks, and Upstash-backed rate limiting for public repositories.',
@@ -152,7 +152,7 @@ describe('getAgentMetaDescription', () => {
     const description = getAgentMetaDescription(agent)
     const install = buildInstallCommand('code-reviewer')
 
-    expect(install).toBe('eve add https://www.evex.sh/r/code-reviewer.json')
+    expect(install).toBe('npx shadcn@latest add @evex/code-reviewer')
     expect(description).toContain(`Install with ${install}`)
     expect(description.endsWith('.')).toBe(true)
   })
@@ -201,12 +201,12 @@ describe('structured data descriptions', () => {
   })
 })
 
-// Agent OG cards should show the canonical install command (not a bare /r URL).
+// Agent OG cards should show the shadcn install command (not a bare /r URL).
 describe('agent OG install command', () => {
   it('matches buildInstallCommand for registry slugs', () => {
     for (const agent of listStaticAgents()) {
       const command = buildInstallCommand(agent.slug)
-      expect(command).toBe(`eve add https://www.evex.sh/r/${agent.slug}.json`)
+      expect(command).toBe(`npx shadcn@latest add @evex/${agent.slug}`)
       expect(command).not.toBe(`www.evex.sh/r/${agent.slug}`)
     }
   })

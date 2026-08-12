@@ -25,9 +25,9 @@ describe('site URL derivation', () => {
 })
 
 describe('buildInstallCommand', () => {
-  it('uses the canonical eve add registry URL', () => {
+  it('targets the @evex shadcn namespace', () => {
     expect(buildInstallCommand('code-reviewer')).toBe(
-      'eve add https://www.evex.sh/r/code-reviewer.json',
+      'npx shadcn@latest add @evex/code-reviewer',
     )
   })
 })
