@@ -23,6 +23,7 @@ import {
 const RAW_MARKDOWN_MARKERS = /`|\*\*|\[rate limits\]\(/
 const RAW_MARKDOWN_OR_CODE = /`|\*\*/
 const RAW_MARKDOWN_ANY = /`|\*\*|\[.*?\]\(.*?\)/
+const STRAY_PAREN_AROUND_NOTATION = /\)\s*notation|notation\s*\)/
 
 function makeFile(path: string): AgentRegistryFile {
   return { content: '', id: `x:${path}`, path, type: 'registry:file' }
@@ -128,6 +129,20 @@ describe('getAgentMetaDescription', () => {
     expect(description).toContain('inline')
     expect(description).toContain('suggestion')
     expect(description).toContain('rate limits')
+  })
+
+  it('strips Markdown links whose destinations contain balanced parentheses', () => {
+    const agent = makeAgent({
+      description:
+        'Explains [function](https://example.com/Function_(mathematics)) notation for agent prompts.',
+      slug: 'code-reviewer',
+    })
+    const description = getAgentMetaDescription(agent)
+
+    expect(description).toContain('function')
+    expect(description).not.toContain('https://example.com')
+    expect(description).not.toContain('Function_(mathematics)')
+    expect(description).not.toMatch(STRAY_PAREN_AROUND_NOTATION)
   })
 
   it('stays within the SERP description budget', () => {

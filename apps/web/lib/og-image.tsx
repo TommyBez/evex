@@ -57,16 +57,22 @@ function getTitleSize(length: number): number {
   return 78
 }
 
+const DEFAULT_INSTALL_FONT_SIZE = 22
+const COMPACT_INSTALL_FONT_SIZE = 18
+const TIGHT_INSTALL_FONT_SIZE = 16
+const COMPACT_INSTALL_COMMAND_LENGTH = 48
+const TIGHT_INSTALL_COMMAND_LENGTH = 64
+
 // Long @evex/<slug> install commands need a smaller install-row font to stay
 // on one line in the card.
 function getInstallFontSize(length: number): number {
-  if (length > 64) {
-    return 16
+  if (length > TIGHT_INSTALL_COMMAND_LENGTH) {
+    return TIGHT_INSTALL_FONT_SIZE
   }
-  if (length > 48) {
-    return 18
+  if (length > COMPACT_INSTALL_COMMAND_LENGTH) {
+    return COMPACT_INSTALL_FONT_SIZE
   }
-  return 22
+  return DEFAULT_INSTALL_FONT_SIZE
 }
 
 const TAGLINE = 'the eve agent registry'
@@ -90,7 +96,9 @@ export async function createOgImage(
   const safeTitle = truncate(title, 80)
   const safeDescription = description ? truncate(description, 150) : undefined
   const titleSize = getTitleSize(safeTitle.length)
-  const installFontSize = install ? getInstallFontSize(install.length) : 22
+  const installFontSize = install
+    ? getInstallFontSize(install.length)
+    : DEFAULT_INSTALL_FONT_SIZE
   const pixelFont = await loadPixelFont()
 
   return new ImageResponse(

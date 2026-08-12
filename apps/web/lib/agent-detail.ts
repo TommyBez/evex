@@ -12,10 +12,12 @@ export const METADATA_TITLE_BUDGET =
   METADATA_TITLE_MAX_LENGTH - METADATA_TITLE_SUFFIX.length
 // Google typically shows ~150-160 characters; keep a fixed SERP budget.
 export const METADATA_DESCRIPTION_MAX_LENGTH = 155
+// Skip the install CTA when it would leave less than this many characters
+// for the description lead-in.
+const MIN_DESCRIPTION_LEAD_LENGTH = 40
 const SUBAGENT_PATH_REGEX = /^agent\/subagents\/([^/]+)/
 const SKILL_PATH_REGEX = /\/skills\//
 const TOOL_PATH_REGEX = /\/tools\//
-const MARKDOWN_LINK = /\[([^\]]+)\]\([^)]+\)/g
 const MARKDOWN_BOLD = /(\*\*|__)(.*?)\1/g
 const MARKDOWN_ITALIC = /(\*|_)([^*_]+)\1/g
 const MARKDOWN_INLINE_CODE = /`([^`]+)`/g
@@ -104,9 +106,53 @@ export function getAgentMetadataTitle(agent: AgentWithAuthor): string {
   return agent.name
 }
 
+// Replace `[text](destination)` with `text`, including destinations that use
+// balanced parentheses (e.g. Wikipedia-style `Function_(mathematics)` URLs).
+function stripMarkdownLinks(value: string): string {
+  let result = ''
+  let index = 0
+
+  while (index < value.length) {
+    if (value[index] !== '[') {
+      result += value[index]
+      index += 1
+      continue
+    }
+
+    const labelEnd = value.indexOf(']', index + 1)
+    if (labelEnd === -1 || value[labelEnd + 1] !== '(') {
+      result += value[index]
+      index += 1
+      continue
+    }
+
+    let depth = 1
+    let destinationEnd = labelEnd + 2
+    while (destinationEnd < value.length && depth > 0) {
+      const character = value[destinationEnd]
+      if (character === '(') {
+        depth += 1
+      } else if (character === ')') {
+        depth -= 1
+      }
+      destinationEnd += 1
+    }
+
+    if (depth !== 0) {
+      result += value[index]
+      index += 1
+      continue
+    }
+
+    result += value.slice(index + 1, labelEnd)
+    index = destinationEnd
+  }
+
+  return result
+}
+
 function stripInlineMarkdown(value: string): string {
-  return value
-    .replace(MARKDOWN_LINK, '$1')
+  return stripMarkdownLinks(value)
     .replace(MARKDOWN_BOLD, '$2')
     .replace(MARKDOWN_ITALIC, '$2')
     .replace(MARKDOWN_INLINE_CODE, '$1')
@@ -166,8 +212,7 @@ export function getAgentMetaDescription(
 
   // Prefer keeping a real description lead-in; skip the CTA if the command
   // alone would crowd out almost everything.
-  const minDescriptionLength = 40
-  if (cta.length <= maxLength - minDescriptionLength) {
+  if (cta.length <= maxLength - MIN_DESCRIPTION_LEAD_LENGTH) {
     const descriptionBudget = maxLength - cta.length
     let lead = truncateAtBoundary(cleaned, descriptionBudget)
     if (lead.length > 0) {
