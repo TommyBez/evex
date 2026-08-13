@@ -151,13 +151,22 @@ function stripMarkdownLinks(value: string): string {
   return result
 }
 
-function stripInlineMarkdown(value: string): string {
+export function stripInlineMarkdown(value: string): string {
   return stripMarkdownLinks(value)
     .replace(MARKDOWN_BOLD, '$2')
     .replace(MARKDOWN_ITALIC, '$2')
     .replace(MARKDOWN_INLINE_CODE, '$1')
     .replace(WHITESPACE_RUNS, ' ')
     .trim()
+}
+
+// Plain prose for AI context files (llms.txt): strip Markdown markers without
+// SERP truncation or an embedded install CTA. Callers that need the command
+// should append a dedicated Install line via buildInstallCommand.
+export function getAgentPlainDescription(
+  agent: Pick<AgentWithAuthor, 'description'>,
+): string {
+  return stripInlineMarkdown(agent.description)
 }
 
 function truncateAtBoundary(value: string, maxLength: number): string {
