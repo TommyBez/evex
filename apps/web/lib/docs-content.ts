@@ -37,7 +37,7 @@ export const DOCS_PAGES: readonly DocsPage[] = [
           'The registry speaks the shadcn registry format, so the same CLI that installs UI components installs agents. There is no upload form and no opaque bundle. What you see in the repository is exactly what an install writes into your project.',
           'The evex database stores runtime state only, such as install counts and favorites. The canonical definition of every agent is the code in the repository, which means you can audit an agent before you trust it.',
         ],
-        heading: 'What evex is',
+        heading: 'What is an Eve agent registry?',
       },
       {
         body: [
@@ -69,7 +69,7 @@ export const DOCS_PAGES: readonly DocsPage[] = [
     shortTitle: 'Introduction',
     slug: 'introduction',
     summary:
-      'evex is a shadcn-compatible community registry for eve agents. Install any agent into your eve project with one command and own every file it writes.',
+      'An Eve agent registry is a catalog of reusable agents for Eve developers. You inspect files, then install them as source with npx shadcn@latest add @evex/<slug>, instead of copying folders. evex is that registry. After install you own the files. There is no hosted runtime.',
     title: 'evex documentation: the community registry for eve agents',
   },
   {

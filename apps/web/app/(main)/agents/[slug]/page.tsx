@@ -18,6 +18,7 @@ import { MobileInstallBar } from '@/components/mobile-install-bar'
 import {
   compareRelatedAgents,
   countFilesByKind,
+  getAgentDefinitionBlock,
   getAgentInstallSummaryDescription,
   getAgentMetaDescription,
   getAgentMetadataTitle,
@@ -208,6 +209,7 @@ async function AgentDetailContent({ agent }: { agent: AgentWithAuthor }) {
               />
             </Suspense>
           </div>
+          <AgentDefinitionSection agent={agent} />
           <p className="mt-1 max-w-2xl text-pretty text-muted-foreground">
             <AgentDescription>{agent.description}</AgentDescription>
           </p>
@@ -320,6 +322,25 @@ async function AgentDetailContent({ agent }: { agent: AgentWithAuthor }) {
         viewerIsAuthor={viewerIsAuthor}
       />
     </main>
+  )
+}
+
+function AgentDefinitionSection({ agent }: { agent: AgentWithAuthor }) {
+  const definition = getAgentDefinitionBlock(agent)
+
+  return (
+    <section className="mt-4 max-w-2xl">
+      <h2 className="font-semibold text-foreground text-lg">
+        {definition.heading}
+      </h2>
+      <p className="mt-2 text-pretty text-muted-foreground leading-relaxed">
+        {definition.beforeCommand}
+        <code className="rounded-sm bg-muted px-1 py-0.5 font-mono text-[0.9em] text-foreground">
+          {definition.installCommand}
+        </code>
+        {definition.afterCommand}
+      </p>
+    </section>
   )
 }
 
