@@ -7,6 +7,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { JsonLd } from '@/components/json-ld'
+import { LearnInlineMarkdown } from '@/components/learn-inline-markdown'
 import {
   getLearnCluster,
   getLearnPage,
@@ -103,6 +104,67 @@ export default async function LearnDetailPage({
             </p>
           </Card>
 
+          {page.comparisonRows && page.comparisonRows.length > 0 ? (
+            <section className="mt-10">
+              <div className="overflow-x-auto rounded-md border border-border">
+                <table className="w-full min-w-[40rem] border-collapse text-left text-sm">
+                  <caption className="sr-only">
+                    Comparison of evex and agentcn across install, inspect,
+                    publish, and ownership criteria
+                  </caption>
+                  <thead className="bg-muted/40">
+                    <tr className="border-border border-b">
+                      <th
+                        className="p-3 font-medium text-foreground"
+                        scope="col"
+                      >
+                        Criterion
+                      </th>
+                      <th
+                        className="p-3 font-medium text-foreground"
+                        scope="col"
+                      >
+                        evex
+                      </th>
+                      <th
+                        className="p-3 font-medium text-foreground"
+                        scope="col"
+                      >
+                        agentcn
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {page.comparisonRows.map((row) => (
+                      <tr
+                        className="border-border border-b last:border-b-0"
+                        key={row.criterion}
+                      >
+                        <th
+                          className="bg-background p-3 align-top font-medium text-foreground"
+                          scope="row"
+                        >
+                          {row.criterion}
+                        </th>
+                        <td className="bg-background p-3 align-top text-muted-foreground leading-relaxed">
+                          <LearnInlineMarkdown>{row.left}</LearnInlineMarkdown>
+                        </td>
+                        <td className="bg-background p-3 align-top text-muted-foreground leading-relaxed">
+                          <LearnInlineMarkdown>{row.right}</LearnInlineMarkdown>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              {page.comparisonBottomLine ? (
+                <p className="mt-4 text-pretty text-muted-foreground leading-relaxed">
+                  {page.comparisonBottomLine}
+                </p>
+              ) : null}
+            </section>
+          ) : null}
+
           <div className="mt-10 grid gap-10">
             {page.sections.map((section) => (
               <section key={section.heading}>
@@ -111,7 +173,9 @@ export default async function LearnDetailPage({
                 </h2>
                 <div className="mt-3 grid gap-3 text-muted-foreground leading-relaxed">
                   {section.body.map((paragraph) => (
-                    <p key={paragraph}>{paragraph}</p>
+                    <p key={paragraph}>
+                      <LearnInlineMarkdown>{paragraph}</LearnInlineMarkdown>
+                    </p>
                   ))}
                 </div>
                 {section.bullets ? (
@@ -126,7 +190,7 @@ export default async function LearnDetailPage({
                           className="mt-0.5 size-4 shrink-0 text-brand"
                         />
                         <p className="text-muted-foreground text-sm leading-relaxed">
-                          {bullet}
+                          <LearnInlineMarkdown>{bullet}</LearnInlineMarkdown>
                         </p>
                       </div>
                     ))}
@@ -189,7 +253,7 @@ export default async function LearnDetailPage({
                     {faq.question}
                   </h3>
                   <p className="mt-2 text-muted-foreground text-sm leading-relaxed">
-                    {faq.answer}
+                    <LearnInlineMarkdown>{faq.answer}</LearnInlineMarkdown>
                   </p>
                 </div>
               ))}
@@ -240,7 +304,7 @@ function InfoBlock({ title, value }: { title: string; value: string }) {
         {title}
       </h2>
       <p className="mt-2 text-muted-foreground text-sm leading-relaxed">
-        {value}
+        <LearnInlineMarkdown>{value}</LearnInlineMarkdown>
       </p>
     </Card>
   )

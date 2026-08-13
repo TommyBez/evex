@@ -162,13 +162,276 @@ export function stripInlineMarkdown(value: string): string {
     .trim()
 }
 
-// Plain prose for AI context files (llms.txt): strip Markdown markers without
-// SERP truncation or an embedded install CTA. Callers that need the command
-// should append a dedicated Install line via buildInstallCommand.
+// Plain prose for AI context files and definition blocks: strip Markdown
+// markers without SERP truncation or an embedded install CTA. Callers that
+// need the command should append a dedicated Install line via
+// buildInstallCommand. Uses the underscore-safe cleaner above.
 export function getAgentPlainDescription(
   agent: Pick<AgentWithAuthor, 'description'>,
 ): string {
   return stripInlineMarkdown(agent.description)
+}
+
+function ensureSentenceEnd(value: string): string {
+  if (value.length === 0) {
+    return value
+  }
+  return SENTENCE_END.test(value) ? value : `${value}.`
+}
+
+const MAX_DEFINITION_JOB_WORDS = 12
+const MAX_DEFINITION_WHO_WORDS = 8
+const MIN_DEFINITION_WORDS = 45
+const MAX_DEFINITION_WORDS = 60
+const DEFINITION_FALLBACK_WHO = 'Eve developers'
+const DEFINITION_OWNERSHIP_CLAUSE = 'After install you own the files.'
+const WORD_SPLIT = /\s+/
+const FIRST_SENTENCE = /^.+?[.!?](?=\s|$)/
+const TRAILING_SENTENCE_PUNCTUATION = /[.!?]+$/
+const AGENT_THAT_PREFIX = /^.+?\bagent\b\s+that\s+(.+)$/i
+const AGENT_FOR_PREFIX = /^.+?\bagent\b\s+for\s+(.+)$/i
+const ANALYST_FOR_PREFIX = /^.+?\banalyst\b\s+for\s+(.+)$/i
+const ENDS_WITH_S_X_Z = /[sxz]$/i
+const ENDS_WITH_HUSH = /(?:sh|ch|ss)$/i
+const ENDS_WITH_IES = /ies$/i
+const ENDS_WITH_THIRD_PERSON_S = /[^s]s$/i
+const ENDS_WITH_VOWEL_Y = /[aeiou]y$/i
+const ENDS_WITH_Y = /y$/i
+const ENDS_WITH_ES_SOUND = /(?:s|x|z|ch|sh)$/i
+const IRREGULAR_VERBS: Readonly<Record<string, string>> = {
+  be: 'is',
+  do: 'does',
+  go: 'goes',
+  grow: 'grows',
+  have: 'has',
+  run: 'runs',
+  scan: 'scans',
+  stream: 'streams',
+}
+
+export interface AgentDefinitionBlock {
+  afterCommand: string
+  beforeCommand: string
+  heading: string
+  installCommand: string
+  plainText: string
+  wordCount: number
+}
+
+function countWords(value: string): number {
+  const trimmed = value.trim()
+  if (trimmed.length === 0) {
+    return 0
+  }
+  return trimmed.split(WORD_SPLIT).filter(Boolean).length
+}
+
+function truncateToWords(value: string, maxWords: number): string {
+  const words = value.trim().split(WORD_SPLIT).filter(Boolean)
+  if (words.length <= maxWords) {
+    return words.join(' ')
+  }
+  return words.slice(0, maxWords).join(' ')
+}
+
+function firstSentenceWithoutEnd(value: string): string {
+  const match = FIRST_SENTENCE.exec(value)
+  return (match?.[0] ?? value).replace(TRAILING_SENTENCE_PUNCTUATION, '').trim()
+}
+
+function conjugateLeadingVerb(phrase: string): string {
+  const words = phrase.trim().split(WORD_SPLIT).filter(Boolean)
+  const first = words[0]
+  if (!first) {
+    return phrase.trim()
+  }
+
+  const lower = first.toLowerCase()
+  const irregular = IRREGULAR_VERBS[lower]
+  if (irregular) {
+    const conjugated =
+      first[0] === first[0]?.toUpperCase()
+        ? `${irregular[0]?.toUpperCase() ?? ''}${irregular.slice(1)}`
+        : irregular
+    return [conjugated, ...words.slice(1)].join(' ')
+  }
+
+  // Already looks third-person present (reviews, creates, generates).
+  if (ENDS_WITH_S_X_Z.test(first) || ENDS_WITH_HUSH.test(first)) {
+    return phrase.trim()
+  }
+  if (ENDS_WITH_IES.test(first) || ENDS_WITH_THIRD_PERSON_S.test(first)) {
+    return phrase.trim()
+  }
+
+  let conjugated = lower
+  if (ENDS_WITH_VOWEL_Y.test(lower)) {
+    conjugated = `${lower}s`
+  } else if (ENDS_WITH_Y.test(lower)) {
+    conjugated = `${lower.slice(0, -1)}ies`
+  } else if (ENDS_WITH_ES_SOUND.test(lower)) {
+    conjugated = `${lower}es`
+  } else {
+    conjugated = `${lower}s`
+  }
+
+  if (first[0] === first[0]?.toUpperCase()) {
+    conjugated = `${conjugated[0]?.toUpperCase() ?? ''}${conjugated.slice(1)}`
+  }
+
+  return [conjugated, ...words.slice(1)].join(' ')
+}
+
+function extractDefinitionJob(
+  description: string,
+  maxWords = MAX_DEFINITION_JOB_WORDS,
+): string {
+  const sentence = firstSentenceWithoutEnd(
+    getAgentPlainDescription({ description }),
+  )
+  if (sentence.length === 0) {
+    return 'helps Eve developers ship reusable agent workflows'
+  }
+
+  const thatMatch = AGENT_THAT_PREFIX.exec(sentence)
+  if (thatMatch?.[1]) {
+    return truncateToWords(thatMatch[1], maxWords)
+  }
+
+  const forMatch = AGENT_FOR_PREFIX.exec(sentence)
+  if (forMatch?.[1]) {
+    return truncateToWords(`handles ${forMatch[1]}`, maxWords)
+  }
+
+  const analystMatch = ANALYST_FOR_PREFIX.exec(sentence)
+  if (analystMatch?.[1]) {
+    return truncateToWords(`analyzes ${analystMatch[1]}`, maxWords)
+  }
+
+  return truncateToWords(conjugateLeadingVerb(sentence), maxWords)
+}
+
+function whoForCategory(category: string): string {
+  switch (category) {
+    case 'coding':
+      return truncateToWords(
+        'Eve developers reviewing pull requests',
+        MAX_DEFINITION_WHO_WORDS,
+      )
+    case 'marketing':
+      return truncateToWords(
+        'Eve developers shipping marketing pages',
+        MAX_DEFINITION_WHO_WORDS,
+      )
+    case 'data':
+      return truncateToWords(
+        'Eve developers analyzing product data',
+        MAX_DEFINITION_WHO_WORDS,
+      )
+    case 'research':
+      return truncateToWords(
+        'Eve developers researching live topics',
+        MAX_DEFINITION_WHO_WORDS,
+      )
+    case 'productivity':
+      return truncateToWords(
+        'Eve developers running team operations',
+        MAX_DEFINITION_WHO_WORDS,
+      )
+    default:
+      return DEFINITION_FALLBACK_WHO
+  }
+}
+
+function appendClause(base: string, clause: string): string {
+  const cleanedClause = stripInlineMarkdown(clause)
+    .replace(TRAILING_SENTENCE_PUNCTUATION, '')
+    .trim()
+  if (cleanedClause.length === 0) {
+    return base
+  }
+  return `${base} ${ensureSentenceEnd(cleanedClause)}`
+}
+
+function clampDefinitionParagraph(
+  installCommand: string,
+  who: string,
+  job: string,
+  agentName: string,
+): { afterCommand: string; beforeCommand: string; plainText: string } {
+  let currentWho = truncateToWords(who, MAX_DEFINITION_WHO_WORDS)
+  let currentJob = truncateToWords(job, MAX_DEFINITION_JOB_WORDS)
+
+  const build = (suffix = '') => {
+    const beforeCommand = `${agentName} is an Eve agent that ${currentJob}. It is for ${currentWho}. Preview every file on this page, then install with `
+    const afterCommand = `.${suffix}`
+    const plainText = `${beforeCommand}${installCommand}${afterCommand}`
+    return { afterCommand, beforeCommand, plainText }
+  }
+
+  let result = build()
+  if (countWords(result.plainText) > MAX_DEFINITION_WORDS) {
+    currentWho = DEFINITION_FALLBACK_WHO
+    result = build()
+  }
+
+  while (
+    countWords(result.plainText) > MAX_DEFINITION_WORDS &&
+    currentJob.split(WORD_SPLIT).filter(Boolean).length > 1
+  ) {
+    currentJob = truncateToWords(currentJob, countWords(currentJob) - 1)
+    result = build()
+  }
+
+  return result
+}
+
+// AI-extractable "What is {name}?" block for agent detail pages. Keeps the
+// install command as a separate segment so the page can render inline <code>.
+export function getAgentDefinitionBlock(
+  agent: Pick<
+    AgentWithAuthor,
+    'name' | 'slug' | 'description' | 'category' | 'docs'
+  >,
+): AgentDefinitionBlock {
+  const installCommand = buildInstallCommand(agent.slug)
+  const job = extractDefinitionJob(agent.description)
+  const who = whoForCategory(agent.category)
+  let { beforeCommand, afterCommand, plainText } = clampDefinitionParagraph(
+    installCommand,
+    who,
+    job,
+    agent.name,
+  )
+
+  if (countWords(plainText) < MIN_DEFINITION_WORDS) {
+    const overviewClause = agent.docs?.overview[0]
+    const fillerClause = overviewClause
+      ? firstSentenceWithoutEnd(stripInlineMarkdown(overviewClause))
+      : DEFINITION_OWNERSHIP_CLAUSE.replace(TRAILING_SENTENCE_PUNCTUATION, '')
+    const withFiller = appendClause(
+      `${beforeCommand}${installCommand}.`,
+      fillerClause,
+    )
+    plainText = truncateToWords(withFiller, MAX_DEFINITION_WORDS)
+    if (!TRAILING_SENTENCE_PUNCTUATION.test(plainText)) {
+      plainText = ensureSentenceEnd(plainText)
+    }
+    const commandIndex = plainText.indexOf(installCommand)
+    if (commandIndex !== -1) {
+      beforeCommand = plainText.slice(0, commandIndex)
+      afterCommand = plainText.slice(commandIndex + installCommand.length)
+    }
+  }
+
+  return {
+    afterCommand,
+    beforeCommand,
+    heading: `What is ${agent.name}?`,
+    installCommand,
+    plainText,
+    wordCount: countWords(plainText),
+  }
 }
 
 function truncateAtBoundary(value: string, maxLength: number): string {
@@ -197,13 +460,6 @@ function truncateAtBoundary(value: string, maxLength: number): string {
   }
 
   return slice.trimEnd()
-}
-
-function ensureSentenceEnd(value: string): string {
-  if (value.length === 0) {
-    return value
-  }
-  return SENTENCE_END.test(value) ? value : `${value}.`
 }
 
 // SERP/OG/JSON-LD description: strip inline Markdown, fit ~155 chars, and
