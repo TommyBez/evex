@@ -9,6 +9,7 @@ import { getDocsUrl } from '@/lib/site-url'
 import {
   createDocsArticleSchema,
   createDocsBreadcrumbSchema,
+  createDocsInstallHowToSchema,
 } from '@/lib/structured-data'
 import { DocsSections } from '../docs-sections'
 
@@ -53,15 +54,17 @@ export default async function DocsDetailPage({
   const otherPages = listDocsSubPages().filter(
     (other) => other.slug !== page.slug,
   )
+  const jsonLd = [
+    createDocsArticleSchema(page, pageUrl),
+    createDocsBreadcrumbSchema(page, pageUrl),
+    ...(page.slug === 'installation'
+      ? [createDocsInstallHowToSchema(page)]
+      : []),
+  ]
 
   return (
     <>
-      <JsonLd
-        data={[
-          createDocsArticleSchema(page, pageUrl),
-          createDocsBreadcrumbSchema(page, pageUrl),
-        ]}
-      />
+      <JsonLd data={jsonLd} />
       <main className="mx-auto w-full min-w-0 max-w-4xl px-4 py-10">
         <Link
           className="inline-flex min-h-9 items-center gap-1.5 text-muted-foreground text-sm hover:text-foreground"

@@ -1,8 +1,14 @@
+import { getAgentPlainDescription } from '@/lib/agent-detail'
 import { listDocsPages } from '@/lib/docs-content'
 import { listLearnPages } from '@/lib/learn-content'
 import { siteConfig } from '@/lib/metadata'
 import { listStaticAgents } from '@/lib/registry'
-import { getAgentUrl, getLearnUrl, getSiteUrl } from '@/lib/site-url'
+import {
+  buildInstallCommand,
+  getAgentUrl,
+  getLearnUrl,
+  getSiteUrl,
+} from '@/lib/site-url'
 
 function escapeMarkdownLinkText(value: string): string {
   return value
@@ -19,8 +25,11 @@ function buildLlmsTxt(): string {
   const agentLines = agents
     .map((agent) => {
       const name = escapeMarkdownLinkText(agent.name)
-      const description = escapeMarkdownLinkText(agent.description)
-      return `- [${name}](${getAgentUrl(agent.slug)}.md): ${description}`
+      const description = escapeMarkdownLinkText(
+        getAgentPlainDescription(agent),
+      )
+      const install = buildInstallCommand(agent.slug)
+      return `- [${name}](${getAgentUrl(agent.slug)}.md): ${description}\n  - Install: \`${install}\``
     })
     .join('\n')
   const docsLines = listDocsPages()

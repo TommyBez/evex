@@ -10,6 +10,7 @@ import {
   buildInstallCommand,
   getAgentUrl,
   getAuthorUrl,
+  getDocsUrl,
   getLeaderboardUrl,
   getLearnUrl,
   getRegistryItemUrl,
@@ -361,6 +362,62 @@ export function createDocsArticleSchema(
       name: 'evex',
       url: getSiteUrl(),
     },
+  }
+}
+
+function docsSectionToHowToStepText(
+  section: DocsPage['sections'][number],
+): string {
+  const parts = [...section.body]
+  if (section.bullets) {
+    for (const bullet of section.bullets) {
+      parts.push(bullet)
+    }
+  }
+  if (section.code) {
+    for (const block of section.code) {
+      const label = block.label ? `${block.label}: ` : ''
+      parts.push(`${label}${block.code}`)
+    }
+  }
+  return parts.join(' ')
+}
+
+// HowTo schema for /docs/installation only. Steps mirror visible section
+// headings and body (including the shadcn install command) so AI engines
+// and rich results stay faithful to on-page copy.
+export function createDocsInstallHowToSchema(page: DocsPage): JsonLdObject {
+  const pageUrl = getDocsUrl(page.slug)
+
+  return {
+    '@context': SCHEMA_CONTEXT,
+    '@type': 'HowTo',
+    name: page.title,
+    description: page.summary,
+    url: pageUrl,
+    mainEntityOfPage: pageUrl,
+    tool: [
+      {
+        '@type': 'HowToTool',
+        name: 'shadcn CLI',
+      },
+      {
+        '@type': 'HowToTool',
+        name: 'eve CLI',
+      },
+    ],
+    supply: [
+      {
+        '@type': 'HowToSupply',
+        name: 'Node.js 24 or newer',
+      },
+    ],
+    step: page.sections.map((section, index) => ({
+      '@type': 'HowToStep',
+      position: index + 1,
+      name: section.heading,
+      text: docsSectionToHowToStepText(section),
+    })),
   }
 }
 

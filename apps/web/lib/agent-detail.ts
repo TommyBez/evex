@@ -18,8 +18,10 @@ const MIN_DESCRIPTION_LEAD_LENGTH = 40
 const SUBAGENT_PATH_REGEX = /^agent\/subagents\/([^/]+)/
 const SKILL_PATH_REGEX = /\/skills\//
 const TOOL_PATH_REGEX = /\/tools\//
-const MARKDOWN_BOLD = /(\*\*|__)(.*?)\1/g
-const MARKDOWN_ITALIC = /(\*|_)([^*_]+)\1/g
+// Asterisk emphasis only. Underscore `__` / `_` delimiters collide with
+// snake_case and double-underscore tool names (e.g. supabase__list_tables).
+const MARKDOWN_BOLD = /\*\*(.+?)\*\*/g
+const MARKDOWN_ITALIC = /(?<!\*)\*([^*]+?)\*(?!\*)/g
 const MARKDOWN_INLINE_CODE = /`([^`]+)`/g
 const WHITESPACE_RUNS = /\s+/g
 const TRAILING_CLAUSE_PUNCTUATION = /[,:;]+$/
@@ -151,13 +153,22 @@ function stripMarkdownLinks(value: string): string {
   return result
 }
 
-function stripInlineMarkdown(value: string): string {
+export function stripInlineMarkdown(value: string): string {
   return stripMarkdownLinks(value)
-    .replace(MARKDOWN_BOLD, '$2')
-    .replace(MARKDOWN_ITALIC, '$2')
+    .replace(MARKDOWN_BOLD, '$1')
+    .replace(MARKDOWN_ITALIC, '$1')
     .replace(MARKDOWN_INLINE_CODE, '$1')
     .replace(WHITESPACE_RUNS, ' ')
     .trim()
+}
+
+// Plain prose for AI context files (llms.txt): strip Markdown markers without
+// SERP truncation or an embedded install CTA. Callers that need the command
+// should append a dedicated Install line via buildInstallCommand.
+export function getAgentPlainDescription(
+  agent: Pick<AgentWithAuthor, 'description'>,
+): string {
+  return stripInlineMarkdown(agent.description)
 }
 
 function truncateAtBoundary(value: string, maxLength: number): string {
