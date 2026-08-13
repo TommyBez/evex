@@ -1012,7 +1012,7 @@ export const LEARN_PAGES: readonly LearnPage[] = [
           '2. Pick an agent on evex and preview its files, dependencies, and author on the agent page.',
           '3. Run `npx shadcn@latest add @evex/<slug>` from the project root. Example: `npx shadcn@latest add @evex/code-reviewer`.',
           '4. Own the written files: fill `.env.example` when present, read the installed README, and run evals under `evals/` before you trust the agent in production.',
-          'Never `eve add`. Never a URL install as the command you publish or paste into docs.',
+          'Never the `eve` CLI `add` subcommand. Never a URL install as the command you publish or paste into docs.',
         ],
       },
     ],

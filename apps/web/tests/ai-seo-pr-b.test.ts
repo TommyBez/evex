@@ -5,6 +5,7 @@ import { buildLearnPageMarkdown } from '@/lib/markdown-content'
 
 const WORD_SPLIT = /\s+/
 const EVE_ADD_OUTSIDE_BACKTICKS = /(?:^|[^`])eve add(?:$|[^`])/m
+const EVE_ADD_CONTIGUOUS = /eve add/
 
 describe('docs introduction AI-SEO definition', () => {
   it('renames the first section and uses the exact 45-word summary', () => {
@@ -64,9 +65,11 @@ describe('learn page: evex vs agentcn', () => {
     const markdown = buildLearnPageMarkdown(page)
     expect(markdown).toContain('| Criterion | evex | agentcn |')
     expect(markdown).toContain('npx shadcn@latest add @evex/<slug>')
-    // Explicit anti-pattern callout is required; do not publish `eve add` as install.
-    expect(markdown).toContain('Never `eve add`')
+    // Explicit anti-pattern callout is required; do not publish eve CLI add as install.
+    // Wording avoids the contiguous "eve add" substring so llms-full.txt (#58) stays clean.
+    expect(markdown).toContain('Never the `eve` CLI `add` subcommand')
     expect(markdown).not.toMatch(EVE_ADD_OUTSIDE_BACKTICKS)
+    expect(markdown).not.toMatch(EVE_ADD_CONTIGUOUS)
   })
 
   it('keeps related learn pages in the same topical neighborhood', () => {
