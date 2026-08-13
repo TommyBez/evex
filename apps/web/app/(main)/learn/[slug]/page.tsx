@@ -7,7 +7,10 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { JsonLd } from '@/components/json-ld'
-import { LearnInlineMarkdown } from '@/components/learn-inline-markdown'
+import {
+  LearnInlineMarkdown,
+  looksLikeBlockMarkdown,
+} from '@/components/learn-inline-markdown'
 import {
   getLearnCluster,
   getLearnPage,
@@ -172,11 +175,19 @@ export default async function LearnDetailPage({
                   {section.heading}
                 </h2>
                 <div className="mt-3 grid gap-3 text-muted-foreground leading-relaxed">
-                  {section.body.map((paragraph) => (
-                    <p key={paragraph}>
-                      <LearnInlineMarkdown>{paragraph}</LearnInlineMarkdown>
-                    </p>
-                  ))}
+                  {section.body.map((paragraph) =>
+                    looksLikeBlockMarkdown(paragraph) ? (
+                      <div key={paragraph}>
+                        <LearnInlineMarkdown variant="block">
+                          {paragraph}
+                        </LearnInlineMarkdown>
+                      </div>
+                    ) : (
+                      <p key={paragraph}>
+                        <LearnInlineMarkdown>{paragraph}</LearnInlineMarkdown>
+                      </p>
+                    ),
+                  )}
                 </div>
                 {section.bullets ? (
                   <div className="mt-4 grid gap-2">

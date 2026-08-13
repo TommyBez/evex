@@ -25,6 +25,8 @@ const RAW_MARKDOWN_MARKERS = /`|\*\*|\[rate limits\]\(/
 const RAW_MARKDOWN_OR_CODE = /`|\*\*/
 const RAW_MARKDOWN_ANY = /`|\*\*|\[.*?\]\(.*?\)/
 const STRAY_PAREN_AROUND_NOTATION = /\)\s*notation|notation\s*\)/
+const ENDS_WITH_OR_EXPLICIT = /or explicit\.?$/
+const ENDS_WITH_COMMA = /,\s*$/
 
 function makeFile(path: string): AgentRegistryFile {
   return { content: '', id: `x:${path}`, path, type: 'registry:file' }
@@ -259,6 +261,54 @@ describe('getAgentDefinitionBlock', () => {
     )
   })
 
+  it('does not assume coding agents are pull-request reviewers', () => {
+    const agent = makeAgent({
+      category: 'coding',
+      description:
+        'An Eve coding agent that creates Eve agents, runs their checks, deploys them to Vercel, and verifies the live routes.',
+      docs: {
+        faqs: [],
+        howItWorks: [],
+        overview: [
+          'Eve Agent Builder turns a plain request into a tested, deployed Eve agent.',
+        ],
+        requirements: [],
+        useCases: [],
+      },
+      name: 'Eve Agent Builder',
+      slug: 'eve-agent-builder',
+    })
+    const block = getAgentDefinitionBlock(agent)
+
+    expect(block.plainText).toContain('Eve developers building with code')
+    expect(block.plainText).not.toContain('reviewing pull requests')
+  })
+
+  it('truncates under-45 filler on a clause boundary instead of mid-phrase', () => {
+    const agent = makeAgent({
+      category: 'marketing',
+      description:
+        'Generate brand-aligned SVG asset packs for SaaS products using Context.dev brand extraction and a Quiver Arrow SVG tool.',
+      docs: {
+        faqs: [],
+        howItWorks: [],
+        overview: [
+          'Brand Visual Asset Generator is an on-demand eve agent that turns a company domain, product description, or explicit brand profile into a coherent pack of editable SVG assets for marketing sites.',
+        ],
+        requirements: [],
+        useCases: [],
+      },
+      name: 'Brand Visual Asset Generator',
+      slug: 'brand-visual-asset-generator',
+    })
+    const block = getAgentDefinitionBlock(agent)
+
+    expect(block.wordCount).toBeLessThanOrEqual(60)
+    expect(block.plainText.endsWith('.')).toBe(true)
+    expect(block.plainText).not.toMatch(ENDS_WITH_OR_EXPLICIT)
+    expect(block.plainText).not.toMatch(ENDS_WITH_COMMA)
+  })
+
   for (const agent of listStaticAgents()) {
     it(`stays within the word budget for ${agent.slug}`, () => {
       const block = getAgentDefinitionBlock(agent)
@@ -272,6 +322,8 @@ describe('getAgentDefinitionBlock', () => {
       // Prefer 45-60; allow 40-60 when the under-45 append path still lands short.
       expect(block.wordCount).toBeGreaterThanOrEqual(40)
       expect(block.wordCount).toBeLessThanOrEqual(60)
+      expect(block.plainText.endsWith('.')).toBe(true)
+      expect(block.plainText).not.toMatch(ENDS_WITH_OR_EXPLICIT)
     })
   }
 })

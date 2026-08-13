@@ -4,6 +4,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 
 const EXTERNAL_HREF = /^https?:\/\//
+const BLOCK_MARKDOWN_START = /^(?:#{1,6}\s|[-*+]\s|\d+\.\s|>\s|```|~~~|\|.+\|)/
 
 function MarkdownLink({
   href,
@@ -37,10 +38,26 @@ function MarkdownLink({
   )
 }
 
+export function looksLikeBlockMarkdown(value: string): boolean {
+  const trimmed = value.trim()
+  if (trimmed.includes('\n')) {
+    return true
+  }
+  return BLOCK_MARKDOWN_START.test(trimmed)
+}
+
 // Light Markdown pass for learn prose and comparison cells: links + inline
-// code (and bold/italic via GFM). Block elements collapse to inline/span so
-// cells and paragraphs stay valid HTML.
-export function LearnInlineMarkdown({ children }: { children: string }) {
+// code (and bold/italic via GFM). Use variant="block" when the source may
+// contain lists or other block nodes so callers do not wrap them in <p>.
+export function LearnInlineMarkdown({
+  children,
+  variant = 'inline',
+}: {
+  children: string
+  variant?: 'inline' | 'block'
+}) {
+  const isBlock = variant === 'block'
+
   return (
     <ReactMarkdown
       components={{
@@ -56,13 +73,16 @@ export function LearnInlineMarkdown({ children }: { children: string }) {
           <li className="leading-relaxed">{listChildren}</li>
         ),
         ol: ({ children: listChildren }) => (
-          <ol className="mt-3 list-decimal space-y-2 pl-5">{listChildren}</ol>
+          <ol className="list-decimal space-y-2 pl-5">{listChildren}</ol>
         ),
-        p: ({ children: paragraphChildren }) => (
-          <span className="contents">{paragraphChildren}</span>
-        ),
+        p: ({ children: paragraphChildren }) =>
+          isBlock ? (
+            <p className="text-pretty leading-relaxed">{paragraphChildren}</p>
+          ) : (
+            <span className="contents">{paragraphChildren}</span>
+          ),
         ul: ({ children: listChildren }) => (
-          <ul className="mt-3 list-disc space-y-2 pl-5">{listChildren}</ul>
+          <ul className="list-disc space-y-2 pl-5">{listChildren}</ul>
         ),
       }}
       remarkPlugins={[remarkGfm]}

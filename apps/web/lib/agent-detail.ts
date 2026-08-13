@@ -314,23 +314,25 @@ function extractDefinitionJob(
 function whoForCategory(category: string): string {
   switch (category) {
     case 'coding':
+      // Keep this category-level, not job-specific: coding agents are not all
+      // PR reviewers (eve-agent-builder builds and deploys agents).
       return truncateToWords(
-        'Eve developers reviewing pull requests',
+        'Eve developers building with code',
         MAX_DEFINITION_WHO_WORDS,
       )
     case 'marketing':
       return truncateToWords(
-        'Eve developers shipping marketing pages',
+        'Eve developers shipping marketing work',
         MAX_DEFINITION_WHO_WORDS,
       )
     case 'data':
       return truncateToWords(
-        'Eve developers analyzing product data',
+        'Eve developers working with data',
         MAX_DEFINITION_WHO_WORDS,
       )
     case 'research':
       return truncateToWords(
-        'Eve developers researching live topics',
+        'Eve developers doing research work',
         MAX_DEFINITION_WHO_WORDS,
       )
     case 'productivity':
@@ -343,14 +345,38 @@ function whoForCategory(category: string): string {
   }
 }
 
-function appendClause(base: string, clause: string): string {
-  const cleanedClause = stripInlineMarkdown(clause)
-    .replace(TRAILING_SENTENCE_PUNCTUATION, '')
-    .trim()
-  if (cleanedClause.length === 0) {
-    return base
+// Prefer a sentence or clause end when a hard word budget would otherwise cut
+// mid-phrase (e.g. "...product description, or explicit.").
+function truncateToWordsAtBoundary(value: string, maxWords: number): string {
+  const words = value.trim().split(WORD_SPLIT).filter(Boolean)
+  if (words.length <= maxWords) {
+    return words.join(' ')
   }
-  return `${base} ${ensureSentenceEnd(cleanedClause)}`
+
+  const slice = words.slice(0, maxWords).join(' ')
+  const minKeep = Math.floor(slice.length * 0.5)
+
+  const sentenceEnd = Math.max(
+    slice.lastIndexOf('. '),
+    slice.lastIndexOf('! '),
+    slice.lastIndexOf('? '),
+  )
+  if (sentenceEnd >= minKeep) {
+    return slice.slice(0, sentenceEnd + 1).trimEnd()
+  }
+
+  const clauseEnd = Math.max(
+    slice.lastIndexOf(', '),
+    slice.lastIndexOf('; '),
+    slice.lastIndexOf(': '),
+  )
+  if (clauseEnd >= minKeep) {
+    return ensureSentenceEnd(slice.slice(0, clauseEnd).trimEnd())
+  }
+
+  return ensureSentenceEnd(
+    slice.trimEnd().replace(TRAILING_CLAUSE_PUNCTUATION, ''),
+  )
 }
 
 function clampDefinitionParagraph(
@@ -409,18 +435,19 @@ export function getAgentDefinitionBlock(
     const fillerClause = overviewClause
       ? firstSentenceWithoutEnd(stripInlineMarkdown(overviewClause))
       : DEFINITION_OWNERSHIP_CLAUSE.replace(TRAILING_SENTENCE_PUNCTUATION, '')
-    const withFiller = appendClause(
-      `${beforeCommand}${installCommand}.`,
-      fillerClause,
-    )
-    plainText = truncateToWords(withFiller, MAX_DEFINITION_WORDS)
-    if (!TRAILING_SENTENCE_PUNCTUATION.test(plainText)) {
-      plainText = ensureSentenceEnd(plainText)
-    }
-    const commandIndex = plainText.indexOf(installCommand)
-    if (commandIndex !== -1) {
-      beforeCommand = plainText.slice(0, commandIndex)
-      afterCommand = plainText.slice(commandIndex + installCommand.length)
+    // Truncate only the filler against the remaining budget so we do not cut
+    // at the install-command sentence end and drop the append entirely.
+    const baseWithCommand = `${beforeCommand}${installCommand}.`
+    const remainingWords = MAX_DEFINITION_WORDS - countWords(baseWithCommand)
+    if (remainingWords > 0 && fillerClause.length > 0) {
+      const filler = truncateToWordsAtBoundary(
+        ensureSentenceEnd(fillerClause),
+        remainingWords,
+      )
+      if (countWords(filler) > 0) {
+        plainText = `${baseWithCommand} ${filler}`
+        afterCommand = `. ${filler}`
+      }
     }
   }
 

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { looksLikeBlockMarkdown } from '@/components/learn-inline-markdown'
 import { getDocsPage } from '@/lib/docs-content'
 import { getLearnPage, getRelatedLearnPages } from '@/lib/learn-content'
 import { buildLearnPageMarkdown } from '@/lib/markdown-content'
@@ -6,6 +7,7 @@ import { buildLearnPageMarkdown } from '@/lib/markdown-content'
 const WORD_SPLIT = /\s+/
 const EVE_ADD_OUTSIDE_BACKTICKS = /(?:^|[^`])eve add(?:$|[^`])/m
 const EVE_ADD_CONTIGUOUS = /eve add/
+const NUMBERED_STEP_PREFIX = /^\d+\.\s/
 
 describe('docs introduction AI-SEO definition', () => {
   it('renames the first section and uses the exact 45-word summary', () => {
@@ -100,5 +102,24 @@ describe('learn page: evex vs agentcn', () => {
       'When to pick which',
       'How to install from evex',
     ])
+  })
+
+  it('marks install steps as block markdown so the page can avoid p>ol nesting', () => {
+    expect(page).not.toBeNull()
+    if (!page) {
+      return
+    }
+
+    const installSection = page.sections.find(
+      (section) => section.heading === 'How to install from evex',
+    )
+    expect(installSection).toBeDefined()
+    const numberedSteps = (installSection?.body ?? []).filter((paragraph) =>
+      NUMBERED_STEP_PREFIX.test(paragraph),
+    )
+    expect(numberedSteps.length).toBe(4)
+    for (const step of numberedSteps) {
+      expect(looksLikeBlockMarkdown(step)).toBe(true)
+    }
   })
 })
