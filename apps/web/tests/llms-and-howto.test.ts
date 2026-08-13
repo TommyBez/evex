@@ -51,6 +51,22 @@ describe('getAgentPlainDescription', () => {
     expect(plain).not.toContain('Install with')
     expect(plain).not.toContain(buildInstallCommand(agent.slug))
   })
+
+  it('preserves double-underscore tool names and snake_case identifiers', () => {
+    const agent = makeAgent({
+      description:
+        'Exposes `supabase__list_tables` and **supabase__execute_sql** plus snake_case_ids for read-only queries.',
+      slug: 'supabase-data-analyst',
+    })
+    const plain = getAgentPlainDescription(agent)
+
+    expect(plain).toContain('supabase__list_tables')
+    expect(plain).toContain('supabase__execute_sql')
+    expect(plain).toContain('snake_case_ids')
+    expect(plain).not.toContain('supabaselisttables')
+    expect(plain).not.toContain('supabaseexecutesql')
+    expect(plain).not.toMatch(RAW_MARKDOWN_OR_CODE)
+  })
 })
 
 describe('llms.txt agent blurbs', () => {
@@ -59,6 +75,10 @@ describe('llms.txt agent blurbs', () => {
     const agents = listStaticAgents()
 
     expect(agents.length).toBeGreaterThan(0)
+    expect(body).toContain('supabase__list_tables')
+    expect(body).toContain('supabase__execute_sql')
+    expect(body).not.toContain('supabaselisttables')
+    expect(body).not.toContain('supabaseexecutesql')
 
     for (const agent of agents) {
       const install = buildInstallCommand(agent.slug)
@@ -112,6 +132,14 @@ describe('llms-full.txt agent sections', () => {
   })
 })
 
+function isHowToStep(value: unknown): value is { name: string; text: string } {
+  if (typeof value !== 'object' || value === null) {
+    return false
+  }
+  const record = value as Record<string, unknown>
+  return typeof record.name === 'string' && typeof record.text === 'string'
+}
+
 describe('createDocsInstallHowToSchema', () => {
   it('emits HowTo steps matching the installation docs page', () => {
     const page = getDocsPage('installation')
@@ -121,7 +149,13 @@ describe('createDocsInstallHowToSchema', () => {
     }
 
     const schema = createDocsInstallHowToSchema(page)
-    const steps = schema.step as Record<string, unknown>[]
+    expect(Array.isArray(schema.step)).toBe(true)
+    const steps = Array.isArray(schema.step)
+      ? schema.step.filter(isHowToStep)
+      : []
+    expect(steps).toHaveLength(
+      Array.isArray(schema.step) ? schema.step.length : 0,
+    )
 
     expect(schema['@type']).toBe('HowTo')
     expect(schema.name).toBe(page.title)
@@ -136,7 +170,7 @@ describe('createDocsInstallHowToSchema', () => {
     )
     expect(steps).toHaveLength(page.sections.length)
 
-    const stepText = steps.map((step) => String(step.text)).join('\n')
+    const stepText = steps.map((step) => step.text).join('\n')
     expect(stepText).toContain('npx shadcn@latest add @evex/{slug}')
     expect(stepText).toContain('npx shadcn@latest add @evex/code-reviewer')
     expect(stepText).not.toMatch(EVE_ADD_COMMAND)
@@ -144,7 +178,7 @@ describe('createDocsInstallHowToSchema', () => {
     for (const section of page.sections) {
       const step = steps.find((entry) => entry.name === section.heading)
       expect(step).toBeDefined()
-      expect(String(step?.text)).toContain(section.body[0] ?? '')
+      expect(step?.text).toContain(section.body[0] ?? '')
     }
 
     expect(schema.tool).toEqual([

@@ -145,6 +145,20 @@ describe('getAgentMetaDescription', () => {
     expect(description).not.toMatch(STRAY_PAREN_AROUND_NOTATION)
   })
 
+  it('preserves double-underscore tool names when stripping Markdown', () => {
+    const agent = makeAgent({
+      description:
+        'Uses supabase__list_tables and supabase__execute_sql for read-only SQL.',
+      slug: 'supabase-data-analyst',
+    })
+    const description = getAgentMetaDescription(agent)
+
+    expect(description).toContain('supabase__list_tables')
+    expect(description).toContain('supabase__execute_sql')
+    expect(description).not.toContain('supabaselisttables')
+    expect(description).not.toContain('supabaseexecutesql')
+  })
+
   it('stays within the SERP description budget', () => {
     const agent = makeAgent({
       description:
