@@ -39,18 +39,23 @@ describe('shouldCountInstall', () => {
     expect(shouldCountInstall('Indexer/3.1 +HTTPS://EXAMPLE.COM')).toBe(false)
   })
 
+  it('ignores the overnight sweeper exact user agent node', () => {
+    expect(shouldCountInstall('node')).toBe(false)
+    expect(shouldCountInstall(' node ')).toBe(false)
+    expect(shouldCountInstall('Node')).toBe(false)
+  })
+
+  it('ignores requests without a usable user agent', () => {
+    expect(shouldCountInstall('')).toBe(false)
+    expect(shouldCountInstall('   ')).toBe(false)
+    expect(shouldCountInstall(null)).toBe(false)
+  })
+
   it('counts the shadcn CLI fetch clients', () => {
     expect(shouldCountInstall('undici')).toBe(true)
-    expect(shouldCountInstall('node')).toBe(true)
     expect(shouldCountInstall('node-fetch/3.3.2')).toBe(true)
     expect(shouldCountInstall('npm/10.9.0 node/v24.0.0')).toBe(true)
     expect(shouldCountInstall('npm/10.0.0')).toBe(true)
-  })
-
-  it('counts requests without a usable user agent', () => {
-    expect(shouldCountInstall('')).toBe(true)
-    expect(shouldCountInstall('   ')).toBe(true)
-    expect(shouldCountInstall(null)).toBe(true)
   })
 
   it('counts other programmatic clients', () => {
