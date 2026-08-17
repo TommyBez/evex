@@ -278,7 +278,9 @@ export function AgentFileViewer({ files }: { files: AgentRegistryFile[] }) {
     <div className="grid gap-6">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <h2 className="font-semibold text-foreground text-lg">Files</h2>
+          <h2 className="font-semibold text-foreground text-lg">
+            Files this command writes
+          </h2>
           <span className="mono-label font-pixel text-muted-foreground/70 tabular-nums">
             {files.length}
           </span>
