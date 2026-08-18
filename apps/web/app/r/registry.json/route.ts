@@ -8,6 +8,9 @@ export function GET() {
   return NextResponse.json(registry, {
     headers: {
       'Cache-Control': 'public, max-age=0, s-maxage=60',
+      // JSON install endpoints are not landing pages. noindex via header so
+      // crawlers that still discover the URL do not index an empty SERP.
+      'X-Robots-Tag': 'noindex',
     },
   })
 }

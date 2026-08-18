@@ -58,8 +58,16 @@ export function getAgentUrl(slug: string): string {
   return `${getSiteUrl()}/agents/${slug}`
 }
 
+export function getRegistryItemUrl(slug: string): string {
+  return `${getSiteUrl()}/r/${slug}.json`
+}
+
 export function getAuthorUrl(githubUsername: string): string {
   return `${getSiteUrl()}/authors/${githubUsername}`
+}
+
+export function getLeaderboardUrl(): string {
+  return `${getSiteUrl()}/leaderboard`
 }
 
 export function getLearnUrl(slug: string): string {

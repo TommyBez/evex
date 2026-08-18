@@ -1,3 +1,4 @@
+import { getAgentPlainDescription } from '@/lib/agent-detail'
 import type { AgentWithAuthor } from '@/lib/agent-types'
 import { parseDependencies } from '@/lib/agents'
 import { listLearnPages } from '@/lib/learn-content'
@@ -12,12 +13,13 @@ import { buildInstallCommand, getAgentUrl, getSiteUrl } from '@/lib/site-url'
 function buildAgentSection(agent: AgentWithAuthor): string {
   const deps = parseDependencies(agent.dependencies)
   const agentUrl = getAgentUrl(agent.slug)
+  const description = getAgentPlainDescription(agent)
 
   const overview = agent.docs ? `\n${agent.docs.overview.join('\n\n')}\n` : ''
 
   return `## ${agent.name}
 
-${agent.description}
+${description}
 ${overview}
 - Install: \`${buildInstallCommand(agent.slug)}\`
 - Category: ${agent.category}

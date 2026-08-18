@@ -1,4 +1,7 @@
+import { getAgentMetaDescription } from '@/lib/agent-detail'
 import type { AgentWithAuthor } from '@/lib/agent-types'
+import { parseDependencies } from '@/lib/agents'
+import { getAuthorMetaDescription } from '@/lib/author-detail'
 import type { DocsPage } from '@/lib/docs-content'
 import { HOME_FAQ_ITEMS } from '@/lib/home-faq-content'
 import type { LearnPage } from '@/lib/learn-content'
@@ -7,7 +10,10 @@ import {
   buildInstallCommand,
   getAgentUrl,
   getAuthorUrl,
+  getDocsUrl,
+  getLeaderboardUrl,
   getLearnUrl,
+  getRegistryItemUrl,
   getSiteUrl,
 } from '@/lib/site-url'
 
@@ -81,6 +87,7 @@ export function createAgentListSchema(
       position: index + 1,
       url: getAgentUrl(agent.slug),
       name: agent.name,
+      description: getAgentMetaDescription(agent),
     })),
   }
 }
@@ -104,17 +111,28 @@ export function createLearnListSchema(
   }
 }
 
+function getAgentSoftwareRequirements(agent: AgentWithAuthor): string[] {
+  const dependencies = parseDependencies(agent.dependencies)
+  const docsRequirements =
+    agent.docs?.requirements.map(
+      (requirement) => `${requirement.name}: ${requirement.body}`,
+    ) ?? []
+
+  return [...dependencies, ...docsRequirements]
+}
+
 export function createAgentSoftwareSchema(
   agent: AgentWithAuthor,
   installCount: number,
 ): JsonLdObject {
   const agentUrl = getAgentUrl(agent.slug)
+  const softwareRequirements = getAgentSoftwareRequirements(agent)
 
   return {
     '@context': SCHEMA_CONTEXT,
     '@type': 'SoftwareApplication',
     name: agent.name,
-    description: agent.description,
+    description: getAgentMetaDescription(agent),
     url: agentUrl,
     applicationCategory: 'DeveloperApplication',
     operatingSystem: 'Cross-platform',
@@ -134,10 +152,14 @@ export function createAgentSoftwareSchema(
       availability: 'https://schema.org/InStock',
     },
     installUrl: agentUrl,
+    downloadUrl: getRegistryItemUrl(agent.slug),
+    codeRepository: REPO_URL,
+    isAccessibleForFree: true,
     softwareHelp: {
       '@type': 'CreativeWork',
       text: buildInstallCommand(agent.slug),
     },
+    ...(softwareRequirements.length > 0 ? { softwareRequirements } : {}),
     ...(installCount > 0
       ? {
           interactionStatistic: {
@@ -174,6 +196,89 @@ export function createAgentBreadcrumbSchema(
       },
     ],
   }
+}
+
+export function createAuthorBreadcrumbSchema(author: {
+  githubUsername: string
+  name: string
+}): JsonLdObject {
+  const siteUrl = getSiteUrl()
+  const authorUrl = getAuthorUrl(author.githubUsername)
+
+  return {
+    '@context': SCHEMA_CONTEXT,
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Registry',
+        item: siteUrl,
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: author.name,
+        item: authorUrl,
+      },
+    ],
+  }
+}
+
+export function createLeaderboardSchema(
+  topAgents: readonly Pick<AgentWithAuthor, 'name' | 'slug'>[],
+  topAuthors: readonly {
+    authorName: string
+    authorUsername: string
+  }[],
+): [JsonLdObject, JsonLdObject, JsonLdObject] {
+  const siteUrl = getSiteUrl()
+  const leaderboardUrl = getLeaderboardUrl()
+
+  return [
+    {
+      '@context': SCHEMA_CONTEXT,
+      '@type': 'ItemList',
+      name: 'Top eve agents on evex',
+      numberOfItems: topAgents.length,
+      itemListElement: topAgents.map((agent, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        name: agent.name,
+        url: getAgentUrl(agent.slug),
+      })),
+    },
+    {
+      '@context': SCHEMA_CONTEXT,
+      '@type': 'ItemList',
+      name: 'Top eve agent authors on evex',
+      numberOfItems: topAuthors.length,
+      itemListElement: topAuthors.map((author, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        name: author.authorName,
+        url: getAuthorUrl(author.authorUsername),
+      })),
+    },
+    {
+      '@context': SCHEMA_CONTEXT,
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        {
+          '@type': 'ListItem',
+          position: 1,
+          name: 'Registry',
+          item: siteUrl,
+        },
+        {
+          '@type': 'ListItem',
+          position: 2,
+          name: 'Leaderboard',
+          item: leaderboardUrl,
+        },
+      ],
+    },
+  ]
 }
 
 export function createLearnArticleSchema(page: LearnPage): JsonLdObject {
@@ -260,6 +365,62 @@ export function createDocsArticleSchema(
   }
 }
 
+function docsSectionToHowToStepText(
+  section: DocsPage['sections'][number],
+): string {
+  const parts = [...section.body]
+  if (section.bullets) {
+    for (const bullet of section.bullets) {
+      parts.push(bullet)
+    }
+  }
+  if (section.code) {
+    for (const block of section.code) {
+      const label = block.label ? `${block.label}: ` : ''
+      parts.push(`${label}${block.code}`)
+    }
+  }
+  return parts.join(' ')
+}
+
+// HowTo schema for /docs/installation only. Steps mirror visible section
+// headings and body (including the shadcn install command) so AI engines
+// and rich results stay faithful to on-page copy.
+export function createDocsInstallHowToSchema(page: DocsPage): JsonLdObject {
+  const pageUrl = getDocsUrl(page.slug)
+
+  return {
+    '@context': SCHEMA_CONTEXT,
+    '@type': 'HowTo',
+    name: page.title,
+    description: page.summary,
+    url: pageUrl,
+    mainEntityOfPage: pageUrl,
+    tool: [
+      {
+        '@type': 'HowToTool',
+        name: 'shadcn CLI',
+      },
+      {
+        '@type': 'HowToTool',
+        name: 'eve CLI',
+      },
+    ],
+    supply: [
+      {
+        '@type': 'HowToSupply',
+        name: 'Node.js 24 or newer',
+      },
+    ],
+    step: page.sections.map((section, index) => ({
+      '@type': 'HowToStep',
+      position: index + 1,
+      name: section.heading,
+      text: docsSectionToHowToStepText(section),
+    })),
+  }
+}
+
 export function createDocsBreadcrumbSchema(
   page: DocsPage,
   pageUrl: string,
@@ -338,9 +499,7 @@ export function createAuthorProfileSchema(
     '@type': 'ProfilePage',
     name: `${author.name} on evex`,
     url: profileUrl,
-    description:
-      author.bio ??
-      `${author.name} publishes eve agents on evex with ${author.agentCount} agents and ${author.totalInstalls} total installs.`,
+    description: getAuthorMetaDescription(author),
     mainEntity: {
       '@type': 'Person',
       name: author.name,

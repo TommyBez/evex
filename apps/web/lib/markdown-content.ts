@@ -158,6 +158,25 @@ export function buildDocsPageMarkdown(page: DocsPage): string {
   return `${blocks.filter(Boolean).join('\n\n')}\n`
 }
 
+function learnComparisonMarkdown(page: LearnPage): string {
+  if (!page.comparisonRows?.length) {
+    return ''
+  }
+
+  const rows = page.comparisonRows
+    .map((row) => `| ${row.criterion} | ${row.left} | ${row.right} |`)
+    .join('\n')
+  const bottomLine = page.comparisonBottomLine
+    ? `\n\n${page.comparisonBottomLine}`
+    : ''
+
+  return `## Comparison
+
+| Criterion | evex | agentcn |
+| --- | --- | --- |
+${rows}${bottomLine}`
+}
+
 function learnSectionMarkdown(page: LearnPage): string {
   return page.sections
     .map((section) => {
@@ -209,6 +228,7 @@ export function buildLearnPageMarkdown(page: LearnPage): string {
     `# ${page.title}`,
     page.description,
     page.summary,
+    learnComparisonMarkdown(page),
     learnSectionMarkdown(page),
     learnDecisionTableMarkdown(page),
     learnExamplesMarkdown(page),

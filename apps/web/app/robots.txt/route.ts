@@ -6,13 +6,13 @@ import { getSiteUrl } from '@/lib/site-url'
 function buildRobotsTxt(): string {
   const siteUrl = getSiteUrl()
 
+  // Sign-in and sign-up stay crawlable at the robots layer. Those pages use
+  // page-level noindex (createPageMetadata noIndex) as the single opt-out.
   return `User-Agent: *
 Allow: /
 Disallow: /api/
 Disallow: /profile
 Disallow: /favorites
-Disallow: /sign-in
-Disallow: /sign-up
 Content-Signal: search=yes, ai-input=yes, ai-train=yes
 
 Host: ${siteUrl}

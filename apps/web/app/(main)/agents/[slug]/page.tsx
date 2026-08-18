@@ -15,11 +15,15 @@ import { FavoriteButton } from '@/components/favorite-button'
 import { InstallCommand } from '@/components/install-command'
 import { JsonLd } from '@/components/json-ld'
 import { MobileInstallBar } from '@/components/mobile-install-bar'
+import { StickyInstallCta } from '@/components/sticky-install-cta'
 import {
   compareRelatedAgents,
   countFilesByKind,
+  getAgentDefinitionBlock,
   getAgentInstallSummaryDescription,
+  getAgentMetaDescription,
   getAgentMetadataTitle,
+  getAgentOgImageAlt,
   pluralize,
 } from '@/lib/agent-detail'
 import type { AgentRegistryFile, AgentWithAuthor } from '@/lib/agent-types'
@@ -72,10 +76,17 @@ export async function generateMetadata({
 
   const path = `/agents/${agent.slug}`
   const title = getAgentMetadataTitle(agent)
+  const description = getAgentMetaDescription(agent)
+  const ogImage = {
+    url: `${path}/opengraph-image`,
+    width: 1200,
+    height: 630,
+    alt: getAgentOgImageAlt(agent),
+  }
 
   return {
     title,
-    description: agent.description,
+    description,
     keywords: [
       agent.name,
       `@evex/${agent.slug}`,
@@ -92,7 +103,7 @@ export async function generateMetadata({
     },
     openGraph: {
       title,
-      description: agent.description,
+      description,
       url: path,
       siteName: siteConfig.name,
       locale: 'en_US',
@@ -102,13 +113,15 @@ export async function generateMetadata({
       authors: [agent.authorName],
       section: agent.category,
       tags: [agent.category, 'eve agent', 'evex'],
+      images: [ogImage],
     },
     twitter: {
       card: 'summary_large_image',
       site: siteTwitterHandle,
       creator: siteTwitterHandle,
       title,
-      description: agent.description,
+      description,
+      images: [ogImage],
     },
   }
 }
@@ -197,9 +210,6 @@ async function AgentDetailContent({ agent }: { agent: AgentWithAuthor }) {
               />
             </Suspense>
           </div>
-          <p className="mt-1 max-w-2xl text-pretty text-muted-foreground">
-            <AgentDescription>{agent.description}</AgentDescription>
-          </p>
           <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-muted-foreground text-sm">
             {agent.authorUsername ? (
               <Link
@@ -231,10 +241,24 @@ async function AgentDetailContent({ agent }: { agent: AgentWithAuthor }) {
         </div>
       </div>
 
+      <StickyInstallCta
+        agentAuthor={agent.authorUsername}
+        className="mt-6"
+        slug={agent.slug}
+        viewerIsAuthor={viewerIsAuthor}
+      />
+
+      <AgentDefinitionSection agent={agent} />
+      <p className="mt-1 max-w-2xl text-pretty text-muted-foreground">
+        <AgentDescription>{agent.description}</AgentDescription>
+      </p>
+
       <Card className="mt-8 w-full min-w-0 rounded-md border border-border p-5 shadow-[var(--shadow-card)] ring-0">
-        <h2 className="font-medium text-foreground text-sm">Install</h2>
+        <h2 className="font-medium text-foreground text-sm">
+          Other package managers
+        </h2>
         <p className="mt-1 text-muted-foreground text-sm">
-          Run this command in your eve app to add the agent.
+          Prefer pnpm, yarn, or bun? Copy the matching install command.
         </p>
         <div className="mt-4">
           <InstallCommand
@@ -309,6 +333,25 @@ async function AgentDetailContent({ agent }: { agent: AgentWithAuthor }) {
         viewerIsAuthor={viewerIsAuthor}
       />
     </main>
+  )
+}
+
+function AgentDefinitionSection({ agent }: { agent: AgentWithAuthor }) {
+  const definition = getAgentDefinitionBlock(agent)
+
+  return (
+    <section className="mt-4 max-w-2xl">
+      <h2 className="font-semibold text-foreground text-lg">
+        {definition.heading}
+      </h2>
+      <p className="mt-2 text-pretty text-muted-foreground leading-relaxed">
+        {definition.beforeCommand}
+        <code className="rounded-sm bg-muted px-1 py-0.5 font-mono text-[0.9em] text-foreground">
+          {definition.installCommand}
+        </code>
+        {definition.afterCommand}
+      </p>
+    </section>
   )
 }
 
@@ -593,6 +636,7 @@ function AgentDetailSkeleton() {
           <Skeleton className="h-4 w-full max-w-48" />
         </div>
       </div>
+      <Skeleton className="mt-6 h-[10.5rem] rounded-md border border-border sm:h-44" />
       <Skeleton className="mt-8 h-28 rounded-md border border-border" />
       <Skeleton className="mt-8 h-32 rounded-md border border-border" />
       <Skeleton className="mt-8 h-64 rounded-md border border-border" />

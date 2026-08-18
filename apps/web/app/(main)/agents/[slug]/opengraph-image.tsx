@@ -1,7 +1,9 @@
 import { getAgentBySlug } from '@/lib/data/agents'
 import { createOgImage, ogImageContentType, ogImageSize } from '@/lib/og-image'
-import { getSiteHost } from '@/lib/site-url'
+import { buildInstallCommand } from '@/lib/site-url'
 
+// Route-level alt must be a constant for the file convention; per-agent alt
+// is set on openGraph.images[].alt in generateMetadata.
 export const alt = 'Agent on evex'
 export const size = ogImageSize
 export const contentType = ogImageContentType
@@ -30,6 +32,6 @@ export default async function Image({
     title: agent.name,
     description: agent.description,
     author: agent.authorName,
-    install: `${getSiteHost()}/r/${agent.slug}`,
+    install: buildInstallCommand(agent.slug),
   })
 }

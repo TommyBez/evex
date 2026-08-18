@@ -13,9 +13,11 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Suspense } from 'react'
 import { AuthorAvatar } from '@/components/author-avatar'
+import { JsonLd } from '@/components/json-ld'
 import { RegistryEmptyMessage } from '@/components/registry-empty-state'
 import { getTopAgents, getTopAuthors } from '@/lib/data/leaderboard'
 import { createPageMetadata } from '@/lib/metadata'
+import { createLeaderboardSchema } from '@/lib/structured-data'
 
 export const metadata: Metadata = createPageMetadata({
   title: 'Leaderboard | Top eve Agents and Authors',
@@ -93,37 +95,44 @@ async function TopAgents() {
     return <RegistryEmptyMessage message="No agents published yet." />
   }
 
+  // Emit the agents ItemList plus BreadcrumbList once data is available.
+  // Authors list JSON-LD is rendered inside TopAuthors.
+  const [agentsList, , breadcrumb] = createLeaderboardSchema(agents, [])
+
   return (
-    <div className="w-full min-w-0 overflow-hidden rounded-md border border-border">
-      <ItemGroup className="gap-0">
-        {agents.map((agent, i) => (
-          <Item
-            className="min-w-0 rounded-none border-0 border-border border-b last:border-b-0"
-            key={agent.id}
-            render={<Link href={`/agents/${agent.slug}`} />}
-            variant="default"
-          >
-            <ItemMedia>
-              <Rank position={i + 1} />
-            </ItemMedia>
-            <ItemContent className="min-w-0">
-              <ItemTitle className="w-full min-w-0">{agent.name}</ItemTitle>
-              <ItemDescription>
-                {agent.authorName} · {agent.category}
-              </ItemDescription>
-            </ItemContent>
-            <ItemActions className="shrink-0">
-              <span className="flex items-center gap-1 text-muted-foreground text-sm">
-                <Download aria-hidden="true" className="size-3.5" />
-                <span className="font-pixel text-foreground tabular-nums">
-                  {agent.installCount}
+    <>
+      <JsonLd data={[agentsList, breadcrumb]} />
+      <div className="w-full min-w-0 overflow-hidden rounded-md border border-border">
+        <ItemGroup className="gap-0">
+          {agents.map((agent, i) => (
+            <Item
+              className="min-w-0 rounded-none border-0 border-border border-b last:border-b-0"
+              key={agent.id}
+              render={<Link href={`/agents/${agent.slug}`} />}
+              variant="default"
+            >
+              <ItemMedia>
+                <Rank position={i + 1} />
+              </ItemMedia>
+              <ItemContent className="min-w-0">
+                <ItemTitle className="w-full min-w-0">{agent.name}</ItemTitle>
+                <ItemDescription>
+                  {agent.authorName} · {agent.category}
+                </ItemDescription>
+              </ItemContent>
+              <ItemActions className="shrink-0">
+                <span className="flex items-center gap-1 text-muted-foreground text-sm">
+                  <Download aria-hidden="true" className="size-3.5" />
+                  <span className="font-pixel text-foreground tabular-nums">
+                    {agent.installCount}
+                  </span>
                 </span>
-              </span>
-            </ItemActions>
-          </Item>
-        ))}
-      </ItemGroup>
-    </div>
+              </ItemActions>
+            </Item>
+          ))}
+        </ItemGroup>
+      </div>
+    </>
   )
 }
 
@@ -134,45 +143,50 @@ async function TopAuthors() {
     return <RegistryEmptyMessage message="No authors yet." />
   }
 
+  const [, authorsList] = createLeaderboardSchema([], authors)
+
   return (
-    <div className="w-full min-w-0 overflow-hidden rounded-md border border-border">
-      <ItemGroup className="gap-0">
-        {authors.map((author, i) => (
-          <Item
-            className="min-w-0 rounded-none border-0 border-border border-b last:border-b-0"
-            key={author.authorUsername}
-            render={<Link href={`/authors/${author.authorUsername}`} />}
-            variant="default"
-          >
-            <ItemMedia className="gap-3">
-              <Rank position={i + 1} />
-              <AuthorAvatar
-                className="size-9"
-                name={author.authorName}
-                src={author.avatarUrl}
-              />
-            </ItemMedia>
-            <ItemContent className="min-w-0">
-              <ItemTitle className="w-full min-w-0">
-                {author.authorName}
-              </ItemTitle>
-              <ItemDescription>
-                {author.agentCount}{' '}
-                {author.agentCount === 1 ? 'agent' : 'agents'}
-              </ItemDescription>
-            </ItemContent>
-            <ItemActions className="shrink-0">
-              <span className="flex items-center gap-1 text-muted-foreground text-sm">
-                <Download aria-hidden="true" className="size-3.5" />
-                <span className="font-pixel text-foreground tabular-nums">
-                  {author.totalInstalls}
+    <>
+      <JsonLd data={authorsList} />
+      <div className="w-full min-w-0 overflow-hidden rounded-md border border-border">
+        <ItemGroup className="gap-0">
+          {authors.map((author, i) => (
+            <Item
+              className="min-w-0 rounded-none border-0 border-border border-b last:border-b-0"
+              key={author.authorUsername}
+              render={<Link href={`/authors/${author.authorUsername}`} />}
+              variant="default"
+            >
+              <ItemMedia className="gap-3">
+                <Rank position={i + 1} />
+                <AuthorAvatar
+                  className="size-9"
+                  name={author.authorName}
+                  src={author.avatarUrl}
+                />
+              </ItemMedia>
+              <ItemContent className="min-w-0">
+                <ItemTitle className="w-full min-w-0">
+                  {author.authorName}
+                </ItemTitle>
+                <ItemDescription>
+                  {author.agentCount}{' '}
+                  {author.agentCount === 1 ? 'agent' : 'agents'}
+                </ItemDescription>
+              </ItemContent>
+              <ItemActions className="shrink-0">
+                <span className="flex items-center gap-1 text-muted-foreground text-sm">
+                  <Download aria-hidden="true" className="size-3.5" />
+                  <span className="font-pixel text-foreground tabular-nums">
+                    {author.totalInstalls}
+                  </span>
                 </span>
-              </span>
-            </ItemActions>
-          </Item>
-        ))}
-      </ItemGroup>
-    </div>
+              </ItemActions>
+            </Item>
+          ))}
+        </ItemGroup>
+      </div>
+    </>
   )
 }
 

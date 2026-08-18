@@ -26,8 +26,16 @@ export interface LearnExample {
   label: string
 }
 
+export interface LearnComparisonRow {
+  criterion: string
+  left: string
+  right: string
+}
+
 export interface LearnPage {
   cluster: LearnClusterId
+  comparisonBottomLine?: string
+  comparisonRows?: readonly LearnComparisonRow[]
   dateModified: string
   datePublished: string
   decisionRows: readonly LearnDecisionRow[]
@@ -888,6 +896,184 @@ export const LEARN_PAGES: readonly LearnPage[] = [
         question: 'How should teams choose?',
         answer:
           'Build the hardest failure path in each candidate framework and compare which one is easier to debug.',
+      },
+    ],
+  },
+  {
+    slug: 'evex-vs-agentcn',
+    title: 'Eve agent registries: evex vs agentcn',
+    shortTitle: 'evex vs agentcn',
+    description:
+      'Fair, dated comparison of evex and agentcn as Eve agent registries. Both use the shadcn CLI. evex adds inspect-before-install and publish via pull request.',
+    cluster: 'comparisons',
+    datePublished: '2026-08-13',
+    dateModified: '2026-08-13',
+    primaryKeyword: 'evex vs agentcn',
+    relatedKeywords: [
+      'eve agent registry',
+      'agentcn alternative',
+      'install eve agent',
+      'shadcn eve registry',
+    ],
+    summary:
+      'Eve agent registries let Eve developers install reusable agents as source files instead of copying folders. evex and agentcn both use the shadcn CLI. evex is the browse, inspect, install, and publish loop: file preview on every agent page, GitHub-verified authors, and publish via pull request. Choose on inspectability and the publish path, not popularity.',
+    comparisonRows: [
+      {
+        criterion: 'Install',
+        left: '`npx shadcn@latest add @evex/<slug>`',
+        right:
+          'Same shadcn CLI. Live Eve example (13 Aug 2026): `npx shadcn@latest add @agentcn/eve/deep-search`',
+      },
+      {
+        criterion: 'Inspect files before install',
+        left: 'Yes. Files, dependencies, author, and command on every agent page.',
+        right:
+          'Recipe docs: Composition file tree, Manual source, optional live preview (needs an API key). Not an inspect-files UI on the catalog listing.',
+      },
+      {
+        criterion: 'Author identity',
+        left: 'GitHub-verified author profiles',
+        right:
+          'Not surfaced as GitHub-verified author profiles on recipe pages (checked 13 Aug 2026)',
+      },
+      {
+        criterion: 'Publish path',
+        left: 'Reviewed pull request. First-party docs: [/docs/publishing](/docs/publishing)',
+        right:
+          'GitHub README: fork and open a PR. No first-party publishing docs on agentcn.run as of 13 Aug 2026',
+      },
+      {
+        criterion: 'Catalog extras',
+        left: 'Browse, search, leaderboard, favorites, publishing docs',
+        right:
+          'Docs agent list and changelog. No leaderboard, favorites, or author pages in the public docs index',
+      },
+      {
+        criterion: 'After install',
+        left: 'You own the files. No runtime dependency on evex.',
+        right:
+          'You own the copied files (stated on their installation docs). Same class of write-to-disk outcome.',
+      },
+      {
+        criterion: 'Hosted agent runtime',
+        left: 'No',
+        right: 'No',
+      },
+      {
+        criterion: 'Price',
+        left: 'Free, MIT',
+        right:
+          'Free. GitHub lists MIT. No paid tier on agentcn.run (checked 13 Aug 2026)',
+      },
+    ],
+    comparisonBottomLine:
+      'If you want inspect-before-install and a PR-owned catalog, use evex. If you already live in agentcn, the install mechanic is the same class of tool. Do not treat star count as quality.',
+    sections: [
+      {
+        heading: 'What an Eve agent registry is',
+        body: [
+          'An Eve agent registry is a catalog of reusable agents Eve developers can inspect and install as source files. Instead of copying folders from GitHub by hand, you run a shadcn CLI command that writes the agent files into your project.',
+          'evex is that kind of registry for Eve. Browse the catalog, open an agent page, preview the files, then install with `npx shadcn@latest add @evex/<slug>`. After install you own the files. There is no hosted agent runtime. See [/docs](/docs) for the product overview.',
+        ],
+      },
+      {
+        heading: 'Same install mechanic, different product',
+        body: [
+          'evex and agentcn both install through the shadcn CLI. On evex the command is always `npx shadcn@latest add @evex/<slug>`. On agentcn, a live Eve example checked on 13 Aug 2026 is `npx shadcn@latest add @agentcn/eve/deep-search`.',
+          'The shared mechanic does not make the products identical. evex is built around browse, inspect, install, and publish for Eve agents. agentcn ships recipes across frameworks and leans on recipe docs plus optional live preview. Choose on inspectability and the publish path, not on which CLI wrapper looks familiar.',
+        ],
+      },
+      {
+        heading: 'Inspect before you install',
+        body: [
+          'On every evex agent page you can preview files, dependencies, author identity, and the install command before you run anything. That inspect-before-install loop is the trust surface: you review what will land under `agent/` first.',
+          'agentcn recipe docs expose a Composition file tree, Manual source, and an optional live preview that needs an API key. That is useful documentation, but it is not the same as an inspect-files UI on the catalog listing. If file preview on the listing page is the decision gate, evex matches that job more directly.',
+        ],
+      },
+      {
+        heading: 'How agents get into the catalog',
+        body: [
+          'evex agents enter the catalog through a reviewed pull request. First-party publishing docs live at [/docs/publishing](/docs/publishing). Canonical agent metadata and files stay in the repository; the database stores runtime state only.',
+          'agentcn publishing, per its GitHub README, is also fork-and-open-a-PR. As of 13 Aug 2026 there were no first-party publishing docs on agentcn.run. Both paths can accept community work. evex makes the PR-owned path a first-class product surface with docs, author profiles, and CODEOWNERS.',
+        ],
+      },
+      {
+        heading: 'When to pick which',
+        body: [
+          'Pick evex when you want inspect-before-install, GitHub-verified author profiles, leaderboard and favorites, and a documented PR publish path for Eve agents.',
+          'Stay with agentcn when you already live in that catalog or need its mixed-framework recipe set. The install mechanic is the same class of tool. Do not treat star count, install totals, or community-size bragging as quality.',
+          'Copy-paste from GitHub remains fine for a one-off experiment. It falls short when you want a repeatable command, dependency prompts, and a page others can reinstall from. Use [/docs/installation](/docs/installation) when you are ready for the registry path.',
+        ],
+      },
+      {
+        heading: 'How to install from evex',
+        body: [
+          '1. Start from an Eve project root (create one with `npx eve@latest init` if needed). Eve requires Node.js 24 or newer.',
+          '2. Pick an agent on evex and preview its files, dependencies, and author on the agent page.',
+          '3. Run `npx shadcn@latest add @evex/<slug>` from the project root. Example: `npx shadcn@latest add @evex/code-reviewer`.',
+          '4. Own the written files: fill `.env.example` when present, read the installed README, and run evals under `evals/` before you trust the agent in production.',
+          'Never the `eve` CLI `add` subcommand. Never a URL install as the command you publish or paste into docs.',
+        ],
+      },
+    ],
+    decisionRows: [
+      {
+        choice: 'evex',
+        useWhen:
+          'You want inspect-before-install, GitHub-verified authors, and a PR-owned Eve catalog with first-party publishing docs.',
+        avoidWhen:
+          'You need a multi-framework recipe catalog outside Eve and already standardize on agentcn.',
+      },
+      {
+        choice: 'agentcn',
+        useWhen:
+          'You already live in agentcn or need its mixed-framework recipes with the same class of shadcn install.',
+        avoidWhen:
+          'Your decision gate is file preview on every catalog page plus a documented PR publish path for Eve-only agents.',
+      },
+      {
+        choice: 'Copy-paste from GitHub',
+        useWhen:
+          'You are doing a one-off experiment and do not need a repeatable install command.',
+        avoidWhen:
+          'You want dependency prompts, a stable slug, and a page teammates can reinstall from.',
+      },
+    ],
+    examples: [
+      {
+        label: 'evex inspect-then-install',
+        body: 'Open an agent page on evex, preview every file and dependency, confirm the GitHub-verified author, then run `npx shadcn@latest add @evex/<slug>` and own the files in your Eve project.',
+      },
+      {
+        label: 'agentcn mixed-framework',
+        body: 'Use agentcn when the recipe you need is already there across Eve or other frameworks it documents, accepting recipe-doc composition trees and optional live preview instead of an inspect-files catalog UI.',
+      },
+    ],
+    faqs: [
+      {
+        question: 'What is the difference between evex and agentcn?',
+        answer:
+          'Both are Eve-capable agent registries that install with the shadcn CLI. evex adds inspect-before-install on every agent page, GitHub-verified author profiles, and first-party publish-via-PR docs. agentcn emphasizes recipe docs, changelog, and mixed-framework recipes.',
+      },
+      {
+        question: 'How do I install an agent from evex?',
+        answer:
+          'From your Eve project root, run `npx shadcn@latest add @evex/<slug>`. Preview files on the agent page first. See [/docs/installation](/docs/installation) for prerequisites and post-install steps.',
+      },
+      {
+        question: 'Is evex an agent marketplace?',
+        answer:
+          'No. evex is a community registry for reusable Eve agent source files. There is no commerce layer, paid tier, or hosted runtime.',
+      },
+      {
+        question: 'How do I publish an agent to evex?',
+        answer:
+          'Open a reviewed pull request with the agent package. First-party steps are in [/docs/publishing](/docs/publishing). Canonical files stay in the repository.',
+      },
+      {
+        question: 'Does evex run the agent after install?',
+        answer:
+          'No. Install writes source into your project. You own the files and run them in your Eve app. There is no runtime dependency on evex.',
       },
     ],
   },

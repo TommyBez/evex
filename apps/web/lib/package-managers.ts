@@ -21,10 +21,19 @@ export function parsePackageManager(
   return match ? match.id : DEFAULT_PACKAGE_MANAGER
 }
 
+// Canonical public install command. Always the npx form — product surfaces
+// that must not rotate package managers (hero, sticky CTA, SEO) use this.
+export function buildInstallCommand(slug: string): string {
+  return `npx shadcn@latest add @evex/${slug}`
+}
+
 export function buildInstallCommandForManager(
   manager: PackageManagerId,
   slug: string,
 ): string {
+  if (manager === 'npm') {
+    return buildInstallCommand(slug)
+  }
   const match = PACKAGE_MANAGERS.find((entry) => entry.id === manager)
   const runner = match?.runner ?? 'npx'
   return `${runner} shadcn@latest add @evex/${slug}`
