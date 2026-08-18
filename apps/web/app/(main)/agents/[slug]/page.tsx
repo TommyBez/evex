@@ -636,7 +636,7 @@ function AgentDetailSkeleton() {
           <Skeleton className="h-4 w-full max-w-48" />
         </div>
       </div>
-      <Skeleton className="mt-6 h-28 rounded-md border border-border" />
+      <Skeleton className="mt-6 h-[10.5rem] rounded-md border border-border sm:h-44" />
       <Skeleton className="mt-8 h-28 rounded-md border border-border" />
       <Skeleton className="mt-8 h-32 rounded-md border border-border" />
       <Skeleton className="mt-8 h-64 rounded-md border border-border" />
