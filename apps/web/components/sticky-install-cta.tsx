@@ -8,9 +8,11 @@ import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard'
 import { buildInstallCommand } from '@/lib/package-managers'
 
 /**
- * Above-the-fold install affordance pinned under the agent title. Always shows
- * the canonical `npx shadcn@latest add @evex/<slug>` form — package-manager
- * tabs live on the secondary install card below, not here.
+ * Above-the-fold install affordance under the agent title. Sticky on sm+ only —
+ * on small viewports it stays in document flow so MobileInstallBar remains the
+ * sole sticky install control. Always shows the canonical
+ * `npx shadcn@latest add @evex/<slug>` form; package-manager tabs live on the
+ * secondary install card below, not here.
  */
 export function StickyInstallCta({
   slug,
@@ -45,7 +47,8 @@ export function StickyInstallCta({
     <aside
       aria-label="Install"
       className={cn(
-        'sticky top-14 z-30 -mx-4 border-border border-b bg-background/95 px-4 py-3 backdrop-blur-md sm:-mx-0 sm:rounded-md sm:border sm:px-5 sm:py-4 sm:shadow-[var(--shadow-card)]',
+        // In-flow card on mobile; sticky under the site header from sm up.
+        'rounded-md border border-border bg-background px-4 py-3 shadow-[var(--shadow-card)] sm:sticky sm:top-14 sm:z-30 sm:bg-background/95 sm:px-5 sm:py-4 sm:backdrop-blur-md',
         className,
       )}
     >
