@@ -1,155 +1,171 @@
 # Product Marketing Context
 
-*Last updated: 2026-06-19*
+*Last updated: 2026-08-12*
 
-> Auto-drafted from the repository. Replace assumptions, TBDs, and internal language with customer research, real objections, and live business metrics as they become available.
+> Auto-drafted via the product-marketing skill (Step 3) from README, homepage/docs copy, gtm/STATE.md, and the directory shortlist. Prefer this file for positioning and voice. Prefer `gtm/STATE.md` for live metrics and open GTM decisions. Tommy’s edits always win. Replaces the stale 2026-06-19 “evex-new” brief.
 
 ## Product Overview
-**One-liner:** evex-new is the eve agent registry: a community catalog where developers discover, publish, and install reusable eve agent configurations with a shadcn command.
+**One-liner:** evex is the open registry for Eve agents: browse community agents, inspect every file, install with one `shadcn` command.
 
-**What it does:** evex-new lets developers browse community-built agents, inspect the files each agent will write into the `agent/` directory of an eve project, and install them through a shadcn-compatible registry flow. It also gives authors a way to publish their own agents, optionally import a public GitHub folder, and build reputation through author profiles, install counts, and the leaderboard.
+**What it does:** evex packages reusable Eve agent configurations as shadcn-compatible registry items. Developers browse the catalog, preview every file and dependency before install, then add an agent with `npx shadcn@latest add @evex/<slug>`. Authors publish by pull request so every agent stays code-owned and reviewed. After install, the agent runs from files in the project with no runtime dependency on evex.
 
-**Product category:** Developer tool, agent registry, shadcn-compatible distribution layer for eve agents.
+**Product category:** Eve agent registry / shadcn-compatible agent distribution (developers search “eve agents,” “eve registry,” “install eve agent”).
 
-**Product type:** Community registry / developer marketplace.
+**Product type:** Community registry (catalog + install + publish). Not a hosted agent runtime. Not a paid marketplace.
 
-**Business model:** Not explicit in the repo today. The current product appears free and self-serve; pricing and monetization are TBD.
+**Business model:** Free and open source (MIT). No paid tier today. Do not invent pricing in copy.
 
 ## Target Audience
-**Target companies:** AI-native product teams, indie developers, and engineering teams already building with eve or evaluating reusable agent workflows.
+**Target companies:** Indie developers, AI-native product teams, and engineering orgs already building on (or evaluating) Eve, Vercel’s agent framework.
 
-**Decision-makers:** Primary users are individual developers and agent authors. Secondary stakeholders are engineering managers, DevEx/platform leads, and founders who want reusable agent workflows without building every agent from scratch.
+**Decision-makers:** Primary: individual Eve developers and agent authors. Secondary: DevEx/platform leads and founders who want reusable agent patterns without every teammate reinventing the `agent/` folder.
 
-**Primary use case:** Install a useful eve agent into a project without hand-writing the config, instructions, and tool files.
+**Primary use case:** Find a useful Eve agent, inspect what it will write into the project, install it with one command.
 
 **Jobs to be done:**
-- Find a ready-made eve agent for a specific workflow and install it quickly.
-- Evaluate what an agent actually does before trusting it in a project.
-- Publish and share an agent configuration so others can reuse it.
+- Find a ready-made Eve agent for a workflow and install it quickly.
+- Evaluate what an agent will add before trusting it.
+- Publish an agent so others can reuse it through a standard path.
 
 **Use cases:**
-- Add a coding, research, support, data, productivity, or devops agent to an eve project.
-- Turn a public GitHub agent folder into a reusable registry item.
-- Discover what the community is using through categories, author pages, installs, and the leaderboard.
+- Add a coding, devops, productivity, research, support, marketing, or data agent to an Eve app.
+- Publish under `registry/<slug>` via PR (see https://evex.sh/docs/publishing).
+- Discover agents through categories, author pages, favorites, and the leaderboard.
 
 ## Personas
 | Persona | Cares about | Challenge | Value we promise |
 |---------|-------------|-----------|------------------|
-| Eve developer | Speed, clarity, low setup friction | Building or wiring an agent from scratch takes time and creates uncertainty | Find an agent, inspect the files, and install it with a repeatable command |
-| Agent author | Reach, credibility, reuse | Sharing agent folders through repos or snippets is manual and hard to standardize | Publish once, get a clean registry page, and let others install your work easily |
-| DevEx / platform lead | Standardization, reuse, lower support burden | Teams reinvent the same agent scaffolding and pass around inconsistent folders | Provide a common distribution path and a visible catalog of reusable agents |
-| Engineering manager / founder | Faster experimentation, leverage from the team | AI-agent work can become one-off, fragile, and hard to scale across projects | Make successful agent patterns discoverable and reusable across the team |
+| Eve developer (User) | Speed, clarity, low setup friction | Wiring an agent from scratch is slow and uncertain | Find an agent, inspect the files, install with a repeatable command |
+| Agent author (Champion) | Reach, credibility, reuse | Sharing folders via repos/snippets is manual and inconsistent | Publish once via PR, get a registry page, GitHub-tied identity |
+| DevEx / platform lead (Technical influencer) | Standardization, reuse | Teams reinvent the same agent scaffolding | Common distribution path and a visible catalog |
+| Eng manager / founder (Decision maker) | Faster experimentation | Agent work becomes one-off and hard to scale | Successful patterns become discoverable and reusable |
 
 ## Problems & Pain Points
-**Core problem:** Reusable eve agents are hard to discover, evaluate, standardize, and install. Without a registry, teams end up copying folders from docs, gists, or GitHub by hand.
+**Core problem:** Reusable Eve agents are hard to discover, evaluate, standardize, and install. Without a registry, people copy folders from docs, gists, or GitHub by hand.
 
 **Why alternatives fall short:**
-- GitHub repos and snippets are not installable in one step.
-- Copy-pasting agent files makes dependencies, paths, and setup easy to miss.
-- Framework docs help developers start, but they do not solve discovery or distribution of community agents.
-- Private folders and internal snippets are hard to share, compare, and reuse across teams.
+- **agentcn** (closest direct): same `shadcn` install mechanic and larger star count today; thinner product surface today (catalog UX, file preview, author profiles, leaderboard, favorites, first-party publishing docs) versus evex’s full registry loop and PR-owned catalog.
+- **awesome-eve / eveagents.dev-style lists:** discovery without one-command install or inspect-before-install.
+- **Copy-paste from GitHub / docs:** no catalog, no preview UX, no repeatable `@evex/<slug>` path; easy to miss dependencies and layout.
+- Framework docs help you start; they do not solve distribution of community agents.
 
-**What it costs them:** Slower time to first useful agent, duplicated setup work, lower reuse, configuration mistakes, and less confidence in what an installed agent will actually create in the project.
+**What it costs them:** Slower time to first useful agent, duplicated setup, missed dependencies, low reuse, low confidence in what lands in the repo.
 
-**Emotional tension:** Developers want a working agent, not another half-documented folder to wire up by hand. The tension is speed versus trust.
+**Emotional tension:** Developers want a working agent, not another half-documented folder. Speed versus trust.
 
 ## Competitive Landscape
-**Direct:** No canonical direct competitor list is captured in the repo yet. The closest direct competition is any catalog or registry focused on reusable agent configurations for AI frameworks. This needs explicit market validation.
+**Direct:** agentcn (shadcn-labs): same install mechanic and larger star count today; thinner product surface today versus evex’s full registry loop. Also atom-eve, eve-directory (nolly-studio), bergside/awesome-eve-agents + eveagents.dev (own CLI): competing “Eve registry / catalog” claims with thinner browse/inspect/publish loops or list+CLI hybrids.
 
-**Secondary:** GitHub repos, starter templates, docs snippets, and internal folder sharing solve the same problem but fall short because they are manual, inconsistent, and harder to evaluate before install.
+**Secondary:** awesome-eve lists, GitHub folders, starter templates, docs snippets — discovery or one-off copy without standardized install + file preview.
 
-**Indirect:** Building every agent from scratch, or avoiding specialized agents entirely, falls short because it slows experimentation and reduces reuse.
+**Indirect:** Build every agent from scratch, or avoid specialized agents entirely — slower experimentation and less reuse.
 
 ## Differentiation
 **Key differentiators:**
-- One-command install through shadcn, with optional `@evex-new` namespace setup.
-- eve-native file layout under `agent/`.
-- Full file preview before install.
-- Automatic npm dependency declaration support.
-- GitHub folder import for publishers.
-- Install tracking, author pages, and a public leaderboard.
+- One-command install: always `npx shadcn@latest add @evex/<slug>` (canonical; never the URL form as hero copy).
+- Inspect-before-install: files, dependencies, author, and command on every agent page.
+- Code-owned publish path: agents live in source and ship through reviewed pull requests.
+- Full product surface: browse/search/sort, author profiles, favorites, leaderboard, publishing docs.
+- Listed in the official shadcn open registry index as `@evex` (no registry config required).
+- After install: no runtime dependency on evex; you own the files.
 
-**How we do it differently:** Instead of treating agents as copy-paste examples, evex-new packages them as registry items developers can browse, inspect, install, and publish in a consistent format.
+**How we do it differently:** Treat agents as auditable registry items (browse → inspect → install → own), not as opaque bundles or link dumps.
 
-**Why that's better:** Developers get faster setup, lower risk, a clearer trust surface, and an easier path from individual experiments to reusable community assets.
+**Why that's better:** Faster setup with a clearer trust surface, and a path from individual experiments to reusable, reviewable community assets.
 
-**Why customers choose us:** They want the fastest path from "I need an agent for this job" to "it is in my eve project and I can inspect every file."
+**Why customers choose us:** Fastest path from “I need an agent for this job” to “it’s in my Eve project and I can see every file.”
 
 ## Objections
 | Objection | Response |
 |-----------|----------|
-| "I can just copy this from GitHub." | Copying works once. evex-new makes the install repeatable, preserves the expected `agent/` structure, surfaces dependencies, and keeps the agent browseable for the next person too. |
-| "I do not trust community agents." | evex-new leans into transparent files, author identity, and install counts so users can inspect exactly what they are adding before they run it. |
-| "We are not using eve." | evex-new is built specifically for eve projects. If a team is not on eve, they are outside the best-fit audience today. |
+| “I can just copy this from GitHub.” | Copying works once. evex makes install repeatable, preserves the `agent/` layout, surfaces dependencies, and keeps the agent browseable for the next person. |
+| “I do not trust community agents.” | Transparent files, GitHub-verified author identity, PR review. Inspect exactly what you add before you run the command. |
+| “We are not using Eve.” | evex is Eve-native. Outside Eve, you are outside the best-fit audience today. |
+| “Isn’t this just agentcn?” | Same install mechanic, different product. evex is the full registry loop (preview, profiles, leaderboard, favorites, publish-via-PR). Compete on transparency and the loop, not star count. |
+| “Why so few agents / authors?” | Honest: early. Quality and the publish path matter more than inflating the catalog. Point authors to https://evex.sh/docs/publishing. |
 
-**Anti-persona:** Non-technical end users, teams looking for a hosted agent runtime, and teams not using eve.
+**Anti-persona:** Non-technical end users; teams looking for a hosted agent runtime or “autonomous employee”; teams not using Eve; consumer “there’s an AI for that” browsers with no Eve context.
 
 ## Switching Dynamics
-**Push:** Manual copy-paste setup, inconsistent agent folders, low discoverability, unclear dependencies, and repeated reinvention.
+**Push:** Manual copy-paste, inconsistent folders, low discoverability, unclear dependencies, repeated reinvention.
 
-**Pull:** One-command install, transparent file previews, community discovery, install/social proof, and easy publishing.
+**Pull:** One-command install, file preview, GitHub-verified authors, PR review, catalog + leaderboard, official `@evex` namespace.
 
-**Habit:** Teams already have private snippets, GitHub folders, or a "we will build it ourselves" default.
+**Habit:** Private snippets, “we’ll build it ourselves,” bookmarking random GitHub folders, defaulting to whichever recipe repo they already starred.
 
-**Anxiety:** Concerns about agent quality, security, maintenance, and whether a community agent will actually fit the project.
+**Anxiety:** Agent quality, security, maintenance, fit for this project.
 
 ## Customer Language
-Current language below is inferred from product copy and UX. Replace with verbatim customer quotes once you have interviews or support data.
-
 **How they describe the problem:**
 - "I want an agent that is one command away."
-- "I need a ready-made eve agent, not another folder to wire up by hand."
 - "Show me what files this agent will add before I install it."
+- "I need a ready-made Eve agent, not another folder to wire up."
 
 **How they describe us:**
 - "the eve agent registry"
-- "Install Community Agents with One Command"
-- "Browse -> pick -> copy -> install"
+- "Install community agents with one command"
+- "Browse → inspect → install"
+- "Preview every file before install, then add any agent with one shadcn command." (homepage)
 
-**Words to use:** registry, install, publish, community agents, eve project, agent configuration, one command, preview files, install count.
+**Words to use:** evex, Eve, registry, install, publish, community agents, one command, preview/inspect files, `@evex/<slug>`, pull request, code-owned, GitHub-verified, leaderboard, shadcn.
 
-**Words to avoid:** hosted agent platform, no-code, autonomous employee, plug-and-play magic, full marketplace language unless commerce becomes part of the story.
+**Words to avoid:** `evex-new`, `@evex-new`; URL install form `https://evex.sh/r/<slug>` as hero copy; `eve add https://www.evex.sh/r/<slug>.json` (never); hosted agent platform; no-code; autonomous employee; plug-and-play magic; marketplace/commerce language (unless commerce becomes real); inflated “thriving community” claims while supply is still mono-author; raw DB install totals as social proof; AI clichés and stock emphasis; em dashes in drafts Tommy will publish.
 
 **Glossary:**
 | Term | Meaning |
 |------|---------|
-| eve | The framework evex-new is built around and distributed into |
-| evex-new | The registry/community layer for reusable eve agents |
-| agent | A bundle of config, instructions, and optionally tools under `agent/` |
-| registry item | The shadcn-compatible package representation of an agent |
-| namespace setup | The one-time `@evex-new` registry configuration step |
-| install count | Public signal of how often an agent has been added |
+| Eve | Vercel’s OSS agent framework (eve.dev); defines the `agent/` convention |
+| evex | The open registry / community distribution layer for reusable Eve agents |
+| agent | Bundle of config, instructions, skills, tools, and optional subagents under `agent/` |
+| registry item | shadcn-compatible package representation of an agent |
+| `@evex/<slug>` | Canonical install identifier (official shadcn namespace) |
+| north star | Unique non-author users who copy an install command |
 
 ## Brand Voice
 **Tone:** Developer-native, direct, concise, credible.
 
-**Style:** Technical but readable. Prefer commands, file paths, concrete workflows, and plain language over hype.
+**Style:** Technical but readable. Prefer commands, paths, concrete workflows. No hype.
 
 **Personality:** Precise, transparent, pragmatic, community-driven, low-fluff.
 
+**Copy rules (Tommy / gtm STATE):**
+- LinkedIn drafts in **Italian**; X drafts in **English**.
+- Install command always `npx shadcn@latest add @evex/<slug>` only. Never the URL form as hero copy. Never `eve add https://www.evex.sh/r/<slug>.json`.
+- Avoid AI clichés and stock emphasis phrases.
+- Prefer periods/commas over em dashes in drafts Tommy will publish.
+- Typefully drafts always include a suggested publish datetime + one-line rationale in a comment.
+- Include a link to evex.sh or the repo in social post bodies.
+- Social reply drafts are for Tommy to post; agents never publish replies.
+
 ## Proof Points
-**Metrics:** The homepage surfaces live counts for agents, installs, and authors. Install counts are tracked when registry items are fetched and are used in the leaderboard. Actual business metrics are not documented in the repo.
+**Metrics:**
+- North star (confirmed): unique non-author users who copy an install command (`agent_install_command_copied` with `viewer_is_author: false` in PostHog). Live baselines and ops numbers live in `gtm/STATE.md` only.
+- Do **not** cite raw DB/`agent_install_metric` totals (~1.7k) as social proof: historically bot-exposed (registry crawlers such as BlockDex). Prefer filtered PostHog north star when it moves.
+- Do **not** claim a large multi-author community while the catalog is small and mono-author (11 agents, TommyBez at last STATE refresh). Multi-author supply is the goal, not current proof.
+- Visit ≠ install: after launch traffic, the story is inspect files → copy this exact command.
 
-**Customers:** No customer logos or named design partners are visible in the repo yet.
+**Customers:** None named yet. Do not invent logos.
 
-**Testimonials:** No testimonials are captured in the repo yet.
-
-> "Review the generated files and configure any credentials required by the agent before running it."
->
-> Current product docs language that reinforces transparency and trust.
+**Testimonials:** None captured yet. Do not invent quotes.
+> "Review the generated files and configure any credentials required by the agent before running it." — product docs language (transparency, not a customer quote)
 
 **Value themes:**
 | Theme | Proof |
 |-------|-------|
-| Faster time-to-install | Hero demo and agent pages show setup once plus install-agent commands |
-| Transparency before trust | Agent detail pages expose files, descriptions, dependencies, author identity, and installs |
-| Reuse and distribution | The publish flow turns agent folders into reusable registry items |
-| Community discovery | Browse, categories, author pages, install counts, and the leaderboard |
-| Low-friction authoring | GitHub folder import prefills files for review before publishing |
+| Faster time-to-install | Canonical `npx shadcn@latest add @evex/<slug>` on every agent page; `@evex` in official shadcn index |
+| Transparency before trust | Agent pages expose files, deps, author, command; docs: audit before you trust |
+| Code-owned distribution | Agents in `registry/`, ship by PR; DB holds runtime state only |
+| Own the files after install | No runtime dependency on evex once written |
+| Author path | https://evex.sh/docs/publishing |
+
+**Messaging risks (active):**
+1. Community overclaim while supply is mono-author.
+2. Poisoned install social proof from bot traffic on `/r/*`.
+3. Awareness fluff over CTA: the gap after launch traffic is the trust/copy step on agent pages.
 
 ## Goals
-**Business goal:** The inferred goal is to grow both sides of the registry: more quality agents, more installs, and more repeat publishing from authors.
+**Business goal:** Grow both sides of the registry: more quality agents from more authors, more non-author installs, repeat publishers.
 
-**Conversion action:** Primary consumer action is to add the registry and install an agent. Primary creator action is to sign up and publish an agent.
+**Conversion action:** Primary (demand): non-author copies the install command (north star) and adds an agent to an Eve project. Secondary (supply): open a PR that publishes or updates an agent / land on publishing docs.
 
-**Current metrics:** Not documented in the repo beyond live product counters and install tracking.
+**Current metrics:** See `gtm/STATE.md` (launch day 2026-08-11 ended north star = 0; do not invent numbers here).
