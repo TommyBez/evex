@@ -15,6 +15,7 @@ import { FavoriteButton } from '@/components/favorite-button'
 import { InstallCommand } from '@/components/install-command'
 import { JsonLd } from '@/components/json-ld'
 import { MobileInstallBar } from '@/components/mobile-install-bar'
+import { StickyInstallCta } from '@/components/sticky-install-cta'
 import {
   compareRelatedAgents,
   countFilesByKind,
@@ -209,10 +210,6 @@ async function AgentDetailContent({ agent }: { agent: AgentWithAuthor }) {
               />
             </Suspense>
           </div>
-          <AgentDefinitionSection agent={agent} />
-          <p className="mt-1 max-w-2xl text-pretty text-muted-foreground">
-            <AgentDescription>{agent.description}</AgentDescription>
-          </p>
           <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-muted-foreground text-sm">
             {agent.authorUsername ? (
               <Link
@@ -244,10 +241,24 @@ async function AgentDetailContent({ agent }: { agent: AgentWithAuthor }) {
         </div>
       </div>
 
+      <StickyInstallCta
+        agentAuthor={agent.authorUsername}
+        className="mt-6"
+        slug={agent.slug}
+        viewerIsAuthor={viewerIsAuthor}
+      />
+
+      <AgentDefinitionSection agent={agent} />
+      <p className="mt-1 max-w-2xl text-pretty text-muted-foreground">
+        <AgentDescription>{agent.description}</AgentDescription>
+      </p>
+
       <Card className="mt-8 w-full min-w-0 rounded-md border border-border p-5 shadow-[var(--shadow-card)] ring-0">
-        <h2 className="font-medium text-foreground text-sm">Install</h2>
+        <h2 className="font-medium text-foreground text-sm">
+          Other package managers
+        </h2>
         <p className="mt-1 text-muted-foreground text-sm">
-          Run this command in your eve app to add the agent.
+          Prefer pnpm, yarn, or bun? Copy the matching install command.
         </p>
         <div className="mt-4">
           <InstallCommand
@@ -625,6 +636,7 @@ function AgentDetailSkeleton() {
           <Skeleton className="h-4 w-full max-w-48" />
         </div>
       </div>
+      <Skeleton className="mt-6 h-[10.5rem] rounded-md border border-border sm:h-44" />
       <Skeleton className="mt-8 h-28 rounded-md border border-border" />
       <Skeleton className="mt-8 h-32 rounded-md border border-border" />
       <Skeleton className="mt-8 h-64 rounded-md border border-border" />
