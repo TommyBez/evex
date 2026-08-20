@@ -21,6 +21,7 @@ import {
   countFilesByKind,
   getAgentDefinitionBlock,
   getAgentInstallSummaryDescription,
+  getAgentJobIntentLede,
   getAgentMetaDescription,
   getAgentMetadataTitle,
   getAgentOgImageAlt,
@@ -172,6 +173,7 @@ async function AgentDetailContent({ agent }: { agent: AgentWithAuthor }) {
   const moreFromAuthorCount = authorAgents.filter(
     (a) => a.id !== agent.id,
   ).length
+  const jobIntentLede = getAgentJobIntentLede(agent.slug)
 
   return (
     <main className="mx-auto w-full min-w-0 max-w-4xl px-4 pt-10 pb-28 sm:pb-10">
@@ -210,6 +212,11 @@ async function AgentDetailContent({ agent }: { agent: AgentWithAuthor }) {
               />
             </Suspense>
           </div>
+          {jobIntentLede ? (
+            <p className="mt-2 text-muted-foreground text-sm">
+              {jobIntentLede}
+            </p>
+          ) : null}
           <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-muted-foreground text-sm">
             {agent.authorUsername ? (
               <Link

@@ -92,7 +92,16 @@ export function getAgentInstallSummaryDescription({
   }
 }
 
+// Job-intent title for the code-reviewer play only. Other slugs keep the
+// name-based budget logic below. Length is 48 so ` · evex` stays ≤ 60.
+const CODE_REVIEWER_METADATA_TITLE =
+  'Eve PR review agent - install @evex/code-reviewer'
+
 export function getAgentMetadataTitle(agent: AgentWithAuthor): string {
+  if (agent.slug === 'code-reviewer') {
+    return CODE_REVIEWER_METADATA_TITLE
+  }
+
   const installTitle = `${agent.name} - install @evex/${agent.slug}`
   if (installTitle.length <= METADATA_TITLE_BUDGET) {
     return installTitle
@@ -106,6 +115,14 @@ export function getAgentMetadataTitle(agent: AgentWithAuthor): string {
   // The layout template already appends the brand, so the fallback stays bare
   // to avoid rendering it twice.
   return agent.name
+}
+
+// Single lede under the agent H1. code-reviewer only; other slugs render none.
+export function getAgentJobIntentLede(slug: string): string | null {
+  if (slug === 'code-reviewer') {
+    return 'PR review agent for Eve.'
+  }
+  return null
 }
 
 // Replace `[text](destination)` with `text`, including destinations that use

@@ -5,7 +5,7 @@
       "name": "code-reviewer",
       "type": "registry:item",
       "title": "Code Reviewer",
-      "description": "Review GitHub pull requests from a native GitHub App channel. Mention `@code-reviewer` on a pull request to publish a GitHub review with inline comments, optional suggestion blocks, and Upstash-backed rate limiting for public repositories.",
+      "description": "Eve agent that reviews GitHub pull requests. Mention @code-reviewer on a PR to publish a GitHub review with inline comments on bugs and regressions, not style.",
       "categories": [
         "coding"
       ],
@@ -92,7 +92,7 @@
         "slug": "code-reviewer",
         "category": "coding",
         "createdAt": "2026-06-20T00:00:00.000Z",
-        "updatedAt": "2026-07-04T00:00:00.000Z",
+        "updatedAt": "2026-08-20T00:00:00.000Z",
         "docs": {
           "overview": [
             "Code Reviewer is an eve agent that reviews GitHub pull requests when someone mentions @code-reviewer in a PR comment or a review thread. It runs behind a native GitHub App channel: GitHub delivers the comment webhook to your deployed eve app at /eve/v1/github, and the agent replies by publishing a real GitHub review with inline comments anchored to the diff.",

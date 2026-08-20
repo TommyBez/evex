@@ -4,6 +4,7 @@ import {
   countFilesByKind,
   getAgentDefinitionBlock,
   getAgentInstallSummaryDescription,
+  getAgentJobIntentLede,
   getAgentMetaDescription,
   getAgentMetadataTitle,
   getAgentOgImageAlt,
@@ -100,6 +101,30 @@ describe('getAgentMetadataTitle', () => {
     expect(getAgentMetadataTitle(agent)).toBe('Short - install @evex/short')
   })
 
+  it('overrides the title for code-reviewer only', () => {
+    const agent = makeAgent({
+      name: 'Code Reviewer',
+      slug: 'code-reviewer',
+      title: 'Code Reviewer',
+    })
+    expect(getAgentMetadataTitle(agent)).toBe(
+      'Eve PR review agent - install @evex/code-reviewer',
+    )
+    expect(getAgentMetadataTitle(agent).length).toBeLessThanOrEqual(
+      METADATA_TITLE_BUDGET,
+    )
+  })
+
+  it('keeps the name-based pattern for other agents', () => {
+    const agent = makeAgent({
+      name: 'Eve Agent Builder',
+      slug: 'eve-agent-builder',
+    })
+    expect(getAgentMetadataTitle(agent)).toBe(
+      'Eve Agent Builder - install @evex/eve-agent-builder',
+    )
+  })
+
   it('never exceeds the metadata length budget', () => {
     const agent = makeAgent({
       name: 'A very long agent display name that keeps going',
@@ -116,6 +141,16 @@ describe('getAgentMetadataTitle', () => {
       slug: 'brand-visual-asset-generator',
     })
     expect(getAgentMetadataTitle(agent)).toBe('Brand Visual Asset Generator')
+  })
+})
+
+describe('getAgentJobIntentLede', () => {
+  it('returns the code-reviewer lede only', () => {
+    expect(getAgentJobIntentLede('code-reviewer')).toBe(
+      'PR review agent for Eve.',
+    )
+    expect(getAgentJobIntentLede('eve-agent-builder')).toBeNull()
+    expect(getAgentJobIntentLede('short')).toBeNull()
   })
 })
 
@@ -394,7 +429,11 @@ describe('registry agent titles fit the rendered title tag', () => {
 
       expect(rendered.length).toBeLessThanOrEqual(METADATA_TITLE_MAX_LENGTH)
       expect(title).not.toContain('| evex')
-      expect(title.startsWith(agent.name)).toBe(true)
+      if (agent.slug === 'code-reviewer') {
+        expect(title).toBe('Eve PR review agent - install @evex/code-reviewer')
+      } else {
+        expect(title.startsWith(agent.name)).toBe(true)
+      }
     })
   }
 })
