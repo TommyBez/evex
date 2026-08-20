@@ -71,7 +71,7 @@ export function StickyInstallCta({
         </Button>
       </div>
       <p className="mt-2 text-muted-foreground text-sm">
-        Inspect the files below before you run it.
+        Adds the files below to your Eve app. You own them after.
       </p>
     </aside>
   )
