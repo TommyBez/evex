@@ -70,9 +70,6 @@ export function StickyInstallCta({
           {copied ? 'Copied' : 'Copy command'}
         </Button>
       </div>
-      <p className="mt-2 text-muted-foreground text-sm">
-        Inspect the files below before you run it.
-      </p>
     </aside>
   )
 }
