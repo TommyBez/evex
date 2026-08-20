@@ -63,7 +63,11 @@ export function MobileInstallBar({
             type="button"
           >
             <span className="t-icon-swap" data-state={copied ? 'b' : 'a'}>
-              <Copy aria-hidden="true" className="t-icon size-4" data-icon="a" />
+              <Copy
+                aria-hidden="true"
+                className="t-icon size-4"
+                data-icon="a"
+              />
               <Check
                 aria-hidden="true"
                 className="t-icon size-4"
