@@ -210,6 +210,28 @@ describe('getAgentMetaDescription', () => {
     )
   })
 
+  it('keeps the full code-reviewer lead and install CTA under the SERP budget', () => {
+    const lead =
+      'Eve agent for GitHub PR review. Mention it on a PR for inline comments on bugs, not style.'
+    const agent = makeAgent({
+      description: lead,
+      slug: 'code-reviewer',
+    })
+    const description = getAgentMetaDescription(agent)
+    const install = buildInstallCommand('code-reviewer')
+
+    expect(description.length).toBeLessThanOrEqual(
+      METADATA_DESCRIPTION_MAX_LENGTH,
+    )
+    expect(description).toContain(lead)
+    expect(install).toBe('npx shadcn@latest add @evex/code-reviewer')
+    expect(description).toContain(install)
+    expect(description).not.toContain('publish a GitHub.')
+    expect(description).toBe(
+      `${lead} Install with npx shadcn@latest add @evex/code-reviewer.`,
+    )
+  })
+
   it('appends the shadcn install command when space allows', () => {
     const agent = makeAgent({
       description:
