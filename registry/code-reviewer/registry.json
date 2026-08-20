@@ -5,7 +5,7 @@
       "name": "code-reviewer",
       "type": "registry:item",
       "title": "Code Reviewer",
-      "description": "Review GitHub pull requests from a native GitHub App channel. Mention `@code-reviewer` on a pull request to publish a GitHub review with inline comments, optional suggestion blocks, and Upstash-backed rate limiting for public repositories.",
+      "description": "Eve agent that reviews GitHub pull requests. Mention @code-reviewer on a PR to publish a GitHub review with inline comments on bugs and regressions, not style.",
       "categories": [
         "coding"
       ],
