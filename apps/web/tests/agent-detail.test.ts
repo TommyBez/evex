@@ -210,6 +210,24 @@ describe('getAgentMetaDescription', () => {
     )
   })
 
+  it('returns the exact live code-reviewer SERP/OG meta description', () => {
+    const lead =
+      'Eve agent for GitHub PR review. Mention it on a PR for inline comments on bugs, not style.'
+    const expected =
+      'Eve agent for GitHub PR review. Mention it on a PR for inline comments on bugs, not style. Install with npx shadcn@latest add @evex/code-reviewer.'
+    const agent = makeAgent({
+      description: lead,
+      slug: 'code-reviewer',
+    })
+    const description = getAgentMetaDescription(agent)
+
+    expect(lead).not.toContain('Install with')
+    expect(expected.length).toBe(146)
+    expect(description.length).toBe(146)
+    expect(description).toBe(expected)
+    expect(description).not.toContain('publish a GitHub.')
+  })
+
   it('appends the shadcn install command when space allows', () => {
     const agent = makeAgent({
       description:
