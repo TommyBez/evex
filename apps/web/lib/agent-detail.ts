@@ -93,11 +93,12 @@ export function getAgentInstallSummaryDescription({
 }
 
 // Job-intent titles for first-party play pages. Other slugs keep the
-// name-based budget logic below. Lengths must leave room for ` · evex` (≤ 60).
+// name-based budget logic below. Locked overrides bypass the compact/fallback
+// budget so product copy wins; the layout still appends ` · evex` once.
 const CODE_REVIEWER_METADATA_TITLE =
   'Eve PR review agent - install @evex/code-reviewer'
 const GITHUB_ISSUE_MAINTAINER_METADATA_TITLE =
-  'Eve issue maintainer - @evex/github-issue-maintainer'
+  'Eve GitHub issue agent - install @evex/github-issue-maintainer'
 
 export function getAgentMetadataTitle(agent: AgentWithAuthor): string {
   if (agent.slug === 'code-reviewer') {
@@ -129,7 +130,7 @@ export function getAgentJobIntentLede(slug: string): string | null {
     return 'PR review agent for Eve.'
   }
   if (slug === 'github-issue-maintainer') {
-    return 'Issue maintainer for Eve.'
+    return 'GitHub issue agent for Eve.'
   }
   return null
 }

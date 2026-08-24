@@ -121,12 +121,14 @@ describe('getAgentMetadataTitle', () => {
       slug: 'github-issue-maintainer',
       title: 'GitHub Issue Maintainer',
     })
-    expect(getAgentMetadataTitle(agent)).toBe(
-      'Eve issue maintainer - @evex/github-issue-maintainer',
+    const title = getAgentMetadataTitle(agent)
+    expect(title).toBe(
+      'Eve GitHub issue agent - install @evex/github-issue-maintainer',
     )
-    expect(getAgentMetadataTitle(agent).length).toBeLessThanOrEqual(
-      METADATA_TITLE_BUDGET,
-    )
+    // Locked PMM copy intentionally exceeds METADATA_TITLE_BUDGET; the layout
+    // still appends ` · evex` once (must not be in the helper return value).
+    expect(title).not.toContain(METADATA_TITLE_SUFFIX)
+    expect(title.length).toBeGreaterThan(METADATA_TITLE_BUDGET)
   })
 
   it('keeps the name-based pattern for other agents', () => {
@@ -164,7 +166,7 @@ describe('getAgentJobIntentLede', () => {
       'PR review agent for Eve.',
     )
     expect(getAgentJobIntentLede('github-issue-maintainer')).toBe(
-      'Issue maintainer for Eve.',
+      'GitHub issue agent for Eve.',
     )
     expect(getAgentJobIntentLede('eve-agent-builder')).toBeNull()
     expect(getAgentJobIntentLede('short')).toBeNull()
@@ -486,16 +488,21 @@ describe('registry agent titles fit the rendered title tag', () => {
       const title = getAgentMetadataTitle(agent)
       const rendered = `${title}${METADATA_TITLE_SUFFIX}`
 
-      expect(rendered.length).toBeLessThanOrEqual(METADATA_TITLE_MAX_LENGTH)
       expect(title).not.toContain('| evex')
+      expect(title).not.toContain(METADATA_TITLE_SUFFIX)
       if (agent.slug === 'code-reviewer') {
         expect(title).toBe('Eve PR review agent - install @evex/code-reviewer')
+        expect(rendered.length).toBeLessThanOrEqual(METADATA_TITLE_MAX_LENGTH)
       } else if (agent.slug === 'github-issue-maintainer') {
         expect(title).toBe(
-          'Eve issue maintainer - @evex/github-issue-maintainer',
+          'Eve GitHub issue agent - install @evex/github-issue-maintainer',
+        )
+        expect(rendered).toBe(
+          'Eve GitHub issue agent - install @evex/github-issue-maintainer · evex',
         )
       } else {
         expect(title.startsWith(agent.name)).toBe(true)
+        expect(rendered.length).toBeLessThanOrEqual(METADATA_TITLE_MAX_LENGTH)
       }
     })
   }
