@@ -1,0 +1,236 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "items": [
+    {
+      "name": "github-issue-maintainer",
+      "type": "registry:item",
+      "title": "GitHub Issue Maintainer",
+      "description": "Labels GitHub issues, asks for missing repro, and emails a weekly digest.",
+      "categories": [
+        "coding"
+      ],
+      "dependencies": [
+        "@upstash/ratelimit@^2.0.8",
+        "@upstash/redis@^1.38.0",
+        "ai@^7.0.38",
+        "eve@^0.31.3",
+        "resend@^6.14.0",
+        "zod@4.3.6"
+      ],
+      "files": [
+        {
+          "path": ".env.example",
+          "type": "registry:file",
+          "target": "~/.env.example"
+        },
+        {
+          "path": "agent/agent.ts",
+          "type": "registry:file",
+          "target": "~/agent/agent.ts"
+        },
+        {
+          "path": "agent/channels/github.ts",
+          "type": "registry:file",
+          "target": "~/agent/channels/github.ts"
+        },
+        {
+          "path": "agent/instructions.md",
+          "type": "registry:file",
+          "target": "~/agent/instructions.md"
+        },
+        {
+          "path": "agent/lib/github-app.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/github-app.ts"
+        },
+        {
+          "path": "agent/lib/issue-config.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/issue-config.ts"
+        },
+        {
+          "path": "agent/lib/issue-rate-limit.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/issue-rate-limit.ts"
+        },
+        {
+          "path": "agent/lib/taxonomy.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/taxonomy.ts"
+        },
+        {
+          "path": "agent/lib/thin-issue.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/thin-issue.ts"
+        },
+        {
+          "path": "agent/schedules/weekly-issue-digest.ts",
+          "type": "registry:file",
+          "target": "~/agent/schedules/weekly-issue-digest.ts"
+        },
+        {
+          "path": "agent/skills/issue-triage/SKILL.md",
+          "type": "registry:file",
+          "target": "~/agent/skills/issue-triage/SKILL.md"
+        },
+        {
+          "path": "agent/tools/list_open_issues.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/list_open_issues.ts"
+        },
+        {
+          "path": "agent/tools/preview_digest_email.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/preview_digest_email.ts"
+        },
+        {
+          "path": "agent/tools/send_digest_email.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/send_digest_email.ts"
+        },
+        {
+          "path": "agent/tools/triage_issue.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/triage_issue.ts"
+        },
+        {
+          "path": "evals/ask-repro-thin-issue.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/ask-repro-thin-issue.eval.ts"
+        },
+        {
+          "path": "evals/evals.config.ts",
+          "type": "registry:file",
+          "target": "~/evals/evals.config.ts"
+        },
+        {
+          "path": "evals/ignore-pull-request.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/ignore-pull-request.eval.ts"
+        },
+        {
+          "path": "evals/label-clear-bug.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/label-clear-bug.eval.ts"
+        },
+        {
+          "path": "README.md",
+          "type": "registry:file",
+          "target": "~/agent/README.md"
+        }
+      ],
+      "meta": {
+        "slug": "github-issue-maintainer",
+        "category": "coding",
+        "createdAt": "2026-08-24T00:00:00.000Z",
+        "updatedAt": "2026-08-24T12:00:00.000Z",
+        "docs": {
+          "overview": [
+            "GitHub Issue Maintainer is an eve agent that triages newly opened GitHub issues through a native GitHub App channel. When an issue opens, GitHub delivers the webhook to your deployed eve app at /eve/v1/github, and the agent applies a small label taxonomy, then asks for missing reproduction details when the report is thin.",
+            "It is adjacent to Code Reviewer in the same GitHub App and issue-comment world, but it never reviews pull requests and never publishes GitHub PR reviews. Its job stops at issue hygiene: labeling, clarifying incomplete reports, and a weekly open-issue digest email through Resend.",
+            "Built-in Upstash-backed rate limiting keeps public deployments safe, with stricter defaults for public repositories than private ones. The weekly digest is a schedule, not a review workflow: it lists open issues and emails maintainers a concise HTML summary."
+          ],
+          "howItWorks": [
+            "A newly opened issue triggers the GitHub channel onIssue hook, or a user mentions @github-issue-maintainer on an issue timeline comment matching GITHUB_APP_SLUG.",
+            "The channel rejects pull request conversations and review threads, then checks Upstash rate limits for per-issue cooldown, per-user-per-issue cooldown, and daily repository quotas.",
+            "When allowed, the channel injects issue title, body, existing labels, and thin-issue gap hints into the turn context for the zai/glm-5.2 model.",
+            "The agent loads the issue-triage skill when needed, then calls triage_issue exactly once with taxonomy labels and an optional repro-request comment validated by Zod.",
+            "The channel claims publication in Redis to prevent duplicates, applies labels through the GitHub Issues API, and posts the repro ask as an issue comment when requested.",
+            "Separately, the weekly-issue-digest schedule calls list_open_issues, previews HTML with preview_digest_email, and sends through send_digest_email with confirmSend and an idempotency key."
+          ],
+          "useCases": [
+            {
+              "title": "Auto-label incoming bug and feature reports",
+              "body": "Install the GitHub App on team repositories so every new issue gets a bug, feature, docs, question, or chore label without a human sorting the inbox first. Maintainers open the board already grouped by type."
+            },
+            {
+              "title": "Ask for missing repro on thin reports",
+              "body": "Drive-by issues that say it does not work get a short comment asking for reproduction steps, expected versus actual behavior, and environment details, so maintainers are not stuck guessing."
+            },
+            {
+              "title": "Weekly open-issue digest for solo maintainers",
+              "body": "Every Monday the schedule emails a digest of open issues grouped by needs attention, recently updated, and stale, so freelancers and small teams can scan the backlog from their inbox."
+            },
+            {
+              "title": "Safe triage on public open-source repos",
+              "body": "Upstash-backed limits default to 15 triages per public repository per day with per-issue and per-user cooldowns, so drive-by mentions cannot exhaust your model budget."
+            }
+          ],
+          "requirements": [
+            {
+              "name": "GITHUB_APP_ID",
+              "body": "The App ID of the GitHub App you create under GitHub Settings, Developer settings, GitHub Apps. The app needs Metadata read, Issues read/write, and Contents read. Do not grant Pull requests write."
+            },
+            {
+              "name": "GITHUB_APP_PRIVATE_KEY",
+              "body": "The PEM private key generated from the GitHub App settings page. When stored as a single-line variable, replace literal newlines with \\n; eve normalizes that form at runtime."
+            },
+            {
+              "name": "GITHUB_WEBHOOK_SECRET",
+              "body": "A long random value set both in the GitHub App webhook configuration and in your deployment. A mismatch produces HTTP 401 responses at /eve/v1/github."
+            },
+            {
+              "name": "GITHUB_APP_SLUG",
+              "body": "The mention users type on GitHub, defaulting to github-issue-maintainer. It must match your GitHub App name so mentions trigger the agent."
+            },
+            {
+              "name": "GITHUB_APP_INSTALLATION_ID",
+              "body": "The installation id for the repository used by the weekly digest list_open_issues tool. Required for scheduled digest API reads."
+            },
+            {
+              "name": "KV_REST_API_URL",
+              "body": "Upstash Redis REST endpoint used by @upstash/ratelimit for cooldowns, daily quotas, and duplicate-publication claims. Provision it via Upstash or the Vercel Redis Marketplace integration."
+            },
+            {
+              "name": "KV_REST_API_TOKEN",
+              "body": "The matching Upstash REST token. Use a read-write token, not the read-only one, because the agent writes cooldown and triage publication keys."
+            },
+            {
+              "name": "ISSUE_DIGEST_REPO",
+              "body": "owner/repo for the weekly open-issue digest. The schedule lists open issues from this repository only."
+            },
+            {
+              "name": "ISSUE_DIGEST_FROM",
+              "body": "Verified Resend sender address used for the weekly digest email."
+            },
+            {
+              "name": "ISSUE_DIGEST_TO",
+              "body": "Comma-separated recipient list for the weekly digest email."
+            },
+            {
+              "name": "RESEND_API_KEY",
+              "body": "Resend API key used by send_digest_email after preview_digest_email confirms the payload."
+            },
+            {
+              "name": "AI_GATEWAY_API_KEY",
+              "body": "A model credential for the deployment, either a Vercel AI Gateway API key or AI Gateway OIDC, so the agent can call the zai/glm-5.2 model."
+            }
+          ],
+          "faqs": [
+            {
+              "question": "How do I install and trigger it?",
+              "answer": "Run npx shadcn@latest add @evex/github-issue-maintainer inside an eve app, deploy it over HTTPS, create a GitHub App pointing its webhook at /eve/v1/github, subscribe to Issues and Issue comments, install it on your repositories, then open a new issue or comment @github-issue-maintainer on an issue."
+            },
+            {
+              "question": "Does it review pull requests?",
+              "answer": "No. The channel ignores pull request conversations and review threads, and the agent has no PR review publication path. Use @evex/code-reviewer when you need GitHub PR reviews with inline comments."
+            },
+            {
+              "question": "Which labels does it apply?",
+              "answer": "Only bug, feature, docs, question, and chore. The taxonomy is documented in the package README and the issue-triage skill. Create those labels in the repository or allow the app to create them on first use."
+            },
+            {
+              "question": "How does the weekly digest work?",
+              "answer": "A cron schedule (default Mondays at 09:00 UTC) calls list_open_issues for ISSUE_DIGEST_REPO, composes HTML, previews with preview_digest_email, then sends through Resend with confirmSend and an idempotency key so retries never duplicate the email."
+            },
+            {
+              "question": "How do the rate limits work?",
+              "answer": "Defaults are one triage per issue every 15 minutes, one per user per issue every 30 minutes, 50 daily triages per private repository, and 15 per public repository. Tune with ISSUE_MAINTAINER_* variables, or disable with ISSUE_MAINTAINER_RATE_LIMIT_ENABLED=false for local development."
+            }
+          ]
+        }
+      },
+      "author": "TommyBez"
+    }
+  ]
+}

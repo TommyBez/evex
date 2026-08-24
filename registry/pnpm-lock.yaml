@@ -13,7 +13,7 @@ importers:
         version: 7.0.58(zod@4.4.3)
       eve:
         specifier: ^0.31.3
-        version: 0.31.3(@upstash/redis@1.38.0)(ai@7.0.58(zod@4.4.3))(just-bash@3.0.2)
+        version: 0.31.3(ai@7.0.58(zod@4.4.3))(just-bash@3.0.2)
       zod:
         specifier: 4.4.3
         version: 4.4.3
@@ -35,7 +35,7 @@ importers:
         version: 7.0.58(zod@4.4.3)
       eve:
         specifier: ^0.31.3
-        version: 0.31.3(@upstash/redis@1.38.0)(ai@7.0.58(zod@4.4.3))(just-bash@3.0.2)
+        version: 0.31.3(ai@7.0.58(zod@4.4.3))(just-bash@3.0.2)
     devDependencies:
       '@types/node':
         specifier: ^24
@@ -76,10 +76,38 @@ importers:
         version: 7.0.58(zod@4.4.3)
       eve:
         specifier: ^0.31.3
-        version: 0.31.3(@upstash/redis@1.38.0)(ai@7.0.58(zod@4.4.3))(just-bash@3.0.2)
+        version: 0.31.3(ai@7.0.58(zod@4.4.3))(just-bash@3.0.2)
       zod:
         specifier: ^4.4.3
         version: 4.4.3
+    devDependencies:
+      '@types/node':
+        specifier: ^24
+        version: 24.13.2
+      typescript:
+        specifier: 5.7.3
+        version: 5.7.3
+
+  github-issue-maintainer:
+    dependencies:
+      '@upstash/ratelimit':
+        specifier: ^2.0.8
+        version: 2.0.8(@upstash/redis@1.38.0)
+      '@upstash/redis':
+        specifier: ^1.38.0
+        version: 1.38.0
+      ai:
+        specifier: ^7.0.38
+        version: 7.0.58(zod@4.3.6)
+      eve:
+        specifier: ^0.31.3
+        version: 0.31.3(@upstash/redis@1.38.0)(ai@7.0.58(zod@4.3.6))(just-bash@3.0.2)
+      resend:
+        specifier: ^6.14.0
+        version: 6.16.0
+      zod:
+        specifier: 4.3.6
+        version: 4.3.6
     devDependencies:
       '@types/node':
         specifier: ^24
@@ -92,13 +120,13 @@ importers:
     dependencies:
       '@vercel/connect':
         specifier: ^0.2.6
-        version: 0.2.10(ai@7.0.58(zod@4.4.3))(eve@0.31.3(@upstash/redis@1.38.0)(ai@7.0.58(zod@4.4.3))(just-bash@3.0.2))
+        version: 0.2.10(ai@7.0.58(zod@4.4.3))(eve@0.31.3(ai@7.0.58(zod@4.4.3))(just-bash@3.0.2))
       ai:
         specifier: ^7.0.38
         version: 7.0.58(zod@4.4.3)
       eve:
         specifier: ^0.31.3
-        version: 0.31.3(@upstash/redis@1.38.0)(ai@7.0.58(zod@4.4.3))(just-bash@3.0.2)
+        version: 0.31.3(ai@7.0.58(zod@4.4.3))(just-bash@3.0.2)
     devDependencies:
       '@types/node':
         specifier: ^24
@@ -120,7 +148,7 @@ importers:
         version: 7.0.58(zod@4.4.3)
       eve:
         specifier: ^0.31.3
-        version: 0.31.3(@upstash/redis@1.38.0)(ai@7.0.58(zod@4.4.3))(just-bash@3.0.2)
+        version: 0.31.3(ai@7.0.58(zod@4.4.3))(just-bash@3.0.2)
       just-bash:
         specifier: ^3.0.2
         version: 3.0.2
@@ -145,7 +173,7 @@ importers:
     dependencies:
       '@vercel/connect':
         specifier: ^0.2.6
-        version: 0.2.10(ai@7.0.58(zod@4.3.6))(eve@0.31.3(@upstash/redis@1.38.0)(ai@7.0.58(zod@4.3.6))(just-bash@3.0.2))
+        version: 0.2.10(ai@7.0.58(zod@4.3.6))(eve@0.31.3(ai@7.0.58(zod@4.3.6))(just-bash@3.0.2))
       ai:
         specifier: ^7.0.38
         version: 7.0.58(zod@4.3.6)
@@ -198,13 +226,13 @@ importers:
     dependencies:
       '@vercel/connect':
         specifier: ^0.2.6
-        version: 0.2.10(ai@7.0.58(zod@4.4.3))(eve@0.31.3(@upstash/redis@1.38.0)(ai@7.0.58(zod@4.4.3))(just-bash@3.0.2))
+        version: 0.2.10(ai@7.0.58(zod@4.4.3))(eve@0.31.3(ai@7.0.58(zod@4.4.3))(just-bash@3.0.2))
       ai:
         specifier: ^7.0.38
         version: 7.0.58(zod@4.4.3)
       eve:
         specifier: ^0.31.3
-        version: 0.31.3(@upstash/redis@1.38.0)(ai@7.0.58(zod@4.4.3))(just-bash@3.0.2)
+        version: 0.31.3(ai@7.0.58(zod@4.4.3))(just-bash@3.0.2)
     devDependencies:
       '@types/node':
         specifier: ^24
@@ -3283,19 +3311,19 @@ snapshots:
     dependencies:
       execa: 5.1.1
 
-  '@vercel/connect@0.2.10(ai@7.0.58(zod@4.3.6))(eve@0.31.3(@upstash/redis@1.38.0)(ai@7.0.58(zod@4.3.6))(just-bash@3.0.2))':
+  '@vercel/connect@0.2.10(ai@7.0.58(zod@4.3.6))(eve@0.31.3(ai@7.0.58(zod@4.3.6))(just-bash@3.0.2))':
     dependencies:
       '@vercel/oidc': 3.7.1
     optionalDependencies:
       ai: 7.0.58(zod@4.3.6)
-      eve: 0.31.3(@upstash/redis@1.38.0)(ai@7.0.58(zod@4.3.6))(just-bash@3.0.2)
+      eve: 0.31.3(ai@7.0.58(zod@4.3.6))(just-bash@3.0.2)
 
-  '@vercel/connect@0.2.10(ai@7.0.58(zod@4.4.3))(eve@0.31.3(@upstash/redis@1.38.0)(ai@7.0.58(zod@4.4.3))(just-bash@3.0.2))':
+  '@vercel/connect@0.2.10(ai@7.0.58(zod@4.4.3))(eve@0.31.3(ai@7.0.58(zod@4.4.3))(just-bash@3.0.2))':
     dependencies:
       '@vercel/oidc': 3.7.1
     optionalDependencies:
       ai: 7.0.58(zod@4.4.3)
-      eve: 0.31.3(@upstash/redis@1.38.0)(ai@7.0.58(zod@4.4.3))(just-bash@3.0.2)
+      eve: 0.31.3(ai@7.0.58(zod@4.4.3))(just-bash@3.0.2)
 
   '@vercel/oidc@3.2.0': {}
 
@@ -3541,7 +3569,55 @@ snapshots:
       - xml2js
       - zephyr-agent
 
-  eve@0.31.3(@upstash/redis@1.38.0)(ai@7.0.58(zod@4.4.3))(just-bash@3.0.2):
+  eve@0.31.3(ai@7.0.58(zod@4.3.6))(just-bash@3.0.2):
+    dependencies:
+      ai: 7.0.58(zod@4.3.6)
+      nitro: 3.0.260610-beta(@upstash/redis@1.38.0)
+      undici: 8.9.0
+    optionalDependencies:
+      just-bash: 3.0.2
+    transitivePeerDependencies:
+      - '@azure/app-configuration'
+      - '@azure/cosmos'
+      - '@azure/data-tables'
+      - '@azure/identity'
+      - '@azure/keyvault-secrets'
+      - '@azure/storage-blob'
+      - '@capacitor/preferences'
+      - '@deno/kv'
+      - '@electric-sql/pglite'
+      - '@libsql/client'
+      - '@netlify/blobs'
+      - '@netlify/runtime'
+      - '@planetscale/database'
+      - '@upstash/redis'
+      - '@vercel/blob'
+      - '@vercel/functions'
+      - '@vercel/kv'
+      - '@vercel/queue'
+      - aws4fetch
+      - better-sqlite3
+      - chokidar
+      - dotenv
+      - drizzle-orm
+      - giget
+      - idb-keyval
+      - ioredis
+      - jiti
+      - lru-cache
+      - miniflare
+      - mongodb
+      - mysql2
+      - rollup
+      - sqlite3
+      - uploadthing
+      - vite
+      - wrangler
+      - xml2js
+      - zephyr-agent
+    optional: true
+
+  eve@0.31.3(ai@7.0.58(zod@4.4.3))(just-bash@3.0.2):
     dependencies:
       ai: 7.0.58(zod@4.4.3)
       nitro: 3.0.260610-beta(@upstash/redis@1.38.0)
