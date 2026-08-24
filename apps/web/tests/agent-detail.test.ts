@@ -115,6 +115,22 @@ describe('getAgentMetadataTitle', () => {
     )
   })
 
+  it('overrides the title for github-issue-maintainer only', () => {
+    const agent = makeAgent({
+      name: 'GitHub Issue Maintainer',
+      slug: 'github-issue-maintainer',
+      title: 'GitHub Issue Maintainer',
+    })
+    const title = getAgentMetadataTitle(agent)
+    expect(title).toBe(
+      'Eve GitHub issue agent - install @evex/github-issue-maintainer',
+    )
+    // Locked PMM copy intentionally exceeds METADATA_TITLE_BUDGET; the layout
+    // still appends ` · evex` once (must not be in the helper return value).
+    expect(title).not.toContain(METADATA_TITLE_SUFFIX)
+    expect(title.length).toBeGreaterThan(METADATA_TITLE_BUDGET)
+  })
+
   it('keeps the name-based pattern for other agents', () => {
     const agent = makeAgent({
       name: 'Eve Agent Builder',
@@ -145,9 +161,12 @@ describe('getAgentMetadataTitle', () => {
 })
 
 describe('getAgentJobIntentLede', () => {
-  it('returns the code-reviewer lede only', () => {
+  it('returns job-intent ledes for code-reviewer and github-issue-maintainer', () => {
     expect(getAgentJobIntentLede('code-reviewer')).toBe(
       'PR review agent for Eve.',
+    )
+    expect(getAgentJobIntentLede('github-issue-maintainer')).toBe(
+      'GitHub issue agent for Eve.',
     )
     expect(getAgentJobIntentLede('eve-agent-builder')).toBeNull()
     expect(getAgentJobIntentLede('short')).toBeNull()
@@ -226,6 +245,30 @@ describe('getAgentMetaDescription', () => {
     expect(description.length).toBe(146)
     expect(description).toBe(expected)
     expect(description).not.toContain('publish a GitHub.')
+  })
+
+  it('returns the exact live github-issue-maintainer SERP/OG meta description', () => {
+    const lead =
+      'Labels GitHub issues, asks for missing repro, and emails a weekly digest.'
+    const expected =
+      'Labels GitHub issues, asks for missing repro, and emails a weekly digest. Install with npx shadcn@latest add @evex/github-issue-maintainer.'
+    const agent = makeAgent({
+      description: lead,
+      slug: 'github-issue-maintainer',
+    })
+    const description = getAgentMetaDescription(agent)
+    const install = buildInstallCommand('github-issue-maintainer')
+
+    expect(lead).not.toContain('Install with')
+    expect(install).toBe('npx shadcn@latest add @evex/github-issue-maintainer')
+    expect(description.length).toBeLessThanOrEqual(
+      METADATA_DESCRIPTION_MAX_LENGTH,
+    )
+    expect(description).toBe(expected)
+    expect(description).toContain(`Install with ${install}`)
+    expect(description).toContain(
+      'npx shadcn@latest add @evex/github-issue-maintainer',
+    )
   })
 
   it('appends the shadcn install command when space allows', () => {
@@ -445,12 +488,21 @@ describe('registry agent titles fit the rendered title tag', () => {
       const title = getAgentMetadataTitle(agent)
       const rendered = `${title}${METADATA_TITLE_SUFFIX}`
 
-      expect(rendered.length).toBeLessThanOrEqual(METADATA_TITLE_MAX_LENGTH)
       expect(title).not.toContain('| evex')
+      expect(title).not.toContain(METADATA_TITLE_SUFFIX)
       if (agent.slug === 'code-reviewer') {
         expect(title).toBe('Eve PR review agent - install @evex/code-reviewer')
+        expect(rendered.length).toBeLessThanOrEqual(METADATA_TITLE_MAX_LENGTH)
+      } else if (agent.slug === 'github-issue-maintainer') {
+        expect(title).toBe(
+          'Eve GitHub issue agent - install @evex/github-issue-maintainer',
+        )
+        expect(rendered).toBe(
+          'Eve GitHub issue agent - install @evex/github-issue-maintainer · evex',
+        )
       } else {
         expect(title.startsWith(agent.name)).toBe(true)
+        expect(rendered.length).toBeLessThanOrEqual(METADATA_TITLE_MAX_LENGTH)
       }
     })
   }
