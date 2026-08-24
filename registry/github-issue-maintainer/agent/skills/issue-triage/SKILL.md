@@ -1,6 +1,6 @@
 ---
 name: issue-triage
-description: Label a GitHub issue from the small taxonomy and decide whether to ask for missing repro details.
+description: Label a GitHub issue from the small taxonomy and decide whether to ask for missing repro details on bug reports.
 ---
 
 # Issue triage
@@ -21,18 +21,22 @@ Choose labels only from:
 Apply one primary label. Add `docs` as a second label only when the issue is
 primarily about documentation and also clearly a bug or feature.
 
-## Thin issues
+## Thin issues (bugs only)
 
-An issue is thin when any of these are missing for a `bug` (and often helpful
-for `feature`):
+Classify the label first. Thin-report requirements apply only when the primary
+label is `bug`. An issue is thin when any of these are missing:
 
 - reproduction steps
 - expected vs actual behavior
 - environment (OS, runtime/browser, package versions)
 
-When thin, call `triage_issue` with `requestRepro=true` and a short comment
-that asks only for the missing pieces. Do not lecture. Do not demand a perfect
-template when the report is already actionable.
+When the label is `bug` and the report is thin, call `triage_issue` with
+`requestRepro=true` and a short comment that asks only for the missing pieces.
+Do not lecture. Do not demand a perfect template when the report is already
+actionable.
+
+Never set `requestRepro=true` for `feature`, `docs`, `question`, or `chore`
+just because those reports lack repro keywords.
 
 ## Boundaries
 

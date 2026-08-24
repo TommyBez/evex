@@ -42,6 +42,10 @@ them on first use).
 
 ## Thin-issue detector
 
+Thin-report requirements apply only to **bug** reports. Feature, docs,
+question, and chore issues are labeled without a repro ask just because they
+lack bug-report fields.
+
 For bug-like reports, the agent treats an issue as thin when any of these are
 missing:
 
@@ -49,7 +53,7 @@ missing:
 - expected vs actual behavior
 - environment (OS, runtime/browser, package versions)
 
-Thin issues get a short comment asking only for the missing pieces.
+Thin bugs get a short comment asking only for the missing pieces.
 
 ## GitHub App setup
 
@@ -111,8 +115,10 @@ GITHUB_APP_INSTALLATION_ID=
 ```
 
 `ISSUE_DIGEST_TO` accepts a comma-separated list. The schedule defaults to
-Mondays at 09:00 UTC. Delivery uses Resend with preview + confirmSend guards and
-an idempotency key so retries never duplicate the email.
+Mondays at 09:00 UTC. Delivery uses Resend with preview + confirmSend guards.
+The send tool pins an ISO-week idempotency key (`github-issue-digest-YYYY-Www`)
+so retries never duplicate the email, even across midnight. Digest HTML is
+built with `compose_digest_html`, which escapes issue titles before insert.
 
 ## Environment
 

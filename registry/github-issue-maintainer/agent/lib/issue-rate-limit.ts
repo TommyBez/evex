@@ -91,27 +91,33 @@ export async function checkIssueTriageRateLimit(
     }
 
     const limiters = getRateLimiters(config);
-    const checks = [
-      await checkLimiter(
-        limiters.userIssue,
-        identifierForUserIssue(input),
-        "user_issue_cooldown",
-      ),
-      await checkLimiter(
-        limiters.issue,
-        identifierForIssue(input),
-        "issue_cooldown",
-      ),
-      await checkLimiter(
-        input.isPrivateRepository
-          ? limiters.privateRepoDaily
-          : limiters.publicRepoDaily,
-        identifierForRepoDaily(input),
-        "repo_daily_limit",
-      ),
-    ];
 
-    return checks.find((decision) => !decision.allowed) ?? { allowed: true };
+    // Short-circuit: a cooldown denial must not consume the repo daily quota.
+    const userDecision = await checkLimiter(
+      limiters.userIssue,
+      identifierForUserIssue(input),
+      "user_issue_cooldown",
+    );
+    if (!userDecision.allowed) {
+      return userDecision;
+    }
+
+    const issueDecision = await checkLimiter(
+      limiters.issue,
+      identifierForIssue(input),
+      "issue_cooldown",
+    );
+    if (!issueDecision.allowed) {
+      return issueDecision;
+    }
+
+    return await checkLimiter(
+      input.isPrivateRepository
+        ? limiters.privateRepoDaily
+        : limiters.publicRepoDaily,
+      identifierForRepoDaily(input),
+      "repo_daily_limit",
+    );
   } catch {
     return unavailableDecision(config, input.isPrivateRepository);
   }
@@ -140,6 +146,17 @@ export async function shouldPostCooldownReply(
   }
 }
 
+function triagePublicationKey(input: TriagePublicationClaimInput): string {
+  const config = readRateLimitConfig();
+  return `${config.prefix}:triage-publish:${hashParts([
+    "triage-publish",
+    input.installationId ?? "unknown-installation",
+    input.repositoryId,
+    input.issueNumber,
+    input.toolCallId,
+  ])}`;
+}
+
 export async function claimTriagePublication(
   input: TriagePublicationClaimInput,
 ): Promise<boolean> {
@@ -148,16 +165,8 @@ export async function claimTriagePublication(
   }
 
   try {
-    const config = readRateLimitConfig();
     const redis = getRedis();
-    const key = `${config.prefix}:triage-publish:${hashParts([
-      "triage-publish",
-      input.installationId ?? "unknown-installation",
-      input.repositoryId,
-      input.issueNumber,
-      input.toolCallId,
-    ])}`;
-    const result = await redis.set(key, "1", {
+    const result = await redis.set(triagePublicationKey(input), "1", {
       ex: TRIAGE_PUBLICATION_TTL_SECONDS,
       nx: true,
     });
@@ -165,6 +174,20 @@ export async function claimTriagePublication(
     return result === "OK";
   } catch {
     return true;
+  }
+}
+
+export async function releaseTriagePublication(
+  input: TriagePublicationClaimInput,
+): Promise<void> {
+  if (!hasUpstashEnvironment()) {
+    return;
+  }
+
+  try {
+    await getRedis().del(triagePublicationKey(input));
+  } catch {
+    // Best-effort release; the TTL still expires the claim.
   }
 }
 

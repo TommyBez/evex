@@ -2,7 +2,10 @@ import { Resend } from "resend";
 import { defineTool } from "eve/tools";
 import { z } from "zod";
 
-import { issueDigestConfig } from "../lib/issue-config";
+import {
+  getWeeklyDigestIdempotencyKey,
+  issueDigestConfig,
+} from "../lib/issue-config";
 
 const sentKeys = new Map<
   string,
@@ -11,7 +14,7 @@ const sentKeys = new Map<
 
 export default defineTool({
   description:
-    "Send the weekly open-issue digest email through Resend. Requires confirmSend=true and a stable idempotencyKey so retries never duplicate the email. Always call preview_digest_email first.",
+    "Send the weekly open-issue digest email through Resend. Requires confirmSend=true. The send uses a retry-stable ISO-week idempotency key (github-issue-digest-YYYY-Www) so retries after midnight in the same week never duplicate. Always call preview_digest_email first.",
   inputSchema: z.object({
     subject: z.string().min(1).optional(),
     html: z.string().min(1),
@@ -24,11 +27,12 @@ export default defineTool({
       .string()
       .min(1)
       .max(255)
+      .optional()
       .describe(
-        "Stable unique key for this digest. Reuse across retries of the same step.",
+        "Optional hint. The tool always pins the real send to the current ISO-week key.",
       ),
   }),
-  async execute({ subject, html, confirmSend, idempotencyKey }) {
+  async execute({ subject, html, confirmSend }) {
     const apiKey = process.env.RESEND_API_KEY;
     if (!apiKey) {
       return { authRequired: true, missingEnv: "RESEND_API_KEY" };
@@ -51,11 +55,14 @@ export default defineTool({
       return { notConfigured: true, missingEnv: "ISSUE_DIGEST_TO" };
     }
 
-    const cached = sentKeys.get(idempotencyKey);
+    // Pin to ISO week so a retry after midnight cannot open a second send.
+    const stableKey = getWeeklyDigestIdempotencyKey();
+
+    const cached = sentKeys.get(stableKey);
     if (cached) {
       return {
         replayed: true,
-        idempotencyKey,
+        idempotencyKey: stableKey,
         to: cached.to,
         messageId: cached.messageId,
       };
@@ -69,20 +76,25 @@ export default defineTool({
         subject: subject ?? issueDigestConfig.subject,
         html,
       },
-      { idempotencyKey },
+      { idempotencyKey: stableKey },
     );
 
     if (error) {
       return {
         sent: false,
-        idempotencyKey,
+        idempotencyKey: stableKey,
         to: resolvedTo,
         error: { message: error.message, name: error.name },
       };
     }
 
     const messageId = data?.id ?? "unknown";
-    sentKeys.set(idempotencyKey, { to: resolvedTo, messageId });
-    return { sent: true, idempotencyKey, to: resolvedTo, messageId };
+    sentKeys.set(stableKey, { to: resolvedTo, messageId });
+    return {
+      sent: true,
+      idempotencyKey: stableKey,
+      to: resolvedTo,
+      messageId,
+    };
   },
 });

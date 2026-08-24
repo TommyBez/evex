@@ -7,13 +7,20 @@ const ACTUAL_HINTS =
 const ENVIRONMENT_HINTS =
   /\b(environment|node|npm|pnpm|browser|os|macos|linux|windows|version|chrome|firefox|safari|ios|android)\b/i;
 
+const BUG_LIKE_HINTS =
+  /\b(bug|broken|crash|crashes|error|exception|fail(s|ed|ure)?|regression|doesn'?t work|does not work|incorrect|wrong|stack trace|traceback|typeerror|nullpointer)\b/i;
+const NON_BUG_HINTS =
+  /\b(feature request|enhancement|docs?|documentation|typo|readme|how (do|can|to)|question|chore|dependency|dependencies|upgrade|bump)\b/i;
+
 export type ThinIssueGaps = {
   readonly missingEnvironment: boolean;
   readonly missingExpectedVsActual: boolean;
   readonly missingRepro: boolean;
 };
 
-export function detectThinIssueGaps(body: string | null | undefined): ThinIssueGaps {
+export function detectThinIssueGaps(
+  body: string | null | undefined,
+): ThinIssueGaps {
   const text = body?.trim() ?? "";
   if (text.length === 0) {
     return {
@@ -35,7 +42,41 @@ export function detectThinIssueGaps(body: string | null | undefined): ThinIssueG
   };
 }
 
-export function isThinIssue(gaps: ThinIssueGaps): boolean {
+/**
+ * Thin-report requirements apply only to bug-like issues. Feature, docs,
+ * question, and chore reports should not be flagged just for missing repro
+ * keywords.
+ */
+export function looksBugLike(
+  title: string | null | undefined,
+  body: string | null | undefined,
+): boolean {
+  const text = `${title ?? ""}\n${body ?? ""}`.trim();
+  if (text.length === 0) {
+    return false;
+  }
+
+  if (BUG_LIKE_HINTS.test(text)) {
+    return true;
+  }
+
+  if (NON_BUG_HINTS.test(text)) {
+    return false;
+  }
+
+  // Ambiguous short reports with no taxonomy signal are treated as bug-like
+  // so drive-by "it doesnt work" issues still get a repro ask after labeling.
+  return text.length < 80;
+}
+
+export function isThinIssue(
+  gaps: ThinIssueGaps,
+  options: { readonly bugLike: boolean },
+): boolean {
+  if (!options.bugLike) {
+    return false;
+  }
+
   return (
     gaps.missingRepro ||
     gaps.missingExpectedVsActual ||
@@ -52,7 +93,9 @@ export function formatReproRequest(gaps: ThinIssueGaps): string {
     missing.push("expected behavior vs what actually happens");
   }
   if (gaps.missingEnvironment) {
-    missing.push("environment (OS, runtime/browser versions, package versions)");
+    missing.push(
+      "environment (OS, runtime/browser versions, package versions)",
+    );
   }
 
   return [

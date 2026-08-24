@@ -12,7 +12,7 @@ const triageIssueInput = z.object({
   requestRepro: z
     .boolean()
     .describe(
-      "True when the issue is thin and needs a repro / expected-vs-actual / environment ask.",
+      "True only for bug-labeled thin reports that need a repro / expected-vs-actual / environment ask. Must be false for feature, docs, question, and chore.",
     ),
   comment: z
     .string()
@@ -33,9 +33,16 @@ export type TriageIssueOutput = z.infer<typeof triageIssueInput>;
 
 export default defineTool({
   description:
-    "Publish issue triage: apply taxonomy labels and optionally comment asking for missing repro details. Call exactly once per opened issue. Never use this on pull requests.",
+    "Publish issue triage: apply taxonomy labels and optionally comment asking for missing repro details on bug reports only. Call exactly once per opened issue. Never use this on pull requests. requestRepro must be false unless labels include bug.",
   inputSchema: triageIssueInput,
   execute(input) {
+    if (input.requestRepro && !input.labels.includes("bug")) {
+      return {
+        invalid: true,
+        note: "requestRepro is only allowed when labels include bug.",
+      };
+    }
+
     if (input.requestRepro && !input.comment?.trim()) {
       return {
         invalid: true,

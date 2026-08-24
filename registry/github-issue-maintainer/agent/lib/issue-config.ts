@@ -51,3 +51,31 @@ export function parseOwnerRepo(repo: string): {
   }
   return { owner, repo: name };
 }
+
+/** ISO week year + week number for retry-stable weekly digest keys. */
+export function getIsoWeekParts(now: Date = new Date()): {
+  readonly week: number;
+  readonly year: number;
+} {
+  const date = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
+  );
+  // ISO week: Thursday determines the year; week starts Monday.
+  const day = date.getUTCDay() || 7;
+  date.setUTCDate(date.getUTCDate() + 4 - day);
+  const year = date.getUTCFullYear();
+  const yearStart = new Date(Date.UTC(year, 0, 1));
+  const week = Math.ceil(
+    ((date.getTime() - yearStart.getTime()) / 86_400_000 + 1) / 7,
+  );
+  return { year, week };
+}
+
+/**
+ * Stable idempotency key for one weekly digest run. Retries within the same
+ * ISO week reuse this key even if they cross midnight after the cron fire.
+ */
+export function getWeeklyDigestIdempotencyKey(now: Date = new Date()): string {
+  const { year, week } = getIsoWeekParts(now);
+  return `github-issue-digest-${year}-W${String(week).padStart(2, "0")}`;
+}

@@ -12,14 +12,19 @@ import {
   checkIssueTriageRateLimit,
   claimTriagePublication,
   type RateLimitDecision,
+  releaseTriagePublication,
   shouldPostCooldownReply,
 } from "../lib/issue-rate-limit";
 import {
   detectThinIssueGaps,
   formatReproRequest,
   isThinIssue,
+  looksBugLike,
 } from "../lib/thin-issue";
-import { ISSUE_LABEL_SET } from "../lib/taxonomy";
+import {
+  ISSUE_LABEL_SET,
+  type IssueLabel,
+} from "../lib/taxonomy";
 import triageIssueTool, {
   type TriageIssueOutput,
 } from "../tools/triage_issue";
@@ -30,6 +35,22 @@ const BOT_MENTION_PATTERN = new RegExp(
   "i",
 );
 const GITHUB_COMMENT_CHUNK_SIZE = 60_000;
+
+const LABEL_COLORS: Record<IssueLabel, string> = {
+  bug: "d73a4a",
+  feature: "a2eeef",
+  docs: "0075ca",
+  question: "d876e3",
+  chore: "fef2c0",
+};
+
+const LABEL_DESCRIPTIONS: Record<IssueLabel, string> = {
+  bug: "Something is broken or behaves incorrectly",
+  feature: "Request for new capability or behavior",
+  docs: "Documentation gaps, typos, or clarification",
+  question: "Guidance without a product change",
+  chore: "Maintenance, CI, dependencies, housekeeping",
+};
 
 type IssueMaintainerGitHubState = GitHubChannelState & {
   issueTriageSubmitted?: boolean;
@@ -99,7 +120,8 @@ export default githubChannel({
       readNestedString(rawIssue, ["user", "login"]) ?? ctx.sender.login;
     const existingLabels = readLabelNames(rawIssue);
     const gaps = detectThinIssueGaps(body);
-    const thin = isThinIssue(gaps);
+    const bugLike = looksBugLike(title, body);
+    const thin = isThinIssue(gaps, { bugLike });
 
     return {
       auth: defaultGitHubAuth(ctx),
@@ -111,6 +133,7 @@ export default githubChannel({
           `sender: ${author}`,
           `title: ${title}`,
           `existing_labels: ${existingLabels.join(", ") || "(none)"}`,
+          `bug_like: ${bugLike ? "yes" : "no"}`,
           `thin_issue: ${thin ? "yes" : "no"}`,
           thin
             ? `thin_gaps: ${[
@@ -125,7 +148,7 @@ export default githubChannel({
           body || "(empty)",
           "</github_issue_context>",
           "",
-          "Triage this newly opened GitHub issue. Apply taxonomy labels with triage_issue. If thin_issue is yes, set requestRepro=true and include a short comment asking only for the missing gaps. Do not review pull requests.",
+          "Triage this newly opened GitHub issue. Classify the taxonomy label first with triage_issue. Set requestRepro=true only when the primary label is bug and thin_issue is yes. Never ask for repro on feature, docs, question, or chore. Do not review pull requests.",
           thin ? `Suggested repro ask:\n${formatReproRequest(gaps)}` : "",
         ]
           .filter((line) => line !== null)
@@ -158,12 +181,14 @@ export default githubChannel({
         return;
       }
 
-      const claimed = await claimTriagePublication({
+      const claimInput = {
         installationId: channel.github.installationId,
         issueNumber,
         repositoryId: channel.repository.id,
         toolCallId: match.callId,
-      });
+      };
+
+      const claimed = await claimTriagePublication(claimInput);
 
       if (!claimed) {
         state.issueTriageSubmitted = true;
@@ -174,6 +199,7 @@ export default githubChannel({
         await publishTriage(channel, match.output as TriageIssueOutput);
         state.issueTriageSubmitted = true;
       } catch {
+        await releaseTriagePublication(claimInput);
         state.issueTriageSubmitted = false;
       }
     },
@@ -260,9 +286,12 @@ async function publishTriage(
 
   const owner = channel.state.owner;
   const repo = channel.state.repo;
-  const labels = triage.labels.filter((label) => ISSUE_LABEL_SET.has(label));
+  const labels = triage.labels.filter((label): label is IssueLabel =>
+    ISSUE_LABEL_SET.has(label),
+  );
 
   if (labels.length > 0) {
+    await ensureTaxonomyLabelsExist(channel, owner, repo, labels);
     await channel.github.request({
       method: "POST",
       path: `/repos/${owner}/${repo}/issues/${issueNumber}/labels`,
@@ -270,8 +299,44 @@ async function publishTriage(
     });
   }
 
-  if (triage.requestRepro && triage.comment?.trim()) {
+  const shouldAskRepro =
+    triage.requestRepro &&
+    labels.includes("bug") &&
+    Boolean(triage.comment?.trim());
+
+  if (shouldAskRepro && triage.comment) {
     await postCommentChunks(channel, triage.comment.trim());
+  }
+}
+
+async function ensureTaxonomyLabelsExist(
+  channel: GitHubEventContext,
+  owner: string,
+  repo: string,
+  labels: readonly IssueLabel[],
+) {
+  for (const name of labels) {
+    const encoded = encodeURIComponent(name);
+    try {
+      await channel.github.request({
+        method: "GET",
+        path: `/repos/${owner}/${repo}/labels/${encoded}`,
+      });
+    } catch {
+      try {
+        await channel.github.request({
+          method: "POST",
+          path: `/repos/${owner}/${repo}/labels`,
+          body: {
+            name,
+            color: LABEL_COLORS[name],
+            description: LABEL_DESCRIPTIONS[name],
+          },
+        });
+      } catch {
+        // 422 if another worker created it first — proceed to attach.
+      }
+    }
   }
 }
 
