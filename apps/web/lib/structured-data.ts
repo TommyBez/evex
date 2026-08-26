@@ -8,6 +8,7 @@ import type { LearnPage } from '@/lib/learn-content'
 import { siteConfig } from '@/lib/metadata'
 import {
   buildInstallCommand,
+  getAgentsUrl,
   getAgentUrl,
   getAuthorUrl,
   getDocsUrl,
@@ -89,6 +90,30 @@ export function createAgentListSchema(
       name: agent.name,
       description: getAgentMetaDescription(agent),
     })),
+  }
+}
+
+export function createAgentsIndexBreadcrumbSchema(): JsonLdObject {
+  const siteUrl = getSiteUrl()
+  const agentsUrl = getAgentsUrl()
+
+  return {
+    '@context': SCHEMA_CONTEXT,
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Registry',
+        item: siteUrl,
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'Agents',
+        item: agentsUrl,
+      },
+    ],
   }
 }
 

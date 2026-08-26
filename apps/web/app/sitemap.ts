@@ -60,6 +60,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 1,
     },
     {
+      url: `${siteUrl}/agents`,
+      lastModified: latestAgentUpdate,
+      changeFrequency: 'daily',
+      priority: 0.9,
+    },
+    {
       url: `${siteUrl}/leaderboard`,
       lastModified: latestAgentUpdate,
       changeFrequency: 'daily',
