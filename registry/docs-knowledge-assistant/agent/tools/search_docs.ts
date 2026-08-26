@@ -58,10 +58,12 @@ export default defineTool({
 
     const escaped = input.query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     const pathArgs = roots.map((root) => shellQuote(root)).join(" ");
+    // Prefer rg when present. Do not pipe rg into head before checking
+    // availability: without rg, `rg | head` still exits 0 via head and would
+    // skip the grep fallback.
     const command = [
       "set +e",
-      `rg -n -S --no-heading -e ${shellQuote(escaped)} ${pathArgs} 2>/dev/null | head -n 40`,
-      `if [ $? -ne 0 ]; then grep -RIn -E ${shellQuote(escaped)} ${pathArgs} 2>/dev/null | head -n 40; fi`,
+      `if command -v rg >/dev/null 2>&1; then rg -n -S --no-heading -e ${shellQuote(escaped)} ${pathArgs} 2>/dev/null | head -n 40; else grep -RIn -E ${shellQuote(escaped)} ${pathArgs} 2>/dev/null | head -n 40; fi`,
       "exit 0",
     ].join("; ");
 
