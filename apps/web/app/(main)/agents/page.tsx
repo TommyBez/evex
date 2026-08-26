@@ -1,8 +1,11 @@
+import { Skeleton } from '@evex/ui/skeleton'
 import { PackageSearch } from 'lucide-react'
 import type { Metadata } from 'next'
+import { Suspense } from 'react'
 import { AgentCard } from '@/components/agent-card'
 import { JsonLd } from '@/components/json-ld'
 import { RegistryEmptyState } from '@/components/registry-empty-state'
+import { applyInstallCounts, getAgentRuntimeState } from '@/lib/data/agents'
 import { createPageMetadata } from '@/lib/metadata'
 import { listStaticAgents } from '@/lib/registry'
 import {
@@ -22,10 +25,17 @@ export const metadata: Metadata = createPageMetadata({
   path: '/agents',
 })
 
+const AGENT_GRID_SKELETON_CARD_IDS = [
+  'agents-index-card-a',
+  'agents-index-card-b',
+  'agents-index-card-c',
+  'agents-index-card-d',
+  'agents-index-card-e',
+  'agents-index-card-f',
+] as const
+
 export default function AgentsIndexPage() {
   const agents = listStaticAgents()
-  const resultCountLabel =
-    agents.length === 1 ? '1 agent' : `${agents.length} agents`
 
   return (
     <>
@@ -46,26 +56,59 @@ export default function AgentsIndexPage() {
           aria-label="Agent catalog"
           className="mt-10 flex flex-col gap-4"
         >
-          {agents.length === 0 ? (
-            <RegistryEmptyState
-              description="Open a pull request to add the first agent to the registry."
-              icon={PackageSearch}
-              title="No Agents Found"
-            />
-          ) : (
-            <div className="grid gap-3">
-              <p className="mono-label text-muted-foreground">
-                {resultCountLabel} available
-              </p>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {agents.map((agent) => (
-                  <AgentCard agent={agent} key={agent.id} />
-                ))}
-              </div>
-            </div>
-          )}
+          <Suspense fallback={<AgentGridSkeleton />}>
+            <AgentCatalog />
+          </Suspense>
         </section>
       </main>
     </>
+  )
+}
+
+async function AgentCatalog() {
+  const staticAgents = listStaticAgents()
+  const runtimeState = await getAgentRuntimeState(
+    staticAgents.map((agent) => agent.id),
+  )
+  const agents = applyInstallCounts(staticAgents, runtimeState.installCounts)
+  const resultCountLabel =
+    agents.length === 1 ? '1 agent' : `${agents.length} agents`
+
+  if (agents.length === 0) {
+    return (
+      <RegistryEmptyState
+        description="Open a pull request to add the first agent to the registry."
+        icon={PackageSearch}
+        title="No Agents Found"
+      />
+    )
+  }
+
+  return (
+    <div className="grid gap-3">
+      <p className="mono-label text-muted-foreground">
+        {resultCountLabel} available
+      </p>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {agents.map((agent) => (
+          <AgentCard
+            agent={agent}
+            isAuthenticated={runtimeState.isAuthenticated}
+            isFavorite={runtimeState.favoriteAgentIdSet.has(agent.id)}
+            key={agent.id}
+          />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function AgentGridSkeleton() {
+  return (
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {AGENT_GRID_SKELETON_CARD_IDS.map((id) => (
+        <Skeleton className="h-44 rounded-md border border-border" key={id} />
+      ))}
+    </div>
   )
 }
