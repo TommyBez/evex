@@ -292,12 +292,19 @@ describe('/agents catalog index', () => {
     expect('robots' in agentsIndexMetadata).toBe(false)
     expect(agentsIndexMetadata.alternates?.canonical).toBe('/agents')
     expect(agentsIndexMetadata.openGraph?.url).toBe('/agents')
-    expect(agentsIndexMetadata.title).toBe('Eve agents')
+    expect(agentsIndexMetadata.title).toBe(
+      'Eve agents - install with @evex/<slug>',
+    )
     expect(agentsIndexMetadata.description).toBe(
-      'Browse installable Eve agents. Preview every file, then add one with npx shadcn@latest add @evex/{slug}.',
+      'Browse community Eve agents, inspect the files, install with npx shadcn@latest add @evex/<slug>.',
     )
     expect(String(agentsIndexMetadata.description).length).toBeLessThanOrEqual(
       155,
+    )
+    // Layout template is `%s · evex` — helper must not already include the brand.
+    expect(String(agentsIndexMetadata.title).endsWith(' · evex')).toBe(false)
+    expect(`${agentsIndexMetadata.title} · evex`).toBe(
+      'Eve agents - install with @evex/<slug> · evex',
     )
   })
 

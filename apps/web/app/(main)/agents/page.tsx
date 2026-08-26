@@ -10,11 +10,14 @@ import {
   createAgentsIndexBreadcrumbSchema,
 } from '@/lib/structured-data'
 
+// PMM-locked. Layout template appends ` · evex` — do not include the brand
+// suffix here or the rendered <title> doubles it.
+const AGENTS_INDEX_TITLE = 'Eve agents - install with @evex/<slug>'
 const AGENTS_INDEX_DESCRIPTION =
-  'Browse installable Eve agents. Preview every file, then add one with npx shadcn@latest add @evex/{slug}.'
+  'Browse community Eve agents, inspect the files, install with npx shadcn@latest add @evex/<slug>.'
 
 export const metadata: Metadata = createPageMetadata({
-  title: 'Eve agents',
+  title: AGENTS_INDEX_TITLE,
   description: AGENTS_INDEX_DESCRIPTION,
   path: '/agents',
 })
@@ -35,15 +38,8 @@ export default function AgentsIndexPage() {
       <main className="mx-auto w-full min-w-0 max-w-6xl px-4 py-10 sm:px-6">
         <header className="max-w-3xl">
           <h1 className="text-balance font-semibold text-3xl text-foreground sm:text-4xl">
-            Eve agents
+            Browse Eve agents.
           </h1>
-          <p className="mt-4 max-w-2xl text-pretty text-muted-foreground leading-relaxed">
-            Browse installable Eve agents. Preview every file, then add one with{' '}
-            <code className="rounded-sm bg-muted px-1.5 py-0.5 font-mono text-[0.9em] text-foreground">
-              npx shadcn@latest add @evex/&#123;slug&#125;
-            </code>
-            .
-          </p>
         </header>
 
         <section
