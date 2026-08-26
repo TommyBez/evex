@@ -54,6 +54,10 @@ export function buildInstallCommand(slug: string): string {
   return `npx shadcn@latest add @evex/${slug}`
 }
 
+export function getAgentsUrl(): string {
+  return `${getSiteUrl()}/agents`
+}
+
 export function getAgentUrl(slug: string): string {
   return `${getSiteUrl()}/agents/${slug}`
 }

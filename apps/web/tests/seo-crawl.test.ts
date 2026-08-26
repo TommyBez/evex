@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest'
+import { metadata as agentsIndexMetadata } from '@/app/(main)/agents/page'
 import { GET as getRegistryCatalog } from '@/app/r/registry.json/route'
 import { GET as getRobotsTxt } from '@/app/robots.txt/route'
 import { metadata as signInMetadata } from '@/app/sign-in/page'
 import { metadata as signUpMetadata } from '@/app/sign-up/page'
+import sitemap from '@/app/sitemap'
 import {
   METADATA_TITLE_MAX_LENGTH,
   METADATA_TITLE_SUFFIX,
@@ -12,9 +14,14 @@ import {
   getAuthorMetaDescription,
   getAuthorMetadataTitle,
 } from '@/lib/author-detail'
-import { buildInstallCommand, getRegistryItemUrl } from '@/lib/site-url'
+import {
+  buildInstallCommand,
+  getAgentsUrl,
+  getRegistryItemUrl,
+} from '@/lib/site-url'
 import {
   createAgentSoftwareSchema,
+  createAgentsIndexBreadcrumbSchema,
   createAuthorBreadcrumbSchema,
   createLeaderboardSchema,
 } from '@/lib/structured-data'
@@ -265,5 +272,54 @@ describe('SoftwareApplication enrichment', () => {
     )
 
     expect(software).not.toHaveProperty('softwareRequirements')
+  })
+})
+
+describe('/agents catalog index', () => {
+  it('is listed in sitemap.xml', () => {
+    const entries = sitemap()
+    const agentsIndex = entries.find(
+      (entry) => entry.url === 'https://www.evex.sh/agents',
+    )
+
+    expect(agentsIndex).toBeDefined()
+    expect(getAgentsUrl()).toBe('https://www.evex.sh/agents')
+  })
+
+  it('emits indexable metadata with a self-canonical', () => {
+    // createPageMetadata omits `robots` so the root layout's index,follow
+    // (plus googleBot preview directives) survive the Next metadata merge.
+    expect('robots' in agentsIndexMetadata).toBe(false)
+    expect(agentsIndexMetadata.alternates?.canonical).toBe('/agents')
+    expect(agentsIndexMetadata.openGraph?.url).toBe('/agents')
+    expect(agentsIndexMetadata.title).toBe('Eve agents')
+    expect(agentsIndexMetadata.description).toBe(
+      'Browse installable Eve agents. Preview every file, then add one with npx shadcn@latest add @evex/{slug}.',
+    )
+    expect(String(agentsIndexMetadata.description).length).toBeLessThanOrEqual(
+      155,
+    )
+  })
+
+  it('emits Registry → Agents breadcrumbs', () => {
+    const schema = createAgentsIndexBreadcrumbSchema()
+
+    expect(schema).toMatchObject({
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        {
+          '@type': 'ListItem',
+          item: 'https://www.evex.sh',
+          name: 'Registry',
+          position: 1,
+        },
+        {
+          '@type': 'ListItem',
+          item: 'https://www.evex.sh/agents',
+          name: 'Agents',
+          position: 2,
+        },
+      ],
+    })
   })
 })
