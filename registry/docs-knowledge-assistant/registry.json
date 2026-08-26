@@ -95,19 +95,19 @@
         "slug": "docs-knowledge-assistant",
         "category": "support",
         "createdAt": "2026-08-26T00:00:00.000Z",
-        "updatedAt": "2026-08-26T17:30:00.000Z",
+        "updatedAt": "2026-08-26T22:00:00.000Z",
         "docs": {
           "overview": [
             "Docs Knowledge Assistant is an eve agent that answers questions from the installing repository's documentation files. It searches README, docs/, CONTRIBUTING*, and AGENTS.md, then replies with file-path citations so readers can verify the source.",
             "You interact with it through Eve chat sessions or by mentioning it on a GitHub issue comment. It ignores pull request conversations, never publishes GitHub PR reviews, and never applies taxonomy labels or triage other issues.",
-            "When the documentation clearly lacks an answer, it says so. Optionally it can open a documentation-gap issue with open_docs_issue so maintainers can track missing docs without turning the agent into a second issue bot."
+            "When the documentation clearly lacks an answer, it says so. On GitHub issue-comment turns it can optionally open a documentation-gap issue with open_docs_issue so maintainers can track missing docs without turning the agent into a second issue bot."
           ],
           "howItWorks": [
             "A user asks a documentation question in Eve chat, or mentions @docs-knowledge-assistant on a GitHub issue comment matching GITHUB_APP_SLUG.",
             "The GitHub channel rejects pull request conversations and review threads, then injects issue context for the zai/glm-5.2 model.",
-            "The agent loads the docs-qa skill when needed, then calls search_docs and read_doc, which refuse non-documentation paths.",
+            "The agent loads the docs-qa skill when needed, then calls search_docs and read_doc, which refuse non-documentation paths and discover README.* / CONTRIBUTING.* variants at the repo root.",
             "It answers from those files only and cites each path it relied on. write_file is disabled so the agent cannot rewrite the repository as an answer.",
-            "If the docs do not cover the question, it says so. For a clear gap it may call open_docs_issue once; the channel creates the issue through the GitHub Issues API without applying taxonomy labels.",
+            "If the docs do not cover the question, it says so. On GitHub issue-comment turns only, a clear gap may call open_docs_issue once; Eve chat receives readyToOpen false because no GitHub publisher runs there. The channel creates the issue through the GitHub Issues API without applying taxonomy labels.",
             "Evals cover answering with a README citation, saying not-in-docs, and refusing PR review or labeling requests."
           ],
           "useCases": [
@@ -125,7 +125,7 @@
             },
             {
               "title": "Track missing documentation",
-              "body": "When a recurring question has no docs home, open_docs_issue creates a focused documentation issue so maintainers can fill the gap without labeling or triaging other work."
+              "body": "When a recurring question on a GitHub issue has no docs home, open_docs_issue creates a focused documentation issue so maintainers can fill the gap without labeling or triaging other work."
             }
           ],
           "requirements": [
@@ -165,7 +165,7 @@
             },
             {
               "question": "What happens when the docs do not answer?",
-              "answer": "The agent says the documentation does not cover the question. When the gap is clear, it can call open_docs_issue to create a documentation issue without labeling other issues."
+              "answer": "The agent says the documentation does not cover the question. On GitHub issue-comment turns, when the gap is clear, it can call open_docs_issue to create a documentation issue without labeling other issues. Eve chat refuses that tool."
             },
             {
               "question": "Is GitHub required?",

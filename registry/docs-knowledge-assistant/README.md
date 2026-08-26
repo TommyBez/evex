@@ -51,8 +51,9 @@ publishes GitHub PR reviews. Use `@evex/code-reviewer` for PR review and
 2. For chat-only use, set `AI_GATEWAY_API_KEY` and ask documentation questions.
 3. For GitHub issue Q&A, deploy over HTTPS, create a GitHub App, and point the
    webhook at `/eve/v1/github`.
-4. Subscribe to **Issue comments** (Issues write is needed only if you want
-   `open_docs_issue` to create docs-gap issues).
+4. Subscribe to **Issue comments**. Issues read/write is required so the bot can
+   reply on the issue timeline (and so `open_docs_issue` can create docs-gap
+   issues).
 5. Mention the bot on an issue with a documentation question.
 
 ## GitHub App setup (optional)

@@ -62,6 +62,11 @@ export default githubChannel({
         return;
       }
 
+      const output = match.output as OpenDocsIssueOutput;
+      if (!output.readyToOpen) {
+        return;
+      }
+
       const state = channel.state as DocsAssistantGitHubState;
       if (state.docsIssueOpened) {
         return;
@@ -71,7 +76,7 @@ export default githubChannel({
         return;
       }
 
-      await publishDocsIssue(channel, match.output as OpenDocsIssueOutput);
+      await publishDocsIssue(channel, output);
       state.docsIssueOpened = true;
     },
     async "message.completed"(data, channel) {
@@ -95,7 +100,7 @@ function isIssueConversation(ctx: GitHubInboundContext) {
 
 async function publishDocsIssue(
   channel: GitHubEventContext,
-  issue: OpenDocsIssueOutput,
+  issue: Extract<OpenDocsIssueOutput, { readyToOpen: true }>,
 ) {
   const owner = channel.state.owner;
   const repo = channel.state.repo;

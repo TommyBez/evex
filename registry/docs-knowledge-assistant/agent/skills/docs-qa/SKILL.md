@@ -18,7 +18,8 @@ Answer only from documentation files in the installing repository:
 2. Call `read_doc` on the best matching paths.
 3. Answer in plain language and cite every path you used.
 4. If nothing in-scope answers the question, say the docs do not cover it.
-5. Call `open_docs_issue` only when the gap is clear and worth tracking.
+5. Call `open_docs_issue` only on GitHub issue-comment turns when the gap is
+   clear and worth tracking. Do not call it from Eve chat.
 
 ## Do not
 

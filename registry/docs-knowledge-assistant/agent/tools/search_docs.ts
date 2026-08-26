@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import {
   docsSearchRoots,
+  docsSearchRootsFromListing,
   isAllowedDocsPath,
   normalizeDocsPath,
 } from "../lib/docs-paths";
@@ -37,17 +38,25 @@ export default defineTool({
   inputSchema: searchDocsInput,
   async execute(input, ctx) {
     const sandbox = await ctx.getSandbox();
-    const roots = input.pathHint
-      ? [normalizeDocsPath(input.pathHint)]
-      : [...docsSearchRoots()];
+    let roots: string[];
+    if (input.pathHint) {
+      roots = [normalizeDocsPath(input.pathHint)];
+    } else {
+      const listing = await sandbox.run({
+        command: "ls -1A 2>/dev/null | head -n 200",
+      });
+      const entries = (listing.stdout ?? "")
+        .split("\n")
+        .map((line) => line.trim())
+        .filter(Boolean);
+      roots = docsSearchRootsFromListing(entries);
+      if (roots.length === 0) {
+        roots = [...docsSearchRoots()];
+      }
+    }
 
     for (const root of roots) {
-      if (
-        root !== "docs" &&
-        root !== "README" &&
-        root !== "CONTRIBUTING" &&
-        !isAllowedDocsPath(root)
-      ) {
+      if (root !== "docs" && !isAllowedDocsPath(root)) {
         return {
           hits: [] as SearchHit[],
           note: `Refused non-docs path: ${root}`,
