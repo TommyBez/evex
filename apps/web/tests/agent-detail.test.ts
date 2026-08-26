@@ -131,6 +131,20 @@ describe('getAgentMetadataTitle', () => {
     expect(title.length).toBeGreaterThan(METADATA_TITLE_BUDGET)
   })
 
+  it('overrides the title for docs-knowledge-assistant only', () => {
+    const agent = makeAgent({
+      name: 'Docs Knowledge Assistant',
+      slug: 'docs-knowledge-assistant',
+      title: 'Docs Knowledge Assistant',
+    })
+    const title = getAgentMetadataTitle(agent)
+    expect(title).toBe(
+      'Eve docs Q&A agent - install @evex/docs-knowledge-assistant',
+    )
+    expect(title).not.toContain(METADATA_TITLE_SUFFIX)
+    expect(title.length).toBeGreaterThan(METADATA_TITLE_BUDGET)
+  })
+
   it('keeps the name-based pattern for other agents', () => {
     const agent = makeAgent({
       name: 'Eve Agent Builder',
@@ -161,12 +175,15 @@ describe('getAgentMetadataTitle', () => {
 })
 
 describe('getAgentJobIntentLede', () => {
-  it('returns job-intent ledes for code-reviewer and github-issue-maintainer', () => {
+  it('returns job-intent ledes for first-party play pages', () => {
     expect(getAgentJobIntentLede('code-reviewer')).toBe(
       'PR review agent for Eve.',
     )
     expect(getAgentJobIntentLede('github-issue-maintainer')).toBe(
       'GitHub issue agent for Eve.',
+    )
+    expect(getAgentJobIntentLede('docs-knowledge-assistant')).toBe(
+      'Docs Q&A agent for Eve.',
     )
     expect(getAgentJobIntentLede('eve-agent-builder')).toBeNull()
     expect(getAgentJobIntentLede('short')).toBeNull()
@@ -269,6 +286,27 @@ describe('getAgentMetaDescription', () => {
     expect(description).toContain(
       'npx shadcn@latest add @evex/github-issue-maintainer',
     )
+  })
+
+  it('returns the exact live docs-knowledge-assistant SERP/OG meta description', () => {
+    const lead = 'Answers from your repo docs and cites the file.'
+    const expected =
+      'Answers from your repo docs and cites the file. Install with npx shadcn@latest add @evex/docs-knowledge-assistant.'
+    const agent = makeAgent({
+      description: lead,
+      slug: 'docs-knowledge-assistant',
+    })
+    const description = getAgentMetaDescription(agent)
+    const install = buildInstallCommand('docs-knowledge-assistant')
+
+    expect(lead).not.toContain('Install with')
+    expect(install).toBe('npx shadcn@latest add @evex/docs-knowledge-assistant')
+    expect(description.length).toBeLessThanOrEqual(
+      METADATA_DESCRIPTION_MAX_LENGTH,
+    )
+    expect(description.length).toBeLessThanOrEqual(155)
+    expect(description).toBe(expected)
+    expect(description).toContain(`Install with ${install}`)
   })
 
   it('appends the shadcn install command when space allows', () => {
@@ -499,6 +537,13 @@ describe('registry agent titles fit the rendered title tag', () => {
         )
         expect(rendered).toBe(
           'Eve GitHub issue agent - install @evex/github-issue-maintainer · evex',
+        )
+      } else if (agent.slug === 'docs-knowledge-assistant') {
+        expect(title).toBe(
+          'Eve docs Q&A agent - install @evex/docs-knowledge-assistant',
+        )
+        expect(rendered).toBe(
+          'Eve docs Q&A agent - install @evex/docs-knowledge-assistant · evex',
         )
       } else {
         expect(title.startsWith(agent.name)).toBe(true)

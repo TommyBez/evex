@@ -1,0 +1,104 @@
+import { defineTool } from "eve/tools";
+import { z } from "zod";
+
+import {
+  docsSearchRoots,
+  isAllowedDocsPath,
+  normalizeDocsPath,
+} from "../lib/docs-paths";
+
+const searchDocsInput = z.object({
+  query: z
+    .string()
+    .min(1)
+    .max(200)
+    .describe(
+      "Literal or simple keyword query to search inside documentation files.",
+    ),
+  pathHint: z
+    .string()
+    .min(1)
+    .max(200)
+    .optional()
+    .describe(
+      "Optional docs path or directory to narrow the search (README.md, docs/, CONTRIBUTING*, AGENTS.md).",
+    ),
+});
+
+type SearchHit = {
+  line: number;
+  path: string;
+  text: string;
+};
+
+export default defineTool({
+  description:
+    "Search documentation files (README, docs/, CONTRIBUTING*, AGENTS.md) for a query. Prefer this before answering. Does not search application source.",
+  inputSchema: searchDocsInput,
+  async execute(input, ctx) {
+    const sandbox = await ctx.getSandbox();
+    const roots = input.pathHint
+      ? [normalizeDocsPath(input.pathHint)]
+      : [...docsSearchRoots()];
+
+    for (const root of roots) {
+      if (
+        root !== "docs" &&
+        root !== "README" &&
+        root !== "CONTRIBUTING" &&
+        !isAllowedDocsPath(root)
+      ) {
+        return {
+          hits: [] as SearchHit[],
+          note: `Refused non-docs path: ${root}`,
+          query: input.query,
+        };
+      }
+    }
+
+    const escaped = input.query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const pathArgs = roots.map((root) => shellQuote(root)).join(" ");
+    const command = [
+      "set +e",
+      `rg -n -S --no-heading -e ${shellQuote(escaped)} ${pathArgs} 2>/dev/null | head -n 40`,
+      `if [ $? -ne 0 ]; then grep -RIn -E ${shellQuote(escaped)} ${pathArgs} 2>/dev/null | head -n 40; fi`,
+      "exit 0",
+    ].join("; ");
+
+    const result = await sandbox.run({ command });
+    const stdout = result.stdout ?? "";
+
+    const hits: SearchHit[] = [];
+    for (const line of stdout.split("\n")) {
+      if (!line.trim()) {
+        continue;
+      }
+      const match = /^([^:]+):(\d+):(.*)$/.exec(line);
+      if (!match) {
+        continue;
+      }
+      const path = normalizeDocsPath(match[1] ?? "");
+      if (!isAllowedDocsPath(path)) {
+        continue;
+      }
+      hits.push({
+        path,
+        line: Number(match[2]),
+        text: (match[3] ?? "").slice(0, 240),
+      });
+    }
+
+    return {
+      hits,
+      note:
+        hits.length === 0
+          ? "No documentation matches. Say so if the docs do not answer the question."
+          : `Found ${hits.length} documentation hit(s).`,
+      query: input.query,
+    };
+  },
+});
+
+function shellQuote(value: string): string {
+  return `'${value.replaceAll("'", `'\\''`)}'`;
+}
