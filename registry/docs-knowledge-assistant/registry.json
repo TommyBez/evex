@@ -1,0 +1,179 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "items": [
+    {
+      "name": "docs-knowledge-assistant",
+      "type": "registry:item",
+      "title": "Docs Knowledge Assistant",
+      "description": "Answers from your repo docs and cites the file.",
+      "author": "TommyBez",
+      "categories": [
+        "support"
+      ],
+      "dependencies": [
+        "eve@^0.31.3",
+        "zod@4.3.6"
+      ],
+      "files": [
+        {
+          "path": ".env.example",
+          "type": "registry:file",
+          "target": "~/.env.example"
+        },
+        {
+          "path": "agent/agent.ts",
+          "type": "registry:file",
+          "target": "~/agent/agent.ts"
+        },
+        {
+          "path": "agent/channels/github.ts",
+          "type": "registry:file",
+          "target": "~/agent/channels/github.ts"
+        },
+        {
+          "path": "agent/instructions.md",
+          "type": "registry:file",
+          "target": "~/agent/instructions.md"
+        },
+        {
+          "path": "agent/lib/docs-paths.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/docs-paths.ts"
+        },
+        {
+          "path": "agent/skills/docs-qa/SKILL.md",
+          "type": "registry:file",
+          "target": "~/agent/skills/docs-qa/SKILL.md"
+        },
+        {
+          "path": "agent/tools/open_docs_issue.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/open_docs_issue.ts"
+        },
+        {
+          "path": "agent/tools/read_doc.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/read_doc.ts"
+        },
+        {
+          "path": "agent/tools/search_docs.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/search_docs.ts"
+        },
+        {
+          "path": "agent/tools/write_file.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/write_file.ts"
+        },
+        {
+          "path": "evals/answer-cite-readme.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/answer-cite-readme.eval.ts"
+        },
+        {
+          "path": "evals/evals.config.ts",
+          "type": "registry:file",
+          "target": "~/evals/evals.config.ts"
+        },
+        {
+          "path": "evals/ignore-pr-review.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/ignore-pr-review.eval.ts"
+        },
+        {
+          "path": "evals/say-not-in-docs.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/say-not-in-docs.eval.ts"
+        },
+        {
+          "path": "README.md",
+          "type": "registry:file",
+          "target": "~/agent/README.md"
+        }
+      ],
+      "meta": {
+        "slug": "docs-knowledge-assistant",
+        "category": "support",
+        "createdAt": "2026-08-26T00:00:00.000Z",
+        "updatedAt": "2026-08-26T22:00:00.000Z",
+        "docs": {
+          "overview": [
+            "Docs Knowledge Assistant is an eve agent that answers questions from the installing repository's documentation files. It searches README, docs/, CONTRIBUTING*, and AGENTS.md, then replies with file-path citations so readers can verify the source.",
+            "You interact with it through Eve chat sessions or by mentioning it on a GitHub issue comment. It ignores pull request conversations, never publishes GitHub PR reviews, and never applies taxonomy labels or triage other issues.",
+            "When the documentation clearly lacks an answer, it says so. On GitHub issue-comment turns it can optionally open a documentation-gap issue with open_docs_issue so maintainers can track missing docs without turning the agent into a second issue bot."
+          ],
+          "howItWorks": [
+            "A user asks a documentation question in Eve chat, or mentions @docs-knowledge-assistant on a GitHub issue comment matching GITHUB_APP_SLUG.",
+            "The GitHub channel rejects pull request conversations and review threads, then injects issue context for the zai/glm-5.2 model.",
+            "The agent loads the docs-qa skill when needed, then calls search_docs and read_doc, which refuse non-documentation paths and discover README.* / CONTRIBUTING.* variants at the repo root.",
+            "It answers from those files only and cites each path it relied on. write_file is disabled so the agent cannot rewrite the repository as an answer.",
+            "If the docs do not cover the question, it says so. On GitHub issue-comment turns only, a clear gap may call open_docs_issue once; Eve chat receives readyToOpen false because no GitHub publisher runs there. The channel creates the issue through the GitHub Issues API without applying taxonomy labels.",
+            "Evals cover answering with a README citation, saying not-in-docs, and refusing PR review or labeling requests."
+          ],
+          "useCases": [
+            {
+              "title": "Install and setup questions from README",
+              "body": "New contributors ask how to install or configure the project in Eve chat. The agent reads README.md or docs/install.md and answers with the cited path instead of guessing from source."
+            },
+            {
+              "title": "Contributor workflow questions on GitHub issues",
+              "body": "Mention the bot on an issue asking about contribution steps. It answers from CONTRIBUTING* or AGENTS.md and posts the cited reply on the issue timeline."
+            },
+            {
+              "title": "Honest gaps when docs are silent",
+              "body": "When someone asks about on-call policy or an undocumented API, the agent says the docs do not cover it rather than inventing steps from application source."
+            },
+            {
+              "title": "Track missing documentation",
+              "body": "When a recurring question on a GitHub issue has no docs home, open_docs_issue creates a focused documentation issue so maintainers can fill the gap without labeling or triaging other work."
+            }
+          ],
+          "requirements": [
+            {
+              "name": "AI_GATEWAY_API_KEY",
+              "body": "A model credential for the deployment, either a Vercel AI Gateway API key or AI Gateway OIDC, so the agent can call the zai/glm-5.2 model."
+            },
+            {
+              "name": "GITHUB_APP_ID",
+              "body": "Optional. The App ID of the GitHub App used for issue-comment Q&A. Needs Metadata read, Contents read, and Issues read/write. Do not grant Pull requests write."
+            },
+            {
+              "name": "GITHUB_APP_PRIVATE_KEY",
+              "body": "Optional. The PEM private key for the GitHub App. When stored as a single-line variable, replace literal newlines with \\n."
+            },
+            {
+              "name": "GITHUB_WEBHOOK_SECRET",
+              "body": "Optional. Shared secret for verifying GitHub webhooks at /eve/v1/github. A mismatch produces HTTP 401."
+            },
+            {
+              "name": "GITHUB_APP_SLUG",
+              "body": "Optional. The mention users type on GitHub, defaulting to docs-knowledge-assistant. It must match your GitHub App name."
+            }
+          ],
+          "faqs": [
+            {
+              "question": "How do I install and ask a question?",
+              "answer": "Run npx shadcn@latest add @evex/docs-knowledge-assistant inside an eve app, set AI_GATEWAY_API_KEY, then ask documentation questions in Eve chat. For GitHub issue replies, deploy over HTTPS, create a GitHub App pointing at /eve/v1/github, and mention the bot on an issue."
+            },
+            {
+              "question": "Does it review pull requests or label issues?",
+              "answer": "No. The channel ignores pull request conversations, there is no PR review publication path, and it never applies taxonomy labels. Use @evex/code-reviewer for PR reviews and @evex/github-issue-maintainer for issue triage."
+            },
+            {
+              "question": "Which files can it read?",
+              "answer": "Only README*, docs/**, CONTRIBUTING*, and AGENTS.md. search_docs and read_doc refuse application source, tests, and config paths."
+            },
+            {
+              "question": "What happens when the docs do not answer?",
+              "answer": "The agent says the documentation does not cover the question. On GitHub issue-comment turns, when the gap is clear, it can call open_docs_issue to create a documentation issue without labeling other issues. Eve chat refuses that tool."
+            },
+            {
+              "question": "Is GitHub required?",
+              "answer": "No. Chat works with only AI_GATEWAY_API_KEY. GitHub App credentials are needed only for issue-comment Q&A and optional docs-gap issue creation."
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

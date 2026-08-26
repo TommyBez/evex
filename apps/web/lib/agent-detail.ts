@@ -99,6 +99,8 @@ const CODE_REVIEWER_METADATA_TITLE =
   'Eve PR review agent - install @evex/code-reviewer'
 const GITHUB_ISSUE_MAINTAINER_METADATA_TITLE =
   'Eve GitHub issue agent - install @evex/github-issue-maintainer'
+const DOCS_KNOWLEDGE_ASSISTANT_METADATA_TITLE =
+  'Eve docs Q&A agent - install @evex/docs-knowledge-assistant'
 
 export function getAgentMetadataTitle(agent: AgentWithAuthor): string {
   if (agent.slug === 'code-reviewer') {
@@ -107,6 +109,10 @@ export function getAgentMetadataTitle(agent: AgentWithAuthor): string {
 
   if (agent.slug === 'github-issue-maintainer') {
     return GITHUB_ISSUE_MAINTAINER_METADATA_TITLE
+  }
+
+  if (agent.slug === 'docs-knowledge-assistant') {
+    return DOCS_KNOWLEDGE_ASSISTANT_METADATA_TITLE
   }
 
   const installTitle = `${agent.name} - install @evex/${agent.slug}`
@@ -131,6 +137,9 @@ export function getAgentJobIntentLede(slug: string): string | null {
   }
   if (slug === 'github-issue-maintainer') {
     return 'GitHub issue agent for Eve.'
+  }
+  if (slug === 'docs-knowledge-assistant') {
+    return 'Docs Q&A agent for Eve.'
   }
   return null
 }
@@ -365,6 +374,11 @@ function whoForCategory(category: string): string {
     case 'productivity':
       return truncateToWords(
         'Eve developers running team operations',
+        MAX_DEFINITION_WHO_WORDS,
+      )
+    case 'support':
+      return truncateToWords(
+        'Eve developers answering product questions',
         MAX_DEFINITION_WHO_WORDS,
       )
     default:
