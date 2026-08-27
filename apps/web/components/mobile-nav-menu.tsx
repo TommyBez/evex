@@ -10,6 +10,7 @@ import {
   DrawerTrigger,
 } from '@evex/ui/drawer'
 import {
+  Bot,
   ExternalLink,
   FileText,
   Heart,
@@ -20,25 +21,47 @@ import {
   UserRound,
 } from 'lucide-react'
 import Link from 'next/link'
+import { useEffect, useState } from 'react'
+
+const MD_MIN_WIDTH_QUERY = '(min-width: 768px)'
 
 export function MobileNavMenu({
   isAuthenticated,
 }: {
   isAuthenticated: boolean
 }) {
+  const [open, setOpen] = useState(false)
+
+  // DrawerOverlay is a sibling of DrawerContent inside the portal, so
+  // md:hidden on content alone leaves the overlay blocking after resize.
+  useEffect(() => {
+    const mediaQuery = window.matchMedia(MD_MIN_WIDTH_QUERY)
+    const closeWhenDesktop = () => {
+      if (mediaQuery.matches) {
+        setOpen(false)
+      }
+    }
+
+    closeWhenDesktop()
+    mediaQuery.addEventListener('change', closeWhenDesktop)
+    return () => {
+      mediaQuery.removeEventListener('change', closeWhenDesktop)
+    }
+  }, [])
+
   return (
-    <Drawer direction="bottom">
+    <Drawer direction="bottom" onOpenChange={setOpen} open={open}>
       <DrawerTrigger asChild>
         <Button
           aria-label="Open navigation menu"
-          className="rounded-md sm:hidden"
+          className="rounded-md md:hidden"
           size="icon-sm"
           variant="ghost"
         >
           <Menu aria-hidden="true" className="size-4" />
         </Button>
       </DrawerTrigger>
-      <DrawerContent className="sm:hidden">
+      <DrawerContent className="md:hidden">
         <DrawerHeader className="text-left group-data-[vaul-drawer-direction=bottom]/drawer-content:text-left">
           <DrawerTitle>Menu</DrawerTitle>
         </DrawerHeader>
@@ -53,6 +76,18 @@ export function MobileNavMenu({
                 className="size-4 text-muted-foreground"
               />
               Browse
+            </Link>
+          </DrawerClose>
+          <DrawerClose asChild>
+            <Link
+              className="flex min-h-11 items-center gap-3 rounded-md px-3 font-medium text-sm transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+              href="/agents"
+            >
+              <Bot
+                aria-hidden="true"
+                className="size-4 text-muted-foreground"
+              />
+              Agents
             </Link>
           </DrawerClose>
           <DrawerClose asChild>

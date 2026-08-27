@@ -6,8 +6,8 @@ import { usePathname } from 'next/navigation'
 
 /**
  * Header nav link that knows when its section is active, so the user always
- * sees where they are. `activePrefixes` marks nested routes (e.g. /agents/*)
- * as belonging to a section whose href is different (e.g. /).
+ * sees where they are. `activePrefixes` marks nested routes (e.g. /authors/*)
+ * as belonging to a section whose href is different (e.g. Browse → /).
  */
 export function NavLink({
   href,

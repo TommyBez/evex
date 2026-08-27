@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+import path from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { metadata as agentsIndexMetadata } from '@/app/(main)/agents/page'
 import { GET as getRegistryCatalog } from '@/app/r/registry.json/route'
@@ -276,6 +278,27 @@ describe('SoftwareApplication enrichment', () => {
 })
 
 describe('/agents catalog index', () => {
+  it('is linked from the shared site header (crawlable <a href="/agents">)', () => {
+    // Pure-logic suite: assert the server header source emits the Agents
+    // link in both the Suspense fallback and the resolved SiteHeader so first
+    // HTML from known URLs (/, /learn, /docs) can discover /agents.
+    const headerSource = readFileSync(
+      path.join(import.meta.dirname, '../components/site-header.tsx'),
+      'utf8',
+    )
+    const compact = headerSource.replace(/\s+/g, '')
+
+    // Both SiteHeaderFallback (plain Link) and SiteHeader (NavLink) must
+    // include the Agents destination — not only the client mobile drawer.
+    const fallbackStart = compact.indexOf('exportfunctionSiteHeaderFallback')
+    const resolvedStart = compact.indexOf('exportasyncfunctionSiteHeader')
+    const fallbackSource = compact.slice(fallbackStart, resolvedStart)
+    const resolvedSource = compact.slice(resolvedStart)
+
+    expect(fallbackSource).toContain('href="/agents">Agents</')
+    expect(resolvedSource).toContain('href="/agents">Agents</')
+  })
+
   it('is listed in sitemap.xml', () => {
     const entries = sitemap()
     const agentsIndex = entries.find(
