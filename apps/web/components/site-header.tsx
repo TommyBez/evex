@@ -19,25 +19,25 @@ export function SiteHeaderFallback() {
             <span className="brand-wordmark">evex</span>
           </Link>
           <Link
-            className="hidden font-medium text-muted-foreground text-sm sm:inline-flex"
+            className="hidden font-medium text-muted-foreground text-sm md:inline-flex"
             href="/"
           >
             Browse
           </Link>
           <Link
-            className="hidden font-medium text-muted-foreground text-sm sm:inline-flex"
+            className="hidden font-medium text-muted-foreground text-sm md:inline-flex"
             href="/agents"
           >
             Agents
           </Link>
           <Link
-            className="hidden font-medium text-muted-foreground text-sm sm:inline-flex"
+            className="hidden font-medium text-muted-foreground text-sm md:inline-flex"
             href="/docs"
           >
             Docs
           </Link>
           <Link
-            className="hidden font-medium text-muted-foreground text-sm sm:inline-flex"
+            className="hidden font-medium text-muted-foreground text-sm md:inline-flex"
             href="/leaderboard"
           >
             Leaderboard
@@ -67,26 +67,26 @@ export async function SiteHeader() {
           </Link>
           <NavLink
             activePrefixes={['/authors']}
-            className="hidden sm:inline-flex"
+            className="hidden md:inline-flex"
             href="/"
           >
             Browse
           </NavLink>
           <NavLink
             activePrefixes={['/agents']}
-            className="hidden sm:inline-flex"
+            className="hidden md:inline-flex"
             href="/agents"
           >
             Agents
           </NavLink>
-          <NavLink className="hidden sm:inline-flex" href="/docs">
+          <NavLink className="hidden md:inline-flex" href="/docs">
             Docs
           </NavLink>
-          <NavLink className="hidden sm:inline-flex" href="/leaderboard">
+          <NavLink className="hidden md:inline-flex" href="/leaderboard">
             Leaderboard
           </NavLink>
           {user ? (
-            <NavLink className="hidden sm:inline-flex" href="/favorites">
+            <NavLink className="hidden md:inline-flex" href="/favorites">
               Favorites
             </NavLink>
           ) : null}

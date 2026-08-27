@@ -290,9 +290,13 @@ describe('/agents catalog index', () => {
 
     // Both SiteHeaderFallback (plain Link) and SiteHeader (NavLink) must
     // include the Agents destination — not only the client mobile drawer.
-    expect(
-      compact.split('href="/agents">Agents</').length - 1,
-    ).toBeGreaterThanOrEqual(2)
+    const fallbackStart = compact.indexOf('exportfunctionSiteHeaderFallback')
+    const resolvedStart = compact.indexOf('exportasyncfunctionSiteHeader')
+    const fallbackSource = compact.slice(fallbackStart, resolvedStart)
+    const resolvedSource = compact.slice(resolvedStart)
+
+    expect(fallbackSource).toContain('href="/agents">Agents</')
+    expect(resolvedSource).toContain('href="/agents">Agents</')
   })
 
   it('is listed in sitemap.xml', () => {

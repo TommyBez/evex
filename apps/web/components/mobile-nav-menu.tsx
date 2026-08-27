@@ -32,14 +32,14 @@ export function MobileNavMenu({
       <DrawerTrigger asChild>
         <Button
           aria-label="Open navigation menu"
-          className="rounded-md sm:hidden"
+          className="rounded-md md:hidden"
           size="icon-sm"
           variant="ghost"
         >
           <Menu aria-hidden="true" className="size-4" />
         </Button>
       </DrawerTrigger>
-      <DrawerContent className="sm:hidden">
+      <DrawerContent className="md:hidden">
         <DrawerHeader className="text-left group-data-[vaul-drawer-direction=bottom]/drawer-content:text-left">
           <DrawerTitle>Menu</DrawerTitle>
         </DrawerHeader>
