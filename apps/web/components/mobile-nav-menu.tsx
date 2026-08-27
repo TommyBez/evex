@@ -21,14 +21,36 @@ import {
   UserRound,
 } from 'lucide-react'
 import Link from 'next/link'
+import { useEffect, useState } from 'react'
+
+const MD_MIN_WIDTH_QUERY = '(min-width: 768px)'
 
 export function MobileNavMenu({
   isAuthenticated,
 }: {
   isAuthenticated: boolean
 }) {
+  const [open, setOpen] = useState(false)
+
+  // DrawerOverlay is a sibling of DrawerContent inside the portal, so
+  // md:hidden on content alone leaves the overlay blocking after resize.
+  useEffect(() => {
+    const mediaQuery = window.matchMedia(MD_MIN_WIDTH_QUERY)
+    const closeWhenDesktop = () => {
+      if (mediaQuery.matches) {
+        setOpen(false)
+      }
+    }
+
+    closeWhenDesktop()
+    mediaQuery.addEventListener('change', closeWhenDesktop)
+    return () => {
+      mediaQuery.removeEventListener('change', closeWhenDesktop)
+    }
+  }, [])
+
   return (
-    <Drawer direction="bottom">
+    <Drawer direction="bottom" onOpenChange={setOpen} open={open}>
       <DrawerTrigger asChild>
         <Button
           aria-label="Open navigation menu"
