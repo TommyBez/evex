@@ -26,6 +26,12 @@ export function SiteHeaderFallback() {
           </Link>
           <Link
             className="hidden font-medium text-muted-foreground text-sm sm:inline-flex"
+            href="/agents"
+          >
+            Agents
+          </Link>
+          <Link
+            className="hidden font-medium text-muted-foreground text-sm sm:inline-flex"
             href="/docs"
           >
             Docs
@@ -60,11 +66,18 @@ export async function SiteHeader() {
             <span className="brand-wordmark">evex</span>
           </Link>
           <NavLink
-            activePrefixes={['/agents', '/authors']}
+            activePrefixes={['/authors']}
             className="hidden sm:inline-flex"
             href="/"
           >
             Browse
+          </NavLink>
+          <NavLink
+            activePrefixes={['/agents']}
+            className="hidden sm:inline-flex"
+            href="/agents"
+          >
+            Agents
           </NavLink>
           <NavLink className="hidden sm:inline-flex" href="/docs">
             Docs
