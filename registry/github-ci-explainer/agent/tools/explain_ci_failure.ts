@@ -35,8 +35,9 @@ const explainCiFailureInput = z.object({
     .string()
     .min(1)
     .max(6000)
+    .optional()
     .describe(
-      "Full markdown comment body to post on the pull request or commit. Must include what failed, file:line when known, and a short log excerpt.",
+      "Optional draft comment. Ignored at publish time — the channel always builds the posted body from whatFailed, file, line, and excerpt.",
     ),
 });
 
@@ -45,10 +46,11 @@ export type ExplainCiFailureOutput = z.infer<typeof explainCiFailureInput>;
 /**
  * Publishes a CI failure explanation as a regular issue/PR (or commit) comment.
  * Intentionally has no Eve approval — unattended, like github-issue-maintainer.
+ * Publication uses structured fields only; optional `comment` is never posted raw.
  */
 export default defineTool({
   description:
-    "Publish a CI failure explanation comment for the failed GitHub Actions check. Call exactly once. Include checkRunId from context, whatFailed, file:line when known, and a short excerpt. Does not push fixes and does not publish a pull request review.",
+    "Publish a CI failure explanation for the failed GitHub Actions check. Call exactly once with checkRunId, whatFailed, file/line when known, and a short excerpt. The channel posts a structured comment from those fields (optional comment is ignored). Does not push fixes and does not publish a pull request review.",
   inputSchema: explainCiFailureInput,
   execute(input) {
     if (input.line !== undefined && !input.file?.trim()) {

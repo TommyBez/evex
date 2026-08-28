@@ -18,8 +18,11 @@ import {
   releaseCiPublication,
 } from "../lib/ci-rate-limit";
 import {
+  buildFailureContext,
+  buildPublishedExplanation,
+} from "../lib/failure-context";
+import {
   formatCiFailureComment,
-  hardenMarkdownCodeFences,
   type FailedCheckDetails,
 } from "../lib/fetch-check-failure";
 import explainCiFailureTool, {
@@ -145,62 +148,17 @@ function isFailedGitHubActionsCheck(checkRun: GitHubCheckRunEvent): boolean {
   return checkRun.app.slug === GITHUB_ACTIONS_SLUG;
 }
 
-function buildFailureContext(
-  details: FailedCheckDetails,
-  pullRequestNumber: number,
-  repositoryFullName: string,
-): string {
-  const annotationLines =
-    details.annotations.length === 0
-      ? ["(none)"]
-      : details.annotations.slice(0, 10).map((annotation) => {
-          const path = annotation.path ?? "(unknown)";
-          const line = annotation.startLine ?? "?";
-          const level = annotation.annotationLevel ?? "notice";
-          const message = annotation.message ?? "";
-          return `- [${level}] ${path}:${line} ${message}`.trim();
-        });
-
-  const suggestedLocation = details.location
-    ? `${details.location.file}:${details.location.line}`
-    : "(none found yet)";
-
-  return [
-    "<github_ci_failure_context>",
-    `repository: ${repositoryFullName}`,
-    `check_run_id: ${details.checkRunId}`,
-    `check_name: ${details.checkName}`,
-    `conclusion: ${details.conclusion ?? "failure"}`,
-    `head_sha: ${details.headSha ?? "(unknown)"}`,
-    `pull_request_number: ${pullRequestNumber}`,
-    `html_url: ${details.htmlUrl ?? "(none)"}`,
-    `suggested_location: ${suggestedLocation}`,
-    `output_title: ${details.outputTitle ?? "(none)"}`,
-    "annotations:",
-    ...annotationLines,
-    "log_excerpt:",
-    details.logExcerpt,
-    "</github_ci_failure_context>",
-    "",
-    "Explain this failed GitHub Actions check. Call explain_ci_failure exactly once with checkRunId, whatFailed, file/line when known, a short excerpt, and the full comment body. Do not publish a pull request review. Do not push a fix.",
-  ].join("\n");
-}
-
 async function publishExplanation(
   channel: GitHubEventContext,
   explanation: ExplainCiFailureOutput,
 ) {
-  // Prefer the model comment when present, but harden fences so log backticks
-  // cannot break out of a ```text block. Fall back to the structured formatter.
-  const body = explanation.comment.trim()
-    ? hardenMarkdownCodeFences(explanation.comment.trim())
-    : formatCiFailureComment({
-        checkName: "GitHub Actions",
-        excerpt: explanation.excerpt,
-        file: explanation.file,
-        line: explanation.line,
-        whatFailed: explanation.whatFailed,
-      });
+  // Structured fields only — never post the optional free-form model comment.
+  const body = buildPublishedExplanation({
+    excerpt: explanation.excerpt,
+    file: explanation.file,
+    line: explanation.line,
+    whatFailed: explanation.whatFailed,
+  });
 
   await postCommentChunks(channel.thread, body);
 }

@@ -53,6 +53,11 @@
           "target": "~/agent/lib/fetch-check-failure.ts"
         },
         {
+          "path": "agent/lib/failure-context.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/failure-context.ts"
+        },
+        {
           "path": "agent/lib/parse-ci-log.ts",
           "type": "registry:file",
           "target": "~/agent/lib/parse-ci-log.ts"
@@ -87,7 +92,7 @@
         "slug": "github-ci-explainer",
         "category": "coding",
         "createdAt": "2026-08-28T06:39:11.526Z",
-        "updatedAt": "2026-08-28T06:55:00.000Z",
+        "updatedAt": "2026-08-28T07:00:00.000Z",
         "docs": {
           "overview": [
             "GitHub CI Explainer is an eve agent that watches failed GitHub Actions checks through a native GitHub App channel. When a check_run completes with conclusion failure, GitHub delivers the webhook to your deployed eve app at /eve/v1/github, and the agent comments what failed plus the first useful file and line from annotations or the job log.",
@@ -99,8 +104,8 @@
             "The channel ignores successful and non Actions checks, then checks Upstash rate limits and claims the check run id so retries do not double-post.",
             "It fetches check annotations and a short log excerpt, parses the first useful file:line, and for commit-only failures posts a commit comment without a model turn.",
             "When a pull request is associated, the channel injects a github_ci_failure_context block and dispatches the zai/glm-5.2 model.",
-            "The agent calls explain_ci_failure exactly once with whatFailed, optional file and line, a short excerpt, and the full markdown comment body. The tool has no Eve approval gate.",
-            "The channel publishes that body as a regular issue or pull request timeline comment. Evals cover a failed-check smoke path and a successful-check negative path."
+            "The agent calls explain_ci_failure exactly once with checkRunId, whatFailed, optional file and line, and a short excerpt. The tool has no Eve approval gate.",
+            "The channel publishes a structured comment built from those fields as a regular issue or pull request timeline comment. Evals cover a failed-check smoke path and a successful-check negative path."
           ],
           "useCases": [
             {

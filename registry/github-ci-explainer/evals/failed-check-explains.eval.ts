@@ -27,7 +27,7 @@ src/auth.ts:42:5 - error TS2339: Property 'id' does not exist on type 'Session'.
 Found 1 error.
 </github_ci_failure_context>
 
-Explain this failed GitHub Actions check. Call explain_ci_failure exactly once with checkRunId, whatFailed, file/line when known, a short excerpt, and the full comment body. Do not publish a pull request review. Do not push a fix.
+Explain this failed GitHub Actions check. Call explain_ci_failure exactly once with checkRunId, whatFailed, file/line when known, and a short excerpt. Do not publish a pull request review. Do not push a fix.
 `);
 
     t.succeeded();
@@ -41,11 +41,6 @@ Explain this failed GitHub Actions check. Call explain_ci_failure exactly once w
     t.check(
       typeof call.input.excerpt === "string" &&
         String(call.input.excerpt).length > 0,
-      equals(true).gate(),
-    );
-    t.check(
-      typeof call.input.comment === "string" &&
-        /src\/auth\.ts:42/.test(String(call.input.comment)),
       equals(true).gate(),
     );
     t.notCalledTool("submit_pr_review").gate();

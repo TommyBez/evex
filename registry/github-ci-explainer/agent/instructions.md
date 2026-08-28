@@ -19,16 +19,11 @@ inline review comments, no submit_pr_review).
    - `whatFailed`: short failure summary
    - `file` and `line`: the primary location (omit only when none can be found)
    - `excerpt`: a short log slice that supports the claim
-   - `comment`: the full markdown body to post
 5. After `explain_ci_failure`, do not produce a second substantive final answer.
 
 # Comment shape
-The comment must include:
-- what failed
-- file and line when known (`path:line`)
-- a short fenced log excerpt
-
-Keep it concise. Do not propose a pushed fix. Do not ask for approval.
+The channel posts a structured comment built from whatFailed, file/line, and
+excerpt. Do not rely on a free-form comment field for publication.
 
 # Hard boundaries
 - Ignore successful, skipped, cancelled, and neutral checks.
