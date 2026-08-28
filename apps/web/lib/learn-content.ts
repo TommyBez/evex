@@ -806,7 +806,7 @@ export const LEARN_PAGES: readonly LearnPage[] = [
       'A builder-focused comparison of LangGraph and CrewAI, with Eve as a file-based reference point.',
     cluster: 'comparisons',
     datePublished: '2026-07-01',
-    dateModified: '2026-07-02',
+    dateModified: '2026-08-28',
     primaryKeyword: 'langgraph vs crewai',
     relatedKeywords: [
       'langgraph alternatives',
@@ -845,6 +845,13 @@ export const LEARN_PAGES: readonly LearnPage[] = [
         body: [
           'Eve is neither graph-first nor crew-first. It is filesystem-first. That makes it relevant when the agent is a backend project whose tools, skills, channels, schedules, and env requirements should be visible as files.',
           'This gives teams a third option in the comparison. If the main problem is control flow, reach for graph thinking. If the main problem is role collaboration, crew thinking may fit. If the main problem is inspectable, source-owned agent capability, Eve’s file model becomes more interesting.',
+        ],
+      },
+      {
+        heading: 'How Eve agents get into a project',
+        body: [
+          'Eve agents are files in an Eve app, not a hosted runtime. evex is the open registry for those agents. Open the [Eve agents catalog](/agents), inspect the files, then install with npx shadcn@latest add @evex/<slug>.',
+          'If you want a first install to compare against a graph or a crew, start with [the PR review agent](/agents/code-reviewer).',
         ],
       },
       {
@@ -897,6 +904,11 @@ export const LEARN_PAGES: readonly LearnPage[] = [
         answer:
           'Build the hardest failure path in each candidate framework and compare which one is easier to debug.',
       },
+      {
+        question: 'How do I try an Eve agent after this comparison?',
+        answer:
+          'Install from evex with npx shadcn@latest add @evex/<slug> after you inspect the files on the agent page. The catalog is at [/agents](/agents).',
+      },
     ],
   },
   {
@@ -907,7 +919,7 @@ export const LEARN_PAGES: readonly LearnPage[] = [
       'Fair, dated comparison of evex and agentcn as Eve agent registries. Both use the shadcn CLI. evex adds inspect-before-install and publish via pull request.',
     cluster: 'comparisons',
     datePublished: '2026-08-13',
-    dateModified: '2026-08-13',
+    dateModified: '2026-08-28',
     primaryKeyword: 'evex vs agentcn',
     relatedKeywords: [
       'eve agent registry',
@@ -973,7 +985,7 @@ export const LEARN_PAGES: readonly LearnPage[] = [
         heading: 'What an Eve agent registry is',
         body: [
           'An Eve agent registry is a catalog of reusable agents Eve developers can inspect and install as source files. Instead of copying folders from GitHub by hand, you run a shadcn CLI command that writes the agent files into your project.',
-          'evex is that kind of registry for Eve. Browse the catalog, open an agent page, preview the files, then install with `npx shadcn@latest add @evex/<slug>`. After install you own the files. There is no hosted agent runtime. See [/docs](/docs) for the product overview.',
+          'evex is that kind of registry for Eve. Browse the catalog, open an agent page, preview the files, then install with `npx shadcn@latest add @evex/<slug>`. After install you own the files. There is no hosted agent runtime. See [/docs](/docs) for the product overview. The live catalog is [/agents](/agents).',
         ],
       },
       {

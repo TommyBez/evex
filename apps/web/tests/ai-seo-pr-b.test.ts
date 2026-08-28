@@ -41,8 +41,22 @@ describe('learn page: evex vs agentcn', () => {
     expect(page.shortTitle).toBe('evex vs agentcn')
     expect(page.cluster).toBe('comparisons')
     expect(page.datePublished).toBe('2026-08-13')
-    expect(page.dateModified).toBe('2026-08-13')
+    expect(page.dateModified).toBe('2026-08-28')
     expect(page.primaryKeyword).toBe('evex vs agentcn')
+  })
+
+  it('links the live catalog from the registry definition section', () => {
+    expect(page).not.toBeNull()
+    if (!page) {
+      return
+    }
+
+    const definition = page.sections.find(
+      (section) => section.heading === 'What an Eve agent registry is',
+    )
+    expect(definition?.body.join(' ')).toContain(
+      'The live catalog is [/agents](/agents).',
+    )
   })
 
   it('has a comparison table, bottom line, five FAQs, and shadcn install', () => {
@@ -121,5 +135,53 @@ describe('learn page: evex vs agentcn', () => {
     for (const step of numberedSteps) {
       expect(looksLikeBlockMarkdown(step)).toBe(true)
     }
+  })
+})
+
+describe('learn page: langgraph vs crewai', () => {
+  const page = getLearnPage('langgraph-vs-crewai')
+
+  it('keeps the locked title and adds the Eve install section', () => {
+    expect(page).not.toBeNull()
+    if (!page) {
+      return
+    }
+
+    expect(page.title).toBe(
+      'LangGraph vs CrewAI: graph control or role-based crews?',
+    )
+    expect(page.dateModified).toBe('2026-08-28')
+    expect(page.sections.map((section) => section.heading)).toEqual([
+      'The real comparison is not popularity',
+      'Where LangGraph is stronger',
+      'Where CrewAI is stronger',
+      'Where Eve differs',
+      'How Eve agents get into a project',
+      'How to decide without guessing',
+    ])
+  })
+
+  it('includes crawlable catalog and code-reviewer markdown links', () => {
+    expect(page).not.toBeNull()
+    if (!page) {
+      return
+    }
+
+    const installSection = page.sections.find(
+      (section) => section.heading === 'How Eve agents get into a project',
+    )
+    expect(installSection?.body[0]).toContain('[Eve agents catalog](/agents)')
+    expect(installSection?.body[1]).toContain(
+      '[the PR review agent](/agents/code-reviewer)',
+    )
+    expect(installSection?.body.join(' ')).toContain(
+      'npx shadcn@latest add @evex/<slug>',
+    )
+
+    const tryFaq = page.faqs.at(-1)
+    expect(tryFaq?.question).toBe(
+      'How do I try an Eve agent after this comparison?',
+    )
+    expect(tryFaq?.answer).toContain('[/agents](/agents)')
   })
 })

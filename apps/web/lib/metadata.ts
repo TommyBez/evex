@@ -23,11 +23,25 @@ export const defaultTwitterImage = {
   alt: 'evex - the eve agent registry',
 }
 
+/** True when `/` or `/agents` has a real filter. `sort` alone does not count;
+ *  `category=all` matches the homepage and stays indexable. */
+export function hasListingSearchFilter(params: {
+  q?: string
+  category?: string
+  sort?: string
+}): boolean {
+  return Boolean(params.q || (params.category && params.category !== 'all'))
+}
+
 export function createPageMetadata({
   title,
   description,
   path,
   noIndex = false,
+  // When noIndex is true, defaults to nofollow (sign-in, profile, etc.).
+  // Pass follow: true for filtered listing URLs that should stay crawlable
+  // (noindex, follow).
+  follow = false,
   markdownPath,
   socialTitle,
 }: {
@@ -35,12 +49,14 @@ export function createPageMetadata({
   description: string
   path: string
   noIndex?: boolean
+  follow?: boolean
   markdownPath?: string
   // Overrides og:title and twitter:title when the social card should read
   // differently from the SEO title. The rendered <title> is untouched.
   socialTitle?: string
 }): Metadata {
   const cardTitle = socialTitle ?? title
+  const shouldFollow = noIndex ? follow : false
 
   return {
     title,
@@ -74,10 +90,10 @@ export function createPageMetadata({
       ? {
           robots: {
             index: false,
-            follow: false,
+            follow: shouldFollow,
             googleBot: {
               index: false,
-              follow: false,
+              follow: shouldFollow,
             },
           },
         }
