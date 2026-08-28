@@ -1,0 +1,184 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "items": [
+    {
+      "name": "github-ci-explainer",
+      "type": "registry:item",
+      "title": "GitHub CI Explainer",
+      "description": "Explains failed GitHub Actions checks from the log.",
+      "author": "TommyBez",
+      "categories": [
+        "coding"
+      ],
+      "dependencies": [
+        "@upstash/ratelimit@^2.0.8",
+        "@upstash/redis@^1.38.0",
+        "eve@^0.31.3",
+        "zod@4.3.6"
+      ],
+      "files": [
+        {
+          "path": ".env.example",
+          "type": "registry:file",
+          "target": "~/.env.example"
+        },
+        {
+          "path": "agent/agent.ts",
+          "type": "registry:file",
+          "target": "~/agent/agent.ts"
+        },
+        {
+          "path": "agent/channels/github.ts",
+          "type": "registry:file",
+          "target": "~/agent/channels/github.ts"
+        },
+        {
+          "path": "agent/instructions.md",
+          "type": "registry:file",
+          "target": "~/agent/instructions.md"
+        },
+        {
+          "path": "agent/lib/ci-rate-limit.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/ci-rate-limit.ts"
+        },
+        {
+          "path": "agent/lib/check-run-flow.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/check-run-flow.ts"
+        },
+        {
+          "path": "agent/lib/fetch-check-failure.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/fetch-check-failure.ts"
+        },
+        {
+          "path": "agent/lib/failure-context.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/failure-context.ts"
+        },
+        {
+          "path": "agent/lib/parse-ci-log.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/parse-ci-log.ts"
+        },
+        {
+          "path": "agent/tools/explain_ci_failure.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/explain_ci_failure.ts"
+        },
+        {
+          "path": "evals/evals.config.ts",
+          "type": "registry:file",
+          "target": "~/evals/evals.config.ts"
+        },
+        {
+          "path": "evals/failed-check-explains.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/failed-check-explains.eval.ts"
+        },
+        {
+          "path": "evals/ignore-successful-check.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/ignore-successful-check.eval.ts"
+        },
+        {
+          "path": "README.md",
+          "type": "registry:file",
+          "target": "~/agent/README.md"
+        }
+      ],
+      "meta": {
+        "slug": "github-ci-explainer",
+        "category": "coding",
+        "createdAt": "2026-08-28T06:39:11.526Z",
+        "updatedAt": "2026-08-28T07:00:00.000Z",
+        "docs": {
+          "overview": [
+            "GitHub CI Explainer is an eve agent that watches failed GitHub Actions checks through a native GitHub App channel. When a check_run completes with conclusion failure, GitHub delivers the webhook to your deployed eve app at /eve/v1/github, and the agent comments what failed plus the first useful file and line from annotations or the job log.",
+            "It sits next to GitHub Issue Maintainer and Code Reviewer in the same GitHub App world, but its job stops at explaining the failed check. It posts a regular pull request timeline comment when a PR is associated, or a commit comment when there is no PR, and it never changes the branch.",
+            "Built-in Upstash-backed rate limiting and per-check idempotency keep public deployments from comment storms when GitHub retries webhooks or several jobs fail in one suite."
+          ],
+          "howItWorks": [
+            "A completed GitHub Actions check_run with conclusion failure triggers the GitHub channel onCheckRun hook at /eve/v1/github.",
+            "The channel ignores successful and non Actions checks, then checks Upstash rate limits and claims the check run id so retries do not double-post.",
+            "It fetches check annotations and a short log excerpt, parses the first useful file:line, and for commit-only failures posts a commit comment without a model turn.",
+            "When a pull request is associated, the channel injects a github_ci_failure_context block and dispatches the zai/glm-5.2 model.",
+            "The agent calls explain_ci_failure exactly once with checkRunId, whatFailed, optional file and line, and a short excerpt. The tool has no Eve approval gate.",
+            "The channel publishes a structured comment built from those fields as a regular issue or pull request timeline comment. Evals cover a failed-check smoke path and a successful-check negative path."
+          ],
+          "useCases": [
+            {
+              "title": "Surface typecheck failures on a pull request",
+              "body": "When TypeScript CI fails on a PR, the agent comments the failing check name, the first src file and line from the log, and a short excerpt so reviewers jump to the error without opening the Actions UI."
+            },
+            {
+              "title": "Explain lint or unit test job failures",
+              "body": "ESLint and Vitest jobs that emit annotations or file:line log lines get a concise PR comment naming the job and the primary location, keeping the conversation on the pull request timeline."
+            },
+            {
+              "title": "Comment on commit-only CI failures",
+              "body": "Pushes to a branch without an open pull request still get a commit comment when Contents write is granted, so solo maintainers see what failed on the SHA itself."
+            },
+            {
+              "title": "Safe explanations on public repositories",
+              "body": "Upstash-backed limits default to one explanation per check every fifteen minutes and twenty per public repository per day, so noisy CI cannot exhaust your model budget."
+            }
+          ],
+          "requirements": [
+            {
+              "name": "GITHUB_APP_ID",
+              "body": "The App ID of the GitHub App you create under GitHub Settings, Developer settings, GitHub Apps. The app needs Metadata read, Actions read, Checks read, Contents read, Pull requests read, and Issues read/write for PR timeline comments."
+            },
+            {
+              "name": "GITHUB_APP_PRIVATE_KEY",
+              "body": "The PEM private key generated from the GitHub App settings page. When stored as a single-line variable, replace literal newlines with \\n; eve normalizes that form at runtime."
+            },
+            {
+              "name": "GITHUB_WEBHOOK_SECRET",
+              "body": "A long random value set both in the GitHub App webhook configuration and in your deployment. A mismatch produces HTTP 401 responses at /eve/v1/github."
+            },
+            {
+              "name": "GITHUB_APP_SLUG",
+              "body": "The GitHub App slug, defaulting to github-ci-explainer. Used as the channel botName; this agent is check-driven and does not require mention triggers."
+            },
+            {
+              "name": "KV_REST_API_URL",
+              "body": "Upstash Redis REST endpoint used by @upstash/ratelimit for check cooldowns, daily quotas, and duplicate-publication claims. Provision it via Upstash or the Vercel Redis Marketplace integration."
+            },
+            {
+              "name": "KV_REST_API_TOKEN",
+              "body": "The matching Upstash REST token. Use a read-write token, not the read-only one, because the agent writes cooldown and publication keys."
+            },
+            {
+              "name": "AI_GATEWAY_API_KEY",
+              "body": "A model credential for the deployment, either a Vercel AI Gateway API key or AI Gateway OIDC, so the agent can call the zai/glm-5.2 model."
+            }
+          ],
+          "faqs": [
+            {
+              "question": "How do I install and trigger it?",
+              "answer": "Run npx shadcn@latest add @evex/github-ci-explainer inside an eve app, deploy it over HTTPS, create a GitHub App pointing its webhook at /eve/v1/github, subscribe to Check runs, install it on your repositories, then push a change that fails GitHub Actions."
+            },
+            {
+              "question": "Does it change the branch or push a fix?",
+              "answer": "No. The agent only comments on the check. It never runs git push, never applies a patch to the remote branch, and never publishes a GitHub pull request review with inline review comments."
+            },
+            {
+              "question": "Which checks does it explain?",
+              "answer": "Only completed GitHub Actions check runs with conclusion failure. Successful, skipped, cancelled, and third-party check apps are ignored so green builds stay quiet."
+            },
+            {
+              "question": "Where does the comment appear?",
+              "answer": "On the associated pull request timeline when the check lists a pull request. If there is no PR, it posts a commit comment on the head SHA when Contents write is available."
+            },
+            {
+              "question": "How do the rate limits work?",
+              "answer": "Defaults are one explanation per failed check every 15 minutes, 50 daily explanations per private repository, and 20 per public repository. Tune with CI_EXPLAINER_* variables, or disable with CI_EXPLAINER_RATE_LIMIT_ENABLED=false for local development."
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

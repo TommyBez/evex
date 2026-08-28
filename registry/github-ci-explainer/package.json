@@ -1,0 +1,30 @@
+{
+  "name": "github-ci-explainer",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "eve dev",
+    "eval": "eve eval",
+    "eve:build": "eve build",
+    "info": "eve info --json",
+    "start": "eve start",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit --pretty false"
+  },
+  "dependencies": {
+    "@upstash/ratelimit": "^2.0.8",
+    "@upstash/redis": "^1.38.0",
+    "eve": "^0.31.3",
+    "zod": "4.3.6"
+  },
+  "devDependencies": {
+    "@types/node": "^24",
+    "typescript": "5.7.3",
+    "vitest": "^3.2.6"
+  },
+  "author": "TommyBez"
+}

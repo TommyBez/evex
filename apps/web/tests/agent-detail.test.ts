@@ -145,6 +145,20 @@ describe('getAgentMetadataTitle', () => {
     expect(title.length).toBeGreaterThan(METADATA_TITLE_BUDGET)
   })
 
+  it('overrides the title for github-ci-explainer only', () => {
+    const agent = makeAgent({
+      name: 'GitHub CI Explainer',
+      slug: 'github-ci-explainer',
+      title: 'GitHub CI Explainer',
+    })
+    const title = getAgentMetadataTitle(agent)
+    expect(title).toBe(
+      'Eve CI failure agent - install @evex/github-ci-explainer',
+    )
+    expect(title).not.toContain(METADATA_TITLE_SUFFIX)
+    expect(title.length).toBeGreaterThan(METADATA_TITLE_BUDGET)
+  })
+
   it('keeps the name-based pattern for other agents', () => {
     const agent = makeAgent({
       name: 'Eve Agent Builder',
@@ -184,6 +198,9 @@ describe('getAgentJobIntentLede', () => {
     )
     expect(getAgentJobIntentLede('docs-knowledge-assistant')).toBe(
       'Docs Q&A agent for Eve.',
+    )
+    expect(getAgentJobIntentLede('github-ci-explainer')).toBe(
+      'Explains failed GitHub Actions checks from the log.',
     )
     expect(getAgentJobIntentLede('eve-agent-builder')).toBeNull()
     expect(getAgentJobIntentLede('short')).toBeNull()
@@ -301,6 +318,27 @@ describe('getAgentMetaDescription', () => {
 
     expect(lead).not.toContain('Install with')
     expect(install).toBe('npx shadcn@latest add @evex/docs-knowledge-assistant')
+    expect(description.length).toBeLessThanOrEqual(
+      METADATA_DESCRIPTION_MAX_LENGTH,
+    )
+    expect(description.length).toBeLessThanOrEqual(155)
+    expect(description).toBe(expected)
+    expect(description).toContain(`Install with ${install}`)
+  })
+
+  it('returns the exact live github-ci-explainer SERP/OG meta description', () => {
+    const lead = 'Explains failed GitHub Actions checks from the log.'
+    const expected =
+      'Explains failed GitHub Actions checks from the log. Install with npx shadcn@latest add @evex/github-ci-explainer.'
+    const agent = makeAgent({
+      description: lead,
+      slug: 'github-ci-explainer',
+    })
+    const description = getAgentMetaDescription(agent)
+    const install = buildInstallCommand('github-ci-explainer')
+
+    expect(lead).not.toContain('Install with')
+    expect(install).toBe('npx shadcn@latest add @evex/github-ci-explainer')
     expect(description.length).toBeLessThanOrEqual(
       METADATA_DESCRIPTION_MAX_LENGTH,
     )
@@ -544,6 +582,13 @@ describe('registry agent titles fit the rendered title tag', () => {
         )
         expect(rendered).toBe(
           'Eve docs Q&A agent - install @evex/docs-knowledge-assistant · evex',
+        )
+      } else if (agent.slug === 'github-ci-explainer') {
+        expect(title).toBe(
+          'Eve CI failure agent - install @evex/github-ci-explainer',
+        )
+        expect(rendered).toBe(
+          'Eve CI failure agent - install @evex/github-ci-explainer · evex',
         )
       } else {
         expect(title.startsWith(agent.name)).toBe(true)
