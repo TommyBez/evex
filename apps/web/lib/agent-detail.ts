@@ -92,33 +92,37 @@ export function getAgentInstallSummaryDescription({
   }
 }
 
-// Job-intent titles for first-party play pages. Other slugs keep the
-// name-based budget logic below. Locked overrides bypass the compact/fallback
-// budget so product copy wins; the layout still appends ` · evex` once.
-const CODE_REVIEWER_METADATA_TITLE =
-  'Eve PR review agent - install @evex/code-reviewer'
-const GITHUB_ISSUE_MAINTAINER_METADATA_TITLE =
-  'Eve GitHub issue agent - install @evex/github-issue-maintainer'
-const DOCS_KNOWLEDGE_ASSISTANT_METADATA_TITLE =
-  'Eve docs Q&A agent - install @evex/docs-knowledge-assistant'
-const GITHUB_CI_EXPLAINER_METADATA_TITLE =
-  'Eve CI failure agent - install @evex/github-ci-explainer'
+// Job-intent titles for live play pages. Other slugs keep the name-based
+// budget logic below. Locked overrides bypass the compact/fallback budget so
+// product copy wins; the layout still appends ` · evex` once. Title strings
+// must NOT include that suffix.
+const AGENT_METADATA_TITLE_OVERRIDES: Readonly<Record<string, string>> = {
+  'brand-visual-asset-generator': 'Eve brand SVG agent',
+  'branded-seo-page-builder': 'Eve branded SEO page agent',
+  'code-reviewer': 'Eve PR review agent - install @evex/code-reviewer',
+  'docs-knowledge-assistant':
+    'Eve docs Q&A agent - install @evex/docs-knowledge-assistant',
+  'eve-agent-builder': 'Eve agent builder - install @evex/eve-agent-builder',
+  'github-ci-explainer':
+    'Eve CI failure agent - install @evex/github-ci-explainer',
+  'github-issue-maintainer':
+    'Eve GitHub issue agent - install @evex/github-issue-maintainer',
+  'linear-operations-agent':
+    'Eve Linear ops agent - @evex/linear-operations-agent',
+  'openui-assistant': 'Eve OpenUI agent - install @evex/openui-assistant',
+  'postgres-data-analyst':
+    'Eve Postgres SQL agent - @evex/postgres-data-analyst',
+  'programmatic-seo-agent': 'Eve programmatic SEO agent',
+  'supabase-data-analyst':
+    'Eve Supabase SQL agent - @evex/supabase-data-analyst',
+  'x-draft-assistant': 'Eve X draft agent - install @evex/x-draft-assistant',
+  'x-hot-topic-digest': 'Eve X digest agent - install @evex/x-hot-topic-digest',
+}
 
 export function getAgentMetadataTitle(agent: AgentWithAuthor): string {
-  if (agent.slug === 'code-reviewer') {
-    return CODE_REVIEWER_METADATA_TITLE
-  }
-
-  if (agent.slug === 'github-issue-maintainer') {
-    return GITHUB_ISSUE_MAINTAINER_METADATA_TITLE
-  }
-
-  if (agent.slug === 'docs-knowledge-assistant') {
-    return DOCS_KNOWLEDGE_ASSISTANT_METADATA_TITLE
-  }
-
-  if (agent.slug === 'github-ci-explainer') {
-    return GITHUB_CI_EXPLAINER_METADATA_TITLE
+  const override = AGENT_METADATA_TITLE_OVERRIDES[agent.slug]
+  if (override) {
+    return override
   }
 
   const installTitle = `${agent.name} - install @evex/${agent.slug}`
@@ -137,20 +141,29 @@ export function getAgentMetadataTitle(agent: AgentWithAuthor): string {
 }
 
 // Single lede under the agent H1. Job-intent plays only; other slugs render none.
+const AGENT_JOB_INTENT_LEDES: Readonly<Record<string, string>> = {
+  'brand-visual-asset-generator':
+    'Generates brand-aligned SVG packs from a site.',
+  'branded-seo-page-builder': 'Builds an on-brand SEO page from a domain.',
+  'code-reviewer': 'PR review agent for Eve.',
+  'docs-knowledge-assistant': 'Docs Q&A agent for Eve.',
+  'eve-agent-builder': 'Scaffolds, checks, and deploys a new Eve agent.',
+  'github-ci-explainer': 'Explains failed GitHub Actions checks from the log.',
+  'github-issue-maintainer': 'GitHub issue agent for Eve.',
+  'linear-operations-agent':
+    'Triages Linear work and posts Slack cycle digests.',
+  'openui-assistant': 'Streams OpenUI generative UI in an Eve chat.',
+  'postgres-data-analyst':
+    'Answers Slack questions with read-only Postgres SQL.',
+  'programmatic-seo-agent': 'Finds keywords and opens a PR of SEO pages.',
+  'supabase-data-analyst':
+    'Answers Slack questions with read-only Supabase SQL.',
+  'x-draft-assistant': 'Drafts three X posts from accounts you follow.',
+  'x-hot-topic-digest': 'Emails a daily digest of hot topics from X.',
+}
+
 export function getAgentJobIntentLede(slug: string): string | null {
-  if (slug === 'code-reviewer') {
-    return 'PR review agent for Eve.'
-  }
-  if (slug === 'github-issue-maintainer') {
-    return 'GitHub issue agent for Eve.'
-  }
-  if (slug === 'docs-knowledge-assistant') {
-    return 'Docs Q&A agent for Eve.'
-  }
-  if (slug === 'github-ci-explainer') {
-    return 'Explains failed GitHub Actions checks from the log.'
-  }
-  return null
+  return AGENT_JOB_INTENT_LEDES[slug] ?? null
 }
 
 // Replace `[text](destination)` with `text`, including destinations that use
