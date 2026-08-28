@@ -15,9 +15,11 @@ import {
 
 // PMM-locked. Layout template appends ` · evex` — do not include the brand
 // suffix here or the rendered <title> doubles it.
-const AGENTS_INDEX_TITLE = 'Eve agents - install with @evex/<slug>'
+const AGENTS_INDEX_TITLE = 'Eve agents for the Eve agent framework'
 const AGENTS_INDEX_DESCRIPTION =
-  'Browse community Eve agents, inspect the files, install with npx shadcn@latest add @evex/<slug>.'
+  'Open registry of Eve agents for Cursor and shadcn. These are Vercel Eve agents, not the game or the TV show. Inspect the files and install with npx shadcn@latest add @evex/<slug>.'
+const AGENTS_INDEX_LEDE =
+  'This is the open registry for Eve agents on Cursor and the shadcn CLI. These are Vercel Eve agents you can inspect and install, not the game and not the TV show. Install with npx shadcn@latest add @evex/<slug>.'
 
 export const metadata: Metadata = createPageMetadata({
   title: AGENTS_INDEX_TITLE,
@@ -48,8 +50,11 @@ export default function AgentsIndexPage() {
       <main className="mx-auto w-full min-w-0 max-w-6xl px-4 py-10 sm:px-6">
         <header className="max-w-3xl">
           <h1 className="text-balance font-semibold text-3xl text-foreground sm:text-4xl">
-            Browse Eve agents.
+            Eve agents
           </h1>
+          <p className="mt-4 text-pretty text-base text-muted-foreground leading-relaxed sm:text-lg">
+            {AGENTS_INDEX_LEDE}
+          </p>
         </header>
 
         <section

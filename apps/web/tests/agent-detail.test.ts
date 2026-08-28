@@ -95,6 +95,53 @@ describe('getAgentInstallSummaryDescription', () => {
   })
 })
 
+// Locked job-intent metadata titles. Must not include ` · evex` — the layout
+// template appends that once. The four first-party plays keep their existing
+// copy; the ten live catalog plays use the PMM-fitted strings below.
+const JOB_INTENT_METADATA_TITLES: Readonly<Record<string, string>> = {
+  'brand-visual-asset-generator': 'Eve brand SVG agent',
+  'branded-seo-page-builder': 'Eve branded SEO page agent',
+  'code-reviewer': 'Eve PR review agent - install @evex/code-reviewer',
+  'docs-knowledge-assistant':
+    'Eve docs Q&A agent - install @evex/docs-knowledge-assistant',
+  'eve-agent-builder': 'Eve agent builder - install @evex/eve-agent-builder',
+  'github-ci-explainer':
+    'Eve CI failure agent - install @evex/github-ci-explainer',
+  'github-issue-maintainer':
+    'Eve GitHub issue agent - install @evex/github-issue-maintainer',
+  'linear-operations-agent':
+    'Eve Linear ops agent - @evex/linear-operations-agent',
+  'openui-assistant': 'Eve OpenUI agent - install @evex/openui-assistant',
+  'postgres-data-analyst':
+    'Eve Postgres SQL agent - @evex/postgres-data-analyst',
+  'programmatic-seo-agent': 'Eve programmatic SEO agent',
+  'supabase-data-analyst':
+    'Eve Supabase SQL agent - @evex/supabase-data-analyst',
+  'x-draft-assistant': 'Eve X draft agent - install @evex/x-draft-assistant',
+  'x-hot-topic-digest': 'Eve X digest agent - install @evex/x-hot-topic-digest',
+}
+
+const JOB_INTENT_LEDES: Readonly<Record<string, string>> = {
+  'brand-visual-asset-generator':
+    'Generates brand-aligned SVG packs from a site.',
+  'branded-seo-page-builder': 'Builds an on-brand SEO page from a domain.',
+  'code-reviewer': 'PR review agent for Eve.',
+  'docs-knowledge-assistant': 'Docs Q&A agent for Eve.',
+  'eve-agent-builder': 'Scaffolds, checks, and deploys a new Eve agent.',
+  'github-ci-explainer': 'Explains failed GitHub Actions checks from the log.',
+  'github-issue-maintainer': 'GitHub issue agent for Eve.',
+  'linear-operations-agent':
+    'Triages Linear work and posts Slack cycle digests.',
+  'openui-assistant': 'Streams OpenUI generative UI in an Eve chat.',
+  'postgres-data-analyst':
+    'Answers Slack questions with read-only Postgres SQL.',
+  'programmatic-seo-agent': 'Finds keywords and opens a PR of SEO pages.',
+  'supabase-data-analyst':
+    'Answers Slack questions with read-only Supabase SQL.',
+  'x-draft-assistant': 'Drafts three X posts from accounts you follow.',
+  'x-hot-topic-digest': 'Emails a daily digest of hot topics from X.',
+}
+
 describe('getAgentMetadataTitle', () => {
   it('prefers the full install title when it fits', () => {
     const agent = makeAgent({ name: 'Short', slug: 'short' })
@@ -159,14 +206,40 @@ describe('getAgentMetadataTitle', () => {
     expect(title.length).toBeGreaterThan(METADATA_TITLE_BUDGET)
   })
 
+  for (const [slug, expectedTitle] of Object.entries(
+    JOB_INTENT_METADATA_TITLES,
+  )) {
+    it(`locks the job-intent title for ${slug}`, () => {
+      const agent = makeAgent({ name: `Name for ${slug}`, slug })
+      const title = getAgentMetadataTitle(agent)
+      expect(title).toBe(expectedTitle)
+      expect(title).not.toContain(METADATA_TITLE_SUFFIX)
+      if (expectedTitle.length <= METADATA_TITLE_BUDGET) {
+        expect(title.length).toBeLessThanOrEqual(METADATA_TITLE_BUDGET)
+      }
+    })
+  }
+
   it('keeps the name-based pattern for other agents', () => {
     const agent = makeAgent({
-      name: 'Eve Agent Builder',
-      slug: 'eve-agent-builder',
+      name: 'Custom Helper',
+      slug: 'custom-helper',
     })
     expect(getAgentMetadataTitle(agent)).toBe(
-      'Eve Agent Builder - install @evex/eve-agent-builder',
+      'Custom Helper - install @evex/custom-helper',
     )
+  })
+
+  // Registry slugs may be `constructor`; Object.prototype must not leak.
+  it('ignores prototype keys like constructor on the title override map', () => {
+    const agent = makeAgent({
+      name: 'Constructor Agent',
+      slug: 'constructor',
+    })
+    const title = getAgentMetadataTitle(agent)
+    expect(typeof title).toBe('string')
+    expect(title).toBe('Constructor Agent - install @evex/constructor')
+    expect(title).not.toBe(Object.prototype.constructor)
   })
 
   it('never exceeds the metadata length budget', () => {
@@ -181,10 +254,12 @@ describe('getAgentMetadataTitle', () => {
 
   it('drops the brand from the fallback so the layout template owns it', () => {
     const agent = makeAgent({
-      name: 'Brand Visual Asset Generator',
-      slug: 'brand-visual-asset-generator',
+      name: 'A Very Long Unlocked Agent Display Name',
+      slug: 'a-very-long-unlocked-agent-display-name',
     })
-    expect(getAgentMetadataTitle(agent)).toBe('Brand Visual Asset Generator')
+    expect(getAgentMetadataTitle(agent)).toBe(
+      'A Very Long Unlocked Agent Display Name',
+    )
   })
 })
 
@@ -202,8 +277,21 @@ describe('getAgentJobIntentLede', () => {
     expect(getAgentJobIntentLede('github-ci-explainer')).toBe(
       'Explains failed GitHub Actions checks from the log.',
     )
-    expect(getAgentJobIntentLede('eve-agent-builder')).toBeNull()
+  })
+
+  for (const [slug, expectedLede] of Object.entries(JOB_INTENT_LEDES)) {
+    it(`locks the job-intent lede for ${slug}`, () => {
+      expect(getAgentJobIntentLede(slug)).toBe(expectedLede)
+    })
+  }
+
+  it('returns null for unlocked slugs', () => {
+    expect(getAgentJobIntentLede('custom-helper')).toBeNull()
     expect(getAgentJobIntentLede('short')).toBeNull()
+  })
+
+  it('ignores prototype keys like constructor on the lede map', () => {
+    expect(getAgentJobIntentLede('constructor')).toBeNull()
   })
 })
 
@@ -563,33 +651,18 @@ describe('registry agent titles fit the rendered title tag', () => {
     it(`renders within the title budget for ${agent.slug}`, () => {
       const title = getAgentMetadataTitle(agent)
       const rendered = `${title}${METADATA_TITLE_SUFFIX}`
+      const override = JOB_INTENT_METADATA_TITLES[agent.slug]
 
       expect(title).not.toContain('| evex')
       expect(title).not.toContain(METADATA_TITLE_SUFFIX)
-      if (agent.slug === 'code-reviewer') {
-        expect(title).toBe('Eve PR review agent - install @evex/code-reviewer')
-        expect(rendered.length).toBeLessThanOrEqual(METADATA_TITLE_MAX_LENGTH)
-      } else if (agent.slug === 'github-issue-maintainer') {
-        expect(title).toBe(
-          'Eve GitHub issue agent - install @evex/github-issue-maintainer',
-        )
-        expect(rendered).toBe(
-          'Eve GitHub issue agent - install @evex/github-issue-maintainer · evex',
-        )
-      } else if (agent.slug === 'docs-knowledge-assistant') {
-        expect(title).toBe(
-          'Eve docs Q&A agent - install @evex/docs-knowledge-assistant',
-        )
-        expect(rendered).toBe(
-          'Eve docs Q&A agent - install @evex/docs-knowledge-assistant · evex',
-        )
-      } else if (agent.slug === 'github-ci-explainer') {
-        expect(title).toBe(
-          'Eve CI failure agent - install @evex/github-ci-explainer',
-        )
-        expect(rendered).toBe(
-          'Eve CI failure agent - install @evex/github-ci-explainer · evex',
-        )
+      if (override) {
+        expect(title).toBe(override)
+        expect(rendered).toBe(`${override}${METADATA_TITLE_SUFFIX}`)
+        // Locked PMM copy may intentionally exceed the fitted budget (the
+        // four first-party plays). Budget-fitted overrides stay within 60.
+        if (override.length <= METADATA_TITLE_BUDGET) {
+          expect(rendered.length).toBeLessThanOrEqual(METADATA_TITLE_MAX_LENGTH)
+        }
       } else {
         expect(title.startsWith(agent.name)).toBe(true)
         expect(rendered.length).toBeLessThanOrEqual(METADATA_TITLE_MAX_LENGTH)

@@ -28,6 +28,9 @@ import {
   createLeaderboardSchema,
 } from '@/lib/structured-data'
 
+const AGENTS_INDEX_H1 = /<h1[^>]*>\s*Eve agents\s*<\/h1>/
+const H2_TAG = /<h2[\s>]/i
+
 function makeAgent(overrides: Partial<AgentWithAuthor> = {}): AgentWithAuthor {
   return {
     author: { githubUsername: 'octocat', name: 'octocat' },
@@ -316,19 +319,44 @@ describe('/agents catalog index', () => {
     expect(agentsIndexMetadata.alternates?.canonical).toBe('/agents')
     expect(agentsIndexMetadata.openGraph?.url).toBe('/agents')
     expect(agentsIndexMetadata.title).toBe(
-      'Eve agents - install with @evex/<slug>',
+      'Eve agents for the Eve agent framework',
     )
     expect(agentsIndexMetadata.description).toBe(
-      'Browse community Eve agents, inspect the files, install with npx shadcn@latest add @evex/<slug>.',
+      'Open registry of Eve agents for Cursor and shadcn. These are Vercel Eve agents, not the game or the TV show. Inspect the files and install with npx shadcn@latest add @evex/<slug>.',
     )
-    expect(String(agentsIndexMetadata.description).length).toBeLessThanOrEqual(
-      155,
-    )
+    // PMM-locked hub copy intentionally exceeds the usual ~155 SERP budget;
+    // product copy wins (same pattern as locked agent titles).
+    expect(String(agentsIndexMetadata.description).length).toBe(179)
     // Layout template is `%s · evex` — helper must not already include the brand.
     expect(String(agentsIndexMetadata.title).endsWith(' · evex')).toBe(false)
     expect(`${agentsIndexMetadata.title} · evex`).toBe(
-      'Eve agents - install with @evex/<slug> · evex',
+      'Eve agents for the Eve agent framework · evex',
     )
+  })
+
+  it('locks the hub H1 and single lede paragraph (no extra H2)', () => {
+    const pageSource = readFileSync(
+      path.join(import.meta.dirname, '../app/(main)/agents/page.tsx'),
+      'utf8',
+    )
+
+    expect(pageSource).toMatch(AGENTS_INDEX_H1)
+    expect(pageSource).not.toContain('Browse Eve agents.')
+    expect(pageSource).toContain(
+      'This is the open registry for Eve agents on Cursor and the shadcn CLI. These are Vercel Eve agents you can inspect and install, not the game and not the TV show. Install with npx shadcn@latest add @evex/<slug>.',
+    )
+    expect(pageSource).not.toMatch(H2_TAG)
+  })
+
+  it('keeps crawlable agent card links to /agents/{slug}', () => {
+    const cardSource = readFileSync(
+      path.join(import.meta.dirname, '../components/agent-card.tsx'),
+      'utf8',
+    )
+    // Stretched <Link href={...}> — not JS-only navigation.
+    expect(cardSource).toContain('href={`')
+    expect(cardSource).toContain('/agents/')
+    expect(cardSource).toContain('agent.slug')
   })
 
   it('emits Registry → Agents breadcrumbs', () => {
