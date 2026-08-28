@@ -12,6 +12,7 @@
     "eve:build": "eve build",
     "info": "eve info --json",
     "start": "eve start",
+    "test": "vitest run",
     "typecheck": "tsc --noEmit --pretty false"
   },
   "dependencies": {
@@ -22,7 +23,8 @@
   },
   "devDependencies": {
     "@types/node": "^24",
-    "typescript": "5.7.3"
+    "typescript": "5.7.3",
+    "vitest": "^3.2.6"
   },
   "author": "TommyBez"
 }

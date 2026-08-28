@@ -15,6 +15,7 @@ inline review comments, no submit_pr_review).
 3. Prefer an annotation `path` and `start_line` when present. Otherwise take the
    first useful `file:line` from the log excerpt.
 4. Call `explain_ci_failure` exactly once with:
+   - `checkRunId`: the check_run_id from context
    - `whatFailed`: short failure summary
    - `file` and `line`: the primary location (omit only when none can be found)
    - `excerpt`: a short log slice that supports the claim

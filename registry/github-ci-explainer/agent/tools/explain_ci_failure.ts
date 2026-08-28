@@ -2,6 +2,13 @@ import { defineTool } from "eve/tools";
 import { z } from "zod";
 
 const explainCiFailureInput = z.object({
+  checkRunId: z
+    .number()
+    .int()
+    .positive()
+    .describe(
+      "The check_run_id from <github_ci_failure_context>. Required so failed publishes can release the handled claim.",
+    ),
   whatFailed: z
     .string()
     .min(1)
@@ -41,7 +48,7 @@ export type ExplainCiFailureOutput = z.infer<typeof explainCiFailureInput>;
  */
 export default defineTool({
   description:
-    "Publish a CI failure explanation comment for the failed GitHub Actions check. Call exactly once. Include what failed, file:line when known, and a short log excerpt. Does not push fixes and does not publish a pull request review.",
+    "Publish a CI failure explanation comment for the failed GitHub Actions check. Call exactly once. Include checkRunId from context, whatFailed, file:line when known, and a short excerpt. Does not push fixes and does not publish a pull request review.",
   inputSchema: explainCiFailureInput,
   execute(input) {
     if (input.line !== undefined && !input.file?.trim()) {
@@ -64,6 +71,7 @@ export default defineTool({
     return {
       type: "json",
       value: {
+        checkRunId: "checkRunId" in output ? output.checkRunId : undefined,
         hasFileLine: Boolean(
           "file" in output && output.file && "line" in output && output.line,
         ),

@@ -152,35 +152,60 @@ export async function releaseCiPublication(
   }
 }
 
-/**
- * Claim keyed only by check run so channel-side commit comments (no model
- * toolCallId) stay one-shot across webhook retries.
- */
-export async function claimCheckRunHandled(input: {
+export type CheckRunHandledClaimInput = {
   checkRunId: number;
   installationId: number | null | undefined;
   repositoryId: number;
-}): Promise<boolean> {
-  if (!hasUpstashEnvironment()) {
-    return true;
-  }
+};
 
+function checkHandledKey(input: CheckRunHandledClaimInput): string {
   const config = readRateLimitConfig();
-  const key = `${config.prefix}:check-handled:${hashParts([
+  return `${config.prefix}:check-handled:${hashParts([
     "check-handled",
     input.installationId ?? "unknown-installation",
     input.repositoryId,
     input.checkRunId,
   ])}`;
+}
+
+/**
+ * Claim keyed only by check run so channel-side commit comments (no model
+ * toolCallId) stay one-shot across webhook retries.
+ */
+export async function claimCheckRunHandled(
+  input: CheckRunHandledClaimInput,
+): Promise<boolean> {
+  if (!hasUpstashEnvironment()) {
+    return true;
+  }
 
   try {
-    const result = await getRedis().set(key, "1", {
+    const result = await getRedis().set(checkHandledKey(input), "1", {
       ex: PUBLICATION_TTL_SECONDS,
       nx: true,
     });
     return result === "OK";
   } catch {
     return true;
+  }
+}
+
+/**
+ * Best-effort release so transient fetch/publish failures do not suppress
+ * webhook redeliveries for 24h. No-op when Upstash is unset (same as
+ * releaseCiPublication).
+ */
+export async function releaseCheckRunHandled(
+  input: CheckRunHandledClaimInput,
+): Promise<void> {
+  if (!hasUpstashEnvironment()) {
+    return;
+  }
+
+  try {
+    await getRedis().del(checkHandledKey(input));
+  } catch {
+    // Best-effort release; the TTL still expires the claim.
   }
 }
 

@@ -9,6 +9,7 @@ import {
 
 const MAX_ANNOTATIONS = 20;
 const MAX_LOG_CHARS = 8000;
+const MAX_COMMENT_EXCERPT_CHARS = 1200;
 
 export type FailedCheckDetails = {
   readonly annotations: readonly CiAnnotation[];
@@ -53,11 +54,16 @@ export async function fetchFailedCheckDetails(input: {
   const combinedText = [outputText, outputSummary, jobLog]
     .filter((part): part is string => Boolean(part?.trim()))
     .join("\n");
-  const logExcerpt = truncateLogExcerpt(
+  // Scan the full log for file:line first; truncate only for the posted excerpt.
+  const location = firstUsefulLocation({
+    annotations,
+    logText: combinedText || undefined,
+  });
+  const logExcerpt = excerptAroundLocation(
     combinedText || "(no log text available)",
+    location,
     MAX_LOG_CHARS,
   );
-  const location = firstUsefulLocation({ annotations, logText: logExcerpt });
 
   return {
     annotations,
@@ -73,6 +79,107 @@ export async function fetchFailedCheckDetails(input: {
     outputText,
     outputTitle,
   };
+}
+
+/**
+ * Prefer an excerpt centered on the resolved file:line; otherwise keep the
+ * start of the log. Truncation happens only after location is known.
+ */
+export function excerptAroundLocation(
+  fullText: string,
+  location: CiFailureLocation | null,
+  maxChars = MAX_LOG_CHARS,
+): string {
+  const trimmed = fullText.trim();
+  if (trimmed.length === 0) {
+    return "(no log text available)";
+  }
+  if (trimmed.length <= maxChars) {
+    return trimmed;
+  }
+
+  if (!location) {
+    return truncateLogExcerpt(trimmed, maxChars);
+  }
+
+  const needles = [
+    `${location.file}:${location.line}`,
+    `${location.file}(${location.line}`,
+    location.file,
+  ];
+  let anchor = -1;
+  for (const needle of needles) {
+    const index = trimmed.indexOf(needle);
+    if (index >= 0) {
+      anchor = index;
+      break;
+    }
+  }
+
+  if (anchor < 0) {
+    return truncateLogExcerpt(trimmed, maxChars);
+  }
+
+  const half = Math.floor(maxChars / 2);
+  let start = Math.max(0, anchor - half);
+  let end = Math.min(trimmed.length, start + maxChars);
+  start = Math.max(0, end - maxChars);
+
+  // Prefer line boundaries when we have room.
+  if (start > 0) {
+    const nextNewline = trimmed.indexOf("\n", start);
+    if (nextNewline !== -1 && nextNewline < anchor) {
+      start = nextNewline + 1;
+    }
+  }
+  if (end < trimmed.length) {
+    const prevNewline = trimmed.lastIndexOf("\n", end);
+    if (prevNewline > anchor) {
+      end = prevNewline;
+    }
+  }
+
+  const slice = trimmed.slice(start, end).trim();
+  const prefix = start > 0 ? "…\n" : "";
+  const suffix = end < trimmed.length ? "\n…" : "";
+  return `${prefix}${slice}${suffix}`;
+}
+
+/**
+ * Build a fenced code block whose delimiter is longer than any backtick run
+ * inside the body, so untrusted log text cannot break out of the fence.
+ */
+export function fenceCodeBlock(language: string, content: string): string {
+  const body = content.replace(/\r\n/g, "\n").replace(/\s+$/u, "");
+  let fenceLength = 3;
+  for (const match of body.matchAll(/`+/g)) {
+    fenceLength = Math.max(fenceLength, match[0].length + 1);
+  }
+  const fence = "`".repeat(fenceLength);
+  const info = language.trim();
+  return `${fence}${info}\n${body}\n${fence}`;
+}
+
+/**
+ * Rewrite every markdown fenced code block so its delimiter is longer than any
+ * backtick run inside the body. Used for model-authored comment bodies.
+ */
+export function hardenMarkdownCodeFences(markdown: string): string {
+  // Match opening fence + optional info string, body, closing fence of equal
+  // or greater length (non-greedy body).
+  return markdown.replace(
+    /(^|\n)(`{3,})([^\n`]*)\n([\s\S]*?)\n(\2)(?=\n|$)/g,
+    (
+      _full: string,
+      prefix: string,
+      _openFence: string,
+      info: string,
+      body: string,
+    ) => {
+      const language = info.trim();
+      return `${prefix}${fenceCodeBlock(language, body)}`;
+    },
+  );
 }
 
 export function formatCiFailureComment(input: {
@@ -103,7 +210,10 @@ export function formatCiFailureComment(input: {
 
   const excerpt = input.excerpt.trim();
   if (excerpt) {
-    lines.push("", "```text", truncateLogExcerpt(excerpt, 1200), "```");
+    lines.push(
+      "",
+      fenceCodeBlock("text", truncateLogExcerpt(excerpt, MAX_COMMENT_EXCERPT_CHARS)),
+    );
   }
 
   return lines.join("\n");
@@ -169,7 +279,8 @@ async function maybeFetchJobLogText(
     });
 
     if (typeof response.body === "string") {
-      return truncateLogExcerpt(response.body, MAX_LOG_CHARS);
+      // Return the complete log — callers scan for file:line before truncating.
+      return response.body;
     }
 
     return null;

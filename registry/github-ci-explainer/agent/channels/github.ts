@@ -1,5 +1,4 @@
 import {
-  defaultGitHubAuth,
   type GitHubCheckRunEvent,
   type GitHubChannelState,
   type GitHubEventContext,
@@ -9,15 +8,18 @@ import {
 } from "eve/channels/github";
 import { toolResultFrom } from "eve/tools";
 
+import { handleClaimedCheckRun } from "../lib/check-run-flow";
 import {
+  type CheckRunHandledClaimInput,
   claimCheckRunHandled,
   claimCiPublication,
   checkCiExplainerRateLimit,
+  releaseCheckRunHandled,
   releaseCiPublication,
 } from "../lib/ci-rate-limit";
 import {
-  fetchFailedCheckDetails,
   formatCiFailureComment,
+  hardenMarkdownCodeFences,
   type FailedCheckDetails,
 } from "../lib/fetch-check-failure";
 import explainCiFailureTool, {
@@ -55,45 +57,31 @@ export default githubChannel({
       return null;
     }
 
-    const claimed = await claimCheckRunHandled({
+    const handledClaim: CheckRunHandledClaimInput = {
       checkRunId: checkRun.checkRunId,
       installationId: ctx.github.installationId,
       repositoryId: ctx.repository.id,
-    });
+    };
+
+    const claimed = await claimCheckRunHandled(handledClaim);
     if (!claimed) {
       return null;
     }
 
-    const details = await fetchFailedCheckDetails({
-      checkRunId: checkRun.checkRunId,
-      github: ctx.github,
-      headSha: checkRun.headSha,
-      owner: ctx.repository.owner,
-      raw: checkRun.raw,
-      repo: ctx.repository.name,
-    });
-
-    const pullRequestNumber = checkRun.pullRequests[0] ?? null;
-
-    // Eve can only dispatch a model turn when a PR thread exists. For
-    // commit-only failures, post a commit comment from the channel and exit.
-    if (pullRequestNumber === null) {
-      if (checkRun.headSha) {
-        await postCommitComment(ctx, checkRun.headSha, details);
-      }
+    try {
+      return await handleClaimedCheckRun({
+        buildFailureContext,
+        checkRun,
+        ctx,
+        handledClaim,
+        postCommit: postCommitComment,
+      });
+    } catch {
+      // handleClaimedCheckRun already released on its failure paths; release
+      // again here for any unexpected throw so redeliveries are never stuck.
+      await releaseCheckRunHandled(handledClaim);
       return null;
     }
-
-    return {
-      auth: defaultGitHubAuth(ctx),
-      context: [
-        buildFailureContext(
-          details,
-          pullRequestNumber,
-          ctx.repository.fullName,
-        ),
-      ],
-    };
   },
   events: {
     async "action.result"(data, channel) {
@@ -111,12 +99,18 @@ export default githubChannel({
         return;
       }
 
+      const explanation = match.output as ExplainCiFailureOutput;
       const claimInput = {
         headSha: state.headSha,
         installationId: channel.github.installationId,
         pullRequestNumber: state.pullRequestNumber,
         repositoryId: channel.repository.id,
         toolCallId: match.callId,
+      };
+      const handledClaim: CheckRunHandledClaimInput = {
+        checkRunId: explanation.checkRunId,
+        installationId: channel.github.installationId,
+        repositoryId: channel.repository.id,
       };
 
       const claimed = await claimCiPublication(claimInput);
@@ -126,13 +120,11 @@ export default githubChannel({
       }
 
       try {
-        await publishExplanation(
-          channel,
-          match.output as ExplainCiFailureOutput,
-        );
+        await publishExplanation(channel, explanation);
         state.ciExplanationSubmitted = true;
       } catch {
         await releaseCiPublication(claimInput);
+        await releaseCheckRunHandled(handledClaim);
         state.ciExplanationSubmitted = false;
       }
     },
@@ -190,7 +182,7 @@ function buildFailureContext(
     details.logExcerpt,
     "</github_ci_failure_context>",
     "",
-    "Explain this failed GitHub Actions check. Call explain_ci_failure exactly once with whatFailed, file/line when known, a short excerpt, and the full comment body. Do not publish a pull request review. Do not push a fix.",
+    "Explain this failed GitHub Actions check. Call explain_ci_failure exactly once with checkRunId, whatFailed, file/line when known, a short excerpt, and the full comment body. Do not publish a pull request review. Do not push a fix.",
   ].join("\n");
 }
 
@@ -198,15 +190,17 @@ async function publishExplanation(
   channel: GitHubEventContext,
   explanation: ExplainCiFailureOutput,
 ) {
-  const body =
-    explanation.comment.trim() ||
-    formatCiFailureComment({
-      checkName: "GitHub Actions",
-      excerpt: explanation.excerpt,
-      file: explanation.file,
-      line: explanation.line,
-      whatFailed: explanation.whatFailed,
-    });
+  // Prefer the model comment when present, but harden fences so log backticks
+  // cannot break out of a ```text block. Fall back to the structured formatter.
+  const body = explanation.comment.trim()
+    ? hardenMarkdownCodeFences(explanation.comment.trim())
+    : formatCiFailureComment({
+        checkName: "GitHub Actions",
+        excerpt: explanation.excerpt,
+        file: explanation.file,
+        line: explanation.line,
+        whatFailed: explanation.whatFailed,
+      });
 
   await postCommentChunks(channel.thread, body);
 }
@@ -230,15 +224,11 @@ async function postCommitComment(
     whatFailed,
   });
 
-  try {
-    await ctx.github.request({
-      method: "POST",
-      path: `/repos/${encodeURIComponent(ctx.repository.owner)}/${encodeURIComponent(ctx.repository.name)}/commits/${encodeURIComponent(headSha)}/comments`,
-      body: { body },
-    });
-  } catch {
-    // Best-effort: commit comments require Contents write; skip if denied.
-  }
+  await ctx.github.request({
+    method: "POST",
+    path: `/repos/${encodeURIComponent(ctx.repository.owner)}/${encodeURIComponent(ctx.repository.name)}/commits/${encodeURIComponent(headSha)}/comments`,
+    body: { body },
+  });
 }
 
 async function postCommentChunks(thread: GitHubThread, message: string) {
