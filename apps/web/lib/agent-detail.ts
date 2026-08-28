@@ -120,9 +120,8 @@ const AGENT_METADATA_TITLE_OVERRIDES: Readonly<Record<string, string>> = {
 }
 
 export function getAgentMetadataTitle(agent: AgentWithAuthor): string {
-  const override = AGENT_METADATA_TITLE_OVERRIDES[agent.slug]
-  if (override) {
-    return override
+  if (Object.hasOwn(AGENT_METADATA_TITLE_OVERRIDES, agent.slug)) {
+    return AGENT_METADATA_TITLE_OVERRIDES[agent.slug]
   }
 
   const installTitle = `${agent.name} - install @evex/${agent.slug}`
@@ -163,7 +162,10 @@ const AGENT_JOB_INTENT_LEDES: Readonly<Record<string, string>> = {
 }
 
 export function getAgentJobIntentLede(slug: string): string | null {
-  return AGENT_JOB_INTENT_LEDES[slug] ?? null
+  if (!Object.hasOwn(AGENT_JOB_INTENT_LEDES, slug)) {
+    return null
+  }
+  return AGENT_JOB_INTENT_LEDES[slug]
 }
 
 // Replace `[text](destination)` with `text`, including destinations that use

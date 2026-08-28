@@ -230,6 +230,18 @@ describe('getAgentMetadataTitle', () => {
     )
   })
 
+  // Registry slugs may be `constructor`; Object.prototype must not leak.
+  it('ignores prototype keys like constructor on the title override map', () => {
+    const agent = makeAgent({
+      name: 'Constructor Agent',
+      slug: 'constructor',
+    })
+    const title = getAgentMetadataTitle(agent)
+    expect(typeof title).toBe('string')
+    expect(title).toBe('Constructor Agent - install @evex/constructor')
+    expect(title).not.toBe(Object.prototype.constructor)
+  })
+
   it('never exceeds the metadata length budget', () => {
     const agent = makeAgent({
       name: 'A very long agent display name that keeps going',
@@ -276,6 +288,10 @@ describe('getAgentJobIntentLede', () => {
   it('returns null for unlocked slugs', () => {
     expect(getAgentJobIntentLede('custom-helper')).toBeNull()
     expect(getAgentJobIntentLede('short')).toBeNull()
+  })
+
+  it('ignores prototype keys like constructor on the lede map', () => {
+    expect(getAgentJobIntentLede('constructor')).toBeNull()
   })
 })
 
