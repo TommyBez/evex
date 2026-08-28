@@ -104,6 +104,28 @@ importers:
         specifier: 5.7.3
         version: 5.7.3
 
+  github-ci-explainer:
+    dependencies:
+      '@upstash/ratelimit':
+        specifier: ^2.0.8
+        version: 2.0.8(@upstash/redis@1.38.0)
+      '@upstash/redis':
+        specifier: ^1.38.0
+        version: 1.38.0
+      eve:
+        specifier: ^0.31.3
+        version: 0.31.3(@upstash/redis@1.38.0)(ai@7.0.58(zod@4.3.6))(just-bash@3.0.2)
+      zod:
+        specifier: 4.3.6
+        version: 4.3.6
+    devDependencies:
+      '@types/node':
+        specifier: ^24
+        version: 24.13.2
+      typescript:
+        specifier: 5.7.3
+        version: 5.7.3
+
   github-issue-maintainer:
     dependencies:
       '@upstash/ratelimit':
