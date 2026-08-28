@@ -161,25 +161,64 @@ export function fenceCodeBlock(language: string, content: string): string {
 }
 
 /**
- * Rewrite every markdown fenced code block so its delimiter is longer than any
- * backtick run inside the body. Used for model-authored comment bodies.
+ * Rewrite markdown fenced code blocks (backtick or tilde) so the body is
+ * re-emitted via {@link fenceCodeBlock}. Closing fences may be longer than the
+ * opening fence (CommonMark); both are accepted. Tilde fences are normalized
+ * to hardened backtick fences.
  */
 export function hardenMarkdownCodeFences(markdown: string): string {
-  // Match opening fence + optional info string, body, closing fence of equal
-  // or greater length (non-greedy body).
-  return markdown.replace(
-    /(^|\n)(`{3,})([^\n`]*)\n([\s\S]*?)\n(\2)(?=\n|$)/g,
-    (
-      _full: string,
-      prefix: string,
-      _openFence: string,
-      info: string,
-      body: string,
-    ) => {
-      const language = info.trim();
-      return `${prefix}${fenceCodeBlock(language, body)}`;
-    },
-  );
+  const normalized = markdown.replace(/\r\n/g, "\n");
+  const lines = normalized.split("\n");
+  const output: string[] = [];
+  let index = 0;
+
+  while (index < lines.length) {
+    const line = lines[index] ?? "";
+    const open = /^(?<fence>`{3,}|~{3,})(?<info>[^\n]*)$/.exec(line);
+    if (!open?.groups?.fence) {
+      output.push(line);
+      index += 1;
+      continue;
+    }
+
+    const openFence = open.groups.fence;
+    const fenceChar = openFence[0] ?? "`";
+    const openLength = openFence.length;
+    const info = open.groups.info ?? "";
+    const bodyLines: string[] = [];
+    index += 1;
+
+    let closed = false;
+    while (index < lines.length) {
+      const candidate = lines[index] ?? "";
+      const close = /^(?<fence>`{3,}|~{3,})[ \t]*$/.exec(candidate);
+      const closeFence = close?.groups?.fence;
+      if (
+        closeFence &&
+        closeFence[0] === fenceChar &&
+        closeFence.length >= openLength
+      ) {
+        closed = true;
+        index += 1;
+        break;
+      }
+      bodyLines.push(candidate);
+      index += 1;
+    }
+
+    if (!closed) {
+      // Unclosed fence — emit the opening line and body as plain text.
+      output.push(line);
+      output.push(...bodyLines);
+      continue;
+    }
+
+    const language = info.trim().split(/\s+/)[0] ?? "";
+    const hardened = fenceCodeBlock(language, bodyLines.join("\n"));
+    output.push(...hardened.split("\n"));
+  }
+
+  return output.join("\n");
 }
 
 export function formatCiFailureComment(input: {

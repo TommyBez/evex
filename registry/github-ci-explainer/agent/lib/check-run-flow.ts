@@ -3,6 +3,7 @@ import { defaultGitHubAuth } from "eve/channels/github";
 
 import {
   type CheckRunHandledClaimInput,
+  clearWebhookCheckRunId,
   releaseCheckRunHandled,
 } from "./ci-rate-limit";
 import {
@@ -43,6 +44,19 @@ export async function handleClaimedCheckRun(input: {
   const fetchDetails = input.fetchDetails ?? fetchFailedCheckDetails;
   const releaseHandled = input.releaseHandled ?? releaseCheckRunHandled;
 
+  const releaseClaim = async () => {
+    await releaseHandled(input.handledClaim);
+    const pullRequestNumber = input.checkRun.pullRequests[0] ?? null;
+    if (pullRequestNumber !== null) {
+      await clearWebhookCheckRunId({
+        headSha: input.checkRun.headSha,
+        installationId: input.handledClaim.installationId,
+        pullRequestNumber,
+        repositoryId: input.handledClaim.repositoryId,
+      });
+    }
+  };
+
   let details: FailedCheckDetails;
   try {
     details = await fetchDetails({
@@ -54,7 +68,7 @@ export async function handleClaimedCheckRun(input: {
       repo: input.ctx.repository.name,
     });
   } catch (error) {
-    await releaseHandled(input.handledClaim);
+    await releaseClaim();
     throw error;
   }
 
@@ -67,7 +81,7 @@ export async function handleClaimedCheckRun(input: {
       try {
         await input.postCommit(input.ctx, input.checkRun.headSha, details);
       } catch (error) {
-        await releaseHandled(input.handledClaim);
+        await releaseClaim();
         throw error;
       }
     }

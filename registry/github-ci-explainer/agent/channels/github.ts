@@ -11,11 +11,15 @@ import { toolResultFrom } from "eve/tools";
 import { handleClaimedCheckRun } from "../lib/check-run-flow";
 import {
   type CheckRunHandledClaimInput,
+  bindWebhookCheckRunId,
   claimCheckRunHandled,
   claimCiPublication,
   checkCiExplainerRateLimit,
+  clearWebhookCheckRunId,
   releaseCheckRunHandled,
   releaseCiPublication,
+  resolveTrustedHandledClaimCheckRunId,
+  resolveWebhookCheckRunId,
 } from "../lib/ci-rate-limit";
 import {
   buildFailureContext,
@@ -35,6 +39,8 @@ const GITHUB_ACTIONS_SLUG = "github-actions";
 
 type CiExplainerGitHubState = GitHubChannelState & {
   ciExplanationSubmitted?: boolean;
+  /** Webhook-owned check run id for this turn; never trust the tool alone. */
+  webhookCheckRunId?: number;
 };
 
 export default githubChannel({
@@ -71,6 +77,18 @@ export default githubChannel({
       return null;
     }
 
+    const pullRequestNumber = checkRun.pullRequests[0] ?? null;
+    if (pullRequestNumber !== null) {
+      // Carry the webhook-owned id into the PR turn for claim cleanup.
+      await bindWebhookCheckRunId({
+        checkRunId: checkRun.checkRunId,
+        headSha: checkRun.headSha,
+        installationId: ctx.github.installationId,
+        pullRequestNumber,
+        repositoryId: ctx.repository.id,
+      });
+    }
+
     try {
       return await handleClaimedCheckRun({
         buildFailureContext,
@@ -83,6 +101,14 @@ export default githubChannel({
       // handleClaimedCheckRun already released on its failure paths; release
       // again here for any unexpected throw so redeliveries are never stuck.
       await releaseCheckRunHandled(handledClaim);
+      if (pullRequestNumber !== null) {
+        await clearWebhookCheckRunId({
+          headSha: checkRun.headSha,
+          installationId: ctx.github.installationId,
+          pullRequestNumber,
+          repositoryId: ctx.repository.id,
+        });
+      }
       return null;
     }
   },
@@ -103,15 +129,52 @@ export default githubChannel({
       }
 
       const explanation = match.output as ExplainCiFailureOutput;
+      const pullRequestNumber = state.pullRequestNumber;
+      if (pullRequestNumber === null) {
+        return;
+      }
+
+      const bindingInput = {
+        headSha: state.headSha,
+        installationId: channel.github.installationId,
+        pullRequestNumber,
+        repositoryId: channel.repository.id,
+      };
+
+      const webhookCheckRunId =
+        state.webhookCheckRunId ?? (await resolveWebhookCheckRunId(bindingInput));
+
+      // Without Upstash, handled-claim cleanup is a no-op — accept the reported
+      // id. With Upstash, require the webhook-bound id and reject mismatches.
+      const upstashConfigured = Boolean(
+        process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN,
+      );
+      let trustedCheckRunId: number;
+      if (upstashConfigured) {
+        const trusted = resolveTrustedHandledClaimCheckRunId({
+          reportedCheckRunId: explanation.checkRunId,
+          webhookCheckRunId,
+        });
+        if (!trusted.ok) {
+          // Do not publish or release — a mismatched id must not touch Redis.
+          return;
+        }
+        trustedCheckRunId = trusted.checkRunId;
+      } else {
+        trustedCheckRunId = explanation.checkRunId;
+      }
+
+      state.webhookCheckRunId = trustedCheckRunId;
+
       const claimInput = {
         headSha: state.headSha,
         installationId: channel.github.installationId,
-        pullRequestNumber: state.pullRequestNumber,
+        pullRequestNumber,
         repositoryId: channel.repository.id,
         toolCallId: match.callId,
       };
       const handledClaim: CheckRunHandledClaimInput = {
-        checkRunId: explanation.checkRunId,
+        checkRunId: trustedCheckRunId,
         installationId: channel.github.installationId,
         repositoryId: channel.repository.id,
       };
@@ -125,9 +188,11 @@ export default githubChannel({
       try {
         await publishExplanation(channel, explanation);
         state.ciExplanationSubmitted = true;
+        await clearWebhookCheckRunId(bindingInput);
       } catch {
         await releaseCiPublication(claimInput);
         await releaseCheckRunHandled(handledClaim);
+        await clearWebhookCheckRunId(bindingInput);
         state.ciExplanationSubmitted = false;
       }
     },

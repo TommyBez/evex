@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 import { handleClaimedCheckRun } from "../agent/lib/check-run-flow";
+import { resolveTrustedHandledClaimCheckRunId } from "../agent/lib/ci-rate-limit";
 import {
   buildFailureContext,
   buildPublishedExplanation,
@@ -206,6 +207,68 @@ describe("markdown fence hardening", () => {
     expect(hardened).toContain("````text\n");
     expect(hardened).toContain("log with ``` inside");
     expect(hardened).toMatch(/````text\nlog with ``` inside\n````/);
+  });
+
+  it("hardenMarkdownCodeFences accepts a longer closing backtick fence", () => {
+    const modelComment = [
+      "### CI failure",
+      "",
+      "```text",
+      "log body",
+      "`````",
+    ].join("\n");
+    const hardened = hardenMarkdownCodeFences(modelComment);
+    expect(hardened).toMatch(/^### CI failure\n\n```+text\nlog body\n```+$/);
+    expect(hardened).toContain("log body");
+    expect(hardened).not.toContain("`````");
+  });
+
+  it("hardenMarkdownCodeFences rewrites tilde fences to hardened backticks", () => {
+    const modelComment = [
+      "intro",
+      "~~~text",
+      "tilde body with ``` inside",
+      "~~~~",
+      "outro",
+    ].join("\n");
+    const hardened = hardenMarkdownCodeFences(modelComment);
+    expect(hardened.startsWith("intro\n")).toBe(true);
+    expect(hardened.endsWith("\noutro")).toBe(true);
+    expect(hardened).not.toContain("~~~");
+    expect(hardened).toContain("````text\n");
+    expect(hardened).toContain("tilde body with ``` inside");
+    expect(hardened).toMatch(
+      /````text\ntilde body with ``` inside\n````/,
+    );
+  });
+});
+
+describe("trusted handled-claim checkRunId", () => {
+  it("rejects a model checkRunId that does not match the webhook id", () => {
+    const result = resolveTrustedHandledClaimCheckRunId({
+      reportedCheckRunId: 999,
+      webhookCheckRunId: 42,
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.reason).toMatch(/does not match webhook check run 42/);
+    }
+  });
+
+  it("accepts a matching webhook-owned checkRunId for cleanup", () => {
+    const result = resolveTrustedHandledClaimCheckRunId({
+      reportedCheckRunId: 42,
+      webhookCheckRunId: 42,
+    });
+    expect(result).toEqual({ ok: true, checkRunId: 42 });
+  });
+
+  it("rejects cleanup when the webhook-owned id is missing", () => {
+    const result = resolveTrustedHandledClaimCheckRunId({
+      reportedCheckRunId: 42,
+      webhookCheckRunId: null,
+    });
+    expect(result.ok).toBe(false);
   });
 });
 

@@ -209,6 +209,107 @@ export async function releaseCheckRunHandled(
   }
 }
 
+export type WebhookCheckRunBindingInput = {
+  headSha: string | null | undefined;
+  installationId: number | null | undefined;
+  pullRequestNumber: number;
+  repositoryId: number;
+};
+
+function webhookCheckRunBindingKey(input: WebhookCheckRunBindingInput): string {
+  const config = readRateLimitConfig();
+  return `${config.prefix}:webhook-check-run:${hashParts([
+    "webhook-check-run",
+    input.installationId ?? "unknown-installation",
+    input.repositoryId,
+    input.pullRequestNumber,
+    input.headSha ?? "unknown-sha",
+  ])}`;
+}
+
+/**
+ * Persist the webhook-owned check run id for the PR turn so publication
+ * cleanup never trusts a model-supplied checkRunId alone.
+ */
+export async function bindWebhookCheckRunId(
+  input: WebhookCheckRunBindingInput & { checkRunId: number },
+): Promise<void> {
+  if (!hasUpstashEnvironment()) {
+    return;
+  }
+
+  try {
+    await getRedis().set(
+      webhookCheckRunBindingKey(input),
+      String(input.checkRunId),
+      { ex: PUBLICATION_TTL_SECONDS },
+    );
+  } catch {
+    // Best-effort; action.result rejects cleanup without a trusted binding.
+  }
+}
+
+export async function resolveWebhookCheckRunId(
+  input: WebhookCheckRunBindingInput,
+): Promise<number | null> {
+  if (!hasUpstashEnvironment()) {
+    return null;
+  }
+
+  try {
+    const raw = await getRedis().get<string>(webhookCheckRunBindingKey(input));
+    if (raw === null || raw === undefined) {
+      return null;
+    }
+    const parsed = Number.parseInt(String(raw), 10);
+    return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+export async function clearWebhookCheckRunId(
+  input: WebhookCheckRunBindingInput,
+): Promise<void> {
+  if (!hasUpstashEnvironment()) {
+    return;
+  }
+
+  try {
+    await getRedis().del(webhookCheckRunBindingKey(input));
+  } catch {
+    // Best-effort; the TTL still expires the binding.
+  }
+}
+
+/**
+ * Prefer the webhook-owned check run id for handled-claim cleanup. Rejects a
+ * model-reported id that does not match the bound webhook id.
+ */
+export function resolveTrustedHandledClaimCheckRunId(input: {
+  reportedCheckRunId: number;
+  webhookCheckRunId: number | null | undefined;
+}): { ok: true; checkRunId: number } | { ok: false; reason: string } {
+  if (
+    input.webhookCheckRunId === null ||
+    input.webhookCheckRunId === undefined
+  ) {
+    return {
+      ok: false,
+      reason: "missing webhook-owned checkRunId for handled-claim cleanup",
+    };
+  }
+
+  if (input.reportedCheckRunId !== input.webhookCheckRunId) {
+    return {
+      ok: false,
+      reason: `checkRunId ${input.reportedCheckRunId} does not match webhook check run ${input.webhookCheckRunId}`,
+    };
+  }
+
+  return { ok: true, checkRunId: input.webhookCheckRunId };
+}
+
 function checkLimiter(
   limiter: RateLimiter,
   identifier: string,

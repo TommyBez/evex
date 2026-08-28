@@ -7,7 +7,7 @@ const explainCiFailureInput = z.object({
     .int()
     .positive()
     .describe(
-      "The check_run_id from <github_ci_failure_context>. Required so failed publishes can release the handled claim.",
+      "Must equal the check_run_id from <github_ci_failure_context> (webhook-owned). Mismatches are rejected at publish time; claim cleanup never uses a different id.",
     ),
   whatFailed: z
     .string()
@@ -47,10 +47,13 @@ export type ExplainCiFailureOutput = z.infer<typeof explainCiFailureInput>;
  * Publishes a CI failure explanation as a regular issue/PR (or commit) comment.
  * Intentionally has no Eve approval — unattended, like github-issue-maintainer.
  * Publication uses structured fields only; optional `comment` is never posted raw.
+ *
+ * `checkRunId` must match the webhook check run. The GitHub channel binds the
+ * event-owned id at claim time and rejects mismatches before any Redis cleanup.
  */
 export default defineTool({
   description:
-    "Publish a CI failure explanation for the failed GitHub Actions check. Call exactly once with checkRunId, whatFailed, file/line when known, and a short excerpt. The channel posts a structured comment from those fields (optional comment is ignored). Does not push fixes and does not publish a pull request review.",
+    "Publish a CI failure explanation for the failed GitHub Actions check. Call exactly once with checkRunId (must match check_run_id from context), whatFailed, file/line when known, and a short excerpt. The channel posts a structured comment from those fields (optional comment is ignored). Does not push fixes and does not publish a pull request review.",
   inputSchema: explainCiFailureInput,
   execute(input) {
     if (input.line !== undefined && !input.file?.trim()) {
