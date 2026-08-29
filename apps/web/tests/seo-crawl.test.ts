@@ -302,6 +302,29 @@ describe('/agents catalog index', () => {
     expect(resolvedSource).toContain('href="/agents">Agents</')
   })
 
+  it('links Learn from header fallback, SiteHeader, and mobile nav', () => {
+    // Mirrors the Agents header pattern (#68) for /learn discovery.
+    const headerSource = readFileSync(
+      path.join(import.meta.dirname, '../components/site-header.tsx'),
+      'utf8',
+    )
+    const mobileSource = readFileSync(
+      path.join(import.meta.dirname, '../components/mobile-nav-menu.tsx'),
+      'utf8',
+    )
+    const compact = headerSource.replace(/\s+/g, '')
+    const fallbackStart = compact.indexOf('exportfunctionSiteHeaderFallback')
+    const resolvedStart = compact.indexOf('exportasyncfunctionSiteHeader')
+    const fallbackSource = compact.slice(fallbackStart, resolvedStart)
+    const resolvedSource = compact.slice(resolvedStart)
+
+    expect(fallbackSource).toContain('href="/learn">Learn</')
+    expect(resolvedSource).toContain('href="/learn">Learn</')
+    expect(resolvedSource).toContain("activePrefixes={['/learn']}")
+    expect(mobileSource.replace(/\s+/g, '')).toContain('href="/learn">')
+    expect(mobileSource).toContain('Learn')
+  })
+
   it('is listed in sitemap.xml', () => {
     const entries = sitemap()
     const agentsIndex = entries.find(

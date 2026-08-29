@@ -32,6 +32,12 @@ export function SiteHeaderFallback() {
           </Link>
           <Link
             className="hidden font-medium text-muted-foreground text-sm md:inline-flex"
+            href="/learn"
+          >
+            Learn
+          </Link>
+          <Link
+            className="hidden font-medium text-muted-foreground text-sm md:inline-flex"
             href="/docs"
           >
             Docs
@@ -78,6 +84,13 @@ export async function SiteHeader() {
             href="/agents"
           >
             Agents
+          </NavLink>
+          <NavLink
+            activePrefixes={['/learn']}
+            className="hidden md:inline-flex"
+            href="/learn"
+          >
+            Learn
           </NavLink>
           <NavLink className="hidden md:inline-flex" href="/docs">
             Docs
