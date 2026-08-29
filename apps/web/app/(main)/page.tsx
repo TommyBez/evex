@@ -17,7 +17,7 @@ import {
   sumInstallCounts,
 } from '@/lib/data/agents'
 import { getInstallCountMap } from '@/lib/data/install-metrics'
-import { createPageMetadata } from '@/lib/metadata'
+import { createPageMetadata, hasListingSearchFilter } from '@/lib/metadata'
 import { getStaticRegistryStats, listStaticAgents } from '@/lib/registry'
 import { buildInstallCommand } from '@/lib/site-url'
 import {
@@ -25,16 +25,37 @@ import {
   createHomeFaqSchema,
 } from '@/lib/structured-data'
 
-export const metadata: Metadata = createPageMetadata({
-  title: 'Vercel eve Agent Registry: Install eve Agents with One Command',
-  // The SEO title keeps the "vercel eve" keyword that ranks in search; the
-  // social card leads with the evex brand instead.
-  socialTitle:
-    'evex: the eve Agent Registry. Install eve Agents with One Command',
-  description:
-    "Community registry for agents built on eve, Vercel's agent framework. Browse configurations, preview every file before install, and add any agent with npx shadcn add @evex/{slug}.",
-  path: '/',
-})
+const HOME_TITLE =
+  'Vercel eve Agent Registry: Install eve Agents with One Command'
+// The SEO title keeps the "vercel eve" keyword that ranks in search; the
+// social card leads with the evex brand instead.
+const HOME_SOCIAL_TITLE =
+  'evex: the eve Agent Registry. Install eve Agents with One Command'
+const HOME_DESCRIPTION =
+  "Community registry for agents built on eve, Vercel's agent framework. Browse configurations, preview every file before install, and add any agent with npx shadcn add @evex/{slug}."
+
+interface HomeSearchParams {
+  category?: string
+  q?: string
+  sort?: string
+}
+
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<HomeSearchParams>
+}): Promise<Metadata> {
+  const params = await searchParams
+  const filtered = hasListingSearchFilter(params)
+
+  return createPageMetadata({
+    title: HOME_TITLE,
+    socialTitle: HOME_SOCIAL_TITLE,
+    description: HOME_DESCRIPTION,
+    path: '/',
+    ...(filtered ? { noIndex: true, follow: true } : {}),
+  })
+}
 
 const STATS_SKELETON_LABELS = ['Agents', 'Installs', 'Authors'] as const
 const FILTER_SKELETON_CHIP_IDS = [
@@ -56,7 +77,7 @@ const AGENT_GRID_SKELETON_CARD_IDS = [
 export default function HomePage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; category?: string; sort?: string }>
+  searchParams: Promise<HomeSearchParams>
 }) {
   const agents = listStaticAgents()
 

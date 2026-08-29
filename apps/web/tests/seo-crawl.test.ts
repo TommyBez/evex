@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import path from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { metadata as agentsIndexMetadata } from '@/app/(main)/agents/page'
+import { generateMetadata as generateAgentsMetadata } from '@/app/(main)/agents/page'
 import { GET as getRegistryCatalog } from '@/app/r/registry.json/route'
 import { GET as getRobotsTxt } from '@/app/robots.txt/route'
 import { metadata as signInMetadata } from '@/app/sign-in/page'
@@ -312,7 +312,11 @@ describe('/agents catalog index', () => {
     expect(getAgentsUrl()).toBe('https://www.evex.sh/agents')
   })
 
-  it('emits indexable metadata with a self-canonical', () => {
+  it('emits indexable metadata with a self-canonical', async () => {
+    const agentsIndexMetadata = await generateAgentsMetadata({
+      searchParams: Promise.resolve({}),
+    })
+
     // createPageMetadata omits `robots` so the root layout's index,follow
     // (plus googleBot preview directives) survive the Next metadata merge.
     expect('robots' in agentsIndexMetadata).toBe(false)

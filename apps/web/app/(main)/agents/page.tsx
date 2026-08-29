@@ -6,7 +6,7 @@ import { AgentCard } from '@/components/agent-card'
 import { JsonLd } from '@/components/json-ld'
 import { RegistryEmptyState } from '@/components/registry-empty-state'
 import { applyInstallCounts, getAgentRuntimeState } from '@/lib/data/agents'
-import { createPageMetadata } from '@/lib/metadata'
+import { createPageMetadata, hasListingSearchFilter } from '@/lib/metadata'
 import { listStaticAgents } from '@/lib/registry'
 import {
   createAgentListSchema,
@@ -21,11 +21,27 @@ const AGENTS_INDEX_DESCRIPTION =
 const AGENTS_INDEX_LEDE =
   'This is the open registry for Eve agents on Cursor and the shadcn CLI. These are Vercel Eve agents you can inspect and install, not the game and not the TV show. Install with npx shadcn@latest add @evex/<slug>.'
 
-export const metadata: Metadata = createPageMetadata({
-  title: AGENTS_INDEX_TITLE,
-  description: AGENTS_INDEX_DESCRIPTION,
-  path: '/agents',
-})
+interface AgentsSearchParams {
+  category?: string
+  q?: string
+  sort?: string
+}
+
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<AgentsSearchParams>
+}): Promise<Metadata> {
+  const params = await searchParams
+  const filtered = hasListingSearchFilter(params)
+
+  return createPageMetadata({
+    title: AGENTS_INDEX_TITLE,
+    description: AGENTS_INDEX_DESCRIPTION,
+    path: '/agents',
+    ...(filtered ? { noIndex: true, follow: true } : {}),
+  })
+}
 
 const AGENT_GRID_SKELETON_CARD_IDS = [
   'agents-index-card-a',
