@@ -123,9 +123,9 @@ export function createLearnListSchema(
   return {
     '@context': SCHEMA_CONTEXT,
     '@type': 'ItemList',
-    name: 'AI agent engineering guides',
+    name: 'Eve agent guides',
     description:
-      'Decision-focused guides for Eve, AI agents, agent registries, and adjacent frameworks.',
+      'Guides for Vercel Eve agents you install from evex, the open registry on Cursor and the shadcn CLI.',
     numberOfItems: pages.length,
     itemListElement: pages.map((page, index) => ({
       '@type': 'ListItem',

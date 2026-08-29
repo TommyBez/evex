@@ -1,102 +1,72 @@
-import { Badge } from '@evex/ui/badge'
 import { Card } from '@evex/ui/card'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { JsonLd } from '@/components/json-ld'
-import {
-  getLearnPagesByCluster,
-  LEARN_CLUSTERS,
-  listLearnPages,
-} from '@/lib/learn-content'
+import { getLearnPage } from '@/lib/learn-content'
 import { createPageMetadata } from '@/lib/metadata'
 import { createLearnListSchema } from '@/lib/structured-data'
 
+// PMM-locked. Layout template appends ` · evex` — do not include the brand
+// suffix here or the rendered <title> doubles it.
+export const LEARN_INDEX_TITLE = 'Eve agent guides for the Eve framework'
+export const LEARN_INDEX_DESCRIPTION =
+  'Guides for Vercel Eve agents you install from evex, the open registry on Cursor and the shadcn CLI. Start from the catalog at /agents.'
+export const LEARN_INDEX_H1 = 'Eve agent guides'
+const LEARN_INDEX_INTRO_BEFORE_AGENTS =
+  'These guides are for Vercel Eve agents you install from evex, the open registry on Cursor and the shadcn CLI. Not the game and not the TV show. Start from the catalog at '
+export const LEARN_INDEX_INTRO = `${LEARN_INDEX_INTRO_BEFORE_AGENTS}/agents.`
+
+const FEATURED_LEARN_SLUGS = ['evex-vs-agentcn', 'langgraph-vs-crewai'] as const
+
 export const metadata: Metadata = createPageMetadata({
-  title: 'Learn AI Agent Engineering',
-  description:
-    'Decision-focused guides for Eve, AI agents, MCP, shadcn registries, and adjacent agent frameworks.',
+  title: LEARN_INDEX_TITLE,
+  description: LEARN_INDEX_DESCRIPTION,
   path: '/learn',
 })
 
 export default function LearnPage() {
-  const pages = listLearnPages()
+  const featuredPages = FEATURED_LEARN_SLUGS.map((slug) => {
+    const page = getLearnPage(slug)
+    if (!page) {
+      throw new Error(`Missing featured learn page: ${slug}`)
+    }
+    return page
+  })
 
   return (
     <>
-      <JsonLd data={createLearnListSchema(pages)} />
+      <JsonLd data={createLearnListSchema(featuredPages)} />
       <main className="mx-auto w-full min-w-0 max-w-6xl px-4 py-10 sm:px-6">
         <header className="max-w-3xl">
           <h1 className="text-balance font-semibold text-3xl text-foreground sm:text-4xl">
-            AI agent engineering guides for people building real agents
+            {LEARN_INDEX_H1}
           </h1>
           <p className="mt-4 max-w-2xl text-pretty text-muted-foreground leading-relaxed">
-            Practical pages on Eve, MCP, tools, skills, subagents, durable runs,
-            shadcn registries, and framework tradeoffs. Start with the decision,
-            then inspect installable source when you are ready to build.
+            {LEARN_INDEX_INTRO_BEFORE_AGENTS}
+            <Link
+              className="font-medium text-foreground underline underline-offset-4 hover:text-brand"
+              href="/agents"
+            >
+              /agents
+            </Link>
+            .
           </p>
         </header>
 
-        <section className="mt-10 grid gap-x-4 gap-y-6 sm:grid-cols-2 lg:grid-cols-3">
-          {LEARN_CLUSTERS.map((cluster) => {
-            const clusterPages = getLearnPagesByCluster(cluster.id)
-
-            return (
-              <Card
-                className="rounded-md border border-border p-5 shadow-[var(--shadow-card)] ring-0"
-                key={cluster.id}
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <h2 className="font-display font-semibold text-foreground text-lg">
-                    {cluster.label}
-                  </h2>
-                  <Badge variant="secondary">{clusterPages.length}</Badge>
-                </div>
-                <p className="mt-2 text-muted-foreground text-sm leading-relaxed">
-                  {cluster.description}
-                </p>
-                <div className="mt-4 grid gap-3">
-                  {clusterPages.slice(0, 5).map((page) => (
-                    <Link
-                      className="flex h-full flex-col rounded-md border border-border px-3 py-2 text-sm transition-colors hover:border-input hover:bg-muted/50"
-                      href={`/learn/${page.slug}`}
-                      key={page.slug}
-                    >
-                      <span className="font-medium text-foreground">
-                        {page.shortTitle}
-                      </span>
-                      <span className="mt-1 line-clamp-2 text-muted-foreground text-xs leading-relaxed">
-                        {page.description}
-                      </span>
-                    </Link>
-                  ))}
-                </div>
-              </Card>
-            )
-          })}
-        </section>
-
-        <section className="mt-12">
-          <div className="mb-4 flex items-end justify-between gap-4">
-            <div>
-              <h2 className="font-display font-semibold text-foreground text-xl">
-                All guides
-              </h2>
-              <p className="mt-1 text-muted-foreground text-sm">
-                {pages.length} indexable guides, grouped by practical agent
-                decisions.
-              </p>
-            </div>
-          </div>
-          <div className="grid gap-x-4 gap-y-5 sm:grid-cols-2 lg:grid-cols-3">
-            {pages.map((page) => (
-              <Link
-                className="group flex h-full flex-col rounded-md border border-border p-4 transition-colors hover:border-input hover:bg-muted/40"
-                href={`/learn/${page.slug}`}
-                key={page.slug}
-              >
-                <h3 className="font-display font-semibold text-foreground">
+        <section
+          aria-label="Eve agent guides"
+          className="mt-10 grid gap-x-4 gap-y-5 sm:grid-cols-2"
+        >
+          {featuredPages.map((page) => (
+            <Link
+              className="group flex h-full flex-col"
+              href={`/learn/${page.slug}`}
+              key={page.slug}
+            >
+              <Card className="flex h-full flex-col rounded-md border border-border p-4 shadow-[var(--shadow-card)] ring-0 transition-colors group-hover:border-input group-hover:bg-muted/40">
+                <h2 className="font-display font-semibold text-foreground">
                   {page.shortTitle}
-                </h3>
+                </h2>
                 <p className="mt-2 line-clamp-3 text-muted-foreground text-sm leading-relaxed">
                   {page.description}
                 </p>
@@ -109,9 +79,9 @@ export default function LearnPage() {
                     →
                   </span>
                 </span>
-              </Link>
-            ))}
-          </div>
+              </Card>
+            </Link>
+          ))}
         </section>
       </main>
     </>
