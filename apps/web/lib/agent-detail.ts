@@ -115,6 +115,7 @@ const AGENT_METADATA_TITLE_OVERRIDES: Readonly<Record<string, string>> = {
   'programmatic-seo-agent': 'Eve programmatic SEO agent',
   'supabase-data-analyst':
     'Eve Supabase SQL agent - @evex/supabase-data-analyst',
+  'support-reply-draft': 'Eve support reply agent - @evex/support-reply-draft',
   'x-draft-assistant': 'Eve X draft agent - install @evex/x-draft-assistant',
   'x-hot-topic-digest': 'Eve X digest agent - install @evex/x-hot-topic-digest',
 }
@@ -157,6 +158,8 @@ const AGENT_JOB_INTENT_LEDES: Readonly<Record<string, string>> = {
   'programmatic-seo-agent': 'Finds keywords and opens a PR of SEO pages.',
   'supabase-data-analyst':
     'Answers Slack questions with read-only Supabase SQL.',
+  'support-reply-draft':
+    'Drafts a customer reply from product docs and cites the file.',
   'x-draft-assistant': 'Drafts three X posts from accounts you follow.',
   'x-hot-topic-digest': 'Emails a daily digest of hot topics from X.',
 }

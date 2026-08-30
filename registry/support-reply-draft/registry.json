@@ -1,0 +1,162 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "items": [
+    {
+      "name": "support-reply-draft",
+      "type": "registry:item",
+      "title": "Support Reply Draft",
+      "description": "Drafts a customer reply from product docs and cites the file.",
+      "author": "TommyBez",
+      "categories": [
+        "support"
+      ],
+      "dependencies": [
+        "eve@^0.31.3",
+        "zod@4.3.6"
+      ],
+      "files": [
+        {
+          "path": ".env.example",
+          "type": "registry:file",
+          "target": "~/.env.example"
+        },
+        {
+          "path": "agent/agent.ts",
+          "type": "registry:file",
+          "target": "~/agent/agent.ts"
+        },
+        {
+          "path": "agent/instructions.md",
+          "type": "registry:file",
+          "target": "~/agent/instructions.md"
+        },
+        {
+          "path": "agent/lib/product-docs-paths.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/product-docs-paths.ts"
+        },
+        {
+          "path": "agent/skills/support-reply/SKILL.md",
+          "type": "registry:file",
+          "target": "~/agent/skills/support-reply/SKILL.md"
+        },
+        {
+          "path": "agent/tools/draft_support_reply.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/draft_support_reply.ts"
+        },
+        {
+          "path": "agent/tools/read_product_doc.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/read_product_doc.ts"
+        },
+        {
+          "path": "agent/tools/search_product_docs.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/search_product_docs.ts"
+        },
+        {
+          "path": "agent/tools/write_file.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/write_file.ts"
+        },
+        {
+          "path": "evals/draft-cite-help.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/draft-cite-help.eval.ts"
+        },
+        {
+          "path": "evals/evals.config.ts",
+          "type": "registry:file",
+          "target": "~/evals/evals.config.ts"
+        },
+        {
+          "path": "evals/never-send-or-github.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/never-send-or-github.eval.ts"
+        },
+        {
+          "path": "evals/say-not-in-docs.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/say-not-in-docs.eval.ts"
+        },
+        {
+          "path": "README.md",
+          "type": "registry:file",
+          "target": "~/agent/README.md"
+        }
+      ],
+      "meta": {
+        "slug": "support-reply-draft",
+        "category": "support",
+        "createdAt": "2026-08-30T06:37:12.591Z",
+        "updatedAt": "2026-08-30T06:40:00.000Z",
+        "docs": {
+          "overview": [
+            "Support Reply Draft is an eve agent that drafts customer-facing support replies from product help and support documentation. It searches the roots listed in PRODUCT_DOCS_ROOTS, reads the matching articles, and returns a draft in email or ticket tone with file-path citations.",
+            "You interact with it through Eve chat sessions only. There is no GitHub channel and no email-send connection. Paste a customer question, get a draft, then copy it into your own mail or ticket tool.",
+            "When the product docs do not cover the question, it says so instead of inventing refunds, SLAs, or setup steps. The draft_support_reply tool records the reply text and citations and always reports sent false so the agent never claims delivery."
+          ],
+          "howItWorks": [
+            "A support operator pastes a customer question into an Eve chat session.",
+            "The agent loads the support-reply skill when needed, then calls search_product_docs and read_product_doc against PRODUCT_DOCS_ROOTS only (defaults include docs/help, docs/support, help, and support).",
+            "Those tools refuse application source, tests, configs, and lockfiles. Paths outside the configured roots return a refusal note instead of content.",
+            "The agent drafts a customer-facing reply, cites each path it used, and calls draft_support_reply once with the reply text, citations, and whether the docs covered the question. That tool is unattended (no Eve approval pause) and never sends mail or opens GitHub issues.",
+            "Optionally write_file saves the draft to a local sandbox file for the operator to copy. Saving a file is not delivery.",
+            "Evals cover drafting with a help-file citation, saying not-in-docs without inventing policy, and refusing please-send or GitHub PR-review prompts."
+          ],
+          "useCases": [
+            {
+              "title": "Billing and refund replies from help docs",
+              "body": "An operator pastes a refund question. The agent reads docs/help/billing.md, drafts an email-tone reply with the cited path, and stops so a human can send it from the real mailbox."
+            },
+            {
+              "title": "Troubleshooting ticket drafts",
+              "body": "A ticket asks how to reset two-factor auth. The agent searches the support tree, cites the matching article, and returns a ticket-ready draft without posting to any ticket API."
+            },
+            {
+              "title": "Honest gaps when product docs are silent",
+              "body": "When a customer asks about an undocumented on-call policy, the agent says the product docs do not cover it rather than inventing SLAs from training data."
+            },
+            {
+              "title": "Save a draft for handoff",
+              "body": "After draft_support_reply returns, the operator can ask the agent to write_file the reply into a local path for review or handoff without implying the message was sent."
+            }
+          ],
+          "requirements": [
+            {
+              "name": "AI_GATEWAY_API_KEY",
+              "body": "A model credential for the deployment, either a Vercel AI Gateway API key or AI Gateway OIDC, so the agent can call the zai/glm-5.2 model."
+            },
+            {
+              "name": "PRODUCT_DOCS_ROOTS",
+              "body": "Comma-separated workspace-relative product documentation roots (placeholder example: docs/help,docs/support,help,support). Keep this narrower than the whole repository."
+            }
+          ],
+          "faqs": [
+            {
+              "question": "How do I install and draft a reply?",
+              "answer": "Run npx shadcn@latest add @evex/support-reply-draft inside an eve app, set AI_GATEWAY_API_KEY and PRODUCT_DOCS_ROOTS, then paste a customer question in Eve chat. Copy the returned draft into your mail or ticket tool yourself."
+            },
+            {
+              "question": "Does it send email or open GitHub issues?",
+              "answer": "No. There is no send tool and no GitHub channel. draft_support_reply always returns sent false. Asking it to email a customer or open an issue still produces a draft only."
+            },
+            {
+              "question": "Which files can it read?",
+              "answer": "Only paths under PRODUCT_DOCS_ROOTS. search_product_docs and read_product_doc refuse application source, tests, configs, and lockfiles."
+            },
+            {
+              "question": "What happens when the docs do not answer?",
+              "answer": "The agent says the product documentation does not cover the question and still does not invent policy. It may still call draft_support_reply with docsCovered set to false."
+            },
+            {
+              "question": "How is this different from Docs Knowledge Assistant?",
+              "answer": "Docs Knowledge Assistant answers developer questions from README, docs/, CONTRIBUTING*, and AGENTS.md and can open a docs-gap GitHub issue. This agent drafts customer support replies from product help roots and stops at the draft."
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
