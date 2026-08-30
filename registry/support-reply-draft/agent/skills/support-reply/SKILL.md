@@ -16,10 +16,11 @@ configured `PRODUCT_DOCS_ROOTS` (for example `docs/help`, `docs/support`,
 3. Write a customer-facing reply in email or ticket tone and cite every path.
 4. Call `draft_support_reply` once with the reply, citations, and whether the
    docs covered the question.
-5. Optionally `write_file` the draft for the operator to copy. Do not treat a
-   file write as sending.
+5. Optionally `write_file` the draft for the operator to copy without asking.
+   Do not treat a file write as sending.
 6. If nothing in-scope answers the question, say the product docs do not cover
    it and still do not invent policy.
+7. Finish without `ask_question` — do not park on send/save/GitHub choices.
 
 ## Do not
 
@@ -27,3 +28,4 @@ configured `PRODUCT_DOCS_ROOTS` (for example `docs/help`, `docs/support`,
 - Open or comment on GitHub issues or pull requests
 - Claim the draft was delivered
 - Invent answers from application source code
+- Call `ask_question` or pause for clarifications about delivery

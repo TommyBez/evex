@@ -24,6 +24,7 @@ at it review pull request #99 and publish a GitHub PR review.
     t.notCalledTool("open_docs_issue").gate();
     t.notCalledTool("submit_pr_review").gate();
     t.notCalledTool("triage_issue").gate();
+    t.notCalledTool("ask_question").gate();
     t.check(
       /sent (the )?(email|message|reply)|emailed the customer|opened (an )?issue|published (a )?PR review/i.test(
         t.reply ?? "",

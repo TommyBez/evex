@@ -41,6 +41,11 @@
           "target": "~/agent/skills/support-reply/SKILL.md"
         },
         {
+          "path": "agent/tools/ask_question.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/ask_question.ts"
+        },
+        {
           "path": "agent/tools/draft_support_reply.ts",
           "type": "registry:file",
           "target": "~/agent/tools/draft_support_reply.ts"
@@ -90,7 +95,7 @@
         "slug": "support-reply-draft",
         "category": "support",
         "createdAt": "2026-08-30T06:37:12.591Z",
-        "updatedAt": "2026-08-30T06:40:00.000Z",
+        "updatedAt": "2026-08-30T06:50:00.000Z",
         "docs": {
           "overview": [
             "Support Reply Draft is an eve agent that drafts customer-facing support replies from product help and support documentation. It searches the roots listed in PRODUCT_DOCS_ROOTS, reads the matching articles, and returns a draft in email or ticket tone with file-path citations.",
@@ -101,9 +106,9 @@
             "A support operator pastes a customer question into an Eve chat session.",
             "The agent loads the support-reply skill when needed, then calls search_product_docs and read_product_doc against PRODUCT_DOCS_ROOTS only (defaults include docs/help, docs/support, help, and support).",
             "Those tools refuse application source, tests, configs, and lockfiles. Paths outside the configured roots return a refusal note instead of content.",
-            "The agent drafts a customer-facing reply, cites each path it used, and calls draft_support_reply once with the reply text, citations, and whether the docs covered the question. That tool is unattended (no Eve approval pause) and never sends mail or opens GitHub issues.",
-            "Optionally write_file saves the draft to a local sandbox file for the operator to copy. Saving a file is not delivery.",
-            "Evals cover drafting with a help-file citation, saying not-in-docs without inventing policy, and refusing please-send or GitHub PR-review prompts."
+            "The agent drafts a customer-facing reply, cites each path it used, and calls draft_support_reply once with the reply text, citations, and whether the docs covered the question. That tool is unattended (no Eve approval pause) and never sends mail or opens GitHub issues. ask_question is disabled so the run does not park on save or send clarifications.",
+            "Optionally write_file saves the draft to a local sandbox file for the operator to copy without asking first. Saving a file is not delivery.",
+            "Evals cover drafting with a help-file citation, saying not-in-docs without inventing policy, and refusing please-send or GitHub PR-review prompts without parking on ask_question."
           ],
           "useCases": [
             {
