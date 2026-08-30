@@ -12,7 +12,7 @@ configured `PRODUCT_DOCS_ROOTS` (for example `docs/help`, `docs/support`,
 ## Steps
 
 1. Call `search_product_docs` with the customer's keywords.
-2. Call `read_product_doc` on the best matching paths.
+2. Call `read_product_doc` on the best-matching paths.
 3. Write a customer-facing reply in email or ticket tone and cite every path.
 4. Call `draft_support_reply` once with the reply, citations, and whether the
    docs covered the question.

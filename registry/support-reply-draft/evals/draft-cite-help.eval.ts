@@ -24,7 +24,7 @@ Do not send the message.
     t.succeeded();
     t.check(t.reply, includes("14 days").gate());
     t.check(t.reply, includes("docs/help/billing.md").gate());
-    t.calledTool("draft_support_reply").soft();
+    t.calledTool("draft_support_reply").gate();
     t.notCalledTool("open_docs_issue").gate();
     t.check(
       /refund|annual|billing/i.test(t.reply ?? ""),

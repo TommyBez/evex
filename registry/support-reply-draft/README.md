@@ -2,7 +2,7 @@
 
 Drafts a customer reply from product docs and cites the file.
 
-This eve agent drafts customer-facing support replies (email or ticket tone)
+This Eve agent drafts customer-facing support replies (email or ticket tone)
 from product help and support documentation. Every draft cites the file path it
 used. It stops at the draft — it does not send mail, post to a ticket API, or
 open GitHub issues.

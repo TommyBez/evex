@@ -5,6 +5,8 @@ import {
   configuredProductDocsRoots,
   isAllowedProductDocsPath,
   normalizeProductDocsPath,
+  parseProductDocsSearchHitLine,
+  type ProductDocsSearchHit,
 } from "../lib/product-docs-paths";
 
 const searchProductDocsInput = z.object({
@@ -24,12 +26,6 @@ const searchProductDocsInput = z.object({
       "Optional product-docs path or directory to narrow the search (must be under PRODUCT_DOCS_ROOTS).",
     ),
 });
-
-type SearchHit = {
-  line: number;
-  path: string;
-  text: string;
-};
 
 /**
  * Search product help/support documentation only. Intentionally has no Eve
@@ -51,7 +47,7 @@ export default defineTool({
     for (const root of roots) {
       if (!isAllowedProductDocsPath(root, configuredRoots)) {
         return {
-          hits: [] as SearchHit[],
+          hits: [] as ProductDocsSearchHit[],
           note: `Refused non-product-docs path: ${root}. Allowed roots: ${configuredRoots.join(", ")}.`,
           query: input.query,
           roots: configuredRoots,
@@ -62,36 +58,33 @@ export default defineTool({
     const sandbox = await ctx.getSandbox();
     const escaped = input.query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     const pathArgs = roots.map((root) => shellQuote(root)).join(" ");
-    // Prefer rg when present. Do not pipe rg into head before checking
-    // availability: without rg, `rg | head` still exits 0 via head and would
-    // skip the grep fallback.
+    // Prefer rg when present. Force `-H` so single-file searches still emit
+    // `path:line:text` (without it, rg/grep emit `line:text` and the parser
+    // drops the hit). Do not pipe rg into head before checking availability:
+    // without rg, `rg | head` still exits 0 via head and would skip the grep
+    // fallback.
     const command = [
       "set +e",
-      `if command -v rg >/dev/null 2>&1; then rg -n -S --no-heading -e ${shellQuote(escaped)} ${pathArgs} 2>/dev/null | head -n 40; else grep -RIn -E ${shellQuote(escaped)} ${pathArgs} 2>/dev/null | head -n 40; fi`,
+      `if command -v rg >/dev/null 2>&1; then rg -n -H -S --no-heading -e ${shellQuote(escaped)} ${pathArgs} 2>/dev/null | head -n 40; else grep -RInH -E ${shellQuote(escaped)} ${pathArgs} 2>/dev/null | head -n 40; fi`,
       "exit 0",
     ].join("; ");
 
     const result = await sandbox.run({ command });
     const stdout = result.stdout ?? "";
 
-    const hits: SearchHit[] = [];
+    const hits: ProductDocsSearchHit[] = [];
     for (const line of stdout.split("\n")) {
       if (!line.trim()) {
         continue;
       }
-      const match = /^([^:]+):(\d+):(.*)$/.exec(line);
-      if (!match) {
+      const hit = parseProductDocsSearchHitLine(line);
+      if (!hit) {
         continue;
       }
-      const path = normalizeProductDocsPath(match[1] ?? "");
-      if (!isAllowedProductDocsPath(path, configuredRoots)) {
+      if (!isAllowedProductDocsPath(hit.path, configuredRoots)) {
         continue;
       }
-      hits.push({
-        path,
-        line: Number(match[2]),
-        text: (match[3] ?? "").slice(0, 240),
-      });
+      hits.push(hit);
     }
 
     return {

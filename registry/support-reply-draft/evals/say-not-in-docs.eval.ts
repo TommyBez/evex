@@ -20,6 +20,7 @@ Draft a support reply. Cite docs if present. Do not invent policy.
 `);
 
     t.succeeded();
+    t.calledTool("draft_support_reply").gate();
     t.check(
       /do not (have|cover|contain|include)|not (in|covered by) the (product )?docs|docs (do not|don't)|no documentation|product documentation does not/i.test(
         t.reply ?? "",

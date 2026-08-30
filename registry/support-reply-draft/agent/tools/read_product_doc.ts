@@ -80,7 +80,7 @@ export default defineTool({
       return {
         ok: false as const,
         path,
-        note: "Product documentation file not found in the workspace checkout.",
+        note: "Could not read the product documentation file.",
       };
     }
   },

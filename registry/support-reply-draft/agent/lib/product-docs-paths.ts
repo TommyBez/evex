@@ -12,7 +12,9 @@ export function normalizeProductDocsPath(input: string): string {
   const withoutWorkspace = trimmed
     .replace(/^\/workspace\//, "")
     .replace(/^\.\//, "");
-  return withoutWorkspace.replace(/^\/+/, "");
+  // Strip leading and trailing separators so roots like `docs/help/` still
+  // match children such as `docs/help/billing.md` (not `docs/help//billing.md`).
+  return withoutWorkspace.replace(/^\/+/, "").replace(/\/+$/, "");
 }
 
 /**
@@ -51,7 +53,14 @@ export function isAllowedProductDocsPath(
   }
 
   for (const root of roots) {
-    if (relative === root || relative.startsWith(`${root}/`)) {
+    const normalizedRoot = normalizeProductDocsPath(root);
+    if (normalizedRoot.length === 0) {
+      continue;
+    }
+    if (
+      relative === normalizedRoot ||
+      relative.startsWith(`${normalizedRoot}/`)
+    ) {
       return true;
     }
   }
@@ -62,4 +71,28 @@ export function isAllowedProductDocsPath(
 /** Runtime product-docs roots from process.env.PRODUCT_DOCS_ROOTS. */
 export function configuredProductDocsRoots(): readonly string[] {
   return productDocsRootsFromEnv(process.env.PRODUCT_DOCS_ROOTS);
+}
+
+export type ProductDocsSearchHit = {
+  line: number;
+  path: string;
+  text: string;
+};
+
+/**
+ * Parse one rg/grep `-n -H` line (`path:line:text`). Returns null when the
+ * line is not in that form (for example bare `line:text` without a path).
+ */
+export function parseProductDocsSearchHitLine(
+  line: string,
+): ProductDocsSearchHit | null {
+  const match = /^([^:]+):(\d+):(.*)$/.exec(line);
+  if (!match) {
+    return null;
+  }
+  return {
+    path: normalizeProductDocsPath(match[1] ?? ""),
+    line: Number(match[2]),
+    text: (match[3] ?? "").slice(0, 240),
+  };
 }
