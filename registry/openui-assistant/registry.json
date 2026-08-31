@@ -13,8 +13,8 @@
         "@openuidev/react-lang@^0.2.8",
         "@openuidev/react-ui@^0.12.1",
         "ai@^7.0.38",
-        "eve@^0.31.3",
-        "just-bash@^3.0.2",
+        "eve@^0.47.5",
+        "just-bash@^3.1.0",
         "zod@^4.4.3"
       ],
       "files": [
@@ -152,13 +152,13 @@
             },
             {
               "name": "eve",
-              "body": "The eve agent framework (^0.31.3) that runs the agent, tools, skill, and evals; the web integration also relies on withEve() from eve/next and the useEveAgent() hook. Requires Node 24 or newer."
+              "body": "The eve agent framework (^0.47.5) that runs the agent, tools, skill, and evals; the web integration also relies on withEve() from eve/next and the useEveAgent() hook. Requires Node 24 or newer."
             }
           ],
           "faqs": [
             {
               "question": "How do I install the agent?",
-              "answer": "Run npx shadcn@latest add @evex/openui-assistant in your eve app, then install the registry dependencies (@openuidev/react-lang@^0.2.8, @openuidev/react-ui@^0.12.1, ai@^7.0.38, eve@^0.31.3, just-bash@^3.0.2, zod@^4.4.3) if they are not already present. Start it with pnpm dev or eve dev."
+              "answer": "Run npx shadcn@latest add @evex/openui-assistant in your eve app, then install the registry dependencies (@openuidev/react-lang@^0.2.8, @openuidev/react-ui@^0.12.1, ai@^7.0.38, eve@^0.47.5, just-bash@^3.1.0, zod@^4.4.3) if they are not already present. Start it with pnpm dev or eve dev."
             },
             {
               "question": "Which model does it use, and can I change it?",

@@ -11,7 +11,7 @@
         "support"
       ],
       "dependencies": [
-        "eve@^0.31.3",
+        "eve@^0.47.5",
         "zod@4.3.6"
       ],
       "files": [
