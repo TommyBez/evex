@@ -1,4 +1,5 @@
-import { type ApprovalStatus, defineTool } from "eve/tools";
+import { defineTool } from "eve/tools";
+import type { ApprovalStatus } from "eve/tools/approval";
 import { bash } from "eve/tools/bash";
 
 // Blocked commands must match at command position — start of input or right
