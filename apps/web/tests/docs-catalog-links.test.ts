@@ -83,16 +83,21 @@ describe('docs in-body catalog links', () => {
 
     const deploySection = page.sections[0]
     expect(deploySection?.body).toEqual([
-      'vercel deploy ships your Eve app to Vercel. Publishing an Eve agent to the community registry is a pull request on evex. After merge, people install it with npx shadcn@latest add @evex/<slug>. The live catalog is [/agents](/agents).',
+      'vercel deploy ships your Eve app to Vercel. Publishing an Eve agent to the community registry is a pull request on evex. After merge, people install it with `npx shadcn@latest add @evex/<slug>`. The live catalog is [/agents](/agents).',
     ])
     expect(deploySection?.body[0]).toContain(
-      'npx shadcn@latest add @evex/<slug>',
+      '`npx shadcn@latest add @evex/<slug>`',
     )
     expect(deploySection?.body[0]).not.toContain('eve add')
+    expect(deploySection?.body[0]).not.toContain('@evex/{slug}')
     expect(deploySection?.body.join(' ')).not.toContain('Not a PR reviewer')
 
     const html = renderInlineMarkdown(deploySection?.body[0] ?? '')
     expect(html).toContain('href="/agents">/agents</a>')
     expect(html).not.toContain('[/agents](/agents)')
+    // Inline code keeps <slug> out of the HTML parser (no raw tag / comment split).
+    expect(html).toContain('<code')
+    expect(html).toContain('@evex/&lt;slug&gt;')
+    expect(html).not.toContain('@evex/<!-- -->')
   })
 })

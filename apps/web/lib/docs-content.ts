@@ -292,7 +292,7 @@ export const DOCS_PAGES: readonly DocsPage[] = [
     sections: [
       {
         body: [
-          'vercel deploy ships your Eve app to Vercel. Publishing an Eve agent to the community registry is a pull request on evex. After merge, people install it with npx shadcn@latest add @evex/<slug>. The live catalog is [/agents](/agents).',
+          'vercel deploy ships your Eve app to Vercel. Publishing an Eve agent to the community registry is a pull request on evex. After merge, people install it with `npx shadcn@latest add @evex/<slug>`. The live catalog is [/agents](/agents).',
         ],
         heading: 'Publish an Eve agent, or vercel deploy?',
       },
