@@ -159,4 +159,10 @@ describe('in-body links to /learn/eve-agent-registry', () => {
     expect(html).toContain(`href="${REGISTRY_HREF}">Eve agent registry</a>`)
     expect(html).not.toContain(`[Eve agent registry](${REGISTRY_HREF})`)
   })
+
+  it('is listed by listLearnPages for sitemap and llms twins', () => {
+    const slugs = listLearnPages().map((entry) => entry.slug)
+    expect(slugs).toContain('eve-agent-registry')
+    expect(slugs).toContain('agent-registry')
+  })
 })
