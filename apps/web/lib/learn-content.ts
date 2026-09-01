@@ -1089,6 +1089,96 @@ export const LEARN_PAGES: readonly LearnPage[] = [
       },
     ],
   },
+  {
+    slug: 'publish-eve-agent',
+    title: 'Publish an Eve agent',
+    shortTitle: 'Publish an Eve agent',
+    description:
+      'Publishing an Eve agent to the evex community registry is a pull request. vercel deploy ships your Eve app; it does not add the agent to the catalog.',
+    cluster: 'distribution',
+    datePublished: '2026-09-01',
+    dateModified: '2026-09-01',
+    primaryKeyword: 'publish eve agent',
+    relatedKeywords: [
+      'publish eve agent to registry',
+      'evex registry pull request',
+      'vercel deploy vs publish agent',
+    ],
+    summary:
+      'Publishing an Eve agent to the community registry is a pull request on evex. vercel deploy ships your Eve app. It does not add the agent to the catalog.',
+    sections: [
+      {
+        heading: 'vercel deploy is not publish',
+        body: [
+          'vercel deploy ships an Eve app to Vercel. It does not list the agent on a community registry. If you want other people to install your agent with one command, you publish it to evex.',
+        ],
+      },
+      {
+        heading: 'How an agent joins evex',
+        body: [
+          'There is no upload form. You open a pull request on the evex repo. Scaffold with registry:new, put the Eve source under agent/, fill in meta.docs, run the generator, and pass CODEOWNERS plus review. The slug you pick becomes `@evex/<slug>` and stays that way after merge.',
+        ],
+      },
+      {
+        heading: 'After merge',
+        body: [
+          'Anyone installs with:',
+          '`npx shadcn@latest add @evex/<slug>`',
+          'The live catalog is [/agents](/agents). Step-by-step commands live in [Publish your eve agent to the evex registry](/docs/publishing).',
+        ],
+      },
+    ],
+    decisionRows: [
+      {
+        choice: 'Publish to evex',
+        useWhen:
+          'You want others to install your Eve agent with `npx shadcn@latest add @evex/<slug>` from the community catalog.',
+        avoidWhen:
+          'The agent is private, experimental, or only needs to run in your own deployed Eve app.',
+      },
+      {
+        choice: 'vercel deploy',
+        useWhen:
+          'You need to ship your Eve app to Vercel so it runs in production.',
+        avoidWhen:
+          'Your goal is listing the agent on the community registry for others to install.',
+      },
+      {
+        choice: 'Keep it local',
+        useWhen:
+          'You are iterating on agent files in your own project and do not need a public install command yet.',
+        avoidWhen:
+          'Teammates or the community need a stable `@evex/<slug>` install path.',
+      },
+    ],
+    examples: [
+      {
+        label: 'Scaffold then PR',
+        body: 'Run `pnpm --filter @evex/agent-registry registry:new <slug> <github-username>`, implement under `agent/`, fill `meta.docs`, run the generator, and open a pull request. Details: [/docs/publishing](/docs/publishing).',
+      },
+      {
+        label: 'Install after merge',
+        body: 'Once the PR merges, anyone installs with `npx shadcn@latest add @evex/<slug>` and browses the live catalog at [/agents](/agents).',
+      },
+    ],
+    faqs: [
+      {
+        question: 'Does vercel deploy publish my agent to evex?',
+        answer:
+          'No. vercel deploy ships your Eve app. Publishing to the community registry is a reviewed pull request on the evex repo.',
+      },
+      {
+        question: 'How does an agent join the evex catalog?',
+        answer:
+          'Scaffold with registry:new, put Eve source under agent/, fill meta.docs, run the generator, and pass CODEOWNERS plus review. Step-by-step commands are in [/docs/publishing](/docs/publishing).',
+      },
+      {
+        question: 'What is the install command after merge?',
+        answer:
+          'Anyone installs with `npx shadcn@latest add @evex/<slug>`. The slug you pick in the PR becomes that install name.',
+      },
+    ],
+  },
 ] as const
 
 const LEARN_PAGE_MAP = new Map(
