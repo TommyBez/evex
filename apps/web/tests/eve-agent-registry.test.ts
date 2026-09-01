@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+import path from 'node:path'
 import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
@@ -13,6 +15,10 @@ const MARKETPLACE = /marketplace/i
 const VERCEL_DEPLOY = /vercel deploy/i
 const DKA_OR_GIM =
   /docs-knowledge-assistant|github-issue-maintainer|support-reply-draft/i
+const LEARN_SUMMARY_MARKDOWN_USAGE =
+  /<LearnInlineMarkdown>\{page\.summary\}<\/LearnInlineMarkdown>/
+const LEARN_SUMMARY_RAW_TEXT_USAGE =
+  /<p className="mt-3 text-pretty font-medium text-foreground leading-relaxed">\s*\{page\.summary\}\s*<\/p>/
 
 function renderInlineMarkdown(markdown: string): string {
   return renderToStaticMarkup(
@@ -71,6 +77,28 @@ describe('learn page: eve-agent-registry', () => {
     expect(ledeHtml).toContain('<code')
     expect(ledeHtml).toContain('@evex/&lt;slug&gt;')
     expect(ledeHtml).not.toContain('@evex/<!-- -->')
+    // Markdown backticks must not survive as visible raw characters once rendered.
+    expect(ledeHtml).not.toContain(INSTALL_INLINE)
+  })
+
+  it('renders the Learn detail summary through LearnInlineMarkdown', () => {
+    const source = readFileSync(
+      path.join(import.meta.dirname, '../app/(main)/learn/[slug]/page.tsx'),
+      'utf8',
+    )
+
+    expect(source).toMatch(LEARN_SUMMARY_MARKDOWN_USAGE)
+    expect(source).not.toMatch(LEARN_SUMMARY_RAW_TEXT_USAGE)
+
+    expect(page).not.toBeNull()
+    if (!page) {
+      return
+    }
+
+    const ledeHtml = renderInlineMarkdown(page.summary)
+    expect(ledeHtml).toContain('<code')
+    expect(ledeHtml).toContain('npx shadcn@latest add @evex/&lt;slug&gt;')
+    expect(ledeHtml).not.toContain('`npx shadcn@latest add @evex/<slug>`')
   })
 
   it('uses the three required H2s and the exact install command', () => {
