@@ -88,7 +88,7 @@
         "slug": "postgres-data-analyst",
         "category": "data",
         "createdAt": "2026-06-23T00:00:00.000Z",
-        "updatedAt": "2026-07-04T00:00:00.000Z",
+        "updatedAt": "2026-09-01T00:00:00.000Z",
         "docs": {
           "overview": [
             "Postgres Data Analyst is an eve agent that lives in your Slack workspace and answers questions about a single Postgres database. Mention it in a channel or send it a DM, ask something like show total signups by month for the last 6 months, and it inspects the schema, writes one read-only SQL query, runs it, and replies with an interpreted answer rather than a raw row dump.",

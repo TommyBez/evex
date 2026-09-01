@@ -141,7 +141,7 @@
         "slug": "x-draft-assistant",
         "category": "general",
         "createdAt": "2026-06-26T16:19:57.402Z",
-        "updatedAt": "2026-07-04T00:00:00.000Z",
+        "updatedAt": "2026-09-01T00:00:00.000Z",
         "docs": {
           "overview": [
             "X Draft Assistant is a scheduled eve agent that turns what a watched set of X (Twitter) accounts posted in the last 24 hours into three ready-to-review draft posts in Typefully. Every day it scans the handles listed in X_HOT_TOPIC_HANDLES via the X API v2, clusters their recent posts into hot topics, researches each topic with the Parallel web search API, and writes three distinct draft candidates with cited sources.",

@@ -100,7 +100,7 @@
         "slug": "brand-visual-asset-generator",
         "category": "marketing",
         "createdAt": "2026-07-01T21:16:30.433Z",
-        "updatedAt": "2026-07-04T00:00:00.000Z",
+        "updatedAt": "2026-09-01T00:00:00.000Z",
         "docs": {
           "overview": [
             "Brand Visual Asset Generator is an on-demand eve agent that turns a company domain, product description, or explicit brand profile into a coherent pack of editable SVG assets: icons, empty states, hero illustrations, badges, feature graphics, onboarding visuals, changelog art, and dashboard or modal graphics. You talk to it in your eve chat client, name the assets you want, and it returns real SVG markup ready to drop into a product or landing page.",

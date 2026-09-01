@@ -112,7 +112,7 @@
         "slug": "x-hot-topic-digest",
         "category": "research",
         "createdAt": "2026-06-26T09:40:22.348Z",
-        "updatedAt": "2026-07-04T00:00:00.000Z",
+        "updatedAt": "2026-09-01T00:00:00.000Z",
         "docs": {
           "overview": [
             "X Hot Topic Digest is a scheduled eve agent that watches a list of X (Twitter) profiles you configure and turns their recent posts into a researched daily briefing. It runs unattended on a cron schedule (X_HOT_TOPIC_DAILY_CRON, default 0 8 * * * UTC), reads only public posts through the X API v2 with an app-only bearer token, and never posts anything back to X.",

@@ -116,7 +116,7 @@
         "slug": "programmatic-seo-agent",
         "category": "marketing",
         "createdAt": "2026-07-02T22:16:06.740Z",
-        "updatedAt": "2026-07-04T00:00:00.000Z",
+        "updatedAt": "2026-09-01T00:00:00.000Z",
         "docs": {
           "overview": [
             "Programmatic SEO Agent is a scheduled eve agent that grows organic traffic by shipping weekly batches of SEO-optimized pages to your product's GitHub repository. Each run clones the repo defined by PSEO_GITHUB_REPO into a Vercel sandbox, studies your product and existing content conventions, and writes new pages that match the format already in the repo, from frontmatter fields to internal-link style.",

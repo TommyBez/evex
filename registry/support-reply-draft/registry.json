@@ -100,7 +100,7 @@
         "slug": "support-reply-draft",
         "category": "support",
         "createdAt": "2026-08-30T06:37:12.591Z",
-        "updatedAt": "2026-08-30T07:00:00.000Z",
+        "updatedAt": "2026-09-01T00:00:00.000Z",
         "docs": {
           "overview": [
             "Support Reply Draft is an eve agent that drafts customer-facing support replies from product help and support documentation. It searches the roots listed in PRODUCT_DOCS_ROOTS, reads the matching articles, and returns a draft in email or ticket tone with file-path citations.",

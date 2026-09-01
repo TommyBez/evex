@@ -99,7 +99,7 @@
         "slug": "branded-seo-page-builder",
         "category": "marketing",
         "createdAt": "2026-06-27T07:44:00.000Z",
-        "updatedAt": "2026-08-10T00:00:00.000Z",
+        "updatedAt": "2026-09-01T00:00:00.000Z",
         "docs": {
           "overview": [
             "Branded SEO Page Builder is an eve agent that turns a bare domain into one complete, SEO-optimized HTML page. You interact with it in chat: ask for a page from a domain such as linear.app, or point it at a specific source URL and a target topic, and it returns a full static document with metadata, Open Graph and Twitter card tags, semantic sections, and JSON-LD structured data.",

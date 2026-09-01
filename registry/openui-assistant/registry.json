@@ -108,7 +108,7 @@
         "slug": "openui-assistant",
         "category": "general",
         "createdAt": "2026-06-30T21:52:44.748Z",
-        "updatedAt": "2026-08-10T00:00:00.000Z",
+        "updatedAt": "2026-09-01T00:00:00.000Z",
         "docs": {
           "overview": [
             "OpenUI Assistant is an eve agent that answers every chat turn with OpenUI Lang, a structured generative UI language, so your chat streams rendered cards, tables, and follow-up buttons instead of markdown prose. It builds its system prompt at build time by calling openuiChatLibrary.prompt(openuiChatPromptOptions) from @openuidev/react-ui, the same library and prompt options the official openui-chat example app uses, so its output stays compatible with the upstream renderer.",

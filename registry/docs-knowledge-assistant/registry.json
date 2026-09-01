@@ -95,7 +95,7 @@
         "slug": "docs-knowledge-assistant",
         "category": "support",
         "createdAt": "2026-08-26T00:00:00.000Z",
-        "updatedAt": "2026-08-26T22:00:00.000Z",
+        "updatedAt": "2026-09-01T00:00:00.000Z",
         "docs": {
           "overview": [
             "Docs Knowledge Assistant is an eve agent that answers questions from the installing repository's documentation files. It searches README, docs/, CONTRIBUTING*, and AGENTS.md, then replies with file-path citations so readers can verify the source.",

@@ -71,7 +71,7 @@
         "slug": "supabase-data-analyst",
         "category": "data",
         "createdAt": "2026-06-26T00:00:00.000Z",
-        "updatedAt": "2026-07-04T00:00:00.000Z",
+        "updatedAt": "2026-09-01T00:00:00.000Z",
         "docs": {
           "overview": [
             "Supabase Data Analyst is an eve agent that lives in Slack and answers questions about a single Supabase project with read-only SQL. Mention it in a channel or send it a DM, and it inspects your schema, writes one focused query, runs it through the hosted Supabase MCP server, and replies with an aggregate answer in plain language instead of raw row dumps.",
