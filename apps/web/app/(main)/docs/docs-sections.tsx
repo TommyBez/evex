@@ -1,5 +1,6 @@
 import { Card } from '@evex/ui/card'
 import { BookOpen } from 'lucide-react'
+import { LearnInlineMarkdown } from '@/components/learn-inline-markdown'
 import type { DocsPage } from '@/lib/docs-content'
 
 export function DocsSections({ page }: { page: DocsPage }) {
@@ -23,7 +24,9 @@ export function DocsSections({ page }: { page: DocsPage }) {
             </h2>
             <div className="mt-3 grid gap-3 text-muted-foreground leading-relaxed">
               {section.body.map((paragraph) => (
-                <p key={paragraph}>{paragraph}</p>
+                <p key={paragraph}>
+                  <LearnInlineMarkdown>{paragraph}</LearnInlineMarkdown>
+                </p>
               ))}
             </div>
             {section.bullets ? (

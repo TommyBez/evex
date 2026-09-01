@@ -26,7 +26,7 @@ const DOCS_INDEX_SLUG = 'introduction'
 
 export const DOCS_PAGES: readonly DocsPage[] = [
   {
-    dateModified: '2026-07-04',
+    dateModified: '2026-09-01',
     datePublished: '2026-07-04',
     description:
       'Install community eve agents into your project with one command and own every file they write. What evex is and how the shadcn-compatible registry works.',
@@ -62,6 +62,7 @@ export const DOCS_PAGES: readonly DocsPage[] = [
       {
         body: [
           'The Installation page covers prerequisites, the install command, and what to do after the files are written. The Registry page documents the HTTP endpoints behind the catalog, including the machine-readable resources for tools and LLMs. The MCP page shows how to browse and install agents from editors like Cursor, VS Code, and Claude Code through the shadcn MCP server. The Publishing page walks through adding your own agent to the catalog by pull request.',
+          'The live catalog is [Eve agents](/agents). First-party agents include the [Eve GitHub issue agent](/agents/github-issue-maintainer), the [Eve docs Q&A agent](/agents/docs-knowledge-assistant), and the [Eve support reply agent](/agents/support-reply-draft).',
         ],
         heading: 'Where to go next',
       },
@@ -284,11 +285,17 @@ export const DOCS_PAGES: readonly DocsPage[] = [
     title: 'Use evex agents from your editor with the shadcn MCP server',
   },
   {
-    dateModified: '2026-07-04',
+    dateModified: '2026-09-01',
     datePublished: '2026-07-04',
     description:
       'Add your agent to evex by pull request: scaffold with registry:new, fill in meta.docs, validate with the generator, and pass CODEOWNERS and review.',
     sections: [
+      {
+        body: [
+          'vercel deploy ships your Eve app to Vercel. Publishing an Eve agent to the community registry is a pull request on evex. After merge, people install it with `npx shadcn@latest add @evex/<slug>`. The live catalog is [/agents](/agents).',
+        ],
+        heading: 'Publish an Eve agent, or vercel deploy?',
+      },
       {
         body: [
           'Agents join the catalog through pull requests to the evex repository. Start by scaffolding a complete package skeleton with your agent slug and GitHub username.',
