@@ -103,7 +103,7 @@ export default async function LearnDetailPage({
               the short version
             </span>
             <p className="mt-3 text-pretty font-medium text-foreground leading-relaxed">
-              {page.summary}
+              <LearnInlineMarkdown>{page.summary}</LearnInlineMarkdown>
             </p>
           </Card>
 

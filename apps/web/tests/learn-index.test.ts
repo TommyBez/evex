@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest'
 import {
   LEARN_INDEX_H1,
   LEARN_INDEX_INTRO,
+  LEARN_INDEX_REGISTRY_LINK,
   LEARN_INDEX_TITLE,
   metadata as learnIndexMetadata,
 } from '@/app/(main)/learn/page'
@@ -33,6 +34,9 @@ describe('/learn Eve agent guides index', () => {
     expect(LEARN_INDEX_INTRO).toBe(
       'These guides are for Vercel Eve agents you install from evex, the open registry on Cursor and the shadcn CLI. Not the game and not the TV show. Start from the catalog at /agents.',
     )
+    expect(LEARN_INDEX_REGISTRY_LINK).toBe(
+      'What an Eve agent registry is: [Eve agent registry](/learn/eve-agent-registry).',
+    )
 
     const pageSource = readFileSync(
       path.join(import.meta.dirname, '../app/(main)/learn/page.tsx'),
@@ -41,7 +45,9 @@ describe('/learn Eve agent guides index', () => {
 
     expect(pageSource).toContain('LEARN_INDEX_H1')
     expect(pageSource).toContain('LEARN_INDEX_INTRO_BEFORE_AGENTS')
+    expect(pageSource).toContain('LEARN_INDEX_REGISTRY_LINK')
     expect(pageSource).toContain('href="/agents"')
+    expect(pageSource).toContain('/learn/eve-agent-registry')
     expect(pageSource).toMatch(AGENTS_HREF_WITH_VISIBLE_TEXT)
     expect(pageSource).not.toContain('LEARN_CLUSTERS')
     expect(pageSource).not.toContain('All guides')
