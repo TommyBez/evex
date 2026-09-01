@@ -2,6 +2,7 @@ import { Card } from '@evex/ui/card'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { JsonLd } from '@/components/json-ld'
+import { LearnInlineMarkdown } from '@/components/learn-inline-markdown'
 import { getLearnPage } from '@/lib/learn-content'
 import { createPageMetadata } from '@/lib/metadata'
 import { createLearnListSchema } from '@/lib/structured-data'
@@ -15,6 +16,8 @@ export const LEARN_INDEX_H1 = 'Eve agent guides'
 const LEARN_INDEX_INTRO_BEFORE_AGENTS =
   'These guides are for Vercel Eve agents you install from evex, the open registry on Cursor and the shadcn CLI. Not the game and not the TV show. Start from the catalog at '
 export const LEARN_INDEX_INTRO = `${LEARN_INDEX_INTRO_BEFORE_AGENTS}/agents.`
+export const LEARN_INDEX_REGISTRY_LINK =
+  'What an Eve agent registry is: [Eve agent registry](/learn/eve-agent-registry).'
 
 const FEATURED_LEARN_SLUGS = ['evex-vs-agentcn', 'langgraph-vs-crewai'] as const
 
@@ -50,6 +53,11 @@ export default function LearnPage() {
               /agents
             </Link>
             .
+          </p>
+          <p className="mt-3 max-w-2xl text-pretty text-muted-foreground leading-relaxed">
+            <LearnInlineMarkdown>
+              {LEARN_INDEX_REGISTRY_LINK}
+            </LearnInlineMarkdown>
           </p>
         </header>
 
