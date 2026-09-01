@@ -20,11 +20,8 @@ const LEARN_SUMMARY_MARKDOWN_USAGE =
 const LEARN_SUMMARY_RAW_TEXT_USAGE =
   /<p className="mt-3 text-pretty font-medium text-foreground leading-relaxed">\s*\{page\.summary\}\s*<\/p>/
 
-function renderInlineMarkdown(markdown: string): string {
-  return renderToStaticMarkup(
-    createElement(LearnInlineMarkdown, null, markdown),
-  )
-}
+const renderInlineMarkdown = (markdown: string): string =>
+  renderToStaticMarkup(createElement(LearnInlineMarkdown, null, markdown))
 
 describe('learn page: eve-agent-registry', () => {
   const page = getLearnPage('eve-agent-registry')
