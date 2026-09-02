@@ -33,7 +33,7 @@ describe('docs in-body catalog links', () => {
       return
     }
 
-    expect(page.dateModified).toBe('2026-09-01')
+    expect(page.dateModified).toBe('2026-09-02')
     expect(page.title).toBe(
       'evex documentation: the community registry for eve agents',
     )
@@ -42,13 +42,16 @@ describe('docs in-body catalog links', () => {
       (section) => section.heading === 'Where to go next',
     )
     expect(nextSection).toBeDefined()
-    expect(nextSection?.body).toHaveLength(3)
+    expect(nextSection?.body).toHaveLength(4)
     expect(nextSection?.body[0]).toContain('The Installation page covers')
     expect(nextSection?.body[1]).toBe(
       'The live catalog is [Eve agents](/agents). First-party agents include the [Eve GitHub issue agent](/agents/github-issue-maintainer), the [Eve docs Q&A agent](/agents/docs-knowledge-assistant), and the [Eve support reply agent](/agents/support-reply-draft).',
     )
     expect(nextSection?.body[2]).toBe(
       'What an Eve agent registry is: [Eve agent registry](/learn/eve-agent-registry).',
+    )
+    expect(nextSection?.body[3]).toBe(
+      'How to install: [Install an Eve agent](/learn/install-eve-agent).',
     )
 
     const html = (nextSection?.body ?? [])
@@ -68,9 +71,15 @@ describe('docs in-body catalog links', () => {
     expect(html).toContain(
       'href="/learn/eve-agent-registry">Eve agent registry</a>',
     )
+    expect(html).toContain(
+      'href="/learn/install-eve-agent">Install an Eve agent</a>',
+    )
     expect(html).not.toContain('[Eve agents](/agents)')
     expect(html).not.toContain(
       '[Eve agent registry](/learn/eve-agent-registry)',
+    )
+    expect(html).not.toContain(
+      '[Install an Eve agent](/learn/install-eve-agent)',
     )
   })
 
