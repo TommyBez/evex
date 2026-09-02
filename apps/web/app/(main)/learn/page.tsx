@@ -33,6 +33,12 @@ const FEATURED_CARD_DESCRIPTIONS = {
   Record<(typeof FEATURED_LEARN_SLUGS)[number], string>
 >
 
+function hasFeaturedCardDescription(
+  slug: string,
+): slug is keyof typeof FEATURED_CARD_DESCRIPTIONS {
+  return slug in FEATURED_CARD_DESCRIPTIONS
+}
+
 export const metadata: Metadata = createPageMetadata({
   title: LEARN_INDEX_TITLE,
   description: LEARN_INDEX_DESCRIPTION,
@@ -79,9 +85,9 @@ export default function LearnPage() {
         >
           {featuredPages.map((page) => {
             const cardDescription =
-              FEATURED_CARD_DESCRIPTIONS[
-                page.slug as keyof typeof FEATURED_CARD_DESCRIPTIONS
-              ] ?? page.description
+              (hasFeaturedCardDescription(page.slug)
+                ? FEATURED_CARD_DESCRIPTIONS[page.slug]
+                : undefined) ?? page.description
 
             return (
               <Link
