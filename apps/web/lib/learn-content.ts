@@ -1171,6 +1171,88 @@ export const LEARN_PAGES: readonly LearnPage[] = [
       },
     ],
   },
+  {
+    slug: 'install-eve-agent',
+    title: 'Install an Eve agent',
+    shortTitle: 'Install an Eve agent',
+    description:
+      'Install a community Eve agent with npx shadcn@latest add @evex/<slug>. Inspect the files on /agents first, then run the command in your Eve app.',
+    cluster: 'distribution',
+    datePublished: '2026-09-02',
+    dateModified: '2026-09-02',
+    primaryKeyword: 'install eve agent',
+    relatedKeywords: [
+      'eve agent install',
+      'npx shadcn add @evex',
+      'eve agent registry',
+      'install community eve agent',
+    ],
+    summary:
+      'Install a community Eve agent with `npx shadcn@latest add @evex/<slug>`. Inspect the files on /agents first.',
+    sections: [
+      {
+        heading: 'How you install',
+        body: [
+          'Run this inside an Eve app:',
+          '`npx shadcn@latest add @evex/<slug>`',
+          'Pick the slug from the catalog. The files land in your project. After that, evex is out of the loop.',
+        ],
+      },
+      {
+        heading: 'Inspect first',
+        body: [
+          'Open the agent page on [/agents](/agents) and read the files before you install. What you see is what the command writes.',
+        ],
+      },
+      {
+        heading: 'Where to go next',
+        body: [
+          'The live catalog is [/agents](/agents). What a registry is: [Eve agent registry](/learn/eve-agent-registry). Command details: [Installation](/docs/installation).',
+        ],
+      },
+    ],
+    decisionRows: [
+      {
+        choice: 'Install from the catalog',
+        useWhen:
+          'You picked a slug on /agents and want its files in your Eve app.',
+        avoidWhen:
+          'You still need to inspect the agent source before trusting it.',
+      },
+      {
+        choice: 'Inspect before install',
+        useWhen: 'You want to read every file on the agent page first.',
+        avoidWhen: 'You already audited the source and are ready to install.',
+      },
+    ],
+    examples: [
+      {
+        label: 'Install a catalog agent',
+        body: 'Pick a slug on [/agents](/agents), then run `npx shadcn@latest add @evex/<slug>` inside your Eve app.',
+      },
+      {
+        label: 'Confirm what lands',
+        body: 'Open the agent page and read the files. Install only after the source matches the job you need.',
+      },
+    ],
+    faqs: [
+      {
+        question: 'What is the install command?',
+        answer:
+          'Run `npx shadcn@latest add @evex/<slug>` inside an Eve app. Replace the slug with the agent you picked from the catalog.',
+      },
+      {
+        question: 'Should I inspect files before installing?',
+        answer:
+          'Yes. Open the agent page on [/agents](/agents) and read the files first. What you see is what the command writes.',
+      },
+      {
+        question: 'Where do I go for command details?',
+        answer:
+          'Command details are in [Installation](/docs/installation). What a registry is: [Eve agent registry](/learn/eve-agent-registry).',
+      },
+    ],
+  },
 ] as const
 
 const LEARN_PAGE_MAP = new Map(
