@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "ai": "^7.0.38",
-    "eve": "^0.31.3"
+    "eve": "^0.47.5"
   },
   "devDependencies": {
     "@types/node": "^24",

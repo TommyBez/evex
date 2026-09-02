@@ -12,7 +12,7 @@
       "dependencies": [
         "@vercel/connect@^0.2.6",
         "ai@^7.0.38",
-        "eve@^0.31.3"
+        "eve@^0.47.5"
       ],
       "files": [
         {
@@ -155,7 +155,7 @@
         "slug": "linear-operations-agent",
         "category": "productivity",
         "createdAt": "2026-06-20T00:00:00.000Z",
-        "updatedAt": "2026-07-04T00:00:00.000Z",
+        "updatedAt": "2026-09-01T00:00:00.000Z",
         "docs": {
           "overview": [
             "Linear Operations Agent is an eve agent that keeps Linear as the operational source of truth while meeting your team where work actually starts. You mention or delegate to it inside Linear Agent Sessions, mention or DM it in Slack threads, or let six built-in schedules run digests for triage, cycle health, backlog hygiene, project summaries, P0/P1 monitoring, and weekly initiative updates.",
@@ -215,7 +215,7 @@
             },
             {
               "name": "eve and @vercel/connect",
-              "body": "npm dependencies eve ^0.31.3, ai ^7.0.38, and @vercel/connect ^0.2.6, installed automatically with the registry item. Node.js 24 or newer and an HTTPS-reachable Eve deployment are required for the Linear and Slack webhooks."
+              "body": "npm dependencies eve ^0.47.5, ai ^7.0.38, and @vercel/connect ^0.2.6, installed automatically with the registry item. Node.js 24 or newer and an HTTPS-reachable Eve deployment are required for the Linear and Slack webhooks."
             }
           ],
           "faqs": [

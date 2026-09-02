@@ -13,7 +13,7 @@
       "dependencies": [
         "@vercel/connect@^0.2.6",
         "ai@^7.0.38",
-        "eve@^0.31.3"
+        "eve@^0.47.5"
       ],
       "files": [
         {
@@ -71,7 +71,7 @@
         "slug": "supabase-data-analyst",
         "category": "data",
         "createdAt": "2026-06-26T00:00:00.000Z",
-        "updatedAt": "2026-07-04T00:00:00.000Z",
+        "updatedAt": "2026-09-01T00:00:00.000Z",
         "docs": {
           "overview": [
             "Supabase Data Analyst is an eve agent that lives in Slack and answers questions about a single Supabase project with read-only SQL. Mention it in a channel or send it a DM, and it inspects your schema, writes one focused query, runs it through the hosted Supabase MCP server, and replies with an aggregate answer in plain language instead of raw row dumps.",
@@ -131,7 +131,7 @@
             },
             {
               "name": "@vercel/connect and eve",
-              "body": "Runtime dependencies: eve ^0.31.3 provides the agent framework, Slack channel, and MCP client connection; ai ^7.0.38 satisfies Eve's model SDK peer; @vercel/connect ^0.2.6 supplies the Slack credentials via connectSlackCredentials. Node 24 or newer is required."
+              "body": "Runtime dependencies: eve ^0.47.5 provides the agent framework, Slack channel, and MCP client connection; ai ^7.0.38 satisfies Eve's model SDK peer; @vercel/connect ^0.2.6 supplies the Slack credentials via connectSlackCredentials. Node 24 or newer is required."
             }
           ],
           "faqs": [

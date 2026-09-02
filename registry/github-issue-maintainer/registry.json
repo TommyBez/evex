@@ -14,7 +14,7 @@
         "@upstash/ratelimit@^2.0.8",
         "@upstash/redis@^1.38.0",
         "ai@^7.0.38",
-        "eve@^0.31.3",
+        "eve@^0.47.5",
         "resend@^6.14.0",
         "zod@4.3.6"
       ],
@@ -139,7 +139,7 @@
         "slug": "github-issue-maintainer",
         "category": "coding",
         "createdAt": "2026-08-24T00:00:00.000Z",
-        "updatedAt": "2026-08-24T20:30:00.000Z",
+        "updatedAt": "2026-09-01T00:00:00.000Z",
         "docs": {
           "overview": [
             "GitHub Issue Maintainer is an eve agent that triages newly opened GitHub issues through a native GitHub App channel. When an issue opens, GitHub delivers the webhook to your deployed eve app at /eve/v1/github, and the agent applies a small label taxonomy, then asks for missing reproduction details when the report is thin.",

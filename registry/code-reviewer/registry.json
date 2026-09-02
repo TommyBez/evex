@@ -13,7 +13,7 @@
         "@upstash/ratelimit@^2.0.8",
         "@upstash/redis@^1.38.0",
         "ai@^7.0.38",
-        "eve@^0.31.3",
+        "eve@^0.47.5",
         "zod@4.3.6"
       ],
       "files": [
@@ -92,7 +92,7 @@
         "slug": "code-reviewer",
         "category": "coding",
         "createdAt": "2026-06-20T00:00:00.000Z",
-        "updatedAt": "2026-08-20T10:00:00.000Z",
+        "updatedAt": "2026-09-01T00:00:00.000Z",
         "docs": {
           "overview": [
             "Code Reviewer is an eve agent that reviews GitHub pull requests when someone mentions @code-reviewer in a PR comment or a review thread. It runs behind a native GitHub App channel: GitHub delivers the comment webhook to your deployed eve app at /eve/v1/github, and the agent replies by publishing a real GitHub review with inline comments anchored to the diff.",

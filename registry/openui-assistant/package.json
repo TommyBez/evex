@@ -18,8 +18,8 @@
     "@openuidev/react-lang": "^0.2.8",
     "@openuidev/react-ui": "^0.12.1",
     "ai": "^7.0.38",
-    "eve": "^0.31.3",
-    "just-bash": "^3.0.2",
+    "eve": "^0.47.5",
+    "just-bash": "^3.1.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {

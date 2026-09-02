@@ -9,7 +9,7 @@ example, but route turns through Eve's built-in HTTP channel instead of a custom
 ## Required app dependencies
 
 ```bash
-npm install @openuidev/react-lang@^0.2.8 @openuidev/react-ui@^0.12.1 ai@^7.0.38 eve@^0.31.3 just-bash@^3.0.2 zod@^4.4.3
+npm install @openuidev/react-lang@^0.2.8 @openuidev/react-ui@^0.12.1 ai@^7.0.38 eve@^0.47.5 just-bash@^3.1.0 zod@^4.4.3
 ```
 
 ## Next.js setup

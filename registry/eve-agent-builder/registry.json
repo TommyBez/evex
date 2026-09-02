@@ -11,7 +11,7 @@
       ],
       "dependencies": [
         "ai@^7.0.38",
-        "eve@^0.31.3",
+        "eve@^0.47.5",
         "zod@^4.4.3"
       ],
       "files": [
@@ -155,7 +155,7 @@
         "slug": "eve-agent-builder",
         "category": "coding",
         "createdAt": "2026-06-30T10:23:00.000Z",
-        "updatedAt": "2026-08-10T00:00:00.000Z",
+        "updatedAt": "2026-09-01T00:00:00.000Z",
         "docs": {
           "overview": [
             "Eve Agent Builder turns a plain request like 'create an agent that answers onboarding questions' into a tested, deployed Eve agent, so you review approvals and results instead of running the delivery checklist yourself. Install it into an existing Eve app and talk to it through whatever channel that app already exposes: web chat, the Eve session API, Slack, or GitHub.",
@@ -214,8 +214,8 @@
               "body": "Optional override for the hosted Vercel MCP endpoint. Defaults to https://mcp.vercel.com; change it only if you operate a compatible endpoint."
             },
             {
-              "name": "eve@^0.31.3",
-              "body": "The eve framework the agent is built on, installed alongside ai ^7.0.38 and zod ^4.4.3 when you add the registry item. The sandbox prewarms the eve 0.31.3 and Vercel CLIs so first commands skip the cold download."
+              "name": "eve@^0.47.5",
+              "body": "The eve framework the agent is built on, installed alongside ai ^7.0.38 and zod ^4.4.3 when you add the registry item. The sandbox prewarms the eve 0.47.5 and Vercel CLIs so first commands skip the cold download."
             }
           ],
           "faqs": [
