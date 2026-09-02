@@ -19,7 +19,25 @@ export const LEARN_INDEX_INTRO = `${LEARN_INDEX_INTRO_BEFORE_AGENTS}/agents.`
 export const LEARN_INDEX_REGISTRY_LINK =
   'What an Eve agent registry is: [Eve agent registry](/learn/eve-agent-registry).'
 
-const FEATURED_LEARN_SLUGS = ['evex-vs-agentcn', 'langgraph-vs-crewai'] as const
+const FEATURED_LEARN_SLUGS = [
+  'eve-agent-registry',
+  'evex-vs-agentcn',
+  'langgraph-vs-crewai',
+] as const
+
+// PMM-locked card one-liners. Falls back to page.description when omitted.
+const FEATURED_CARD_DESCRIPTIONS = {
+  'eve-agent-registry':
+    'Browse the catalog, inspect every file, and install with one shadcn command.',
+} as const satisfies Partial<
+  Record<(typeof FEATURED_LEARN_SLUGS)[number], string>
+>
+
+function hasFeaturedCardDescription(
+  slug: string,
+): slug is keyof typeof FEATURED_CARD_DESCRIPTIONS {
+  return slug in FEATURED_CARD_DESCRIPTIONS
+}
 
 export const metadata: Metadata = createPageMetadata({
   title: LEARN_INDEX_TITLE,
@@ -65,31 +83,38 @@ export default function LearnPage() {
           aria-label="Eve agent guides"
           className="mt-10 grid gap-x-4 gap-y-5 sm:grid-cols-2"
         >
-          {featuredPages.map((page) => (
-            <Link
-              className="group flex h-full flex-col"
-              href={`/learn/${page.slug}`}
-              key={page.slug}
-            >
-              <Card className="flex h-full flex-col rounded-md border border-border p-4 shadow-[var(--shadow-card)] ring-0 transition-colors group-hover:border-input group-hover:bg-muted/40">
-                <h2 className="font-display font-semibold text-foreground">
-                  {page.shortTitle}
-                </h2>
-                <p className="mt-2 line-clamp-3 text-muted-foreground text-sm leading-relaxed">
-                  {page.description}
-                </p>
-                <span className="mt-auto inline-flex pt-3 text-brand text-sm opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100">
-                  Read guide{' '}
-                  <span
-                    aria-hidden="true"
-                    className="inline-block transition-transform group-hover:translate-x-0.5"
-                  >
-                    →
+          {featuredPages.map((page) => {
+            const cardDescription =
+              (hasFeaturedCardDescription(page.slug)
+                ? FEATURED_CARD_DESCRIPTIONS[page.slug]
+                : undefined) ?? page.description
+
+            return (
+              <Link
+                className="group flex h-full flex-col"
+                href={`/learn/${page.slug}`}
+                key={page.slug}
+              >
+                <Card className="flex h-full flex-col rounded-md border border-border p-4 shadow-[var(--shadow-card)] ring-0 transition-colors group-hover:border-input group-hover:bg-muted/40">
+                  <h2 className="font-display font-semibold text-foreground">
+                    {page.shortTitle}
+                  </h2>
+                  <p className="mt-2 line-clamp-3 text-muted-foreground text-sm leading-relaxed">
+                    {cardDescription}
+                  </p>
+                  <span className="mt-auto inline-flex pt-3 text-brand text-sm opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100">
+                    Read guide{' '}
+                    <span
+                      aria-hidden="true"
+                      className="inline-block transition-transform group-hover:translate-x-0.5"
+                    >
+                      →
+                    </span>
                   </span>
-                </span>
-              </Card>
-            </Link>
-          ))}
+                </Card>
+              </Link>
+            )
+          })}
         </section>
       </main>
     </>

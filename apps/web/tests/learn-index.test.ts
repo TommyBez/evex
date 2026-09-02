@@ -11,7 +11,13 @@ import {
 import { getLearnPage } from '@/lib/learn-content'
 import { createLearnListSchema } from '@/lib/structured-data'
 
-const FEATURED_LEARN_SLUGS = ['evex-vs-agentcn', 'langgraph-vs-crewai'] as const
+const FEATURED_LEARN_SLUGS = [
+  'eve-agent-registry',
+  'evex-vs-agentcn',
+  'langgraph-vs-crewai',
+] as const
+const FEATURED_CARD_DESCRIPTION =
+  'Browse the catalog, inspect every file, and install with one shadcn command.'
 const AGENTS_HREF_WITH_VISIBLE_TEXT =
   /href="\/agents"[\s\S]*?>[\s\S]*?\/agents[\s\S]*?</
 
@@ -57,17 +63,24 @@ describe('/learn Eve agent guides index', () => {
     expect(pageSource).not.toContain('listLearnPages')
   })
 
-  it('features only the two comparison cards on the index', () => {
+  it('features the Eve agent registry card plus the two comparison cards', () => {
     const pageSource = readFileSync(
       path.join(import.meta.dirname, '../app/(main)/learn/page.tsx'),
       'utf8',
     )
 
+    expect(pageSource).toContain("'eve-agent-registry'")
     expect(pageSource).toContain("'evex-vs-agentcn'")
     expect(pageSource).toContain("'langgraph-vs-crewai'")
+    expect(pageSource).toContain(FEATURED_CARD_DESCRIPTION)
+    expect(pageSource).not.toContain('publish-eve-agent')
     expect(pageSource).not.toContain('mcp-server-for-ai-agents')
     expect(pageSource).not.toContain('agentic-workflows')
     expect(pageSource).not.toContain('ai-agent-frameworks')
+
+    const registryPage = getLearnPage('eve-agent-registry')
+    expect(registryPage).not.toBeNull()
+    expect(registryPage?.shortTitle).toBe('Eve agent registry')
 
     const featuredPages = FEATURED_LEARN_SLUGS.map((slug) => {
       const page = getLearnPage(slug)
@@ -81,17 +94,23 @@ describe('/learn Eve agent guides index', () => {
     const schema = createLearnListSchema(featuredPages)
     expect(schema['@type']).toBe('ItemList')
     expect(schema.name).toBe('Eve agent guides')
-    expect(schema.numberOfItems).toBe(2)
+    expect(schema.numberOfItems).toBe(3)
     expect(schema.itemListElement).toEqual([
       {
         '@type': 'ListItem',
         position: 1,
+        url: 'https://www.evex.sh/learn/eve-agent-registry',
+        name: 'Eve agent registry',
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
         url: 'https://www.evex.sh/learn/evex-vs-agentcn',
         name: 'Eve agent registries: evex vs agentcn',
       },
       {
         '@type': 'ListItem',
-        position: 2,
+        position: 3,
         url: 'https://www.evex.sh/learn/langgraph-vs-crewai',
         name: 'LangGraph vs CrewAI: graph control or role-based crews?',
       },
