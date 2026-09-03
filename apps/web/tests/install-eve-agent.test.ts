@@ -69,10 +69,10 @@ describe('learn page: install-eve-agent', () => {
 
   it('matches the four locked decision rows and three FAQs', () => {
     expect(page?.decisionRows).toEqual([
-      { choice: 'You chose an evex agent for an existing Eve app', useWhen: '`npx shadcn@latest add @evex/<slug>`', avoidWhen: 'The agent source under `agent/` in that app' },
-      { choice: 'You chose the agentcn Eve recipe shown above for an existing app', useWhen: '`npx shadcn@latest add @agentcn/eve/deep-search`', avoidWhen: 'The recipe source in that app' },
-      { choice: 'You chose an agent on eveagents.dev and want it in its own directory', useWhen: '`npx @bergside/eveagents install <slug>`', avoidWhen: 'A new standalone directory containing the whole agent' },
-      { choice: 'You do not have an Eve app yet', useWhen: '`npx eve@latest init my-agent`', avoidWhen: 'A new Eve app you can build in or add an agent to' },
+      { choice: 'Scaffold a new Eve app', useWhen: 'You do not have an Eve app yet.', avoidWhen: 'You already have an Eve app, or you are choosing an agent from a registry for an existing app.' },
+      { choice: 'Write the agent yourself', useWhen: 'You are authoring your own agent files under `agent/`', avoidWhen: 'You want a ready-made agent from a catalog.' },
+      { choice: 'Install from evex or agentcn', useWhen: 'You want registry source copied into an Eve app you already have.', avoidWhen: 'You want a standalone agent directory, or you have no Eve app yet.' },
+      { choice: 'Install from bergside/awesome-eve-agents', useWhen: 'You want the agent as its own standalone directory.', avoidWhen: 'You want the agent copied into an Eve app you already have.' },
     ])
     expect(page?.faqs).toHaveLength(3)
     expect(page?.faqs.map((faq) => faq.question)).toEqual([
