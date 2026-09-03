@@ -1176,80 +1176,97 @@ export const LEARN_PAGES: readonly LearnPage[] = [
     title: 'Install an Eve agent',
     shortTitle: 'Install an Eve agent',
     description:
-      'Install a community Eve agent with npx shadcn@latest add @evex/<slug>. Inspect the files on /agents first, then run the command in your Eve app.',
+      'Scaffold an Eve app with npx eve@latest init, write files under agent/, or add a catalog agent with npx shadcn@latest add @evex/<slug>.',
     cluster: 'distribution',
     datePublished: '2026-09-02',
-    dateModified: '2026-09-02',
+    dateModified: '2026-09-03',
     primaryKeyword: 'install eve agent',
     relatedKeywords: [
       'eve agent install',
+      'npx eve@latest init',
       'npx shadcn add @evex',
       'eve agent registry',
-      'install community eve agent',
     ],
     summary:
-      'Install a community Eve agent with `npx shadcn@latest add @evex/<slug>`. Inspect the files on /agents first.',
+      'An Eve agent is files in an Eve app. Scaffold the app with `npx eve@latest init`, write files under `agent/` yourself, or add a catalog agent with `npx shadcn@latest add @evex/<slug>`.',
     sections: [
       {
-        heading: 'How you install',
+        heading: 'Start with an Eve app',
         body: [
-          'Run this inside an Eve app:',
+          'You need Node.js 24. The official scaffold is:',
+          '`npx eve@latest init my-agent`',
+          'If you already have a package.json, run `npx eve@latest init .` from that root before you add `agent/` files. Or install manually with `npm install eve@latest ai zod`, then create `agent/instructions.md`.',
+        ],
+      },
+      {
+        heading: 'Add a community agent from a registry',
+        body: [
+          'The shadcn CLI copies agent source into that Eve app. evex is one catalog:',
           '`npx shadcn@latest add @evex/<slug>`',
-          'Pick the slug from the catalog. The files land in your project. After that, evex is out of the loop.',
+          'Inspect the files on [/agents](/agents) first. Other registries use the same CLI with their own namespace. After the files land, evex is out of the loop.',
         ],
       },
       {
-        heading: 'Inspect first',
+        heading: 'Or write the agent yourself',
         body: [
-          'Open the agent page on [/agents](/agents) and read the files before you install. What you see is what the command writes.',
+          'A minimal agent needs `agent/instructions.md`. Add `agent/agent.ts` when you need runtime config. You do not need a catalog.',
         ],
       },
       {
-        heading: 'Where to go next',
+        heading: 'Where evex fits',
         body: [
-          'The live catalog is [/agents](/agents). What a registry is: [Eve agent registry](/learn/eve-agent-registry). Command details: [Installation](/docs/installation).',
+          'evex is an open catalog of community Eve agents, not the Eve runtime. Browse [/agents](/agents). What a registry is: [Eve agent registry](/learn/eve-agent-registry). CLI details: [Installation](/docs/installation). Official Eve getting started: [eve.dev/docs/getting-started](https://eve.dev/docs/getting-started).',
         ],
       },
     ],
     decisionRows: [
       {
-        choice: 'Install from the catalog',
-        useWhen:
-          'You picked a slug on /agents and want its files in your Eve app.',
-        avoidWhen:
-          'You still need to inspect the agent source before trusting it.',
+        choice: 'Scaffold a new Eve app',
+        useWhen: 'You do not have an Eve project.',
+        avoidWhen: 'You already have one.',
       },
       {
-        choice: 'Inspect before install',
-        useWhen: 'You want to read every file on the agent page first.',
-        avoidWhen: 'You already audited the source and are ready to install.',
+        choice: 'Write files under agent/',
+        useWhen: 'You are authoring the agent.',
+        avoidWhen: 'You want a ready-made catalog agent.',
+      },
+      {
+        choice: 'Install from evex',
+        useWhen: 'You picked a slug on /agents.',
+        avoidWhen:
+          'You need a different registry, or you still need to inspect the source.',
       },
     ],
     examples: [
       {
-        label: 'Install a catalog agent',
-        body: 'Pick a slug on [/agents](/agents), then run `npx shadcn@latest add @evex/<slug>` inside your Eve app.',
+        label: 'Scaffold an Eve app',
+        body: 'Run `npx eve@latest init my-agent`, or `npx eve@latest init .` in an existing package root.',
       },
       {
-        label: 'Confirm what lands',
-        body: 'Open the agent page and read the files. Install only after the source matches the job you need.',
+        label: 'Add a catalog agent',
+        body: 'Inspect a slug on [/agents](/agents), then run `npx shadcn@latest add @evex/<slug>` inside that Eve app.',
+      },
+      {
+        label: 'Write the agent yourself',
+        body: 'Create `agent/instructions.md`, and add `agent/agent.ts` when you need runtime config.',
       },
     ],
     faqs: [
       {
-        question: 'What is the install command?',
+        question:
+          'Is `npx shadcn@latest add @evex/<slug>` how you install Eve?',
         answer:
-          'Run `npx shadcn@latest add @evex/<slug>` inside an Eve app. Replace the slug with the agent you picked from the catalog.',
+          'No. That copies a catalog agent into an Eve app. Eve itself is `npx eve@latest init`.',
       },
       {
-        question: 'Should I inspect files before installing?',
+        question: 'Do I need evex to install an Eve agent?',
         answer:
-          'Yes. Open the agent page on [/agents](/agents) and read the files first. What you see is what the command writes.',
+          'No. You can scaffold with eve init or write `agent/` files yourself.',
       },
       {
-        question: 'Where do I go for command details?',
+        question: 'What is the evex command?',
         answer:
-          'Command details are in [Installation](/docs/installation). What a registry is: [Eve agent registry](/learn/eve-agent-registry).',
+          '`npx shadcn@latest add @evex/<slug>` inside an Eve app, after you inspect the files on /agents.',
       },
     ],
   },
