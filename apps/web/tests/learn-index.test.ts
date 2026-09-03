@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs'
 import path from 'node:path'
 import { describe, expect, it } from 'vitest'
 import {
+  FEATURED_LEARN_SLUGS,
   LEARN_INDEX_H1,
   LEARN_INDEX_INTRO,
   LEARN_INDEX_REGISTRY_LINK,
@@ -11,13 +12,12 @@ import {
 import { getLearnPage } from '@/lib/learn-content'
 import { createLearnListSchema } from '@/lib/structured-data'
 
-const FEATURED_LEARN_SLUGS = [
-  'eve-agent-registry',
-  'evex-vs-agentcn',
-  'langgraph-vs-crewai',
-] as const
-const FEATURED_CARD_DESCRIPTION =
-  'Browse the catalog, inspect every file, and install with one shadcn command.'
+const FEATURED_CARD_DESCRIPTIONS = {
+  'eve-agent-registry':
+    'Browse the catalog, inspect every file, and install with one shadcn command.',
+  'install-eve-agent':
+    'The install command depends on which catalog the agent came from.',
+} as const
 const AGENTS_HREF_WITH_VISIBLE_TEXT =
   /href="\/agents"[\s\S]*?>[\s\S]*?\/agents[\s\S]*?</
 
@@ -63,16 +63,22 @@ describe('/learn Eve agent guides index', () => {
     expect(pageSource).not.toContain('listLearnPages')
   })
 
-  it('features the Eve agent registry card plus the two comparison cards', () => {
+  it('features the Eve agent registry and Install an Eve agent cards plus the two comparison cards', () => {
     const pageSource = readFileSync(
       path.join(import.meta.dirname, '../app/(main)/learn/page.tsx'),
       'utf8',
     )
 
     expect(pageSource).toContain("'eve-agent-registry'")
+    expect(pageSource).toContain("'install-eve-agent'")
     expect(pageSource).toContain("'evex-vs-agentcn'")
     expect(pageSource).toContain("'langgraph-vs-crewai'")
-    expect(pageSource).toContain(FEATURED_CARD_DESCRIPTION)
+    expect(pageSource).toContain(
+      FEATURED_CARD_DESCRIPTIONS['eve-agent-registry'],
+    )
+    expect(pageSource).toContain(
+      FEATURED_CARD_DESCRIPTIONS['install-eve-agent'],
+    )
     expect(pageSource).not.toContain('publish-eve-agent')
     expect(pageSource).not.toContain('mcp-server-for-ai-agents')
     expect(pageSource).not.toContain('agentic-workflows')
@@ -81,6 +87,10 @@ describe('/learn Eve agent guides index', () => {
     const registryPage = getLearnPage('eve-agent-registry')
     expect(registryPage).not.toBeNull()
     expect(registryPage?.shortTitle).toBe('Eve agent registry')
+
+    const installPage = getLearnPage('install-eve-agent')
+    expect(installPage).not.toBeNull()
+    expect(installPage?.shortTitle).toBe('Install an Eve agent')
 
     const featuredPages = FEATURED_LEARN_SLUGS.map((slug) => {
       const page = getLearnPage(slug)
@@ -91,10 +101,17 @@ describe('/learn Eve agent guides index', () => {
       return page
     })
 
+    expect(FEATURED_LEARN_SLUGS).toEqual([
+      'eve-agent-registry',
+      'install-eve-agent',
+      'evex-vs-agentcn',
+      'langgraph-vs-crewai',
+    ])
+
     const schema = createLearnListSchema(featuredPages)
     expect(schema['@type']).toBe('ItemList')
     expect(schema.name).toBe('Eve agent guides')
-    expect(schema.numberOfItems).toBe(3)
+    expect(schema.numberOfItems).toBe(4)
     expect(schema.itemListElement).toEqual([
       {
         '@type': 'ListItem',
@@ -105,12 +122,18 @@ describe('/learn Eve agent guides index', () => {
       {
         '@type': 'ListItem',
         position: 2,
+        url: 'https://www.evex.sh/learn/install-eve-agent',
+        name: 'Install an Eve agent',
+      },
+      {
+        '@type': 'ListItem',
+        position: 3,
         url: 'https://www.evex.sh/learn/evex-vs-agentcn',
         name: 'Eve agent registries: evex vs agentcn',
       },
       {
         '@type': 'ListItem',
-        position: 3,
+        position: 4,
         url: 'https://www.evex.sh/learn/langgraph-vs-crewai',
         name: 'LangGraph vs CrewAI: graph control or role-based crews?',
       },

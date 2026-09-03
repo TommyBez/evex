@@ -19,8 +19,9 @@ export const LEARN_INDEX_INTRO = `${LEARN_INDEX_INTRO_BEFORE_AGENTS}/agents.`
 export const LEARN_INDEX_REGISTRY_LINK =
   'What an Eve agent registry is: [Eve agent registry](/learn/eve-agent-registry).'
 
-const FEATURED_LEARN_SLUGS = [
+export const FEATURED_LEARN_SLUGS = [
   'eve-agent-registry',
+  'install-eve-agent',
   'evex-vs-agentcn',
   'langgraph-vs-crewai',
 ] as const
@@ -29,6 +30,8 @@ const FEATURED_LEARN_SLUGS = [
 const FEATURED_CARD_DESCRIPTIONS = {
   'eve-agent-registry':
     'Browse the catalog, inspect every file, and install with one shadcn command.',
+  'install-eve-agent':
+    'The install command depends on which catalog the agent came from.',
 } as const satisfies Partial<
   Record<(typeof FEATURED_LEARN_SLUGS)[number], string>
 >

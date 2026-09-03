@@ -3,6 +3,7 @@ import path from 'node:path'
 import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
+import { FEATURED_LEARN_SLUGS } from '@/app/(main)/learn/page'
 import { LearnInlineMarkdown } from '@/components/learn-inline-markdown'
 import { getDocsPage } from '@/lib/docs-content'
 import { getLearnPage, listLearnPages } from '@/lib/learn-content'
@@ -164,12 +165,18 @@ describe('learn page: install-eve-agent', () => {
     expect(faqHtml).toContain('href="https://www.eveagents.dev"')
   })
 
-  it('does not add a fourth featured card on /learn', () => {
+  it('is featured as the second /learn index card', () => {
     const source = readFileSync(
       path.join(import.meta.dirname, '../app/(main)/learn/page.tsx'),
       'utf8',
     )
-    expect(source).not.toContain("'install-eve-agent'")
+
+    expect(FEATURED_LEARN_SLUGS.indexOf('install-eve-agent')).toBe(1)
+    expect(source).toContain("'install-eve-agent'")
+    expect(source).toContain("'eve-agent-registry'")
+    expect(source).toContain(
+      'The install command depends on which catalog the agent came from.',
+    )
   })
 })
 
