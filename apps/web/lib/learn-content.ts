@@ -1256,12 +1256,12 @@ export const LEARN_PAGES: readonly LearnPage[] = [
     ],
     examples: [
       {
-        label: 'Into an existing Eve app',
-        body: 'Inspect a slug on [/agents](/agents), then run `npx shadcn@latest add @evex/<slug>` from the Eve app root. agentcn uses the same shadcn mechanic with its own path.',
+        label: 'An evex agent in an existing Eve app',
+        body: 'You already have an Eve app and chose an agent on /agents. Read its source, then run `npx shadcn@latest add @evex/<slug>` from the app root. The agent source is copied under `agent/` in that app.',
       },
       {
-        label: 'As a standalone agent directory',
-        body: 'Run `npx @bergside/eveagents install <slug>`, then `cd <slug>` and start Eve with `npx eve@latest`.',
+        label: 'A bergside agent as a standalone directory',
+        body: 'You chose an agent from eveagents.dev and want its own directory. Run `npx @bergside/eveagents install <slug>`, move into the new directory with `cd <slug>`, then start Eve with `npx eve@latest`.',
       },
     ],
     faqs: [
