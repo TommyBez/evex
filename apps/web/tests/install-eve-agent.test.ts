@@ -175,7 +175,7 @@ describe('learn page: install-eve-agent', () => {
     expect(source).toContain("'install-eve-agent'")
     expect(source).toContain("'eve-agent-registry'")
     expect(source).toContain(
-      'Inspect the files on /agents, then install with one shadcn command.',
+      'The install command depends on which catalog the agent came from.',
     )
   })
 })

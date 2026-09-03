@@ -16,7 +16,7 @@ const FEATURED_CARD_DESCRIPTIONS = {
   'eve-agent-registry':
     'Browse the catalog, inspect every file, and install with one shadcn command.',
   'install-eve-agent':
-    'Inspect the files on /agents, then install with one shadcn command.',
+    'The install command depends on which catalog the agent came from.',
 } as const
 const AGENTS_HREF_WITH_VISIBLE_TEXT =
   /href="\/agents"[\s\S]*?>[\s\S]*?\/agents[\s\S]*?</
