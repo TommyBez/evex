@@ -164,12 +164,17 @@ describe('learn page: install-eve-agent', () => {
     expect(faqHtml).toContain('href="https://www.eveagents.dev"')
   })
 
-  it('does not add a fourth featured card on /learn', () => {
+  it('is featured as the second /learn index card', () => {
     const source = readFileSync(
       path.join(import.meta.dirname, '../app/(main)/learn/page.tsx'),
       'utf8',
     )
-    expect(source).not.toContain("'install-eve-agent'")
+
+    expect(source).toContain("'install-eve-agent'")
+    expect(source).toContain("'eve-agent-registry'")
+    expect(source).toContain(
+      'Inspect the files on /agents, then install with one shadcn command.',
+    )
   })
 })
 

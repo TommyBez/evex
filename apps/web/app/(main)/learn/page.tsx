@@ -21,6 +21,7 @@ export const LEARN_INDEX_REGISTRY_LINK =
 
 const FEATURED_LEARN_SLUGS = [
   'eve-agent-registry',
+  'install-eve-agent',
   'evex-vs-agentcn',
   'langgraph-vs-crewai',
 ] as const
@@ -29,6 +30,8 @@ const FEATURED_LEARN_SLUGS = [
 const FEATURED_CARD_DESCRIPTIONS = {
   'eve-agent-registry':
     'Browse the catalog, inspect every file, and install with one shadcn command.',
+  'install-eve-agent':
+    'Inspect the files on /agents, then install with one shadcn command.',
 } as const satisfies Partial<
   Record<(typeof FEATURED_LEARN_SLUGS)[number], string>
 >
