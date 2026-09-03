@@ -1240,19 +1240,21 @@ export const LEARN_PAGES: readonly LearnPage[] = [
       },
       {
         choice: 'Write the agent yourself',
-        useWhen: 'You are authoring your own agent files under `agent/`.',
+        useWhen: 'You are authoring your own agent files under agent/.',
         avoidWhen: 'You want a ready-made agent from a catalog.',
       },
       {
         choice: 'Install from evex or agentcn',
-        useWhen: 'You want registry source copied into an Eve app you already have.',
+        useWhen:
+          'You want registry source copied into an Eve app you already have.',
         avoidWhen:
           'You want a standalone agent directory, or you have no Eve app yet.',
       },
       {
         choice: 'Install from bergside/awesome-eve-agents',
         useWhen: 'You want the agent as its own standalone directory.',
-        avoidWhen: 'You want the agent copied into an Eve app you already have.',
+        avoidWhen:
+          'You want the agent copied into an Eve app you already have.',
       },
     ],
     faqs: [
@@ -1269,10 +1271,10 @@ export const LEARN_PAGES: readonly LearnPage[] = [
       {
         question: 'Where can I inspect an agent before I run a command?',
         answer:
-          'For evex, open the agent on [/agents](/agents) and read the source files before installing. For agentcn, follow the recipe page linked from its catalog. For bergside, start from [eveagents.dev](https://eveagents.dev) and review the agent\'s source before running its installer.',
+          "For evex, open the agent on [/agents](/agents) and read the source files before installing. For agentcn, follow the recipe page linked from its catalog. For bergside, start from [eveagents.dev](https://eveagents.dev) and review the agent's source before running its installer.",
       },
     ],
-  }
+  },
 ] as const
 
 const LEARN_PAGE_MAP = new Map(

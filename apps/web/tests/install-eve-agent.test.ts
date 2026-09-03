@@ -61,7 +61,8 @@ describe('learn page: install-eve-agent', () => {
       '[evex and agentcn comparison](/learn/evex-vs-agentcn)',
       '[eveagents.dev](https://eveagents.dev)',
       '[Eve getting started](https://eve.dev/docs/getting-started)',
-    ]) expect(text).toContain(value)
+    ])
+      expect(text).toContain(value)
     expect(text).not.toContain('@evex/{slug}')
     expect(text).not.toContain('open catalog')
     expect(text).not.toContain('not the Eve runtime')
@@ -69,10 +70,30 @@ describe('learn page: install-eve-agent', () => {
 
   it('matches the four locked decision rows and three FAQs', () => {
     expect(page?.decisionRows).toEqual([
-      { choice: 'Scaffold a new Eve app', useWhen: 'You do not have an Eve app yet.', avoidWhen: 'You already have an Eve app, or you are choosing an agent from a registry for an existing app.' },
-      { choice: 'Write the agent yourself', useWhen: 'You are authoring your own agent files under `agent/`', avoidWhen: 'You want a ready-made agent from a catalog.' },
-      { choice: 'Install from evex or agentcn', useWhen: 'You want registry source copied into an Eve app you already have.', avoidWhen: 'You want a standalone agent directory, or you have no Eve app yet.' },
-      { choice: 'Install from bergside/awesome-eve-agents', useWhen: 'You want the agent as its own standalone directory.', avoidWhen: 'You want the agent copied into an Eve app you already have.' },
+      {
+        choice: 'Scaffold a new Eve app',
+        useWhen: 'You do not have an Eve app yet.',
+        avoidWhen:
+          'You already have an Eve app, or you are choosing an agent from a registry for an existing app.',
+      },
+      {
+        choice: 'Write the agent yourself',
+        useWhen: 'You are authoring your own agent files under agent/.',
+        avoidWhen: 'You want a ready-made agent from a catalog.',
+      },
+      {
+        choice: 'Install from evex or agentcn',
+        useWhen:
+          'You want registry source copied into an Eve app you already have.',
+        avoidWhen:
+          'You want a standalone agent directory, or you have no Eve app yet.',
+      },
+      {
+        choice: 'Install from bergside/awesome-eve-agents',
+        useWhen: 'You want the agent as its own standalone directory.',
+        avoidWhen:
+          'You want the agent copied into an Eve app you already have.',
+      },
     ])
     expect(page?.faqs).toHaveLength(3)
     expect(page?.faqs.map((faq) => faq.question)).toEqual([
@@ -85,14 +106,27 @@ describe('learn page: install-eve-agent', () => {
   it('renders locked markdown links as crawlable anchors', () => {
     expect(page).not.toBeNull()
     if (!page) return
-    const html = page.sections.flatMap((section) => section.body).map(renderInlineMarkdown).join('')
-    for (const href of ['/agents', '/learn/eve-agent-registry', '/docs/installation', '/learn/evex-vs-agentcn', 'https://eveagents.dev', 'https://eve.dev/docs/getting-started']) {
+    const html = page.sections
+      .flatMap((section) => section.body)
+      .map(renderInlineMarkdown)
+      .join('')
+    for (const href of [
+      '/agents',
+      '/learn/eve-agent-registry',
+      '/docs/installation',
+      '/learn/evex-vs-agentcn',
+      'https://eveagents.dev',
+      'https://eve.dev/docs/getting-started',
+    ]) {
       expect(html).toContain(`href="${href}"`)
     }
   })
 
   it('does not add a fourth featured card on /learn', () => {
-    const source = readFileSync(path.join(import.meta.dirname, '../app/(main)/learn/page.tsx'), 'utf8')
+    const source = readFileSync(
+      path.join(import.meta.dirname, '../app/(main)/learn/page.tsx'),
+      'utf8',
+    )
     expect(source).not.toContain("'install-eve-agent'")
   })
 })
