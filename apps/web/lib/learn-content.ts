@@ -1188,46 +1188,43 @@ export const LEARN_PAGES: readonly LearnPage[] = [
       'eve agent registry',
     ],
     summary:
-      'The install command depends on where the Eve agent came from. Agents from evex and agentcn are copied into an Eve app you already have. An agent from bergside/awesome-eve-agents is installed as a new standalone directory.',
+      'The install command depends on the source. evex and agentcn copy an agent into an existing Eve app. bergside/awesome-eve-agents creates a standalone agent directory.',
     sections: [
       {
         heading: 'First, where did the agent come from?',
         body: [
-          'Check the page where you found the agent before you copy a command. An evex slug belongs under the `@evex` namespace. An agentcn recipe uses the `@agentcn` namespace. The bergside catalog has its own CLI and creates a new directory.',
-          'These commands are tied to their catalogs. Swapping the namespace or running the standalone installer inside an existing app changes what lands on disk.',
-          'For the difference between an Eve registry and an agent directory, see [Eve agent registry](/learn/eve-agent-registry).',
+          '`@evex` and `@agentcn` are shadcn registry namespaces for agents added to an existing Eve app. The bergside catalog uses its own CLI to create a new directory.',
+          'The commands are not interchangeable because they write to different destinations. For how the catalog model works, see [Eve agent registry](/learn/eve-agent-registry).',
         ],
       },
       {
         heading: 'Into an existing Eve app',
         body: [
-          'Run registry commands from the root of the Eve app that should receive the agent.',
-          'For an agent from evex, open its page on [/agents](/agents), read the source, then run:',
+          'Run an evex install from the root of the Eve app:',
           '`npx shadcn@latest add @evex/<slug>`',
-          'Replace `<slug>` with the slug shown on the agent page. The shadcn CLI copies the source under `agent/` in your app. The files are local after the command finishes. [Installation](/docs/installation) has the evex command details.',
-          'agentcn uses the same shadcn mechanic for recipes across Eve, Flue, and Mastra. Its namespace and path come from the recipe. The live Eve example in our [evex and agentcn comparison](/learn/evex-vs-agentcn) is:',
+          'The shadcn CLI copies the agent source under `agent/`. The source is available on [/agents](/agents), and [Installation](/docs/installation) covers the command.',
+          'agentcn uses the same shadcn mechanic for Eve, Flue, and Mastra recipes. The live Eve example in our [evex and agentcn comparison](/learn/evex-vs-agentcn) is:',
           '`npx shadcn@latest add @agentcn/eve/deep-search`',
-          'Both commands add source to an existing app, but each one points to a different registry entry. Use the command published with the agent you chose.',
+          'Both commands write into an existing app. Each namespace resolves entries from its own registry.',
         ],
       },
       {
         heading: 'As a standalone agent directory',
         body: [
-          'The bergside/awesome-eve-agents catalog at [eveagents.dev](https://eveagents.dev) uses a separate installer:',
+          'bergside/awesome-eve-agents uses a separate installer. Its catalog is at [eveagents.dev](https://eveagents.dev).',
           '`npx @bergside/eveagents install <slug>`',
-          'The project lists 21 agents, uses the MIT license, and had 26 GitHub stars when checked. Its installer creates a new directory containing the whole agent. It leaves any existing Eve app alone.',
-          'Move into the directory it created, then start Eve:',
+          'The installer creates a new directory containing the whole agent. It does not write into an existing Eve app. Enter that directory and start Eve:',
           '`cd <slug>`',
           '`npx eve@latest`',
-          'Use this path when you want that agent as its own directory. Use a shadcn registry command when the agent should become part of an Eve app you already have.',
+          'The project lists 21 agents, uses the MIT license, and had 26 GitHub stars when checked.',
         ],
       },
       {
         heading: 'If you have no Eve app yet',
         body: [
-          'Eve requires Node.js 24. Create an app with the official scaffold:',
+          'Eve requires Node.js 24. The official scaffold creates a new app:',
           '`npx eve@latest init my-agent`',
-          'Once the app exists, you can write its `agent/` files or add an agent from a registry. The official setup is in [Eve getting started](https://eve.dev/docs/getting-started).',
+          'The official setup is in [Eve getting started](https://eve.dev/docs/getting-started).',
         ],
       },
     ],
@@ -1271,17 +1268,17 @@ export const LEARN_PAGES: readonly LearnPage[] = [
       {
         question: "Why aren't the install commands interchangeable?",
         answer:
-          'Each command addresses a different source and destination. The `@evex` and `@agentcn` commands ask the shadcn CLI to copy a registry entry into an existing app. The bergside CLI creates a standalone directory. `eve init` scaffolds a new Eve app.',
+          'The `@evex` and `@agentcn` commands copy registry entries into an existing app. The bergside CLI creates a standalone directory. `eve init` creates an Eve app.',
       },
       {
-        question: 'What does each command install?',
+        question: 'What lands where?',
         answer:
-          'The evex command copies the selected agent under `agent/` in your Eve app. The agentcn command copies the recipe named in its path into the app. The bergside command creates a new directory with the whole agent. `eve init` creates the app itself.',
+          'evex writes the selected agent under `agent/`. agentcn writes its recipe into the existing app. bergside creates a new directory with the whole agent. `eve init` creates the app itself.',
       },
       {
-        question: 'Where can I inspect an agent before I run a command?',
+        question: 'Where is the source listed?',
         answer:
-          "For evex, open the agent on [/agents](/agents) and read the source files before installing. For agentcn, follow the recipe page linked from its catalog. For bergside, start from [eveagents.dev](https://eveagents.dev) and review the agent's source before running its installer.",
+          'evex publishes agent files on [/agents](/agents). agentcn documents the recipe in its catalog; our [comparison](/learn/evex-vs-agentcn) links the live Eve example. bergside lists its agents at [eveagents.dev](https://eveagents.dev).',
       },
     ],
   },

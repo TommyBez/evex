@@ -22,7 +22,7 @@ describe('learn page: install-eve-agent', () => {
     expect(page?.shortTitle).toBe('Install an Eve agent')
     expect(page?.dateModified).toBe('2026-09-03')
     expect(page?.summary).toBe(
-      'The install command depends on where the Eve agent came from. Agents from evex and agentcn are copied into an Eve app you already have. An agent from bergside/awesome-eve-agents is installed as a new standalone directory.',
+      'The install command depends on the source. evex and agentcn copy an agent into an existing Eve app. bergside/awesome-eve-agents creates a standalone agent directory.',
     )
   })
 
@@ -102,9 +102,18 @@ describe('learn page: install-eve-agent', () => {
     expect(page?.faqs).toHaveLength(3)
     expect(page?.faqs.map((faq) => faq.question)).toEqual([
       "Why aren't the install commands interchangeable?",
-      'What does each command install?',
-      'Where can I inspect an agent before I run a command?',
+      'What lands where?',
+      'Where is the source listed?',
     ])
+    expect(page?.faqs[0]?.answer).toBe(
+      'The `@evex` and `@agentcn` commands copy registry entries into an existing app. The bergside CLI creates a standalone directory. `eve init` creates an Eve app.',
+    )
+    expect(page?.faqs[1]?.answer).toBe(
+      'evex writes the selected agent under `agent/`. agentcn writes its recipe into the existing app. bergside creates a new directory with the whole agent. `eve init` creates the app itself.',
+    )
+    expect(page?.faqs[2]?.answer).toBe(
+      'evex publishes agent files on [/agents](/agents). agentcn documents the recipe in its catalog; our [comparison](/learn/evex-vs-agentcn) links the live Eve example. bergside lists its agents at [eveagents.dev](https://eveagents.dev).',
+    )
   })
 
   it('renders locked markdown links as crawlable anchors', () => {
@@ -126,6 +135,11 @@ describe('learn page: install-eve-agent', () => {
     ]) {
       expect(html).toContain(`href="${href}"`)
     }
+
+    const faqHtml = (page.faqs ?? [])
+      .map((faq) => renderInlineMarkdown(faq.answer))
+      .join('')
+    expect(faqHtml).toContain('href="/learn/evex-vs-agentcn"')
   })
 
   it('does not add a fourth featured card on /learn', () => {
