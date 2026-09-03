@@ -8,6 +8,7 @@ import { getDocsPage } from '@/lib/docs-content'
 import { getLearnPage, listLearnPages } from '@/lib/learn-content'
 
 const INSTALL_HREF = '/learn/install-eve-agent'
+const NPX_COMMAND = 'npx '
 
 const renderInlineMarkdown = (markdown: string): string =>
   renderToStaticMarkup(createElement(LearnInlineMarkdown, null, markdown))
@@ -114,6 +115,13 @@ describe('learn page: install-eve-agent', () => {
     expect(page?.faqs[2]?.answer).toBe(
       'evex publishes agent files on [/agents](/agents). agentcn documents the recipe in its catalog; our [comparison](/learn/evex-vs-agentcn) links the live Eve example. bergside lists its agents at [eveagents.dev](https://eveagents.dev).',
     )
+
+    for (const row of page?.decisionRows ?? []) {
+      for (const value of [row.choice, row.useWhen, row.avoidWhen]) {
+        expect(value).not.toContain('`')
+        expect(value).not.toContain(NPX_COMMAND)
+      }
+    }
   })
 
   it('renders locked markdown links as crawlable anchors', () => {
