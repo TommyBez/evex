@@ -108,8 +108,8 @@ describe('learn page: install-eve-agent', () => {
 
     expect(page.sections.map((section) => section.heading)).toEqual([
       'Start with an Eve app',
+      'Write the agent yourself',
       'Add a community agent from a registry',
-      'Or write the agent yourself',
       'Where evex fits',
     ])
 
@@ -132,7 +132,7 @@ describe('learn page: install-eve-agent', () => {
     ])
 
     const writeSection = page.sections.find(
-      (section) => section.heading === 'Or write the agent yourself',
+      (section) => section.heading === 'Write the agent yourself',
     )
     expect(writeSection?.body).toEqual([
       'A minimal agent needs `agent/instructions.md`. Add `agent/agent.ts` when you need runtime config. You do not need a catalog.',
@@ -142,11 +142,10 @@ describe('learn page: install-eve-agent', () => {
       (section) => section.heading === 'Where evex fits',
     )
     expect(fitsSection?.body).toEqual([
-      'evex is an open catalog of community Eve agents, not the Eve runtime. Browse [/agents](/agents). What a registry is: [Eve agent registry](/learn/eve-agent-registry). CLI details: [Installation](/docs/installation). Official Eve getting started: [eve.dev/docs/getting-started](https://eve.dev/docs/getting-started).',
+      'evex is a catalog of community Eve agents. You can read the source on [/agents](/agents) before the CLI copies those files into your app. What a registry is: [Eve agent registry](/learn/eve-agent-registry). CLI details: [Installation](/docs/installation). Official Eve getting started: [eve.dev/docs/getting-started](https://eve.dev/docs/getting-started).',
     ])
-    expect(fitsSection?.body[0]?.startsWith('evex is an open catalog')).toBe(
-      true,
-    )
+    expect(fitsSection?.body[0]).not.toContain('not the Eve runtime')
+    expect(fitsSection?.body[0]).not.toContain('open catalog of community')
     expect(fitsSection?.body[0]).not.toContain('eevex')
 
     const bodyText = page.sections.flatMap((section) => section.body).join('\n')

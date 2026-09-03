@@ -1199,6 +1199,12 @@ export const LEARN_PAGES: readonly LearnPage[] = [
         ],
       },
       {
+        heading: 'Write the agent yourself',
+        body: [
+          'A minimal agent needs `agent/instructions.md`. Add `agent/agent.ts` when you need runtime config. You do not need a catalog.',
+        ],
+      },
+      {
         heading: 'Add a community agent from a registry',
         body: [
           'The shadcn CLI copies agent source into that Eve app. evex is one catalog:',
@@ -1207,15 +1213,9 @@ export const LEARN_PAGES: readonly LearnPage[] = [
         ],
       },
       {
-        heading: 'Or write the agent yourself',
-        body: [
-          'A minimal agent needs `agent/instructions.md`. Add `agent/agent.ts` when you need runtime config. You do not need a catalog.',
-        ],
-      },
-      {
         heading: 'Where evex fits',
         body: [
-          'evex is an open catalog of community Eve agents, not the Eve runtime. Browse [/agents](/agents). What a registry is: [Eve agent registry](/learn/eve-agent-registry). CLI details: [Installation](/docs/installation). Official Eve getting started: [eve.dev/docs/getting-started](https://eve.dev/docs/getting-started).',
+          'evex is a catalog of community Eve agents. You can read the source on [/agents](/agents) before the CLI copies those files into your app. What a registry is: [Eve agent registry](/learn/eve-agent-registry). CLI details: [Installation](/docs/installation). Official Eve getting started: [eve.dev/docs/getting-started](https://eve.dev/docs/getting-started).',
         ],
       },
     ],
