@@ -78,8 +78,12 @@ describe('/learn Eve agent guides index', () => {
     expect(pageSource).toContain("'install-eve-agent'")
     expect(pageSource).toContain("'evex-vs-agentcn'")
     expect(pageSource).toContain("'langgraph-vs-crewai'")
-    expect(pageSource).toContain(FEATURED_CARD_DESCRIPTIONS['eve-agent-registry'])
-    expect(pageSource).toContain(FEATURED_CARD_DESCRIPTIONS['install-eve-agent'])
+    expect(pageSource).toContain(
+      FEATURED_CARD_DESCRIPTIONS['eve-agent-registry'],
+    )
+    expect(pageSource).toContain(
+      FEATURED_CARD_DESCRIPTIONS['install-eve-agent'],
+    )
     expect(pageSource).not.toContain('publish-eve-agent')
     expect(pageSource).not.toContain('mcp-server-for-ai-agents')
     expect(pageSource).not.toContain('agentic-workflows')
