@@ -6,17 +6,8 @@ import { describe, expect, it } from 'vitest'
 import { LearnInlineMarkdown } from '@/components/learn-inline-markdown'
 import { getDocsPage } from '@/lib/docs-content'
 import { getLearnPage, listLearnPages } from '@/lib/learn-content'
-import { buildLearnPageMarkdown } from '@/lib/markdown-content'
 
-const CATALOG_INLINE = '`npx shadcn@latest add @evex/<slug>`'
-const EVE_INIT_INLINE = '`npx eve@latest init`'
 const INSTALL_HREF = '/learn/install-eve-agent'
-const MARKETPLACE = /marketplace/i
-const VERCEL_DEPLOY = /vercel deploy/i
-const LEARN_SUMMARY_MARKDOWN_USAGE =
-  /<LearnInlineMarkdown>\{page\.summary\}<\/LearnInlineMarkdown>/
-const LEARN_SUMMARY_RAW_TEXT_USAGE =
-  /<p className="mt-3 text-pretty font-medium text-foreground leading-relaxed">\s*\{page\.summary\}\s*<\/p>/
 
 const renderInlineMarkdown = (markdown: string): string =>
   renderToStaticMarkup(createElement(LearnInlineMarkdown, null, markdown))
@@ -37,7 +28,9 @@ describe('learn page: install-eve-agent', () => {
 
   it('keeps the exact locked sections, commands, facts, and links', () => {
     expect(page).not.toBeNull()
-    if (!page) return
+    if (!page) {
+      return
+    }
     expect(page.sections.map((section) => section.heading)).toEqual([
       'First, where did the agent come from?',
       'Into an existing Eve app',
@@ -61,8 +54,9 @@ describe('learn page: install-eve-agent', () => {
       '[evex and agentcn comparison](/learn/evex-vs-agentcn)',
       '[eveagents.dev](https://eveagents.dev)',
       '[Eve getting started](https://eve.dev/docs/getting-started)',
-    ])
+    ]) {
       expect(text).toContain(value)
+    }
     expect(text).not.toContain('@evex/{slug}')
     expect(text).not.toContain('open catalog')
     expect(text).not.toContain('not the Eve runtime')
@@ -105,7 +99,9 @@ describe('learn page: install-eve-agent', () => {
 
   it('renders locked markdown links as crawlable anchors', () => {
     expect(page).not.toBeNull()
-    if (!page) return
+    if (!page) {
+      return
+    }
     const html = page.sections
       .flatMap((section) => section.body)
       .map(renderInlineMarkdown)
