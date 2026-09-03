@@ -1193,7 +1193,7 @@ export const LEARN_PAGES: readonly LearnPage[] = [
       {
         heading: 'First, where did the agent come from?',
         body: [
-          '`@evex` and `@agentcn` are shadcn registry namespaces for agents added to an existing Eve app. The bergside catalog uses its own CLI to create a new directory.',
+          '`@evex` and `@agentcn` are shadcn registry namespaces for agents added to an existing Eve app ([evex installation](/docs/installation), [agentcn installation](https://www.agentcn.run/docs/installation)). The bergside catalog uses its own CLI to create a new directory ([awesome-eve-agents](https://github.com/bergside/awesome-eve-agents)).',
           'The commands are not interchangeable because they write to different destinations. For how the catalog model works, see [Eve agent registry](/learn/eve-agent-registry).',
         ],
       },
@@ -1202,29 +1202,28 @@ export const LEARN_PAGES: readonly LearnPage[] = [
         body: [
           'Run an evex install from the root of the Eve app:',
           '`npx shadcn@latest add @evex/<slug>`',
-          'The shadcn CLI copies the agent source under `agent/`. The source is available on [/agents](/agents), and [Installation](/docs/installation) covers the command.',
-          'agentcn uses the same shadcn mechanic for Eve, Flue, and Mastra recipes. The live Eve example in our [evex and agentcn comparison](/learn/evex-vs-agentcn) is:',
+          'The shadcn CLI copies the agent source under `agent/` and prompts for the npm dependencies the agent declares ([Installation](/docs/installation)). You can read that source before installing on [/agents](/agents).',
+          'agentcn uses the same shadcn mechanic and publishes recipes for Eve, Flue, Mastra, and LangGraph (Dawn) ([agentcn installation](https://www.agentcn.run/docs/installation)). Its own Eve example, [Deep Search](https://www.agentcn.run/docs/agents/eve/deep-search), is:',
           '`npx shadcn@latest add @agentcn/eve/deep-search`',
-          'Both commands write into an existing app. Each namespace resolves entries from its own registry.',
+          'Both commands run from the project root and write into an app you already have. Each namespace resolves entries from its own registry, and `@evex` resolves through the shadcn community registry with no configuration on your side. For how the two registries differ, see our [evex and agentcn comparison](/learn/evex-vs-agentcn).',
         ],
       },
       {
         heading: 'As a standalone agent directory',
         body: [
-          'bergside/awesome-eve-agents uses a separate installer. Its catalog is at [eveagents.dev](https://eveagents.dev).',
+          'bergside/awesome-eve-agents uses a separate installer ([README](https://github.com/bergside/awesome-eve-agents)). Its catalog is at [eveagents.dev](https://www.eveagents.dev).',
           '`npx @bergside/eveagents install <slug>`',
-          'The installer creates a new directory containing the whole agent. It does not write into an existing Eve app. Enter that directory and start Eve:',
+          'The installer creates a new directory containing the complete agent. That destination is why it does not write into an existing Eve app. Enter that directory and start Eve:',
           '`cd <slug>`',
           '`npx eve@latest`',
-          'The project lists 21 agents, uses the MIT license, and had 26 GitHub stars when checked.',
+          'The project lists 21 agents under the MIT license, and the repository showed 26 GitHub stars on 3 Sep 2026 ([README](https://github.com/bergside/awesome-eve-agents)).',
         ],
       },
       {
         heading: 'If you have no Eve app yet',
         body: [
-          'Eve requires Node.js 24. The official scaffold creates a new app:',
+          'Eve requires Node.js 24 or newer ([Eve getting started](https://eve.dev/docs/getting-started)). The official scaffold creates a new app:',
           '`npx eve@latest init my-agent`',
-          'The official setup is in [Eve getting started](https://eve.dev/docs/getting-started).',
         ],
       },
     ],
@@ -1278,7 +1277,7 @@ export const LEARN_PAGES: readonly LearnPage[] = [
       {
         question: 'Where is the source listed?',
         answer:
-          'evex publishes agent files on [/agents](/agents). agentcn documents the recipe in its catalog; our [comparison](/learn/evex-vs-agentcn) links the live Eve example. bergside lists its agents at [eveagents.dev](https://eveagents.dev).',
+          'evex publishes agent files on [/agents](/agents). agentcn documents each recipe in its own docs, for example [Deep Search](https://www.agentcn.run/docs/agents/eve/deep-search); our [comparison](/learn/evex-vs-agentcn) covers how the two registries differ. bergside lists its agents at [eveagents.dev](https://www.eveagents.dev).',
       },
     ],
   },

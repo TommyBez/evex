@@ -48,19 +48,26 @@ describe('learn page: install-eve-agent', () => {
       '`npx eve@latest init my-agent`',
       '21 agents',
       'MIT license',
-      '26 GitHub stars when checked',
+      '26 GitHub stars on 3 Sep 2026',
+      '24 or newer',
       '[/agents](/agents)',
       '[Eve agent registry](/learn/eve-agent-registry)',
       '[Installation](/docs/installation)',
       '[evex and agentcn comparison](/learn/evex-vs-agentcn)',
-      '[eveagents.dev](https://eveagents.dev)',
+      '[eveagents.dev](https://www.eveagents.dev)',
       '[Eve getting started](https://eve.dev/docs/getting-started)',
+      'https://www.agentcn.run/docs/installation',
+      'https://www.agentcn.run/docs/agents/eve/deep-search',
+      'https://github.com/bergside/awesome-eve-agents',
+      'https://eve.dev/docs/getting-started',
     ]) {
       expect(text).toContain(value)
     }
     expect(text).not.toContain('@evex/{slug}')
     expect(text).not.toContain('open catalog')
     expect(text).not.toContain('not the Eve runtime')
+    expect(text).not.toContain('npx eve@latest init .')
+    expect(page.sections[3]?.body).toHaveLength(2)
   })
 
   it('matches the four locked decision rows, examples, and three FAQs', () => {
@@ -113,7 +120,7 @@ describe('learn page: install-eve-agent', () => {
       'evex writes the selected agent under `agent/`. agentcn writes its recipe into the existing app. bergside creates a new directory with the whole agent. `eve init` creates the app itself.',
     )
     expect(page?.faqs[2]?.answer).toBe(
-      'evex publishes agent files on [/agents](/agents). agentcn documents the recipe in its catalog; our [comparison](/learn/evex-vs-agentcn) links the live Eve example. bergside lists its agents at [eveagents.dev](https://eveagents.dev).',
+      'evex publishes agent files on [/agents](/agents). agentcn documents each recipe in its own docs, for example [Deep Search](https://www.agentcn.run/docs/agents/eve/deep-search); our [comparison](/learn/evex-vs-agentcn) covers how the two registries differ. bergside lists its agents at [eveagents.dev](https://www.eveagents.dev).',
     )
 
     for (const row of page?.decisionRows ?? []) {
@@ -138,8 +145,11 @@ describe('learn page: install-eve-agent', () => {
       '/learn/eve-agent-registry',
       '/docs/installation',
       '/learn/evex-vs-agentcn',
-      'https://eveagents.dev',
+      'https://www.eveagents.dev',
       'https://eve.dev/docs/getting-started',
+      'https://www.agentcn.run/docs/installation',
+      'https://www.agentcn.run/docs/agents/eve/deep-search',
+      'https://github.com/bergside/awesome-eve-agents',
     ]) {
       expect(html).toContain(`href="${href}"`)
     }
@@ -148,6 +158,10 @@ describe('learn page: install-eve-agent', () => {
       .map((faq) => renderInlineMarkdown(faq.answer))
       .join('')
     expect(faqHtml).toContain('href="/learn/evex-vs-agentcn"')
+    expect(faqHtml).toContain(
+      'href="https://www.agentcn.run/docs/agents/eve/deep-search"',
+    )
+    expect(faqHtml).toContain('href="https://www.eveagents.dev"')
   })
 
   it('does not add a fourth featured card on /learn', () => {
