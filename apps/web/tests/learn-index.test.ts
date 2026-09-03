@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs'
 import path from 'node:path'
 import { describe, expect, it } from 'vitest'
 import {
+  FEATURED_LEARN_SLUGS,
   LEARN_INDEX_H1,
   LEARN_INDEX_INTRO,
   LEARN_INDEX_REGISTRY_LINK,
@@ -11,12 +12,6 @@ import {
 import { getLearnPage } from '@/lib/learn-content'
 import { createLearnListSchema } from '@/lib/structured-data'
 
-const FEATURED_LEARN_SLUGS = [
-  'eve-agent-registry',
-  'install-eve-agent',
-  'evex-vs-agentcn',
-  'langgraph-vs-crewai',
-] as const
 const FEATURED_CARD_DESCRIPTIONS = {
   'eve-agent-registry':
     'Browse the catalog, inspect every file, and install with one shadcn command.',

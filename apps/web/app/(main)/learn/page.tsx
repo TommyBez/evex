@@ -19,7 +19,7 @@ export const LEARN_INDEX_INTRO = `${LEARN_INDEX_INTRO_BEFORE_AGENTS}/agents.`
 export const LEARN_INDEX_REGISTRY_LINK =
   'What an Eve agent registry is: [Eve agent registry](/learn/eve-agent-registry).'
 
-const FEATURED_LEARN_SLUGS = [
+export const FEATURED_LEARN_SLUGS = [
   'eve-agent-registry',
   'install-eve-agent',
   'evex-vs-agentcn',
