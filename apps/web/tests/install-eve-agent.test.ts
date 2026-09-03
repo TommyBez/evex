@@ -199,8 +199,7 @@ describe('learn page: install-eve-agent', () => {
     expect(page.examples.length).toBeGreaterThan(0)
     expect(page.faqs).toEqual([
       {
-        question:
-          'Is `npx shadcn@latest add @evex/<slug>` how you install Eve?',
+        question: 'Is npx shadcn@latest add @evex/<slug> how you install Eve?',
         answer:
           'No. That copies a catalog agent into an Eve app. Eve itself is `npx eve@latest init`.',
       },

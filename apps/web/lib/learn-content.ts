@@ -1253,8 +1253,7 @@ export const LEARN_PAGES: readonly LearnPage[] = [
     ],
     faqs: [
       {
-        question:
-          'Is `npx shadcn@latest add @evex/<slug>` how you install Eve?',
+        question: 'Is npx shadcn@latest add @evex/<slug> how you install Eve?',
         answer:
           'No. That copies a catalog agent into an Eve app. Eve itself is `npx eve@latest init`.',
       },
