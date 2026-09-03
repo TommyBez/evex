@@ -62,7 +62,7 @@ describe('learn page: install-eve-agent', () => {
     expect(text).not.toContain('not the Eve runtime')
   })
 
-  it('matches the four locked decision rows and three FAQs', () => {
+  it('matches the four locked decision rows, examples, and three FAQs', () => {
     expect(page?.decisionRows).toEqual([
       {
         choice: 'Scaffold a new Eve app',
@@ -87,6 +87,16 @@ describe('learn page: install-eve-agent', () => {
         useWhen: 'You want the agent as its own standalone directory.',
         avoidWhen:
           'You want the agent copied into an Eve app you already have.',
+      },
+    ])
+    expect(page?.examples).toEqual([
+      {
+        label: 'Into an existing Eve app',
+        body: 'Inspect a slug on [/agents](/agents), then run `npx shadcn@latest add @evex/<slug>` from the Eve app root. agentcn uses the same shadcn mechanic with its own path.',
+      },
+      {
+        label: 'As a standalone agent directory',
+        body: 'Run `npx @bergside/eveagents install <slug>`, then `cd <slug>` and start Eve with `npx eve@latest`.',
       },
     ])
     expect(page?.faqs).toHaveLength(3)

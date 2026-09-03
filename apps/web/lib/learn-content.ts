@@ -1257,6 +1257,16 @@ export const LEARN_PAGES: readonly LearnPage[] = [
           'You want the agent copied into an Eve app you already have.',
       },
     ],
+    examples: [
+      {
+        label: 'Into an existing Eve app',
+        body: 'Inspect a slug on [/agents](/agents), then run `npx shadcn@latest add @evex/<slug>` from the Eve app root. agentcn uses the same shadcn mechanic with its own path.',
+      },
+      {
+        label: 'As a standalone agent directory',
+        body: 'Run `npx @bergside/eveagents install <slug>`, then `cd <slug>` and start Eve with `npx eve@latest`.',
+      },
+    ],
     faqs: [
       {
         question: "Why aren't the install commands interchangeable?",
