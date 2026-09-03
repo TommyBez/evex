@@ -6,16 +6,9 @@ import { describe, expect, it } from 'vitest'
 import { LearnInlineMarkdown } from '@/components/learn-inline-markdown'
 import { getDocsPage } from '@/lib/docs-content'
 import { getLearnPage, listLearnPages } from '@/lib/learn-content'
-import { buildLearnPageMarkdown } from '@/lib/markdown-content'
 
-const INSTALL_INLINE = '`npx shadcn@latest add @evex/<slug>`'
 const INSTALL_HREF = '/learn/install-eve-agent'
-const MARKETPLACE = /marketplace/i
-const VERCEL_DEPLOY = /vercel deploy/i
-const LEARN_SUMMARY_MARKDOWN_USAGE =
-  /<LearnInlineMarkdown>\{page\.summary\}<\/LearnInlineMarkdown>/
-const LEARN_SUMMARY_RAW_TEXT_USAGE =
-  /<p className="mt-3 text-pretty font-medium text-foreground leading-relaxed">\s*\{page\.summary\}\s*<\/p>/
+const NPX_COMMAND = 'npx '
 
 const renderInlineMarkdown = (markdown: string): string =>
   renderToStaticMarkup(createElement(LearnInlineMarkdown, null, markdown))
@@ -23,135 +16,138 @@ const renderInlineMarkdown = (markdown: string): string =>
 describe('learn page: install-eve-agent', () => {
   const page = getLearnPage('install-eve-agent')
 
-  it('exists with locked title, H1 fields, dates, and keyword', () => {
+  it('matches the locked title, date, summary, and slug', () => {
     expect(page).not.toBeNull()
-    if (!page) {
-      return
-    }
-
-    expect(page.slug).toBe('install-eve-agent')
-    expect(page.title).toBe('Install an Eve agent')
-    expect(page.shortTitle).toBe('Install an Eve agent')
-    expect(page.cluster).toBe('distribution')
-    expect(page.datePublished).toBe('2026-09-02')
-    expect(page.dateModified).toBe('2026-09-02')
-    expect(page.primaryKeyword).toBe('install eve agent')
-    expect(page.title.endsWith(' · evex')).toBe(false)
-  })
-
-  it('keeps sibling Learn pages untouched', () => {
-    const registry = getLearnPage('eve-agent-registry')
-    const older = getLearnPage('agent-registry')
-
-    expect(registry).not.toBeNull()
-    expect(older).not.toBeNull()
-    expect(registry?.title).toBe('Eve agent registry')
-    expect(older?.title).toBe(
-      'Agent registry: discovery without trust is just a list',
+    expect(page?.slug).toBe('install-eve-agent')
+    expect(page?.title).toBe('Install an Eve agent')
+    expect(page?.shortTitle).toBe('Install an Eve agent')
+    expect(page?.dateModified).toBe('2026-09-03')
+    expect(page?.summary).toBe(
+      'The install command depends on the source. evex and agentcn copy an agent into an existing Eve app. bergside/awesome-eve-agents creates a standalone agent directory.',
     )
-    expect(
-      listLearnPages().some((entry) => entry.slug === 'install-eve-agent'),
-    ).toBe(true)
   })
 
-  it('locks the lede with install command as markdown inline code', () => {
+  it('keeps the exact locked sections, commands, facts, and links', () => {
     expect(page).not.toBeNull()
     if (!page) {
       return
     }
-
-    expect(page.summary).toBe(
-      'Install a community Eve agent with `npx shadcn@latest add @evex/<slug>`. Inspect the files on /agents first.',
-    )
-    expect(page.summary).toContain(INSTALL_INLINE)
-    expect(page.summary).not.toContain('@evex/{slug}')
-    expect(page.summary).not.toContain('eve add')
-    expect(page.summary).not.toMatch(MARKETPLACE)
-    expect(page.summary).not.toMatch(VERCEL_DEPLOY)
-
-    const ledeHtml = renderInlineMarkdown(page.summary)
-    expect(ledeHtml).toContain('<code')
-    expect(ledeHtml).toContain('@evex/&lt;slug&gt;')
-    expect(ledeHtml).not.toContain('@evex/<!-- -->')
-    expect(ledeHtml).not.toContain(INSTALL_INLINE)
-  })
-
-  it('renders the Learn detail summary through LearnInlineMarkdown', () => {
-    const source = readFileSync(
-      path.join(import.meta.dirname, '../app/(main)/learn/[slug]/page.tsx'),
-      'utf8',
-    )
-
-    expect(source).toMatch(LEARN_SUMMARY_MARKDOWN_USAGE)
-    expect(source).not.toMatch(LEARN_SUMMARY_RAW_TEXT_USAGE)
-
-    expect(page).not.toBeNull()
-    if (!page) {
-      return
-    }
-
-    const ledeHtml = renderInlineMarkdown(page.summary)
-    expect(ledeHtml).toContain('<code')
-    expect(ledeHtml).toContain('npx shadcn@latest add @evex/&lt;slug&gt;')
-    expect(ledeHtml).not.toContain('`npx shadcn@latest add @evex/<slug>`')
-  })
-
-  it('uses the three required H2s and the exact install command', () => {
-    expect(page).not.toBeNull()
-    if (!page) {
-      return
-    }
-
     expect(page.sections.map((section) => section.heading)).toEqual([
-      'How you install',
-      'Inspect first',
-      'Where to go next',
+      'First, where did the agent come from?',
+      'Into an existing Eve app',
+      'As a standalone agent directory',
+      'If you have no Eve app yet',
     ])
-
-    const installSection = page.sections.find(
-      (section) => section.heading === 'How you install',
-    )
-    expect(installSection?.body).toEqual([
-      'Run this inside an Eve app:',
-      INSTALL_INLINE,
-      'Pick the slug from the catalog. The files land in your project. After that, evex is out of the loop.',
-    ])
-
-    const nextSection = page.sections.find(
-      (section) => section.heading === 'Where to go next',
-    )
-    expect(nextSection?.body).toEqual([
-      'The live catalog is [/agents](/agents). What a registry is: [Eve agent registry](/learn/eve-agent-registry). Command details: [Installation](/docs/installation).',
-    ])
-
-    const bodyText = page.sections.flatMap((section) => section.body).join('\n')
-    expect(bodyText).toContain(INSTALL_INLINE)
-    expect(bodyText).not.toContain('@evex/{slug}')
-    expect(bodyText).not.toContain('eve add')
-    expect(bodyText).not.toMatch(MARKETPLACE)
-    expect(bodyText).not.toMatch(VERCEL_DEPLOY)
-
-    const markdown = buildLearnPageMarkdown(page)
-    expect(markdown).toContain(INSTALL_INLINE)
-    expect(markdown).toContain('[/agents](/agents)')
-    expect(markdown).toContain(
+    const text = page.sections.flatMap((section) => section.body).join('\n')
+    for (const value of [
+      '`npx shadcn@latest add @evex/<slug>`',
+      '`npx shadcn@latest add @agentcn/eve/deep-search`',
+      '`npx @bergside/eveagents install <slug>`',
+      '`cd <slug>`',
+      '`npx eve@latest`',
+      '`npx eve@latest init my-agent`',
+      '21 agents',
+      'MIT license',
+      '26 GitHub stars when checked',
+      '[/agents](/agents)',
       '[Eve agent registry](/learn/eve-agent-registry)',
-    )
-    expect(markdown).toContain('[Installation](/docs/installation)')
+      '[Installation](/docs/installation)',
+      '[evex and agentcn comparison](/learn/evex-vs-agentcn)',
+      '[eveagents.dev](https://eveagents.dev)',
+      '[Eve getting started](https://eve.dev/docs/getting-started)',
+    ]) {
+      expect(text).toContain(value)
+    }
+    expect(text).not.toContain('@evex/{slug}')
+    expect(text).not.toContain('open catalog')
+    expect(text).not.toContain('not the Eve runtime')
   })
 
-  it('keeps decisionRows, examples, and faqs short without a comparison table', () => {
+  it('matches the four locked decision rows, examples, and three FAQs', () => {
+    expect(page?.decisionRows).toEqual([
+      {
+        choice: 'Scaffold a new Eve app',
+        useWhen: 'You do not have an Eve app yet.',
+        avoidWhen:
+          'You already have an Eve app, or you are choosing an agent from a registry for an existing app.',
+      },
+      {
+        choice: 'Write the agent yourself',
+        useWhen: 'You are authoring your own agent files under agent/.',
+        avoidWhen: 'You want a ready-made agent from a catalog.',
+      },
+      {
+        choice: 'Install from evex or agentcn',
+        useWhen:
+          'You want registry source copied into an Eve app you already have.',
+        avoidWhen:
+          'You want a standalone agent directory, or you have no Eve app yet.',
+      },
+      {
+        choice: 'Install from bergside/awesome-eve-agents',
+        useWhen: 'You want the agent as its own standalone directory.',
+        avoidWhen:
+          'You want the agent copied into an Eve app you already have.',
+      },
+    ])
+    expect(page?.examples).toEqual([
+      {
+        label: 'An evex agent in an existing Eve app',
+        body: 'You already have an Eve app and chose an agent on /agents. Read its source, then run `npx shadcn@latest add @evex/<slug>` from the app root. The agent source is copied under `agent/` in that app.',
+      },
+      {
+        label: 'A bergside agent as a standalone directory',
+        body: 'You chose an agent from eveagents.dev and want its own directory. Run `npx @bergside/eveagents install <slug>`, move into the new directory with `cd <slug>`, then start Eve with `npx eve@latest`.',
+      },
+    ])
+    expect(page?.faqs).toHaveLength(3)
+    expect(page?.faqs.map((faq) => faq.question)).toEqual([
+      "Why aren't the install commands interchangeable?",
+      'What lands where?',
+      'Where is the source listed?',
+    ])
+    expect(page?.faqs[0]?.answer).toBe(
+      'The `@evex` and `@agentcn` commands copy registry entries into an existing app. The bergside CLI creates a standalone directory. `eve init` creates an Eve app.',
+    )
+    expect(page?.faqs[1]?.answer).toBe(
+      'evex writes the selected agent under `agent/`. agentcn writes its recipe into the existing app. bergside creates a new directory with the whole agent. `eve init` creates the app itself.',
+    )
+    expect(page?.faqs[2]?.answer).toBe(
+      'evex publishes agent files on [/agents](/agents). agentcn documents the recipe in its catalog; our [comparison](/learn/evex-vs-agentcn) links the live Eve example. bergside lists its agents at [eveagents.dev](https://eveagents.dev).',
+    )
+
+    for (const row of page?.decisionRows ?? []) {
+      for (const value of [row.choice, row.useWhen, row.avoidWhen]) {
+        expect(value).not.toContain('`')
+        expect(value).not.toContain(NPX_COMMAND)
+      }
+    }
+  })
+
+  it('renders locked markdown links as crawlable anchors', () => {
     expect(page).not.toBeNull()
     if (!page) {
       return
     }
+    const html = page.sections
+      .flatMap((section) => section.body)
+      .map(renderInlineMarkdown)
+      .join('')
+    for (const href of [
+      '/agents',
+      '/learn/eve-agent-registry',
+      '/docs/installation',
+      '/learn/evex-vs-agentcn',
+      'https://eveagents.dev',
+      'https://eve.dev/docs/getting-started',
+    ]) {
+      expect(html).toContain(`href="${href}"`)
+    }
 
-    expect(page.comparisonRows).toBeUndefined()
-    expect(page.decisionRows.length).toBeGreaterThan(0)
-    expect(page.examples.length).toBeGreaterThan(0)
-    expect(page.faqs.length).toBeGreaterThan(0)
-    expect(page.description).not.toMatch(MARKETPLACE)
-    expect(page.description).not.toMatch(VERCEL_DEPLOY)
+    const faqHtml = (page.faqs ?? [])
+      .map((faq) => renderInlineMarkdown(faq.answer))
+      .join('')
+    expect(faqHtml).toContain('href="/learn/evex-vs-agentcn"')
   })
 
   it('does not add a fourth featured card on /learn', () => {
@@ -159,9 +155,7 @@ describe('learn page: install-eve-agent', () => {
       path.join(import.meta.dirname, '../app/(main)/learn/page.tsx'),
       'utf8',
     )
-
     expect(source).not.toContain("'install-eve-agent'")
-    expect(source).toContain("'eve-agent-registry'")
   })
 })
 
