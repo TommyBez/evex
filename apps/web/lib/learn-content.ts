@@ -1097,7 +1097,7 @@ export const LEARN_PAGES: readonly LearnPage[] = [
       'evex is the open registry for Eve agents. Browse the catalog, inspect every file, and install with npx shadcn@latest add @evex/<slug>. Agents enter through a reviewed pull request.',
     cluster: 'distribution',
     datePublished: '2026-09-01',
-    dateModified: '2026-09-01',
+    dateModified: '2026-09-04',
     primaryKeyword: 'eve agent registry',
     relatedKeywords: [
       'eve agents',
@@ -1111,21 +1111,21 @@ export const LEARN_PAGES: readonly LearnPage[] = [
       {
         heading: 'What it is',
         body: [
-          "An Eve agent registry is a catalog of reusable agents for Vercel's Eve framework. Each agent is source you can read before you install. evex is that registry. There is no upload form: agents enter through a reviewed pull request.",
+          'An Eve agent registry is a catalog of reusable agents for [Eve](https://eve.dev/docs/getting-started). Each agent is source you can read on [/agents](/agents) before install. evex is that registry. Agents enter through a reviewed pull request ([Publishing](/docs/publishing)).',
         ],
       },
       {
         heading: 'How you install',
         body: [
-          'Run this inside an Eve app:',
+          'From the root of an Eve app:',
           '`npx shadcn@latest add @evex/<slug>`',
-          'The files land in your project. After that, evex is out of the loop.',
+          'The CLI writes the agent source into your project ([Installation](/docs/installation)). After install, the files are local.',
         ],
       },
       {
         heading: 'Where to browse',
         body: [
-          'The live catalog is [/agents](/agents). How the registry works is in [evex documentation](/docs).',
+          'The live catalog is [/agents](/agents). Publishing is in [Publishing](/docs/publishing).',
         ],
       },
     ],
@@ -1133,41 +1133,40 @@ export const LEARN_PAGES: readonly LearnPage[] = [
       {
         choice: 'Browse then install',
         useWhen:
-          'You want to inspect Eve agent source on /agents before adding it to a project.',
+          'You want Eve agent source on /agents before adding it to a project.',
         avoidWhen:
-          'You need a hosted runtime or an upload form instead of source files.',
+          'You want a hosted agent service rather than source files in a project.',
       },
       {
         choice: 'Contribute by pull request',
         useWhen: 'You have an Eve agent package ready for review on evex.',
-        avoidWhen: 'You expect to publish without a reviewed pull request.',
+        avoidWhen:
+          'You need a publish path other than a reviewed pull request on evex.',
       },
     ],
     examples: [
       {
         label: 'Install from the catalog',
-        body: 'Open [/agents](/agents), pick a slug, then run `npx shadcn@latest add @evex/<slug>` inside your Eve app.',
+        body: 'Pick a slug on [/agents](/agents), then run `npx shadcn@latest add @evex/<slug>` from an Eve app root.',
       },
       {
-        label: 'Inspect before install',
-        body: 'Read every file on the agent page. Install only after the source matches the job you need.',
+        label: 'Publish an agent',
+        body: 'Agents join the catalog through a reviewed pull request ([Publishing](/docs/publishing)).',
       },
     ],
     faqs: [
       {
         question: 'How do agents enter the Eve agent registry?',
-        answer:
-          'Through a reviewed pull request. There is no upload form on evex.',
+        answer: 'Through a reviewed pull request.',
       },
       {
         question: 'What does the install command do?',
         answer:
-          'It writes the agent files into your Eve project with `npx shadcn@latest add @evex/<slug>`. After that, evex is out of the loop.',
+          '`npx shadcn@latest add @evex/<slug>` writes the agent files into your Eve project. After install, the files are local.',
       },
       {
         question: 'Where do I browse the live catalog?',
-        answer:
-          'The live catalog is [/agents](/agents). Registry docs are at [/docs](/docs).',
+        answer: 'The live catalog is [/agents](/agents).',
       },
     ],
   },

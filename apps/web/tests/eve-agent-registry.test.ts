@@ -37,7 +37,7 @@ describe('learn page: eve-agent-registry', () => {
     expect(page.shortTitle).toBe('Eve agent registry')
     expect(page.cluster).toBe('distribution')
     expect(page.datePublished).toBe('2026-09-01')
-    expect(page.dateModified).toBe('2026-09-01')
+    expect(page.dateModified).toBe('2026-09-04')
     expect(page.primaryKeyword).toBe('eve agent registry')
     expect(page.title.endsWith(' · evex')).toBe(false)
   })
@@ -113,10 +113,18 @@ describe('learn page: eve-agent-registry', () => {
     const installSection = page.sections.find(
       (section) => section.heading === 'How you install',
     )
+    expect(page.sections[0]?.body).toEqual([
+      'An Eve agent registry is a catalog of reusable agents for [Eve](https://eve.dev/docs/getting-started). Each agent is source you can read on [/agents](/agents) before install. evex is that registry. Agents enter through a reviewed pull request ([Publishing](/docs/publishing)).',
+    ])
+
     expect(installSection?.body).toEqual([
-      'Run this inside an Eve app:',
+      'From the root of an Eve app:',
       INSTALL_INLINE,
-      'The files land in your project. After that, evex is out of the loop.',
+      'The CLI writes the agent source into your project ([Installation](/docs/installation)). After install, the files are local.',
+    ])
+
+    expect(page.sections[2]?.body).toEqual([
+      'The live catalog is [/agents](/agents). Publishing is in [Publishing](/docs/publishing).',
     ])
 
     const bodyText = page.sections.flatMap((section) => section.body).join('\n')
@@ -131,19 +139,61 @@ describe('learn page: eve-agent-registry', () => {
     const markdown = buildLearnPageMarkdown(page)
     expect(markdown).toContain(INSTALL_INLINE)
     expect(markdown).toContain('[/agents](/agents)')
-    expect(markdown).toContain('[evex documentation](/docs)')
+    expect(markdown).toContain('[Publishing](/docs/publishing)')
+    expect(markdown).toContain('[Installation](/docs/installation)')
+    expect(markdown).not.toContain('[evex documentation](/docs)')
   })
 
-  it('keeps decisionRows, examples, and faqs short without a comparison table', () => {
+  it('locks decisionRows, examples, and faqs without a comparison table', () => {
     expect(page).not.toBeNull()
     if (!page) {
       return
     }
 
     expect(page.comparisonRows).toBeUndefined()
-    expect(page.decisionRows.length).toBeGreaterThan(0)
-    expect(page.examples.length).toBeGreaterThan(0)
-    expect(page.faqs.length).toBeGreaterThan(0)
+    expect(page.decisionRows).toEqual([
+      {
+        choice: 'Browse then install',
+        useWhen:
+          'You want Eve agent source on /agents before adding it to a project.',
+        avoidWhen:
+          'You want a hosted agent service rather than source files in a project.',
+      },
+      {
+        choice: 'Contribute by pull request',
+        useWhen: 'You have an Eve agent package ready for review on evex.',
+        avoidWhen:
+          'You need a publish path other than a reviewed pull request on evex.',
+      },
+    ])
+    expect(page.examples).toEqual([
+      {
+        label: 'Install from the catalog',
+        body: 'Pick a slug on [/agents](/agents), then run `npx shadcn@latest add @evex/<slug>` from an Eve app root.',
+      },
+      {
+        label: 'Publish an agent',
+        body: 'Agents join the catalog through a reviewed pull request ([Publishing](/docs/publishing)).',
+      },
+    ])
+    expect(page.faqs).toEqual([
+      {
+        question: 'How do agents enter the Eve agent registry?',
+        answer: 'Through a reviewed pull request.',
+      },
+      {
+        question: 'What does the install command do?',
+        answer:
+          '`npx shadcn@latest add @evex/<slug>` writes the agent files into your Eve project. After install, the files are local.',
+      },
+      {
+        question: 'Where do I browse the live catalog?',
+        answer: 'The live catalog is [/agents](/agents).',
+      },
+    ])
+    expect(page.description).toBe(
+      'evex is the open registry for Eve agents. Browse the catalog, inspect every file, and install with npx shadcn@latest add @evex/<slug>. Agents enter through a reviewed pull request.',
+    )
     expect(page.description).not.toMatch(MARKETPLACE)
     expect(page.description).not.toMatch(VERCEL_DEPLOY)
     expect(page.description).not.toMatch(DKA_OR_GIM)
