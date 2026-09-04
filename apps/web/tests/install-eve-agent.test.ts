@@ -22,7 +22,7 @@ describe('learn page: install-eve-agent', () => {
     expect(page?.slug).toBe('install-eve-agent')
     expect(page?.title).toBe('Install an Eve agent')
     expect(page?.shortTitle).toBe('Install an Eve agent')
-    expect(page?.dateModified).toBe('2026-09-03')
+    expect(page?.dateModified).toBe('2026-09-04')
     expect(page?.summary).toBe(
       'The install command depends on the source. evex and agentcn copy an agent into an existing Eve app. bergside/awesome-eve-agents creates a standalone agent directory.',
     )
@@ -52,7 +52,6 @@ describe('learn page: install-eve-agent', () => {
       '26 GitHub stars on 3 Sep 2026',
       '24 or newer',
       '[/agents](/agents)',
-      '[Eve agent registry](/learn/eve-agent-registry)',
       '[Installation](/docs/installation)',
       '[evex and agentcn comparison](/learn/evex-vs-agentcn)',
       '[eveagents.dev](https://www.eveagents.dev)',
@@ -65,6 +64,7 @@ describe('learn page: install-eve-agent', () => {
       expect(text).toContain(value)
     }
     expect(text).not.toContain('@evex/{slug}')
+    expect(text).not.toContain('/learn/eve-agent-registry')
     expect(text).not.toContain('open catalog')
     expect(text).not.toContain('not the Eve runtime')
     expect(text).not.toContain('npx eve@latest init .')
@@ -143,7 +143,6 @@ describe('learn page: install-eve-agent', () => {
       .join('')
     for (const href of [
       '/agents',
-      '/learn/eve-agent-registry',
       '/docs/installation',
       '/learn/evex-vs-agentcn',
       'https://www.eveagents.dev',
@@ -165,15 +164,15 @@ describe('learn page: install-eve-agent', () => {
     expect(faqHtml).toContain('href="https://www.eveagents.dev"')
   })
 
-  it('is featured as the second /learn index card', () => {
+  it('is featured as the first /learn index card', () => {
     const source = readFileSync(
       path.join(import.meta.dirname, '../app/(main)/learn/page.tsx'),
       'utf8',
     )
 
-    expect(FEATURED_LEARN_SLUGS.indexOf('install-eve-agent')).toBe(1)
+    expect(FEATURED_LEARN_SLUGS.indexOf('install-eve-agent')).toBe(0)
     expect(source).toContain("'install-eve-agent'")
-    expect(source).toContain("'eve-agent-registry'")
+    expect(source).not.toContain("'eve-agent-registry'")
     expect(source).toContain(
       'The install command depends on which catalog the agent came from.',
     )
@@ -188,7 +187,7 @@ describe('in-body links to /learn/install-eve-agent', () => {
       return
     }
 
-    expect(docs.dateModified).toBe('2026-09-02')
+    expect(docs.dateModified).toBe('2026-09-04')
     expect(docs.title).toBe(
       'evex documentation: the community registry for eve agents',
     )
@@ -235,7 +234,7 @@ describe('in-body links to /learn/install-eve-agent', () => {
   it('is listed by listLearnPages for sitemap and llms twins', () => {
     const slugs = listLearnPages().map((entry) => entry.slug)
     expect(slugs).toContain('install-eve-agent')
-    expect(slugs).toContain('eve-agent-registry')
+    expect(slugs).not.toContain('eve-agent-registry')
     expect(slugs).toContain('agent-registry')
   })
 })

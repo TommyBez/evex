@@ -26,7 +26,7 @@ const DOCS_INDEX_SLUG = 'introduction'
 
 export const DOCS_PAGES: readonly DocsPage[] = [
   {
-    dateModified: '2026-09-02',
+    dateModified: '2026-09-04',
     datePublished: '2026-07-04',
     description:
       'Install community eve agents into your project with one command and own every file they write. What evex is and how the shadcn-compatible registry works.',
@@ -63,7 +63,6 @@ export const DOCS_PAGES: readonly DocsPage[] = [
         body: [
           'The Installation page covers prerequisites, the install command, and what to do after the files are written. The Registry page documents the HTTP endpoints behind the catalog, including the machine-readable resources for tools and LLMs. The MCP page shows how to browse and install agents from editors like Cursor, VS Code, and Claude Code through the shadcn MCP server. The Publishing page walks through adding your own agent to the catalog by pull request.',
           'The live catalog is [Eve agents](/agents). First-party agents include the [Eve GitHub issue agent](/agents/github-issue-maintainer), the [Eve docs Q&A agent](/agents/docs-knowledge-assistant), and the [Eve support reply agent](/agents/support-reply-draft).',
-          'What an Eve agent registry is: [Eve agent registry](/learn/eve-agent-registry).',
           'How to install: [Install an Eve agent](/learn/install-eve-agent).',
         ],
         heading: 'Where to go next',
