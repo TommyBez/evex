@@ -985,7 +985,7 @@ export const LEARN_PAGES: readonly LearnPage[] = [
         heading: 'What an Eve agent registry is',
         body: [
           'An Eve agent registry is a catalog of reusable agents Eve developers can inspect and install as source files. Instead of copying folders from GitHub by hand, you run a shadcn CLI command that writes the agent files into your project.',
-          'evex is that kind of registry for Eve. Browse the catalog, open an agent page, preview the files, then install with `npx shadcn@latest add @evex/<slug>`. After install you own the files. There is no hosted agent runtime. See [/docs](/docs) for the product overview. The live catalog is [/agents](/agents).',
+          'evex is that kind of registry for Eve. Browse the catalog on [/agents](/agents), open an agent page, preview the files, then install with `npx shadcn@latest add @evex/<slug>` ([Installation](/docs/installation)). After install you own the files. There is no hosted agent runtime. See [/docs](/docs) for the product overview.',
         ],
       },
       {
@@ -998,7 +998,7 @@ export const LEARN_PAGES: readonly LearnPage[] = [
       {
         heading: 'Inspect before you install',
         body: [
-          'On every evex agent page you can preview files, dependencies, author identity, and the install command before you run anything. That inspect-before-install loop is the trust surface: you review what will land under `agent/` first.',
+          'On every evex agent page you can preview files, dependencies, author identity, and the install command before you run anything ([/agents](/agents)). That inspect-before-install loop is the trust surface: you review what will land under `agent/` first.',
           'agentcn recipe docs expose a Composition file tree, Manual source, and an optional live preview that needs an API key. That is useful documentation, but it is not the same as an inspect-files UI on the catalog listing. If file preview on the listing page is the decision gate, evex matches that job more directly.',
         ],
       },
@@ -1013,18 +1013,18 @@ export const LEARN_PAGES: readonly LearnPage[] = [
         heading: 'When to pick which',
         body: [
           'Pick evex when you want inspect-before-install, GitHub-verified author profiles, leaderboard and favorites, and a documented PR publish path for Eve agents.',
-          'Stay with agentcn when you already live in that catalog or need its mixed-framework recipe set. The install mechanic is the same class of tool. Do not treat star count, install totals, or community-size bragging as quality.',
+          'Stay with agentcn when you already live in that catalog or need its mixed-framework recipe set. The install mechanic is the same class of tool. Star count, install totals, and community-size bragging are not quality signals.',
           'Copy-paste from GitHub remains fine for a one-off experiment. It falls short when you want a repeatable command, dependency prompts, and a page others can reinstall from. Use [/docs/installation](/docs/installation) when you are ready for the registry path.',
         ],
       },
       {
         heading: 'How to install from evex',
         body: [
-          '1. Start from an Eve project root (create one with `npx eve@latest init` if needed). Eve requires Node.js 24 or newer.',
-          '2. Pick an agent on evex and preview its files, dependencies, and author on the agent page.',
-          '3. Run `npx shadcn@latest add @evex/<slug>` from the project root. Example: `npx shadcn@latest add @evex/code-reviewer`.',
+          '1. Start from an Eve project root (create one with `npx eve@latest init` if needed). Eve requires Node.js 24 or newer ([Eve getting started](https://eve.dev/docs/getting-started)).',
+          '2. Pick an agent on [/agents](/agents) and preview its files, dependencies, and author on the agent page.',
+          '3. Run `npx shadcn@latest add @evex/<slug>` from the project root ([Installation](/docs/installation)). Example: `npx shadcn@latest add @evex/code-reviewer`.',
           '4. Own the written files: fill `.env.example` when present, read the installed README, and run evals under `evals/` before you trust the agent in production.',
-          'Never the `eve` CLI `add` subcommand. Never a URL install as the command you publish or paste into docs.',
+          'Use the shadcn `add` command above, not an `eve` CLI `add` subcommand, and not a URL install as the command you publish or paste into docs.',
         ],
       },
     ],
@@ -1054,7 +1054,7 @@ export const LEARN_PAGES: readonly LearnPage[] = [
     examples: [
       {
         label: 'evex inspect-then-install',
-        body: 'Open an agent page on evex, preview every file and dependency, confirm the GitHub-verified author, then run `npx shadcn@latest add @evex/<slug>` and own the files in your Eve project.',
+        body: 'Open an agent page on [/agents](/agents), preview every file and dependency, confirm the GitHub-verified author, then run `npx shadcn@latest add @evex/<slug>` and own the files in your Eve project.',
       },
       {
         label: 'agentcn mixed-framework',

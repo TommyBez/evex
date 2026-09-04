@@ -85,7 +85,7 @@ describe('learn page: evex vs agentcn', () => {
     )
     expect(definition?.body).toEqual([
       'An Eve agent registry is a catalog of reusable agents Eve developers can inspect and install as source files. Instead of copying folders from GitHub by hand, you run a shadcn CLI command that writes the agent files into your project.',
-      'evex is that kind of registry for Eve. Browse the catalog, open an agent page, preview the files, then install with `npx shadcn@latest add @evex/<slug>`. After install you own the files. There is no hosted agent runtime. See [/docs](/docs) for the product overview. The live catalog is [/agents](/agents).',
+      'evex is that kind of registry for Eve. Browse the catalog on [/agents](/agents), open an agent page, preview the files, then install with `npx shadcn@latest add @evex/<slug>` ([Installation](/docs/installation)). After install you own the files. There is no hosted agent runtime. See [/docs](/docs) for the product overview.',
     ])
   })
 
@@ -173,7 +173,7 @@ describe('learn page: evex vs agentcn', () => {
     expect(page.examples).toEqual([
       {
         label: 'evex inspect-then-install',
-        body: 'Open an agent page on evex, preview every file and dependency, confirm the GitHub-verified author, then run `npx shadcn@latest add @evex/<slug>` and own the files in your Eve project.',
+        body: 'Open an agent page on [/agents](/agents), preview every file and dependency, confirm the GitHub-verified author, then run `npx shadcn@latest add @evex/<slug>` and own the files in your Eve project.',
       },
       {
         label: 'agentcn mixed-framework',
@@ -218,7 +218,9 @@ describe('learn page: evex vs agentcn', () => {
     expect(markdown).not.toContain('@evex/{slug}')
     // Explicit anti-pattern callout is required; do not publish eve CLI add as install.
     // Wording avoids the contiguous "eve add" substring so llms-full.txt (#58) stays clean.
-    expect(markdown).toContain('Never the `eve` CLI `add` subcommand')
+    expect(markdown).toContain(
+      'Use the shadcn `add` command above, not an `eve` CLI `add` subcommand',
+    )
     expect(markdown).not.toMatch(EVE_ADD_OUTSIDE_BACKTICKS)
     expect(markdown).not.toMatch(EVE_ADD_CONTIGUOUS)
   })
@@ -304,6 +306,20 @@ describe('learn page: evex vs agentcn', () => {
       'The shared mechanic does not make the products identical. evex is built around browse, inspect, install, and publish for Eve agents. agentcn ships recipes across frameworks and leans on recipe docs plus optional live preview. Choose on inspectability and the publish path, not on which CLI wrapper looks familiar.',
     ])
     expect(mechanic?.body[0]).not.toContain('](')
+
+    const inspect = page.sections.find(
+      (section) => section.heading === 'Inspect before you install',
+    )
+    expect(inspect?.body[0]).toBe(
+      'On every evex agent page you can preview files, dependencies, author identity, and the install command before you run anything ([/agents](/agents)). That inspect-before-install loop is the trust surface: you review what will land under `agent/` first.',
+    )
+
+    const whenToPick = page.sections.find(
+      (section) => section.heading === 'When to pick which',
+    )
+    expect(whenToPick?.body[1]).toBe(
+      'Stay with agentcn when you already live in that catalog or need its mixed-framework recipe set. The install mechanic is the same class of tool. Star count, install totals, and community-size bragging are not quality signals.',
+    )
   })
 
   it('renders locked comparison citations as crawlable anchors', () => {
@@ -378,6 +394,13 @@ describe('learn page: evex vs agentcn', () => {
       (section) => section.heading === 'How to install from evex',
     )
     expect(installSection).toBeDefined()
+    expect(installSection?.body).toEqual([
+      '1. Start from an Eve project root (create one with `npx eve@latest init` if needed). Eve requires Node.js 24 or newer ([Eve getting started](https://eve.dev/docs/getting-started)).',
+      '2. Pick an agent on [/agents](/agents) and preview its files, dependencies, and author on the agent page.',
+      '3. Run `npx shadcn@latest add @evex/<slug>` from the project root ([Installation](/docs/installation)). Example: `npx shadcn@latest add @evex/code-reviewer`.',
+      '4. Own the written files: fill `.env.example` when present, read the installed README, and run evals under `evals/` before you trust the agent in production.',
+      'Use the shadcn `add` command above, not an `eve` CLI `add` subcommand, and not a URL install as the command you publish or paste into docs.',
+    ])
     const numberedSteps = (installSection?.body ?? []).filter((paragraph) =>
       NUMBERED_STEP_PREFIX.test(paragraph),
     )
@@ -385,9 +408,6 @@ describe('learn page: evex vs agentcn', () => {
     for (const step of numberedSteps) {
       expect(looksLikeBlockMarkdown(step)).toBe(true)
     }
-    expect(installSection?.body.at(-1)).toBe(
-      'Never the `eve` CLI `add` subcommand. Never a URL install as the command you publish or paste into docs.',
-    )
   })
 })
 
