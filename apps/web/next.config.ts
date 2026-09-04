@@ -23,6 +23,11 @@ const nextConfig: NextConfig = {
         destination: '/docs',
         permanent: true,
       },
+      {
+        source: '/learn/eve-agent-registry.md',
+        destination: '/docs',
+        permanent: true,
+      },
     ])
   },
 }

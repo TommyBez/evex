@@ -31,11 +31,12 @@ describe('killed learn page: eve-agent-registry', () => {
     )
   })
 
-  it('permanently redirects /learn/eve-agent-registry to /docs', () => {
+  it('permanently redirects /learn/eve-agent-registry and its .md mirror to /docs', () => {
     const source = readWebSource('next.config.ts')
 
     expect(source).toContain('redirects()')
     expect(source).toContain("source: '/learn/eve-agent-registry'")
+    expect(source).toContain("source: '/learn/eve-agent-registry.md'")
     expect(source).toContain("destination: '/docs'")
     expect(source).toContain('permanent: true')
   })
