@@ -919,7 +919,7 @@ export const LEARN_PAGES: readonly LearnPage[] = [
       'Fair, dated comparison of evex and agentcn as Eve agent registries. Both use the shadcn CLI. evex adds inspect-before-install and publish via pull request.',
     cluster: 'comparisons',
     datePublished: '2026-08-13',
-    dateModified: '2026-08-28',
+    dateModified: '2026-09-04',
     primaryKeyword: 'evex vs agentcn',
     relatedKeywords: [
       'eve agent registry',
@@ -932,39 +932,39 @@ export const LEARN_PAGES: readonly LearnPage[] = [
     comparisonRows: [
       {
         criterion: 'Install',
-        left: '`npx shadcn@latest add @evex/<slug>`',
+        left: '`npx shadcn@latest add @evex/<slug>` ([Installation](/docs/installation))',
         right:
-          'Same shadcn CLI. Live Eve example (13 Aug 2026): `npx shadcn@latest add @agentcn/eve/deep-search`',
+          'Same shadcn CLI. Live Eve example (checked 4 Sep 2026): `npx shadcn@latest add @agentcn/eve/deep-search` ([Deep Search](https://www.agentcn.run/docs/agents/eve/deep-search)).',
       },
       {
         criterion: 'Inspect files before install',
         left: 'Yes. Files, dependencies, author, and command on every agent page.',
         right:
-          'Recipe docs: Composition file tree, Manual source, optional live preview (needs an API key). Not an inspect-files UI on the catalog listing.',
+          'Recipe docs: Composition file tree, Manual source, optional live preview that needs an API key. Not an inspect-files UI on the catalog listing.',
       },
       {
         criterion: 'Author identity',
         left: 'GitHub-verified author profiles',
         right:
-          'Not surfaced as GitHub-verified author profiles on recipe pages (checked 13 Aug 2026)',
+          'Not surfaced as GitHub-verified author profiles on recipe pages (checked 4 Sep 2026).',
       },
       {
         criterion: 'Publish path',
-        left: 'Reviewed pull request. First-party docs: [/docs/publishing](/docs/publishing)',
+        left: 'Reviewed pull request ([Publishing](/docs/publishing)).',
         right:
-          'GitHub README: fork and open a PR. No first-party publishing docs on agentcn.run as of 13 Aug 2026',
+          'Fork and open a PR ([Contributing](https://github.com/shadcn-labs/agentcn/blob/main/CONTRIBUTING.md)). No first-party publishing docs on agentcn.run as of 4 Sep 2026.',
       },
       {
         criterion: 'Catalog extras',
         left: 'Browse, search, leaderboard, favorites, publishing docs',
         right:
-          'Docs agent list and changelog. No leaderboard, favorites, or author pages in the public docs index',
+          '[Agents](https://www.agentcn.run/docs/agents) list and [Changelog](https://www.agentcn.run/docs/changelog). No leaderboard, favorites, or author pages in the public docs index.',
       },
       {
         criterion: 'After install',
-        left: 'You own the files. No runtime dependency on evex.',
+        left: 'You own the files ([Installation](/docs/installation)). No runtime dependency on evex.',
         right:
-          'You own the copied files (stated on their installation docs). Same class of write-to-disk outcome.',
+          'You own the copied files ([Installation](https://www.agentcn.run/docs/installation)). Same class of write-to-disk outcome.',
       },
       {
         criterion: 'Hosted agent runtime',
@@ -975,11 +975,11 @@ export const LEARN_PAGES: readonly LearnPage[] = [
         criterion: 'Price',
         left: 'Free, MIT',
         right:
-          'Free. GitHub lists MIT. No paid tier on agentcn.run (checked 13 Aug 2026)',
+          'Free. GitHub lists [MIT](https://github.com/shadcn-labs/agentcn). No paid tier on agentcn.run (checked 4 Sep 2026).',
       },
     ],
     comparisonBottomLine:
-      'If you want inspect-before-install and a PR-owned catalog, use evex. If you already live in agentcn, the install mechanic is the same class of tool. Do not treat star count as quality.',
+      'If you want inspect-before-install and a PR-owned catalog, use evex. If you already live in agentcn, the install mechanic is the same class of tool. Star count is not a quality signal.',
     sections: [
       {
         heading: 'What an Eve agent registry is',
@@ -991,7 +991,7 @@ export const LEARN_PAGES: readonly LearnPage[] = [
       {
         heading: 'Same install mechanic, different product',
         body: [
-          'evex and agentcn both install through the shadcn CLI. On evex the command is always `npx shadcn@latest add @evex/<slug>`. On agentcn, a live Eve example checked on 13 Aug 2026 is `npx shadcn@latest add @agentcn/eve/deep-search`.',
+          'evex and agentcn both install through the shadcn CLI. On evex the command is always `npx shadcn@latest add @evex/<slug>`. On agentcn, a live Eve example checked on 4 Sep 2026 is `npx shadcn@latest add @agentcn/eve/deep-search`.',
           'The shared mechanic does not make the products identical. evex is built around browse, inspect, install, and publish for Eve agents. agentcn ships recipes across frameworks and leans on recipe docs plus optional live preview. Choose on inspectability and the publish path, not on which CLI wrapper looks familiar.',
         ],
       },
@@ -1006,7 +1006,7 @@ export const LEARN_PAGES: readonly LearnPage[] = [
         heading: 'How agents get into the catalog',
         body: [
           'evex agents enter the catalog through a reviewed pull request. First-party publishing docs live at [/docs/publishing](/docs/publishing). Canonical agent metadata and files stay in the repository; the database stores runtime state only.',
-          'agentcn publishing, per its GitHub README, is also fork-and-open-a-PR. As of 13 Aug 2026 there were no first-party publishing docs on agentcn.run. Both paths can accept community work. evex makes the PR-owned path a first-class product surface with docs, author profiles, and CODEOWNERS.',
+          'agentcn publishing, per its CONTRIBUTING.md, is also fork-and-open-a-PR. As of 4 Sep 2026 there were no first-party publishing docs on agentcn.run. Both paths can accept community work. evex makes the PR-owned path a first-class product surface with docs, author profiles, and CODEOWNERS.',
         ],
       },
       {
@@ -1070,22 +1070,22 @@ export const LEARN_PAGES: readonly LearnPage[] = [
       {
         question: 'How do I install an agent from evex?',
         answer:
-          'From your Eve project root, run `npx shadcn@latest add @evex/<slug>`. Preview files on the agent page first. See [/docs/installation](/docs/installation) for prerequisites and post-install steps.',
+          'From your Eve project root, run `npx shadcn@latest add @evex/<slug>`. Preview files on the agent page first. Prerequisites and post-install steps are in Installation.',
       },
       {
         question: 'Is evex an agent marketplace?',
         answer:
-          'No. evex is a community registry for reusable Eve agent source files. There is no commerce layer, paid tier, or hosted runtime.',
+          'evex is a community registry for reusable Eve agent source files. There is no commerce layer, paid tier, or hosted runtime.',
       },
       {
         question: 'How do I publish an agent to evex?',
         answer:
-          'Open a reviewed pull request with the agent package. First-party steps are in [/docs/publishing](/docs/publishing). Canonical files stay in the repository.',
+          'Open a reviewed pull request with the agent package. First-party steps are in Publishing. Canonical files stay in the repository.',
       },
       {
         question: 'Does evex run the agent after install?',
         answer:
-          'No. Install writes source into your project. You own the files and run them in your Eve app. There is no runtime dependency on evex.',
+          'Install writes source into your project. You own the files and run them in your Eve app. There is no runtime dependency on evex.',
       },
     ],
   },
