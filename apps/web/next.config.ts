@@ -16,6 +16,15 @@ const nextConfig: NextConfig = {
       { source: '/docs/:slug.md', destination: '/docs/:slug/md' },
     ])
   },
+  redirects() {
+    return Promise.resolve([
+      {
+        source: '/learn/eve-agent-registry',
+        destination: '/docs',
+        permanent: true,
+      },
+    ])
+  },
 }
 
 export default withBotId(nextConfig)
