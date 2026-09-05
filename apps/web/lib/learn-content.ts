@@ -93,24 +93,24 @@ export const LEARN_PAGES: readonly LearnPage[] = [
       'A practical guide to MCP servers for agent builders: tools, resources, prompts, permissions, and where MCP stops.',
     cluster: 'protocols',
     datePublished: '2026-07-01',
-    dateModified: '2026-07-02',
+    dateModified: '2026-09-05',
     primaryKeyword: 'mcp server',
     relatedKeywords: ['model context protocol', 'mcp tools', 'mcp server ai'],
     summary:
-      'An MCP server gives agents a standard way to discover and call external capabilities. It does not decide policy for you. The server exposes tools and context; the agent still needs clear instructions, permissions, logging, and workflow boundaries. Treat MCP as the integration layer, not the whole agent architecture.',
+      'An [MCP server](https://modelcontextprotocol.io/introduction) gives agents a standard way to discover and call external capabilities. It does not decide policy for you. The server exposes tools and context; the agent still needs clear instructions, permissions, logging, and workflow boundaries. Treat MCP as the integration layer, not the whole agent architecture.',
     sections: [
       {
         heading: 'MCP solves integration sprawl',
         body: [
           'Without MCP, every agent client needs custom glue for every system it touches. One client calls GitHub, another queries a database, and another searches docs. The result is repeated integration work and inconsistent permissions.',
-          'An MCP server gives those capabilities a standard shape. The host or client discovers tools, resources, and prompts through MCP, then presents the usable actions or context to the model in the format that runtime expects.',
+          'An MCP server gives those capabilities a standard shape. The host or client discovers [tools, resources, and prompts](https://modelcontextprotocol.io/docs/concepts/architecture) through MCP, then presents the usable actions or context to the model in the format that runtime expects.',
           'That matters once more than one agent needs the same system. A database analyst, a support triage agent, and a product ops agent may all need read-only access to a data warehouse. If each agent builds its own database wrapper, the team now has three permission models and three places for query safety bugs. A shared MCP server gives the team one place to define permissions, logging, and query safety.',
         ],
       },
       {
         heading: 'What an MCP server actually exposes',
         body: [
-          'The useful split is simple. Tools perform actions, such as listing issues or running a read-only query. Resources provide context, such as files, schemas, or documentation. Prompts provide reusable interaction templates.',
+          'The useful split matches the protocol primitives. Tools perform actions, such as listing issues or running a read-only query. Resources provide context, such as files, schemas, or documentation. Prompts provide reusable interaction templates.',
           'That does not make every MCP server safe. A broad tool with vague arguments is still broad. A server that exposes write actions still needs consent, authorization, and observability.',
           'The best MCP servers are boring in the right way. They expose small capabilities with clear names, typed inputs, and predictable outputs. The model should know what a tool does before it calls it, and a human reviewer should understand the blast radius without reading a page of hidden implementation.',
         ],
@@ -123,7 +123,7 @@ export const LEARN_PAGES: readonly LearnPage[] = [
       {
         heading: 'Keep access separate from agent behavior',
         body: [
-          'In an Eve project, MCP access usually belongs near connections or narrow tools, while agent behavior stays in instructions, skills, and application code. That keeps external capability separate from the policy that decides when to use it.',
+          'In an Eve project, MCP access usually belongs near [connections](https://eve.dev/docs/connections) or narrow tools, while agent behavior stays in instructions, skills, and application code. That keeps external capability separate from the policy that decides when to use it.',
           'This matters for installable agents. A registry item should make it obvious which external systems the agent can reach and which files implement that access.',
           'For example, an Eve agent can connect to a hosted MCP server for Supabase or Linear, but still keep its local judgment in files users can inspect: instructions for when to ask for clarification, skills for safe analysis, and tools that wrap only the actions the workflow needs. The external capability is shared. The agent behavior remains owned by the project.',
         ],
@@ -131,7 +131,7 @@ export const LEARN_PAGES: readonly LearnPage[] = [
       {
         heading: 'The risk is assuming protocol equals policy',
         body: [
-          'MCP standardizes how capabilities are exposed. It does not decide whether the agent should call a tool, whether a user is authorized, whether a result can be trusted, or whether a write needs approval.',
+          'MCP standardizes how capabilities are exposed. The protocol does not dictate how applications use LLMs or manage context. It does not decide whether the agent should call a tool, whether a user is authorized, whether a result can be trusted, or whether a write needs approval.',
           'Use MCP for access. Put rules in tools, permissions, approval gates, and runtime checks.',
           'A useful rule: if a bad tool call would surprise a user, the protection should not live only in the prompt. Use scopes, read-only credentials, allowlists, approval gates, rate limits, and logs. The model can choose from available capabilities, but the system should decide what capabilities are available.',
         ],
@@ -179,12 +179,12 @@ export const LEARN_PAGES: readonly LearnPage[] = [
       {
         question: 'Is MCP only for tools?',
         answer:
-          'No. MCP can expose tools, resources, and prompts. Tools are the most visible part because they let agents act.',
+          'MCP can expose tools, resources, and prompts. Tools are the most visible part because they let agents act.',
       },
       {
         question: 'Does MCP make tool use safe?',
         answer:
-          'No. MCP gives tools a standard interface. Safety still depends on scopes, validation, approvals, and logging.',
+          'MCP gives tools a standard interface. Safety still depends on scopes, validation, approvals, and logging.',
       },
       {
         question: 'When should I build an MCP server?',
@@ -201,7 +201,7 @@ export const LEARN_PAGES: readonly LearnPage[] = [
       'How to decide when a workflow should be agentic, deterministic, or a hybrid of both.',
     cluster: 'agent-engineering',
     datePublished: '2026-07-01',
-    dateModified: '2026-07-01',
+    dateModified: '2026-09-05',
     primaryKeyword: 'agentic workflow',
     relatedKeywords: ['ai agent workflow', 'agentic workflows', 'ai workflows'],
     summary:
@@ -210,7 +210,7 @@ export const LEARN_PAGES: readonly LearnPage[] = [
       {
         heading: 'Do not make everything agentic',
         body: [
-          'A workflow becomes agentic when the model observes state, chooses an action, sees the result, and decides what to do next. That flexibility is useful for triage, research, code review, support, and messy operational work.',
+          'A workflow becomes agentic when the model observes state, chooses an action, sees the result, and decides what to do next. That flexibility helps triage, research, code review, support, and messy operational work.',
           'It is wasteful when the process is already known. If step two always follows step one, a model does not need to decide it. Deterministic software will be cheaper, faster, and easier to test.',
           'The easiest mistake is asking the model to enforce rules the application already knows. It should not decide whether an invoice over a fixed threshold needs approval if that threshold is a policy. It should not decide whether a user has access if the application already has permissions. Let the agent handle interpretation and prioritization. Let code handle invariants.',
         ],
@@ -227,7 +227,7 @@ export const LEARN_PAGES: readonly LearnPage[] = [
         heading: 'Hybrid workflows are the default',
         body: [
           'The practical pattern is a hybrid: a deterministic trigger starts the run, the model makes a bounded decision, tools execute narrow actions, and the workflow records state. Human approval appears only where risk justifies it.',
-          'Eve fits this pattern because channels, schedules, tools, skills, and durable sessions can sit around model judgment instead of replacing application structure.',
+          'Eve fits this pattern because [channels, schedules, tools, skills, and durable sessions](https://eve.dev/docs/getting-started) can sit around model judgment instead of replacing application structure.',
           'A scheduled digest is a good example. A cron-like schedule can start the run. The model can decide which changes matter. A Slack tool can post the final summary. Durable state can prevent duplicate delivery. Each layer does one job, and the agent is used where judgment actually matters.',
         ],
       },
@@ -273,7 +273,7 @@ export const LEARN_PAGES: readonly LearnPage[] = [
       {
         question: 'Are agentic workflows the same as automations?',
         answer:
-          'No. Automations follow predefined steps. Agentic workflows let the model choose some steps based on context.',
+          'Automations follow predefined steps. Agentic workflows let the model choose some steps based on context.',
       },
       {
         question: 'Where do tools fit?',
@@ -295,7 +295,7 @@ export const LEARN_PAGES: readonly LearnPage[] = [
       'A practical checklist for comparing LangGraph, CrewAI, AutoGen-style systems, Eve, and other agent frameworks.',
     cluster: 'comparisons',
     datePublished: '2026-07-01',
-    dateModified: '2026-07-02',
+    dateModified: '2026-09-05',
     primaryKeyword: 'ai agent frameworks',
     relatedKeywords: ['ai agent framework', 'best ai agent framework'],
     summary:
@@ -329,10 +329,10 @@ export const LEARN_PAGES: readonly LearnPage[] = [
       {
         heading: 'Where the popular options tend to fit',
         body: [
-          'LangGraph is strongest when explicit workflow state is the center of the problem. If you need branches, loops, retries, and human interruptions that are easy to reason about, graph structure helps. The tradeoff is that simple workflows can feel heavy when forced into graph terms.',
-          'CrewAI is strongest when the work naturally maps to roles: researcher, analyst, writer, reviewer. It can be fast for prototypes and internal workflows where role collaboration is the clearest way to describe the task. CrewAI also has flow-style orchestration, but if exact state recovery and side-effect boundaries are the main concern, compare those flow primitives directly against graph-first options.',
-          'AutoGen-style systems are strongest when the work is conversational collaboration between agents, especially code or research loops where one agent proposes and another critiques. The risk is that long conversations can hide control flow unless you add strong stop conditions and tracing.',
-          'Eve is strongest when the agent should be a TypeScript backend project with inspectable files: instructions, tools, skills, channels, schedules, and env requirements. That makes it a better fit for source-owned agents distributed through a registry than for every possible orchestration problem.',
+          '[LangGraph](https://docs.langchain.com/oss/python/langgraph/) is strongest when explicit workflow state is the center of the problem. If you need branches, loops, retries, and human interruptions that are easy to reason about, graph structure helps. The tradeoff is that simple workflows can feel heavy when forced into graph terms.',
+          '[CrewAI](https://docs.crewai.com/en/introduction) is strongest when the work naturally maps to roles: researcher, analyst, writer, reviewer. It can be fast for prototypes and internal workflows where role collaboration is the clearest way to describe the task. CrewAI also has flow-style orchestration, but if exact state recovery and side-effect boundaries are the main concern, compare those flow primitives directly against graph-first options.',
+          '[AutoGen](https://microsoft.github.io/autogen/stable//index.html)-style systems are strongest when the work is conversational collaboration between agents, especially code or research loops where one agent proposes and another critiques. The risk is that long conversations can hide control flow unless you add strong stop conditions and tracing.',
+          '[Eve](https://eve.dev/docs/getting-started) is strongest when the agent should be a TypeScript backend project with inspectable files: instructions, tools, skills, channels, schedules, and env requirements. That makes it a better fit for source-owned agents distributed through a registry than for every possible orchestration problem.',
         ],
       },
       {
@@ -347,7 +347,7 @@ export const LEARN_PAGES: readonly LearnPage[] = [
         heading: 'When distribution is part of the decision',
         body: [
           'If you are building reusable Eve agents, the framework choice also becomes a distribution question. Can another developer inspect the files before they install them? Can they see which tools write to external systems? Can they change the instructions and keep the result in their own repository?',
-          'That is where evex is relevant. It does not make Eve the best framework for every workflow. It makes Eve’s source-owned file model easier to discover, preview, and install when that model is the right fit.',
+          'That is where evex is relevant. It does not make Eve the best framework for every workflow. It makes Eve’s source-owned file model easier to discover, preview, and install when that model is the right fit. Browse [/agents](/agents).',
         ],
       },
     ],
@@ -388,7 +388,7 @@ export const LEARN_PAGES: readonly LearnPage[] = [
       {
         question: 'What is the best AI agent framework?',
         answer:
-          'There is no universal best. Start with state, tools, approvals, deployment, observability, evals, and source ownership.',
+          'Start with state, tools, approvals, deployment, observability, evals, and source ownership. There is no universal best.',
       },
       {
         question: 'Should I choose based on programming language?',
@@ -410,7 +410,7 @@ export const LEARN_PAGES: readonly LearnPage[] = [
       'How to design agent tools with narrow authority, typed inputs, clear descriptions, and observable results.',
     cluster: 'agent-engineering',
     datePublished: '2026-07-01',
-    dateModified: '2026-07-02',
+    dateModified: '2026-09-05',
     primaryKeyword: 'ai agent tools',
     relatedKeywords: ['agent tools', 'llm tools', 'tool calling'],
     summary:
@@ -435,7 +435,7 @@ export const LEARN_PAGES: readonly LearnPage[] = [
       {
         heading: 'Give every tool a reviewable file',
         body: [
-          'Eve tools live in `agent/tools/`, so every callable action has a file. That layout makes review concrete: what can the model ask the system to do, and where is that behavior implemented?',
+          'Eve tools live in `agent/tools/` ([Tools](https://eve.dev/docs/tools)), so every callable action has a file. That layout makes review concrete: what can the model ask the system to do, and where is that behavior implemented?',
           'For registry-installed agents, this is especially useful. Users can inspect tool files before giving the agent credentials or connecting a channel.',
           'That does not remove the need for careful schemas. A file path tells you where authority lives. The tool implementation still has to validate inputs, handle errors, redact sensitive output, and make side effects explicit.',
         ],
@@ -507,11 +507,11 @@ export const LEARN_PAGES: readonly LearnPage[] = [
       'A grounded distinction between MCP servers, tools, resources, prompts, and skills for teams extending AI agents.',
     cluster: 'protocols',
     datePublished: '2026-07-01',
-    dateModified: '2026-07-01',
+    dateModified: '2026-09-05',
     primaryKeyword: 'mcp vs skills',
     relatedKeywords: ['model context protocol', 'ai skills', 'mcp tools'],
     summary:
-      'MCP gives an AI application a standard way to reach external systems. Skills, in Eve/Cursor/Claude-style runtimes, give an agent a reusable playbook for a task. They often work together, but they are not substitutes. The clean design is usually MCP for access, skills for judgment.',
+      '[MCP](https://modelcontextprotocol.io/introduction) gives an AI application a standard way to reach external systems. Skills, in Eve and Agent Skills–style runtimes, give an agent a reusable playbook for a task. They often work together, but they are not substitutes. The clean design is usually MCP for access, skills for judgment.',
     sections: [
       {
         heading: 'The common confusion',
@@ -524,7 +524,7 @@ export const LEARN_PAGES: readonly LearnPage[] = [
       {
         heading: 'MCP is an interface to capabilities',
         body: [
-          'An MCP server exposes tools, resources, and prompts through a standard protocol. The client can discover what is available and call into those capabilities without each agent inventing a custom integration.',
+          'An MCP server exposes tools, resources, and prompts through a standard protocol ([architecture](https://modelcontextprotocol.io/docs/concepts/architecture)). The client can discover what is available and call into those capabilities without each agent inventing a custom integration.',
           'This is useful when the capability should be shared across many clients or agents. A Postgres MCP server, a Linear MCP server, or a docs search MCP server can serve multiple workflows.',
           'MCP is especially useful when the external system is not owned by the agent author. A team can maintain one approved server for a database, CRM, or ticketing system, then let multiple agents use the same capability under the same access rules.',
         ],
@@ -532,7 +532,7 @@ export const LEARN_PAGES: readonly LearnPage[] = [
       {
         heading: 'Skills are playbooks',
         body: [
-          'A skill is a playbook. It tells the agent how to perform a class of work: what to check, what to avoid, what output shape to use, what examples matter.',
+          'A skill is a playbook ([Eve skills](https://eve.dev/docs/skills)): a model-loadable procedure that improves how the agent works. It tells the agent what to check, what to avoid, what output shape to use, what examples matter. Loading a skill adds instructions; it does not grant a new execution surface.',
           'Skills should not hide credentials or grant authority. They can tell the model to use a read-only SQL tool carefully, but the read-only boundary must still live in the tool, database role, MCP server, or runtime policy.',
           'A good skill makes the agent more consistent without giving it new powers. It might teach severity levels for code review, rules for customer-facing email, or the right way to answer analytics questions. The skill improves judgment; it does not replace permissions.',
         ],
@@ -585,12 +585,12 @@ export const LEARN_PAGES: readonly LearnPage[] = [
       {
         question: 'Can MCP replace skills?',
         answer:
-          'No. MCP can expose prompts, but skills remain useful for local, portable procedure and examples.',
+          'MCP can expose prompts, but skills remain useful for local, portable procedure and examples.',
       },
       {
         question: 'Which is safer?',
         answer:
-          'Neither by default. Safety comes from scopes, validation, approvals, and logs.',
+          'Safety comes from scopes, validation, approvals, and logs — not from choosing MCP or skills alone.',
       },
     ],
   },
@@ -602,7 +602,7 @@ export const LEARN_PAGES: readonly LearnPage[] = [
       'What an AI agent registry must expose before developers can reuse agents safely.',
     cluster: 'distribution',
     datePublished: '2026-07-01',
-    dateModified: '2026-07-01',
+    dateModified: '2026-09-05',
     primaryKeyword: 'agent registry',
     relatedKeywords: [
       'ai agent registry',
@@ -673,7 +673,7 @@ export const LEARN_PAGES: readonly LearnPage[] = [
     examples: [
       {
         label: 'evex-style registry',
-        body: 'An agent page shows files, dependencies, author, install command, and related agents. Canonical agent content lives in source.',
+        body: 'An agent page on [/agents](/agents) shows files, dependencies, author, and install command. Agents enter through a reviewed pull request ([Publishing](/docs/publishing)).',
       },
       {
         label: 'Enterprise registry',
@@ -694,7 +694,7 @@ export const LEARN_PAGES: readonly LearnPage[] = [
       {
         question: 'Is evex an agent marketplace?',
         answer:
-          'Not in the commerce sense. It is a community registry for reusable Eve agent configurations.',
+          'evex is a community registry for reusable Eve agent configurations. Commerce, paid tiers, and vendor storefronts are a different product shape.',
       },
     ],
   },
@@ -706,7 +706,7 @@ export const LEARN_PAGES: readonly LearnPage[] = [
       'How the shadcn registry model applies to AI agent workflows, where users need source files rather than opaque packages.',
     cluster: 'distribution',
     datePublished: '2026-07-01',
-    dateModified: '2026-07-01',
+    dateModified: '2026-09-05',
     primaryKeyword: 'shadcn registry',
     relatedKeywords: [
       'custom shadcn registry',
@@ -714,13 +714,13 @@ export const LEARN_PAGES: readonly LearnPage[] = [
       'shadcn registry item',
     ],
     summary:
-      'The shadcn registry model fits agents because many agent workflows are source bundles: instructions, tools, skills, env examples, evals, and integration files that users need to inspect and adapt. For agents, owning the installed files is often the point.',
+      'The [shadcn registry](https://ui.shadcn.com/docs/registry) model fits agents because many agent workflows are source bundles: instructions, tools, skills, env examples, evals, and integration files that users need to inspect and adapt. For agents, owning the installed files is often the point.',
     sections: [
       {
         heading: 'A reusable agent is not just a dependency',
         body: [
           'Traditional packages work well when the user wants stable behavior behind an import. Agent workflows often need the opposite. The user wants to see the prompt, adjust the tool, change the channel, remove an integration, or add a stricter approval step.',
-          'A registry item can install editable files directly into the project. The user owns the result and can change it before running the agent.',
+          'A registry item can install editable files directly into the project with the shadcn CLI. The user owns the result and can change it before running the agent.',
           'This is the same reason shadcn became popular for UI: teams wanted useful starting points without surrendering ownership. Agent workflows have an even stronger version of that need because prompts and tools encode policy, tone, and authority.',
         ],
       },
@@ -735,7 +735,7 @@ export const LEARN_PAGES: readonly LearnPage[] = [
       {
         heading: 'Why it pairs well with Eve',
         body: [
-          'Eve already organizes agents as files under `agent/`. A shadcn registry item can place those files into the expected locations, while the user keeps ownership of the result.',
+          'Eve already organizes agents as files under `agent/` ([Getting started](https://eve.dev/docs/getting-started)). A shadcn registry item can place those files into the expected locations, while the user keeps ownership of the result ([Installation](/docs/installation)).',
           'The registry installs the agent files users need to review: instructions, tools, skills, channels, env examples, and evals.',
           'For example, an Eve registry item can install `agent/instructions.md`, `agent/tools/`, `agent/skills/`, `agent/channels/`, `.env.example`, and evals together. Each file lands where an Eve developer expects it.',
         ],
@@ -784,7 +784,7 @@ export const LEARN_PAGES: readonly LearnPage[] = [
       {
         question: 'Why not publish every agent as an npm package?',
         answer:
-          'Because users often need to inspect and change prompts, tools, schedules, and channel behavior.',
+          'Users often need to inspect and change prompts, tools, schedules, and channel behavior. A registry item installs those files as source.',
       },
       {
         question: 'What makes a registry item good?',
@@ -794,7 +794,7 @@ export const LEARN_PAGES: readonly LearnPage[] = [
       {
         question: 'Is customization expected?',
         answer:
-          'Yes. The registry gives users a reviewed starting point, not a permanent black box.',
+          'Yes. The registry gives users a reviewed starting point they can adapt, not a permanent black box.',
       },
     ],
   },
