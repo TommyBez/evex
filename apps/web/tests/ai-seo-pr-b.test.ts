@@ -100,7 +100,7 @@ describe('learn page: evex vs agentcn', () => {
         criterion: 'Install',
         left: '`npx shadcn@latest add @evex/<slug>` ([Installation](/docs/installation))',
         right:
-          'Same shadcn CLI. Live Eve example (checked 4 Sep 2026): `npx shadcn@latest add @agentcn/eve/deep-search` ([Deep Search](https://www.agentcn.run/docs/agents/eve/deep-search)).',
+          'Same shadcn CLI. Live Eve example: `npx shadcn@latest add @agentcn/eve/deep-search` ([Deep Search](https://www.agentcn.run/docs/agents/eve/deep-search)).',
       },
       {
         criterion: 'Inspect files before install',
@@ -112,13 +112,13 @@ describe('learn page: evex vs agentcn', () => {
         criterion: 'Author identity',
         left: 'GitHub-verified author profiles',
         right:
-          'Not surfaced as GitHub-verified author profiles on recipe pages (checked 4 Sep 2026).',
+          'Not surfaced as GitHub-verified author profiles on recipe pages.',
       },
       {
         criterion: 'Publish path',
         left: 'Reviewed pull request ([Publishing](/docs/publishing)).',
         right:
-          'Fork and open a PR ([Contributing](https://github.com/shadcn-labs/agentcn/blob/main/CONTRIBUTING.md)). No first-party publishing docs on agentcn.run as of 4 Sep 2026.',
+          'Fork and open a PR ([Contributing](https://github.com/shadcn-labs/agentcn/blob/main/CONTRIBUTING.md)). No first-party publishing docs on agentcn.run (checked 4 Sep 2026).',
       },
       {
         criterion: 'Catalog extras',
@@ -141,7 +141,7 @@ describe('learn page: evex vs agentcn', () => {
         criterion: 'Price',
         left: 'Free, MIT',
         right:
-          'Free. GitHub lists [MIT](https://github.com/shadcn-labs/agentcn). No paid tier on agentcn.run (checked 4 Sep 2026).',
+          'Free. GitHub lists [MIT](https://github.com/shadcn-labs/agentcn). No paid tier on agentcn.run.',
       },
     ])
     expect(page.comparisonBottomLine).toBe(
@@ -281,14 +281,19 @@ describe('learn page: evex vs agentcn', () => {
     expect(page.comparisonRows?.[3]?.right).toContain(
       `[Contributing](${CONTRIBUTING_HREF})`,
     )
-    expect(howAgents?.body[1]).toContain('CONTRIBUTING.md')
+    expect(howAgents?.body[1]).toBe(
+      'agentcn publishing, per its CONTRIBUTING.md, is also fork-and-open-a-PR. There are no first-party publishing docs on agentcn.run. Both paths can accept community work. evex makes the PR-owned path a first-class product surface with docs, author profiles, and CODEOWNERS.',
+    )
     expect(howAgents?.body[1]).not.toContain('GitHub README')
+    expect(howAgents?.body[1]).not.toContain('4 Sep 2026')
     expect(sectionText).not.toContain(CONTRIBUTING_HREF)
 
     expect(pageText).not.toContain('/learn/eve-agent-registry')
     expect(pageText).not.toContain('13 Aug 2026')
-    expect(pageText).toContain('4 Sep 2026')
-    expect(countOccurrences(pageText, '4 Sep 2026')).toBe(6)
+    expect(page.comparisonRows?.[3]?.right).toContain(
+      'No first-party publishing docs on agentcn.run (checked 4 Sep 2026).',
+    )
+    expect(countOccurrences(pageText, '4 Sep 2026')).toBe(1)
   })
 
   it('keeps Same install mechanic dated without a Deep Search link', () => {
@@ -302,7 +307,7 @@ describe('learn page: evex vs agentcn', () => {
         section.heading === 'Same install mechanic, different product',
     )
     expect(mechanic?.body).toEqual([
-      'evex and agentcn both install through the shadcn CLI. On evex the command is always `npx shadcn@latest add @evex/<slug>`. On agentcn, a live Eve example checked on 4 Sep 2026 is `npx shadcn@latest add @agentcn/eve/deep-search`.',
+      'evex and agentcn both install through the shadcn CLI. On evex the command is always `npx shadcn@latest add @evex/<slug>`. On agentcn, a live Eve example is `npx shadcn@latest add @agentcn/eve/deep-search`.',
       'The shared mechanic does not make the products identical. evex is built around browse, inspect, install, and publish for Eve agents. agentcn ships recipes across frameworks and leans on recipe docs plus optional live preview. Choose on inspectability and the publish path, not on which CLI wrapper looks familiar.',
     ])
     expect(mechanic?.body[0]).not.toContain('](')

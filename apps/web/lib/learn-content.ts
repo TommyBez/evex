@@ -934,7 +934,7 @@ export const LEARN_PAGES: readonly LearnPage[] = [
         criterion: 'Install',
         left: '`npx shadcn@latest add @evex/<slug>` ([Installation](/docs/installation))',
         right:
-          'Same shadcn CLI. Live Eve example (checked 4 Sep 2026): `npx shadcn@latest add @agentcn/eve/deep-search` ([Deep Search](https://www.agentcn.run/docs/agents/eve/deep-search)).',
+          'Same shadcn CLI. Live Eve example: `npx shadcn@latest add @agentcn/eve/deep-search` ([Deep Search](https://www.agentcn.run/docs/agents/eve/deep-search)).',
       },
       {
         criterion: 'Inspect files before install',
@@ -946,13 +946,13 @@ export const LEARN_PAGES: readonly LearnPage[] = [
         criterion: 'Author identity',
         left: 'GitHub-verified author profiles',
         right:
-          'Not surfaced as GitHub-verified author profiles on recipe pages (checked 4 Sep 2026).',
+          'Not surfaced as GitHub-verified author profiles on recipe pages.',
       },
       {
         criterion: 'Publish path',
         left: 'Reviewed pull request ([Publishing](/docs/publishing)).',
         right:
-          'Fork and open a PR ([Contributing](https://github.com/shadcn-labs/agentcn/blob/main/CONTRIBUTING.md)). No first-party publishing docs on agentcn.run as of 4 Sep 2026.',
+          'Fork and open a PR ([Contributing](https://github.com/shadcn-labs/agentcn/blob/main/CONTRIBUTING.md)). No first-party publishing docs on agentcn.run (checked 4 Sep 2026).',
       },
       {
         criterion: 'Catalog extras',
@@ -975,7 +975,7 @@ export const LEARN_PAGES: readonly LearnPage[] = [
         criterion: 'Price',
         left: 'Free, MIT',
         right:
-          'Free. GitHub lists [MIT](https://github.com/shadcn-labs/agentcn). No paid tier on agentcn.run (checked 4 Sep 2026).',
+          'Free. GitHub lists [MIT](https://github.com/shadcn-labs/agentcn). No paid tier on agentcn.run.',
       },
     ],
     comparisonBottomLine:
@@ -991,7 +991,7 @@ export const LEARN_PAGES: readonly LearnPage[] = [
       {
         heading: 'Same install mechanic, different product',
         body: [
-          'evex and agentcn both install through the shadcn CLI. On evex the command is always `npx shadcn@latest add @evex/<slug>`. On agentcn, a live Eve example checked on 4 Sep 2026 is `npx shadcn@latest add @agentcn/eve/deep-search`.',
+          'evex and agentcn both install through the shadcn CLI. On evex the command is always `npx shadcn@latest add @evex/<slug>`. On agentcn, a live Eve example is `npx shadcn@latest add @agentcn/eve/deep-search`.',
           'The shared mechanic does not make the products identical. evex is built around browse, inspect, install, and publish for Eve agents. agentcn ships recipes across frameworks and leans on recipe docs plus optional live preview. Choose on inspectability and the publish path, not on which CLI wrapper looks familiar.',
         ],
       },
@@ -1006,7 +1006,7 @@ export const LEARN_PAGES: readonly LearnPage[] = [
         heading: 'How agents get into the catalog',
         body: [
           'evex agents enter the catalog through a reviewed pull request. First-party publishing docs live at [/docs/publishing](/docs/publishing). Canonical agent metadata and files stay in the repository; the database stores runtime state only.',
-          'agentcn publishing, per its CONTRIBUTING.md, is also fork-and-open-a-PR. As of 4 Sep 2026 there were no first-party publishing docs on agentcn.run. Both paths can accept community work. evex makes the PR-owned path a first-class product surface with docs, author profiles, and CODEOWNERS.',
+          'agentcn publishing, per its CONTRIBUTING.md, is also fork-and-open-a-PR. There are no first-party publishing docs on agentcn.run. Both paths can accept community work. evex makes the PR-owned path a first-class product surface with docs, author profiles, and CODEOWNERS.',
         ],
       },
       {
