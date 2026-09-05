@@ -214,7 +214,7 @@ describe('in-body links to /learn/install-eve-agent', () => {
       return
     }
 
-    expect(docs.dateModified).toBe('2026-09-02')
+    expect(docs.dateModified).toBe('2026-09-05')
 
     const installSection = docs.sections.find(
       (section) => section.heading === 'Run the install command',
@@ -222,12 +222,16 @@ describe('in-body links to /learn/install-eve-agent', () => {
     expect(installSection?.body).toContain(
       'How to install: [Install an Eve agent](/learn/install-eve-agent).',
     )
+    expect(installSection?.body).toContain(
+      'How evex compares to agentcn: [evex vs agentcn](/learn/evex-vs-agentcn).',
+    )
 
     const html = (installSection?.body ?? [])
       .map((paragraph) => renderInlineMarkdown(paragraph))
       .join('')
 
     expect(html).toContain(`href="${INSTALL_HREF}">Install an Eve agent</a>`)
+    expect(html).toContain('href="/learn/evex-vs-agentcn">evex vs agentcn</a>')
     expect(html).not.toContain(`[Install an Eve agent](${INSTALL_HREF})`)
   })
 

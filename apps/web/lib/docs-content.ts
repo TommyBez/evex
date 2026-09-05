@@ -76,7 +76,7 @@ export const DOCS_PAGES: readonly DocsPage[] = [
     title: 'evex documentation: the community registry for eve agents',
   },
   {
-    dateModified: '2026-09-02',
+    dateModified: '2026-09-05',
     datePublished: '2026-07-04',
     description:
       'Add any evex agent to your eve project with npx shadcn add. Prerequisites, what the CLI writes, and how to configure and verify the agent after install.',
@@ -105,6 +105,7 @@ export const DOCS_PAGES: readonly DocsPage[] = [
           'Every agent installs with a single command. Replace the slug with the agent you picked from the catalog; the exact command is shown on every agent page.',
           'evex is part of the official shadcn community registry, so the @evex namespace resolves without any registry configuration on your side.',
           'How to install: [Install an Eve agent](/learn/install-eve-agent).',
+          'How evex compares to agentcn: [evex vs agentcn](/learn/evex-vs-agentcn).',
         ],
         code: [
           {

@@ -80,47 +80,42 @@ describe('docs in-body catalog links', () => {
     expect(html).not.toContain('[evex vs agentcn](/learn/evex-vs-agentcn)')
   })
 
-  it('adds a crawlable comparison link in /docs/installation More docs', () => {
+  it('adds a crawlable comparison link in /docs/installation Run the install command', () => {
     const page = getDocsPage('installation')
     expect(page).not.toBeNull()
     if (!page) {
       return
     }
 
-    const installSection = page.sections.find(
-      (section) => section.heading === 'Run the install command',
-    )
-    expect(installSection?.body).toContain(
-      'How to install: [Install an Eve agent](/learn/install-eve-agent).',
-    )
+    expect(page.dateModified).toBe('2026-09-05')
     expect(page.sections.map((section) => section.heading)).not.toContain(
       'More docs',
     )
 
-    const source = readFileSync(
-      path.join(import.meta.dirname, '../app/(main)/docs/[slug]/page.tsx'),
-      'utf8',
+    const installSection = page.sections.find(
+      (section) => section.heading === 'Run the install command',
     )
-    expect(source).toContain('LearnInlineMarkdown')
-    expect(source).toContain("page.slug === 'installation'")
-    expect(source).toContain(
-      'How evex compares to agentcn: [evex vs agentcn](/learn/evex-vs-agentcn).',
+    const installLine =
+      'How to install: [Install an Eve agent](/learn/install-eve-agent).'
+    const compareLine =
+      'How evex compares to agentcn: [evex vs agentcn](/learn/evex-vs-agentcn).'
+    expect(installSection?.body).toContain(installLine)
+    expect(installSection?.body).toContain(compareLine)
+    expect(installSection?.body.indexOf(compareLine)).toBe(
+      (installSection?.body.indexOf(installLine) ?? -1) + 1,
     )
-    expect(source).not.toContain('As-of')
-    expect(source).not.toContain('as of')
 
-    const html = renderInlineMarkdown(
-      'How evex compares to agentcn: [evex vs agentcn](/learn/evex-vs-agentcn).',
-    )
-    expect(html).toContain('href="/learn/evex-vs-agentcn">evex vs agentcn</a>')
-    expect(html).not.toContain('[evex vs agentcn](/learn/evex-vs-agentcn)')
-
-    const installHtml = (installSection?.body ?? [])
+    const html = (installSection?.body ?? [])
       .map((paragraph) => renderInlineMarkdown(paragraph))
       .join('')
-    expect(installHtml).toContain(
+    expect(html).toContain(
       'href="/learn/install-eve-agent">Install an Eve agent</a>',
     )
+    expect(html).toContain('href="/learn/evex-vs-agentcn">evex vs agentcn</a>')
+    expect(html).not.toContain(
+      '[Install an Eve agent](/learn/install-eve-agent)',
+    )
+    expect(html).not.toContain('[evex vs agentcn](/learn/evex-vs-agentcn)')
   })
 
   it('adds crawlable Learn links after the /agents hub lede', () => {

@@ -3,7 +3,6 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { JsonLd } from '@/components/json-ld'
-import { LearnInlineMarkdown } from '@/components/learn-inline-markdown'
 import { getDocsPage, listDocsSubPages } from '@/lib/docs-content'
 import { createPageMetadata } from '@/lib/metadata'
 import { getDocsUrl } from '@/lib/site-url'
@@ -13,9 +12,6 @@ import {
   createDocsInstallHowToSchema,
 } from '@/lib/structured-data'
 import { DocsSections } from '../docs-sections'
-
-const INSTALLATION_MORE_DOCS_LEARN_LINK =
-  'How evex compares to agentcn: [evex vs agentcn](/learn/evex-vs-agentcn).'
 
 export function generateStaticParams() {
   return listDocsSubPages().map((page) => ({ slug: page.slug }))
@@ -94,13 +90,6 @@ export default async function DocsDetailPage({
           <h2 className="font-display font-semibold text-foreground text-xl">
             More docs
           </h2>
-          {page.slug === 'installation' ? (
-            <p className="mt-3 text-pretty text-muted-foreground leading-relaxed">
-              <LearnInlineMarkdown>
-                {INSTALLATION_MORE_DOCS_LEARN_LINK}
-              </LearnInlineMarkdown>
-            </p>
-          ) : null}
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             {otherPages.map((other) => (
               <Link
