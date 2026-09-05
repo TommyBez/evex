@@ -330,9 +330,14 @@ describe('/agents catalog index', () => {
     const agentsIndex = entries.find(
       (entry) => entry.url === 'https://www.evex.sh/agents',
     )
+    const installation = entries.find(
+      (entry) => entry.url === 'https://www.evex.sh/docs/installation',
+    )
 
     expect(agentsIndex).toBeDefined()
     expect(getAgentsUrl()).toBe('https://www.evex.sh/agents')
+    expect(installation).toBeDefined()
+    expect(installation?.lastModified).toEqual(new Date('2026-09-05'))
   })
 
   it('emits indexable metadata with a self-canonical', async () => {
