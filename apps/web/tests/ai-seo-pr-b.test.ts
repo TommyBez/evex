@@ -16,7 +16,16 @@ const NUMBERED_STEP_PREFIX = /^\d+\.\s/
 const DEEP_SEARCH_HREF = 'https://www.agentcn.run/docs/agents/eve/deep-search'
 const CONTRIBUTING_HREF =
   'https://github.com/shadcn-labs/agentcn/blob/main/CONTRIBUTING.md'
+const LANGGRAPH_HREF = 'https://docs.langchain.com/oss/python/langgraph/'
+const CREWAI_HREF = 'https://docs.crewai.com/en/introduction'
+const LANGGRAPH_CHECKPOINTER_HREF =
+  'https://docs.langchain.com/oss/python/langgraph/checkpointers'
+const LANGGRAPH_INTERRUPT_HREF =
+  'https://docs.langchain.com/oss/python/langgraph/interrupts'
+const EVE_GETTING_STARTED_HREF = 'https://eve.dev/docs/getting-started'
 const MARKDOWN_LINK = /\[[^\]]+\]\([^)]+\)/g
+const AS_OF_STAMP = /as of/i
+const CHECKED_DATE_STAMP = /checked \d/i
 
 const renderInlineMarkdown = (markdown: string): string =>
   renderToStaticMarkup(createElement(LearnInlineMarkdown, null, markdown))
@@ -419,7 +428,7 @@ describe('learn page: evex vs agentcn', () => {
 describe('learn page: langgraph vs crewai', () => {
   const page = getLearnPage('langgraph-vs-crewai')
 
-  it('keeps the locked title and adds the Eve install section', () => {
+  it('keeps the locked title, lede, summary, and section order', () => {
     expect(page).not.toBeNull()
     if (!page) {
       return
@@ -428,7 +437,15 @@ describe('learn page: langgraph vs crewai', () => {
     expect(page.title).toBe(
       'LangGraph vs CrewAI: graph control or role-based crews?',
     )
-    expect(page.dateModified).toBe('2026-08-28')
+    expect(page.shortTitle).toBe('LangGraph vs CrewAI')
+    expect(page.description).toBe(
+      'A builder-focused comparison of LangGraph and CrewAI, with Eve as a file-based reference point.',
+    )
+    expect(page.summary).toBe(
+      'LangGraph and CrewAI start from different mental models. LangGraph makes workflow state and transitions explicit. CrewAI makes role-based collaboration quick to model. The right choice depends on which complexity your team needs to see first, not which framework has the longer feature list.',
+    )
+    expect(page.datePublished).toBe('2026-07-01')
+    expect(page.dateModified).toBe('2026-09-05')
     expect(page.sections.map((section) => section.heading)).toEqual([
       'The real comparison is not popularity',
       'Where LangGraph is stronger',
@@ -439,27 +456,210 @@ describe('learn page: langgraph vs crewai', () => {
     ])
   })
 
-  it('includes crawlable catalog and code-reviewer markdown links', () => {
+  it('locks the citation/voice section bodies and unchanged closer', () => {
     expect(page).not.toBeNull()
     if (!page) {
       return
     }
 
-    const installSection = page.sections.find(
-      (section) => section.heading === 'How Eve agents get into a project',
-    )
-    expect(installSection?.body[0]).toContain('[Eve agents catalog](/agents)')
-    expect(installSection?.body[1]).toContain(
+    expect(page.sections).toEqual([
+      {
+        heading: 'The real comparison is not popularity',
+        body: [
+          'Both frameworks can build useful agents. The difference is how they ask you to think. [LangGraph](https://docs.langchain.com/oss/python/langgraph/) asks you to model a stateful graph. [CrewAI](https://docs.crewai.com/en/introduction) often starts with agents, roles, and tasks, while its Flows cover more structured orchestration.',
+          'Those mental models lead to different debugging experiences. A graph helps when the failure is in routing. A crew helps when the work naturally decomposes into roles.',
+          'When the workflow goes wrong, the useful question is which model helps your team find the problem faster: explicit state transitions, or role-shaped collaboration.',
+        ],
+      },
+      {
+        heading: 'Where LangGraph is stronger',
+        body: [
+          'LangGraph fits when the workflow needs explicit branching, loops, [checkpointed state](https://docs.langchain.com/oss/python/langgraph/checkpointers), and [human-in-the-loop](https://docs.langchain.com/oss/python/langgraph/interrupts) transitions. It also fits when you want to reason about the path a run took.',
+          'The tradeoff is overhead. Simple workflows can feel verbose when forced into graph terms.',
+          'A graph also creates useful pressure: drawing the states makes the workflow inspectable. That helps for regulated, high-stakes, or long-running processes where implicit model behavior is hard to audit.',
+        ],
+      },
+      {
+        heading: 'Where CrewAI is stronger',
+        body: [
+          'CrewAI fits fast prototypes and workflows that map to human-like roles: researcher, analyst, writer, reviewer. CrewAI also has Flow-style orchestration, but the common crew abstraction is easiest to explain when the work naturally decomposes into roles.',
+          'The tradeoff appears when control flow gets complex. Role metaphors can hide state transitions that should be explicit.',
+          'CrewAI can be the right choice when the team needs to test a multi-agent collaboration pattern quickly. The role-based crew abstraction becomes weaker when the workflow needs durable recovery, careful retries, or exact visibility into how state changes over time; those cases often need flow or graph structure.',
+        ],
+      },
+      {
+        heading: 'Where Eve differs',
+        body: [
+          'Eve is [filesystem-first](https://eve.dev/docs/getting-started). That makes it relevant when the agent is a backend project whose tools, skills, channels, schedules, and env requirements should be visible as files.',
+          'This gives teams a third option in the comparison. If the main problem is control flow, reach for graph thinking. If the main problem is role collaboration, crew thinking may fit. If the main problem is inspectable, source-owned agent capability, Eve’s file model becomes more interesting.',
+        ],
+      },
+      {
+        heading: 'How Eve agents get into a project',
+        body: [
+          'Eve agents are files in an Eve app, not a hosted runtime. evex is the open registry for those agents. Open the [/agents](/agents) catalog, inspect the files, then install with `npx shadcn@latest add @evex/<slug>` ([Installation](/docs/installation)).',
+          'If you want a first install to compare against a graph or a crew, start with the PR review agent: `npx shadcn@latest add @evex/code-reviewer`.',
+        ],
+      },
+      {
+        heading: 'How to decide without guessing',
+        body: [
+          'Build the same uncomfortable slice in both frameworks. Include one external tool, one bad input, one human decision, and one recovery path. Then read the implementation with a teammate who did not write it.',
+          'If they can explain what happens next, what can fail, and where to make a change, the framework is serving the team. If they need a tour of hidden conventions, the framework may be working against the workflow.',
+        ],
+      },
+    ])
+  })
+
+  it('keeps the decision table, examples, and FAQ answers locked', () => {
+    expect(page).not.toBeNull()
+    if (!page) {
+      return
+    }
+
+    expect(page.decisionRows).toEqual([
+      {
+        choice: 'LangGraph',
+        useWhen:
+          'State transitions, retries, and explicit routing are the main complexity.',
+        avoidWhen:
+          'The workflow is simple enough that graph structure adds more weight than clarity.',
+      },
+      {
+        choice: 'CrewAI',
+        useWhen:
+          'The task maps naturally to roles and fast multi-agent collaboration.',
+        avoidWhen:
+          'The workflow needs precise state control and durable side-effect boundaries.',
+      },
+    ])
+    expect(page.examples).toEqual([
+      {
+        label: 'LangGraph-shaped workflow',
+        body: 'A claims workflow with branching escalation paths, retries, and approval states benefits from explicit graph control.',
+      },
+      {
+        label: 'CrewAI-shaped workflow',
+        body: 'A research pipeline with researcher, analyst, and writer roles can be faster to express as a crew.',
+      },
+    ])
+    expect(page.faqs).toEqual([
+      {
+        question: 'Is LangGraph more production-ready than CrewAI?',
+        answer:
+          'It is often stronger for explicit state and control flow. CrewAI can still be useful when the role model fits the work.',
+      },
+      {
+        question: 'Where does Eve fit in this comparison?',
+        answer:
+          'Eve is a different axis: file-owned backend agents rather than graph-first or role-first orchestration.',
+      },
+      {
+        question: 'How should teams choose?',
+        answer:
+          'Build the hardest failure path in each candidate framework and compare which one is easier to debug.',
+      },
+      {
+        question: 'How do I try an Eve agent after this comparison?',
+        answer:
+          'Install from evex with `npx shadcn@latest add @evex/<slug>` after you inspect the files on the agent page. The catalog is at /agents.',
+      },
+    ])
+  })
+
+  it('cites primary sources once and keeps angle-bracket slugs', () => {
+    expect(page).not.toBeNull()
+    if (!page) {
+      return
+    }
+
+    const sectionText = page.sections
+      .flatMap((section) => section.body)
+      .join('\n')
+    const faqText = page.faqs.map((faq) => faq.answer).join('\n')
+    const pageText = [
+      sectionText,
+      faqText,
+      page.examples.map((example) => example.body).join('\n'),
+      page.decisionRows
+        .flatMap((row) => [row.choice, row.useWhen, row.avoidWhen])
+        .join('\n'),
+      page.summary,
+      page.description,
+    ].join('\n')
+
+    expect(countOccurrences(pageText, `[LangGraph](${LANGGRAPH_HREF})`)).toBe(1)
+    expect(countOccurrences(pageText, `[CrewAI](${CREWAI_HREF})`)).toBe(1)
+    expect(
+      countOccurrences(
+        pageText,
+        `[checkpointed state](${LANGGRAPH_CHECKPOINTER_HREF})`,
+      ),
+    ).toBe(1)
+    expect(
+      countOccurrences(
+        pageText,
+        `[human-in-the-loop](${LANGGRAPH_INTERRUPT_HREF})`,
+      ),
+    ).toBe(1)
+    expect(
+      countOccurrences(
+        pageText,
+        `[filesystem-first](${EVE_GETTING_STARTED_HREF})`,
+      ),
+    ).toBe(1)
+    expect(countOccurrences(pageText, '[/agents](/agents)')).toBe(1)
+    expect(
+      countOccurrences(pageText, '[Installation](/docs/installation)'),
+    ).toBe(1)
+
+    expect(pageText).toContain('`npx shadcn@latest add @evex/<slug>`')
+    expect(pageText).toContain('`npx shadcn@latest add @evex/code-reviewer`')
+    expect(pageText).toContain('@evex/<slug>')
+    expect(pageText).not.toContain('@evex/{slug}')
+    expect(pageText).not.toContain('[Eve agents catalog](/agents)')
+    expect(pageText).not.toContain(
       '[the PR review agent](/agents/code-reviewer)',
     )
-    expect(installSection?.body.join(' ')).toContain(
-      'npx shadcn@latest add @evex/<slug>',
-    )
+    expect(pageText).not.toContain('/agents/code-reviewer')
+    expect(pageText).not.toMatch(AS_OF_STAMP)
+    expect(pageText).not.toMatch(CHECKED_DATE_STAMP)
+    expect(faqText).not.toMatch(MARKDOWN_LINK)
 
-    const tryFaq = page.faqs.at(-1)
-    expect(tryFaq?.question).toBe(
-      'How do I try an Eve agent after this comparison?',
-    )
-    expect(tryFaq?.answer).toContain('[/agents](/agents)')
+    const markdown = buildLearnPageMarkdown(page)
+    expect(markdown).toContain('npx shadcn@latest add @evex/<slug>')
+    expect(markdown).toContain('@evex/<slug>')
+    expect(markdown).not.toContain('@evex/{slug}')
+  })
+
+  it('renders locked citations as crawlable anchors', () => {
+    expect(page).not.toBeNull()
+    if (!page) {
+      return
+    }
+
+    const html = page.sections
+      .flatMap((section) => section.body)
+      .map(renderInlineMarkdown)
+      .join('')
+
+    for (const href of [
+      LANGGRAPH_HREF,
+      CREWAI_HREF,
+      LANGGRAPH_CHECKPOINTER_HREF,
+      LANGGRAPH_INTERRUPT_HREF,
+      EVE_GETTING_STARTED_HREF,
+      '/agents',
+      '/docs/installation',
+    ]) {
+      expect(html).toContain(`href="${href}"`)
+    }
+    expect(html).not.toContain('href="/agents/code-reviewer"')
+
+    const faqHtml = page.faqs
+      .map((faq) => renderInlineMarkdown(faq.answer))
+      .join('')
+    expect(faqHtml).not.toContain('href="/agents"')
+    expect(faqHtml).not.toContain('href="/docs/installation"')
   })
 })
