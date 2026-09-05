@@ -187,7 +187,7 @@ describe('in-body links to /learn/install-eve-agent', () => {
       return
     }
 
-    expect(docs.dateModified).toBe('2026-09-04')
+    expect(docs.dateModified).toBe('2026-09-05')
     expect(docs.title).toBe(
       'evex documentation: the community registry for eve agents',
     )
