@@ -806,7 +806,7 @@ export const LEARN_PAGES: readonly LearnPage[] = [
       'A builder-focused comparison of LangGraph and CrewAI, with Eve as a file-based reference point.',
     cluster: 'comparisons',
     datePublished: '2026-07-01',
-    dateModified: '2026-08-28',
+    dateModified: '2026-09-05',
     primaryKeyword: 'langgraph vs crewai',
     relatedKeywords: [
       'langgraph alternatives',
@@ -819,23 +819,23 @@ export const LEARN_PAGES: readonly LearnPage[] = [
       {
         heading: 'The real comparison is not popularity',
         body: [
-          'Both frameworks can build useful agents. The difference is how they ask you to think. LangGraph asks you to model a stateful graph. CrewAI often starts with agents, roles, and tasks, while its flow patterns cover more structured orchestration.',
+          'Both frameworks can build useful agents. The difference is how they ask you to think. [LangGraph](https://docs.langchain.com/oss/python/langgraph/) asks you to model a stateful graph. [CrewAI](https://docs.crewai.com/en/introduction) often starts with agents, roles, and tasks, while its Flows cover more structured orchestration.',
           'Those mental models lead to different debugging experiences. A graph helps when the failure is in routing. A crew helps when the work naturally decomposes into roles.',
-          'This is why search results for "LangGraph vs CrewAI" often feel unsatisfying. They compare stars, syntax, and sample apps, but the real question is operational: when the workflow goes wrong, which model helps your team find the problem faster?',
+          'When the workflow goes wrong, the useful question is which model helps your team find the problem faster: explicit state transitions, or role-shaped collaboration.',
         ],
       },
       {
         heading: 'Where LangGraph is stronger',
         body: [
-          'LangGraph is a better fit when the workflow needs explicit branching, loops, checkpointed state, and human-in-the-loop transitions. It is also a better fit when you want to reason about the path a run took.',
+          'LangGraph fits when the workflow needs explicit branching, loops, [checkpointed state](https://docs.langchain.com/oss/python/langgraph/checkpointers), and [human-in-the-loop](https://docs.langchain.com/oss/python/langgraph/interrupts) transitions. It also fits when you want to reason about the path a run took.',
           'The tradeoff is overhead. Simple workflows can feel verbose when forced into graph terms.',
-          'A graph also creates useful pressure. If you cannot draw the states, you probably do not understand the workflow. That is valuable for regulated, high-stakes, or long-running processes where implicit model behavior is too hard to audit.',
+          'A graph also creates useful pressure: drawing the states makes the workflow inspectable. That helps for regulated, high-stakes, or long-running processes where implicit model behavior is hard to audit.',
         ],
       },
       {
         heading: 'Where CrewAI is stronger',
         body: [
-          'CrewAI is attractive for fast prototypes and workflows that map to human-like roles: researcher, analyst, writer, reviewer. CrewAI also has flow-style orchestration, but the common crew abstraction is easiest to explain when the work naturally decomposes into roles.',
+          'CrewAI fits fast prototypes and workflows that map to human-like roles: researcher, analyst, writer, reviewer. CrewAI also has Flow-style orchestration, but the common crew abstraction is easiest to explain when the work naturally decomposes into roles.',
           'The tradeoff appears when control flow gets complex. Role metaphors can hide state transitions that should be explicit.',
           'CrewAI can be the right choice when the team needs to test a multi-agent collaboration pattern quickly. The role-based crew abstraction becomes weaker when the workflow needs durable recovery, careful retries, or exact visibility into how state changes over time; those cases often need flow or graph structure.',
         ],
@@ -843,15 +843,15 @@ export const LEARN_PAGES: readonly LearnPage[] = [
       {
         heading: 'Where Eve differs',
         body: [
-          'Eve is neither graph-first nor crew-first. It is filesystem-first. That makes it relevant when the agent is a backend project whose tools, skills, channels, schedules, and env requirements should be visible as files.',
+          'Eve is [filesystem-first](https://eve.dev/docs/getting-started). That makes it relevant when the agent is a backend project whose tools, skills, channels, schedules, and env requirements should be visible as files.',
           'This gives teams a third option in the comparison. If the main problem is control flow, reach for graph thinking. If the main problem is role collaboration, crew thinking may fit. If the main problem is inspectable, source-owned agent capability, Eve’s file model becomes more interesting.',
         ],
       },
       {
         heading: 'How Eve agents get into a project',
         body: [
-          'Eve agents are files in an Eve app, not a hosted runtime. evex is the open registry for those agents. Open the [Eve agents catalog](/agents), inspect the files, then install with npx shadcn@latest add @evex/<slug>.',
-          'If you want a first install to compare against a graph or a crew, start with [the PR review agent](/agents/code-reviewer).',
+          'Eve agents are files in an Eve app, not a hosted runtime. evex is the open registry for those agents. Open the [/agents](/agents) catalog, inspect the files, then install with `npx shadcn@latest add @evex/<slug>` ([Installation](/docs/installation)).',
+          'If you want a first install to compare against a graph or a crew, start with the PR review agent: `npx shadcn@latest add @evex/code-reviewer`.',
         ],
       },
       {
@@ -907,7 +907,7 @@ export const LEARN_PAGES: readonly LearnPage[] = [
       {
         question: 'How do I try an Eve agent after this comparison?',
         answer:
-          'Install from evex with npx shadcn@latest add @evex/<slug> after you inspect the files on the agent page. The catalog is at [/agents](/agents).',
+          'Install from evex with `npx shadcn@latest add @evex/<slug>` after you inspect the files on the agent page. The catalog is at /agents.',
       },
     ],
   },
