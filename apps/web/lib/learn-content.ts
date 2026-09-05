@@ -590,7 +590,7 @@ export const LEARN_PAGES: readonly LearnPage[] = [
       {
         question: 'Which is safer?',
         answer:
-          'Safety comes from scopes, validation, approvals, and logs — not from choosing MCP or skills alone.',
+          'Safety comes from scopes, validation, approvals, and logs - not from choosing MCP or skills alone.',
       },
     ],
   },

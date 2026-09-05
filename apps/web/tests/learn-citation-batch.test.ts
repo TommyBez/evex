@@ -500,7 +500,7 @@ describe('learn page: mcp-vs-skills citations', () => {
       {
         question: 'Which is safer?',
         answer:
-          'Safety comes from scopes, validation, approvals, and logs — not from choosing MCP or skills alone.',
+          'Safety comes from scopes, validation, approvals, and logs - not from choosing MCP or skills alone.',
       },
     ])
 
