@@ -170,16 +170,13 @@ describe('home page metadata', () => {
       'utf8',
     )
     const collapsed = source.replaceAll(/\s+/g, ' ')
-    const h1Markup =
-      'Install Eve agents for the <span className="text-brand">Eve agent framework</span>'
 
     expect(source).toContain(HOME_EYEBROW)
-    expect(collapsed).toContain(h1Markup)
-    expect(
-      h1Markup
-        .replace('<span className="text-brand">', '')
-        .replace('</span>', ''),
-    ).toBe(HOME_H1)
+    expect(collapsed).toContain('Install Eve agents for the')
+    expect(collapsed).toContain(
+      '<span className="text-brand">Eve agent framework</span>',
+    )
+    expect(HOME_H1).toBe('Install Eve agents for the Eve agent framework')
     expect(collapsed).toContain(HOME_LEDE)
     expect(source).toContain('Browse Agents')
     expect(source).toContain("buildInstallCommand('code-reviewer')")
