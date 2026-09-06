@@ -14,6 +14,7 @@ import { AuthorAvatar } from '@/components/author-avatar'
 import { FavoriteButton } from '@/components/favorite-button'
 import { InstallCommand } from '@/components/install-command'
 import { JsonLd } from '@/components/json-ld'
+import { LearnInlineMarkdown } from '@/components/learn-inline-markdown'
 import { MobileInstallBar } from '@/components/mobile-install-bar'
 import { StickyInstallCta } from '@/components/sticky-install-cta'
 import {
@@ -51,6 +52,10 @@ export function generateStaticParams() {
 }
 
 const MAX_RELATED_AGENTS = 3
+// PMM-locked. One crawlable Learn line on every agent detail page, near
+// the install CTA — not a helper under the package-manager Copy button.
+const AGENT_DETAIL_INSTALL_GUIDE =
+  'Full install guide: [Install an Eve agent](/learn/install-eve-agent).'
 const UPDATED_DATE_FORMATTER = new Intl.DateTimeFormat('en', {
   day: 'numeric',
   month: 'short',
@@ -254,6 +259,9 @@ async function AgentDetailContent({ agent }: { agent: AgentWithAuthor }) {
         slug={agent.slug}
         viewerIsAuthor={viewerIsAuthor}
       />
+      <p className="mt-3 max-w-2xl text-pretty text-muted-foreground text-sm">
+        <LearnInlineMarkdown>{AGENT_DETAIL_INSTALL_GUIDE}</LearnInlineMarkdown>
+      </p>
 
       <AgentDefinitionSection agent={agent} />
       <p className="mt-1 max-w-2xl text-pretty text-muted-foreground">

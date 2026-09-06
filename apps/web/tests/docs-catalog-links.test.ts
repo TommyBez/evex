@@ -118,6 +118,27 @@ describe('docs in-body catalog links', () => {
     expect(html).not.toContain('[evex vs agentcn](/learn/evex-vs-agentcn)')
   })
 
+  it('adds a crawlable install guide on the shared agent detail template', () => {
+    const source = readFileSync(
+      path.join(import.meta.dirname, '../app/(main)/agents/[slug]/page.tsx'),
+      'utf8',
+    )
+    const learnLine =
+      'Full install guide: [Install an Eve agent](/learn/install-eve-agent).'
+
+    expect(source).toContain('LearnInlineMarkdown')
+    expect(source).toContain(learnLine)
+    expect(source).not.toContain('/learn/evex-vs-agentcn')
+
+    const html = renderInlineMarkdown(learnLine)
+    expect(html).toContain(
+      'href="/learn/install-eve-agent">Install an Eve agent</a>',
+    )
+    expect(html).not.toContain(
+      '[Install an Eve agent](/learn/install-eve-agent)',
+    )
+  })
+
   it('adds crawlable Learn links after the /agents hub lede', () => {
     const source = readFileSync(
       path.join(import.meta.dirname, '../app/(main)/agents/page.tsx'),
