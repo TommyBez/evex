@@ -92,7 +92,9 @@ export default function AgentsIndexPage() {
           aria-label="Agent catalog"
           className="mt-10 flex flex-col gap-4"
         >
-          <Suspense fallback={<AgentsIndexGrid agents={agents} />}>
+          <Suspense
+            fallback={<AgentsIndexGrid agents={agents} variant="static" />}
+          >
             <AgentCatalog />
           </Suspense>
         </section>
@@ -105,10 +107,12 @@ export function AgentsIndexGrid({
   agents,
   favoriteAgentIdSet,
   isAuthenticated = false,
+  variant = 'static',
 }: {
   agents: readonly AgentWithAuthor[]
   favoriteAgentIdSet?: ReadonlySet<string>
   isAuthenticated?: boolean
+  variant?: 'interactive' | 'static'
 }) {
   const resultCountLabel =
     agents.length === 1 ? '1 agent' : `${agents.length} agents`
@@ -135,6 +139,7 @@ export function AgentsIndexGrid({
             isAuthenticated={isAuthenticated}
             isFavorite={favoriteAgentIdSet?.has(agent.id) ?? false}
             key={agent.id}
+            variant={variant}
           />
         ))}
       </div>
@@ -154,6 +159,7 @@ async function AgentCatalog() {
       agents={agents}
       favoriteAgentIdSet={runtimeState.favoriteAgentIdSet}
       isAuthenticated={runtimeState.isAuthenticated}
+      variant="interactive"
     />
   )
 }

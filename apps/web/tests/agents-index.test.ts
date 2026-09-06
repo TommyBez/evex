@@ -166,13 +166,15 @@ describe('/agents index metadata', () => {
 describe('/agents first HTML catalog', () => {
   it('does not gate the static grid behind a skeleton-only Suspense fallback', () => {
     expect(PAGE_SOURCE).toContain(
-      'fallback={<AgentsIndexGrid agents={agents} />}',
+      'fallback={<AgentsIndexGrid agents={agents} variant="static" />}',
     )
+    expect(PAGE_SOURCE).toContain('variant="interactive"')
     expect(PAGE_SOURCE).not.toContain('AgentGridSkeleton')
     expect(PAGE_SOURCE).not.toContain('AGENT_GRID_SKELETON_CARD_IDS')
     expect(CARD_SOURCE).toContain('href={`')
     expect(CARD_SOURCE).toContain('/agents/')
     expect(CARD_SOURCE).toContain('agent.slug')
+    expect(CARD_SOURCE).toContain("variant === 'interactive'")
   })
 
   it('prerenders /agents/{slug} hrefs and existing blurbs for the static list', () => {
@@ -180,7 +182,7 @@ describe('/agents first HTML catalog', () => {
     expect(agents.length).toBeGreaterThan(0)
 
     const html = renderToStaticMarkup(
-      createElement(AgentsIndexGrid, { agents }),
+      createElement(AgentsIndexGrid, { agents, variant: 'static' }),
     )
     const decodedHtml = decodeHtmlText(html)
 
@@ -200,6 +202,10 @@ describe('/agents first HTML catalog', () => {
 
     expect(html).not.toContain('AgentGridSkeleton')
     expect(html).not.toContain('h-44 rounded-md border border-border')
+    expect(html).not.toContain('Save to favorites')
+    expect(html).not.toContain('Copy install command')
+    expect(html).not.toContain('lucide-download')
+    expect(html).not.toContain('font-pixel tabular-nums')
   })
 })
 
