@@ -21,13 +21,12 @@ const HOME_LEDE =
 const HOME_EYEBROW = 'evex · Eve agent registry'
 const HOME_H1_TAG = /<h1[^>]*>([\s\S]*?)<\/h1>/
 
-function readJsxElementText(source: string, tag: RegExp): string {
-  return (tag.exec(source)?.[1] ?? '')
+const readJsxElementText = (source: string, tag: RegExp): string =>
+  (tag.exec(source)?.[1] ?? '')
     .replaceAll("{' '}", ' ')
     .replaceAll(/<[^>]+>/g, '')
     .replaceAll(/\s+/g, ' ')
     .trim()
-}
 
 const NOINDEX_NOFOLLOW = {
   follow: false,
