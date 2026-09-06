@@ -222,8 +222,8 @@ describe('in-body links to /learn/install-eve-agent', () => {
     expect(installSection?.body).toContain(
       'How to install: [Install an Eve agent](/learn/install-eve-agent).',
     )
-    expect(installSection?.body).toContain(
-      'How evex compares to agentcn: [evex vs agentcn](/learn/evex-vs-agentcn).',
+    expect(installSection?.body.join('\n')).not.toContain(
+      '/learn/evex-vs-agentcn',
     )
 
     const html = (installSection?.body ?? [])
@@ -231,7 +231,34 @@ describe('in-body links to /learn/install-eve-agent', () => {
       .join('')
 
     expect(html).toContain(`href="${INSTALL_HREF}">Install an Eve agent</a>`)
-    expect(html).toContain('href="/learn/evex-vs-agentcn">evex vs agentcn</a>')
+    expect(html).not.toContain('href="/learn/evex-vs-agentcn"')
+    expect(html).not.toContain(`[Install an Eve agent](${INSTALL_HREF})`)
+  })
+
+  it('adds a crawlable install link on the shared agent detail template', () => {
+    const source = readFileSync(
+      path.join(import.meta.dirname, '../app/(main)/agents/[slug]/page.tsx'),
+      'utf8',
+    )
+    const stickySource = readFileSync(
+      path.join(import.meta.dirname, '../components/sticky-install-cta.tsx'),
+      'utf8',
+    )
+    const installCommandSource = readFileSync(
+      path.join(import.meta.dirname, '../components/install-command.tsx'),
+      'utf8',
+    )
+    const learnLine =
+      'Full install guide: [Install an Eve agent](/learn/install-eve-agent).'
+
+    expect(source).toContain('LearnInlineMarkdown')
+    expect(source).toContain(learnLine)
+    expect(source).not.toContain('/learn/evex-vs-agentcn')
+    expect(stickySource).not.toContain(learnLine)
+    expect(installCommandSource).not.toContain(learnLine)
+
+    const html = renderInlineMarkdown(learnLine)
+    expect(html).toContain(`href="${INSTALL_HREF}">Install an Eve agent</a>`)
     expect(html).not.toContain(`[Install an Eve agent](${INSTALL_HREF})`)
   })
 

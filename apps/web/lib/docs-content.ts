@@ -105,7 +105,6 @@ export const DOCS_PAGES: readonly DocsPage[] = [
           'Every agent installs with a single command. Replace the slug with the agent you picked from the catalog; the exact command is shown on every agent page.',
           'evex is part of the official shadcn community registry, so the @evex namespace resolves without any registry configuration on your side.',
           'How to install: [Install an Eve agent](/learn/install-eve-agent).',
-          'How evex compares to agentcn: [evex vs agentcn](/learn/evex-vs-agentcn).',
         ],
         code: [
           {
