@@ -26,13 +26,15 @@ import {
 } from '@/lib/structured-data'
 
 const HOME_TITLE =
-  'Vercel eve Agent Registry: Install eve Agents with One Command'
-// The SEO title keeps the "vercel eve" keyword that ranks in search; the
-// social card leads with the evex brand instead.
+  'Eve agent registry: install Eve agents for the Eve framework | evex'
+// The root layout title template is `%s · evex`. The locked document title
+// already includes `| evex`, so generateMetadata uses an absolute title.
+// Open Graph / Twitter do not use that template, so the social title omits
+// the brand suffix.
 const HOME_SOCIAL_TITLE =
-  'evex: the eve Agent Registry. Install eve Agents with One Command'
+  'Eve agent registry: install Eve agents for the Eve framework'
 const HOME_DESCRIPTION =
-  "Community registry for agents built on eve, Vercel's agent framework. Browse configurations, preview every file before install, and add any agent with npx shadcn add @evex/{slug}."
+  'Community Eve agent registry for the Eve agent framework. Preview every file, then install with npx shadcn@latest add @evex/<slug>.'
 
 interface HomeSearchParams {
   category?: string
@@ -48,13 +50,16 @@ export async function generateMetadata({
   const params = await searchParams
   const filtered = hasListingSearchFilter(params)
 
-  return createPageMetadata({
-    title: HOME_TITLE,
-    socialTitle: HOME_SOCIAL_TITLE,
-    description: HOME_DESCRIPTION,
-    path: '/',
-    ...(filtered ? { noIndex: true, follow: true } : {}),
-  })
+  return {
+    ...createPageMetadata({
+      title: HOME_TITLE,
+      socialTitle: HOME_SOCIAL_TITLE,
+      description: HOME_DESCRIPTION,
+      path: '/',
+      ...(filtered ? { noIndex: true, follow: true } : {}),
+    }),
+    title: { absolute: HOME_TITLE },
+  }
 }
 
 const STATS_SKELETON_LABELS = ['Agents', 'Installs', 'Authors'] as const
@@ -114,15 +119,16 @@ function Hero() {
       <div className="mx-auto grid w-full min-w-0 max-w-6xl items-center gap-8 px-4 py-8 sm:px-6 sm:py-12 lg:grid-cols-[1.05fr_0.95fr] lg:gap-10 lg:py-16">
         <div className="min-w-0">
           <span className="mono-label inline-flex items-center rounded-full border border-border bg-background/60 px-3 py-1 text-muted-foreground backdrop-blur-sm">
-            evex · the eve agent registry
+            evex · Eve agent registry
           </span>
           <h1 className="mt-5 text-balance font-semibold text-4xl text-foreground leading-[1.05] sm:text-5xl">
-            Install eve Agents with{' '}
-            <span className="text-brand">One Command</span>
+            Install Eve agents for the{' '}
+            <span className="text-brand">Eve agent framework</span>
           </h1>
           <p className="mt-5 max-w-md text-pretty text-base text-muted-foreground leading-relaxed sm:text-lg">
-            The community registry for eve agents. Preview every file before
-            install, then add any agent with one shadcn command.
+            The community Eve agent registry. Preview every file, then install
+            with one shadcn command, including agents you run from MCP-ready
+            editors.
           </p>
           <div className="mt-6 sm:mt-8">
             <Button

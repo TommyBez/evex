@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+import path from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { generateMetadata as generateAgentsMetadata } from '@/app/(main)/agents/page'
 import { generateMetadata as generateHomeMetadata } from '@/app/(main)/page'
@@ -7,12 +9,16 @@ import {
   siteConfig,
 } from '@/lib/metadata'
 
-// The home page ranks for "vercel eve", so its SEO title is frozen. Social
-// cards get a dedicated title that leads with the evex brand instead.
-const HOME_SEO_TITLE =
-  'Vercel eve Agent Registry: Install eve Agents with One Command'
+const HOME_DOCUMENT_TITLE =
+  'Eve agent registry: install Eve agents for the Eve framework | evex'
 const HOME_SOCIAL_TITLE =
-  'evex: the eve Agent Registry. Install eve Agents with One Command'
+  'Eve agent registry: install Eve agents for the Eve framework'
+const HOME_DESCRIPTION =
+  'Community Eve agent registry for the Eve agent framework. Preview every file, then install with npx shadcn@latest add @evex/<slug>.'
+const HOME_H1 = 'Install Eve agents for the Eve agent framework'
+const HOME_LEDE =
+  'The community Eve agent registry. Preview every file, then install with one shadcn command, including agents you run from MCP-ready editors.'
+const HOME_EYEBROW = 'evex · Eve agent registry'
 
 const NOINDEX_NOFOLLOW = {
   follow: false,
@@ -121,23 +127,25 @@ describe('hasListingSearchFilter', () => {
 })
 
 describe('home page metadata', () => {
-  it('keeps the seo title unchanged on the clean URL', async () => {
+  it('ships the locked document title as an absolute title', async () => {
     const homeMetadata = await generateHomeMetadata({
       searchParams: Promise.resolve({}),
     })
 
-    expect(homeMetadata.title).toBe(HOME_SEO_TITLE)
+    expect(homeMetadata.title).toEqual({ absolute: HOME_DOCUMENT_TITLE })
+    expect(homeMetadata.description).toBe(HOME_DESCRIPTION)
   })
 
-  it('renders the seo title with the root layout suffix', () => {
-    // The root layout template is `%s · evex`, so this is the <title> the
-    // page ships today and it must stay that way.
-    expect(`${HOME_SEO_TITLE} · ${siteConfig.name}`).toBe(
-      'Vercel eve Agent Registry: Install eve Agents with One Command · evex',
+  it('does not let the root layout append a second brand suffix', () => {
+    // The root layout template is `%s · evex`. An absolute title keeps the
+    // locked `| evex` document title from becoming `| evex · evex`.
+    expect(HOME_DOCUMENT_TITLE).toBe(
+      'Eve agent registry: install Eve agents for the Eve framework | evex',
     )
+    expect(HOME_DOCUMENT_TITLE.endsWith(`| ${siteConfig.name}`)).toBe(true)
   })
 
-  it('leads with evex on the social cards', async () => {
+  it('uses the locked title without the brand suffix on social cards', async () => {
     const homeMetadata = await generateHomeMetadata({
       searchParams: Promise.resolve({}),
     })
@@ -154,6 +162,29 @@ describe('home page metadata', () => {
 
     expect(socialTitle).not.toContain(` · ${siteConfig.name}`)
     expect(socialTitle).not.toContain(`| ${siteConfig.name}`)
+  })
+
+  it('locks the home hero eyebrow, H1, and lede', () => {
+    const source = readFileSync(
+      path.join(import.meta.dirname, '../app/(main)/page.tsx'),
+      'utf8',
+    )
+    const collapsed = source.replaceAll(/\s+/g, ' ')
+    const h1Markup =
+      'Install Eve agents for the <span className="text-brand">Eve agent framework</span>'
+
+    expect(source).toContain(HOME_EYEBROW)
+    expect(collapsed).toContain(h1Markup)
+    expect(
+      h1Markup
+        .replace('<span className="text-brand">', '')
+        .replace('</span>', ''),
+    ).toBe(HOME_H1)
+    expect(collapsed).toContain(HOME_LEDE)
+    expect(source).toContain('Browse Agents')
+    expect(source).toContain("buildInstallCommand('code-reviewer')")
+    expect(source).toContain('@evex/<slug>')
+    expect(source).not.toContain('\u2014')
   })
 
   it('stays indexable on the clean URL and with sort alone', async () => {
@@ -184,7 +215,7 @@ describe('home page metadata', () => {
     expect(withQuery.robots).toEqual(NOINDEX_FOLLOW)
     expect(withCategory.robots).toEqual(NOINDEX_FOLLOW)
     expect(withQuery.alternates?.canonical).toBe('/')
-    expect(withQuery.title).toBe(HOME_SEO_TITLE)
+    expect(withQuery.title).toEqual({ absolute: HOME_DOCUMENT_TITLE })
   })
 })
 
