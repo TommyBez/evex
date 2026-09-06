@@ -1,4 +1,3 @@
-import { Skeleton } from '@evex/ui/skeleton'
 import { PackageSearch } from 'lucide-react'
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
@@ -6,6 +5,7 @@ import { AgentCard } from '@/components/agent-card'
 import { JsonLd } from '@/components/json-ld'
 import { LearnInlineMarkdown } from '@/components/learn-inline-markdown'
 import { RegistryEmptyState } from '@/components/registry-empty-state'
+import type { AgentWithAuthor } from '@/lib/agent-types'
 import { applyInstallCounts, getAgentRuntimeState } from '@/lib/data/agents'
 import { createPageMetadata, hasListingSearchFilter } from '@/lib/metadata'
 import { listStaticAgents } from '@/lib/registry'
@@ -16,12 +16,18 @@ import {
 
 // PMM-locked. Layout template appends ` · evex` — do not include the brand
 // suffix here or the rendered <title> doubles it.
-const AGENTS_INDEX_TITLE = 'Eve agents for the Eve agent framework'
-const AGENTS_INDEX_DESCRIPTION =
-  'Open registry of Eve agents for Cursor and shadcn. These are Vercel Eve agents, not the game or the TV show. Inspect the files and install with npx shadcn@latest add @evex/<slug>.'
-const AGENTS_INDEX_LEDE =
-  'This is the open registry for Eve agents on Cursor and the shadcn CLI. These are Vercel Eve agents you can inspect and install, not the game and not the TV show. Install with npx shadcn@latest add @evex/<slug>.'
-const AGENTS_INDEX_LEARN_LINKS =
+export const AGENTS_INDEX_TITLE =
+  'Eve agents for the Eve agent framework | browse and install'
+export const AGENTS_INDEX_H1 = 'Eve agents for the Eve agent framework'
+export const AGENTS_INDEX_DESCRIPTION =
+  'Browse and install Eve agents for the Eve agent framework. Preview every file, then run npx shadcn@latest add @evex/<slug>. MCP-ready editors: see /docs/mcp.'
+export const AGENTS_INDEX_INTRO = [
+  'This catalog lists Eve agents you can inspect and install into an Eve app.',
+  'Every agent installs with one command: `npx shadcn@latest add @evex/<slug>`. Replace the slug with the agent you pick.',
+  'Open any agent page to preview the files before you install.',
+  'Installing or running agents from MCP-ready editors is covered in [/docs/mcp](/docs/mcp).',
+] as const
+export const AGENTS_INDEX_LEARN_LINKS =
   'How to install from a registry: [Install an Eve agent](/learn/install-eve-agent). How evex differs from agentcn: [evex vs agentcn](/learn/evex-vs-agentcn).'
 
 interface AgentsSearchParams {
@@ -46,15 +52,6 @@ export async function generateMetadata({
   })
 }
 
-const AGENT_GRID_SKELETON_CARD_IDS = [
-  'agents-index-card-a',
-  'agents-index-card-b',
-  'agents-index-card-c',
-  'agents-index-card-d',
-  'agents-index-card-e',
-  'agents-index-card-f',
-] as const
-
 export default function AgentsIndexPage() {
   const agents = listStaticAgents()
 
@@ -62,30 +59,42 @@ export default function AgentsIndexPage() {
     <>
       <JsonLd
         data={[
-          createAgentListSchema(agents),
+          createAgentListSchema(agents, {
+            description: AGENTS_INDEX_DESCRIPTION,
+            name: AGENTS_INDEX_H1,
+          }),
           createAgentsIndexBreadcrumbSchema(),
         ]}
       />
       <main className="mx-auto w-full min-w-0 max-w-6xl px-4 py-10 sm:px-6">
         <header className="max-w-3xl">
           <h1 className="text-balance font-semibold text-3xl text-foreground sm:text-4xl">
-            Eve agents
+            {AGENTS_INDEX_H1}
           </h1>
-          <p className="mt-4 text-pretty text-base text-muted-foreground leading-relaxed sm:text-lg">
-            {AGENTS_INDEX_LEDE}
-          </p>
-          <p className="mt-3 text-pretty text-base text-muted-foreground leading-relaxed sm:text-lg">
-            <LearnInlineMarkdown>
-              {AGENTS_INDEX_LEARN_LINKS}
-            </LearnInlineMarkdown>
-          </p>
+          <div className="mt-4 flex flex-col gap-3">
+            {AGENTS_INDEX_INTRO.map((paragraph) => (
+              <p
+                className="text-pretty text-base text-muted-foreground leading-relaxed sm:text-lg"
+                key={paragraph}
+              >
+                <LearnInlineMarkdown>{paragraph}</LearnInlineMarkdown>
+              </p>
+            ))}
+            <p className="text-pretty text-base text-muted-foreground leading-relaxed sm:text-lg">
+              <LearnInlineMarkdown>
+                {AGENTS_INDEX_LEARN_LINKS}
+              </LearnInlineMarkdown>
+            </p>
+          </div>
         </header>
 
         <section
           aria-label="Agent catalog"
           className="mt-10 flex flex-col gap-4"
         >
-          <Suspense fallback={<AgentGridSkeleton />}>
+          <Suspense
+            fallback={<AgentsIndexGrid agents={agents} variant="static" />}
+          >
             <AgentCatalog />
           </Suspense>
         </section>
@@ -94,12 +103,17 @@ export default function AgentsIndexPage() {
   )
 }
 
-async function AgentCatalog() {
-  const staticAgents = listStaticAgents()
-  const runtimeState = await getAgentRuntimeState(
-    staticAgents.map((agent) => agent.id),
-  )
-  const agents = applyInstallCounts(staticAgents, runtimeState.installCounts)
+export function AgentsIndexGrid({
+  agents,
+  favoriteAgentIdSet,
+  isAuthenticated = false,
+  variant = 'static',
+}: {
+  agents: readonly AgentWithAuthor[]
+  favoriteAgentIdSet?: ReadonlySet<string>
+  isAuthenticated?: boolean
+  variant?: 'interactive' | 'static'
+}) {
   const resultCountLabel =
     agents.length === 1 ? '1 agent' : `${agents.length} agents`
 
@@ -122,9 +136,10 @@ async function AgentCatalog() {
         {agents.map((agent) => (
           <AgentCard
             agent={agent}
-            isAuthenticated={runtimeState.isAuthenticated}
-            isFavorite={runtimeState.favoriteAgentIdSet.has(agent.id)}
+            isAuthenticated={isAuthenticated}
+            isFavorite={favoriteAgentIdSet?.has(agent.id) ?? false}
             key={agent.id}
+            variant={variant}
           />
         ))}
       </div>
@@ -132,12 +147,19 @@ async function AgentCatalog() {
   )
 }
 
-function AgentGridSkeleton() {
+async function AgentCatalog() {
+  const staticAgents = listStaticAgents()
+  const runtimeState = await getAgentRuntimeState(
+    staticAgents.map((agent) => agent.id),
+  )
+  const agents = applyInstallCounts(staticAgents, runtimeState.installCounts)
+
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {AGENT_GRID_SKELETON_CARD_IDS.map((id) => (
-        <Skeleton className="h-44 rounded-md border border-border" key={id} />
-      ))}
-    </div>
+    <AgentsIndexGrid
+      agents={agents}
+      favoriteAgentIdSet={runtimeState.favoriteAgentIdSet}
+      isAuthenticated={runtimeState.isAuthenticated}
+      variant="interactive"
+    />
   )
 }

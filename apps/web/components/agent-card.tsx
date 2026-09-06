@@ -11,15 +11,21 @@ export function AgentCard({
   agent,
   isAuthenticated = false,
   isFavorite = false,
+  variant = 'interactive',
   viewerIsAuthor = null,
 }: {
   agent: AgentWithAuthor
   isAuthenticated?: boolean
   isFavorite?: boolean
+  // Static cards keep crawlable title/blurb links without presenting
+  // unresolved install counts, favorite state, or copy controls as real data.
+  variant?: 'interactive' | 'static'
   // Null when the caller has no viewer identity to compare against, so card
   // events report "unknown authorship" rather than claiming non-author.
   viewerIsAuthor?: boolean | null
 }) {
+  const showRuntimeState = variant === 'interactive'
+
   return (
     <Card className="group relative flex h-full w-full min-w-0 flex-col gap-4 rounded-md border border-border p-5 shadow-[var(--shadow-card)] ring-0 transition-[background-color,border-color,box-shadow,transform] focus-within:border-input focus-within:bg-muted/40 focus-within:ring-2 focus-within:ring-ring/20 hover:border-input hover:bg-muted/40 hover:shadow-[var(--shadow-popover)] motion-safe:hover:-translate-y-0.5">
       <div className="flex min-w-0 items-center justify-between gap-3">
@@ -30,28 +36,30 @@ export function AgentCard({
         >
           {agent.category}
         </Link>
-        <div className="flex items-center gap-1.5">
-          <span className="mono-label flex items-center gap-1 text-muted-foreground">
-            <Download aria-hidden="true" className="size-3" />
-            <span className="font-pixel tabular-nums">
-              {agent.installCount}
+        {showRuntimeState ? (
+          <div className="flex items-center gap-1.5">
+            <span className="mono-label flex items-center gap-1 text-muted-foreground">
+              <Download aria-hidden="true" className="size-3" />
+              <span className="font-pixel tabular-nums">
+                {agent.installCount}
+              </span>
             </span>
-          </span>
-          <InstallCopyButton
-            className="relative z-10"
-            name={agent.name}
-            slug={agent.slug}
-          />
-          <FavoriteButton
-            agentAuthor={agent.authorUsername}
-            agentId={agent.id}
-            className="relative z-10"
-            initialIsFavorite={isFavorite}
-            isAuthenticated={isAuthenticated}
-            key={`${agent.id}:${isFavorite}`}
-            viewerIsAuthor={viewerIsAuthor}
-          />
-        </div>
+            <InstallCopyButton
+              className="relative z-10"
+              name={agent.name}
+              slug={agent.slug}
+            />
+            <FavoriteButton
+              agentAuthor={agent.authorUsername}
+              agentId={agent.id}
+              className="relative z-10"
+              initialIsFavorite={isFavorite}
+              isAuthenticated={isAuthenticated}
+              key={`${agent.id}:${isFavorite}`}
+              viewerIsAuthor={viewerIsAuthor}
+            />
+          </div>
+        ) : null}
       </div>
       <div className="flex-1">
         <h3 className="min-w-0 font-display font-semibold text-foreground text-lg">

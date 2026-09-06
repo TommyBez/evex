@@ -28,7 +28,7 @@ import {
   createLeaderboardSchema,
 } from '@/lib/structured-data'
 
-const AGENTS_INDEX_H1 = /<h1[^>]*>\s*Eve agents\s*<\/h1>/
+const AGENTS_INDEX_H1 = /<h1[^>]*>\s*\{AGENTS_INDEX_H1\}\s*<\/h1>/
 const H2_TAG = /<h2[\s>]/i
 
 function makeAgent(overrides: Partial<AgentWithAuthor> = {}): AgentWithAuthor {
@@ -351,18 +351,18 @@ describe('/agents catalog index', () => {
     expect(agentsIndexMetadata.alternates?.canonical).toBe('/agents')
     expect(agentsIndexMetadata.openGraph?.url).toBe('/agents')
     expect(agentsIndexMetadata.title).toBe(
-      'Eve agents for the Eve agent framework',
+      'Eve agents for the Eve agent framework | browse and install',
     )
     expect(agentsIndexMetadata.description).toBe(
-      'Open registry of Eve agents for Cursor and shadcn. These are Vercel Eve agents, not the game or the TV show. Inspect the files and install with npx shadcn@latest add @evex/<slug>.',
+      'Browse and install Eve agents for the Eve agent framework. Preview every file, then run npx shadcn@latest add @evex/<slug>. MCP-ready editors: see /docs/mcp.',
     )
     // PMM-locked hub copy intentionally exceeds the usual ~155 SERP budget;
     // product copy wins (same pattern as locked agent titles).
-    expect(String(agentsIndexMetadata.description).length).toBe(179)
+    expect(String(agentsIndexMetadata.description).length).toBe(157)
     // Layout template is `%s · evex` — helper must not already include the brand.
     expect(String(agentsIndexMetadata.title).endsWith(' · evex')).toBe(false)
     expect(`${agentsIndexMetadata.title} · evex`).toBe(
-      'Eve agents for the Eve agent framework · evex',
+      'Eve agents for the Eve agent framework | browse and install · evex',
     )
   })
 
@@ -375,7 +375,7 @@ describe('/agents catalog index', () => {
     expect(pageSource).toMatch(AGENTS_INDEX_H1)
     expect(pageSource).not.toContain('Browse Eve agents.')
     expect(pageSource).toContain(
-      'This is the open registry for Eve agents on Cursor and the shadcn CLI. These are Vercel Eve agents you can inspect and install, not the game and not the TV show. Install with npx shadcn@latest add @evex/<slug>.',
+      'This catalog lists Eve agents you can inspect and install into an Eve app.',
     )
     expect(pageSource).toContain(
       'How to install from a registry: [Install an Eve agent](/learn/install-eve-agent). How evex differs from agentcn: [evex vs agentcn](/learn/evex-vs-agentcn).',
