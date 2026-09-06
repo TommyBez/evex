@@ -1135,7 +1135,7 @@ export const LEARN_PAGES: readonly LearnPage[] = [
       {
         heading: 'Where Evex fits',
         body: [
-          'Eve is the framework. Evex is not a framework. Evex is the registry of reusable Eve agents you inspect and install as source after you have an Eve project.',
+          'Eve is the TypeScript agent framework you author under `agent/`. Evex is the catalog where you browse reusable Eve agents and install them as source into that project.',
           'Browse the catalog on [/agents](/agents). From the Eve app root, install with:',
           '`npx shadcn@latest add @evex/<slug>`',
           'The CLI writes under `agent/` (and related files). You own those files. There is no hosted Evex runtime ([Installation](/docs/installation)).',
@@ -1181,7 +1181,7 @@ export const LEARN_PAGES: readonly LearnPage[] = [
       {
         question: 'What is the difference between Eve and Evex?',
         answer:
-          'Eve is the TypeScript agent framework (filesystem under `agent/`, Vercel-first deploy). Evex is the registry for reusable Eve agents. Evex is not a framework.',
+          'Eve is the TypeScript agent framework (filesystem under `agent/`, Vercel-first deploy). Evex is the catalog of reusable Eve agents you inspect and install as source with `npx shadcn@latest add @evex/<slug>`.',
       },
       {
         question: 'Can I install Evex agents into a Flue project?',

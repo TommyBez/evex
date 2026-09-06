@@ -100,7 +100,7 @@ describe('learn page: eve-vs-flue', () => {
       'programmable harness',
       '[Flue](https://flueframework.com/)',
       '[withastro/flue](https://github.com/withastro/flue)',
-      'Eve is the framework. Evex is not a framework.',
+      'Eve is the TypeScript agent framework you author under `agent/`. Evex is the catalog where you browse reusable Eve agents and install them as source into that project.',
       '[/agents](/agents)',
       '`npx shadcn@latest add @evex/<slug>`',
       '[Installation](/docs/installation)',
@@ -116,6 +116,9 @@ describe('learn page: eve-vs-flue', () => {
     expect(text).not.toContain('@evex/{slug}')
     expect(text).not.toContain('open catalog')
     expect(text).not.toContain('not the Eve runtime')
+    expect(text).not.toContain('Evex is not a framework')
+    expect(text).not.toContain('is not a framework')
+    expect(text).not.toContain('is not the runtime')
     expect(text).not.toContain(EM_DASH)
     expect(page.title).not.toContain(EM_DASH)
     expect(page.heading).not.toContain(EM_DASH)
@@ -161,7 +164,7 @@ describe('learn page: eve-vs-flue', () => {
       {
         question: 'What is the difference between Eve and Evex?',
         answer:
-          'Eve is the TypeScript agent framework (filesystem under `agent/`, Vercel-first deploy). Evex is the registry for reusable Eve agents. Evex is not a framework.',
+          'Eve is the TypeScript agent framework (filesystem under `agent/`, Vercel-first deploy). Evex is the catalog of reusable Eve agents you inspect and install as source with `npx shadcn@latest add @evex/<slug>`.',
       },
       {
         question: 'Can I install Evex agents into a Flue project?',
@@ -183,6 +186,36 @@ describe('learn page: eve-vs-flue', () => {
     for (const faq of page?.faqs ?? []) {
       expect(faq.question).not.toContain('`')
     }
+
+    const pageText = [
+      page?.title,
+      page?.heading,
+      page?.shortTitle,
+      page?.description,
+      page?.summary,
+      ...(page?.sections.flatMap((section) => [
+        section.heading,
+        ...section.body,
+      ]) ?? []),
+      ...(page?.decisionRows.flatMap((row) => [
+        row.choice,
+        row.useWhen,
+        row.avoidWhen,
+      ]) ?? []),
+      ...(page?.examples.flatMap((example) => [example.label, example.body]) ??
+        []),
+      ...(page?.faqs.flatMap((faq) => [faq.question, faq.answer]) ?? []),
+    ].join('\n')
+
+    expect(pageText).not.toContain('Evex is not a framework')
+    expect(pageText).not.toContain('is not a framework')
+    expect(pageText).not.toContain('is not the runtime')
+    expect(pageText).not.toContain('not the Eve runtime')
+    expect(pageText).not.toContain('Eve runtime')
+    expect(pageText).not.toContain('Eve is the runtime')
+    expect(pageText).toContain(
+      'There is no hosted Evex runtime ([Installation](/docs/installation)).',
+    )
   })
 
   it('renders decision-row backticks as inline code, not literal markdown', () => {
