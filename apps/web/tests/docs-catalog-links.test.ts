@@ -33,7 +33,7 @@ describe('docs in-body catalog links', () => {
       return
     }
 
-    expect(page.dateModified).toBe('2026-09-04')
+    expect(page.dateModified).toBe('2026-09-05')
     expect(page.title).toBe(
       'evex documentation: the community registry for eve agents',
     )
@@ -42,13 +42,16 @@ describe('docs in-body catalog links', () => {
       (section) => section.heading === 'Where to go next',
     )
     expect(nextSection).toBeDefined()
-    expect(nextSection?.body).toHaveLength(3)
+    expect(nextSection?.body).toHaveLength(4)
     expect(nextSection?.body[0]).toContain('The Installation page covers')
     expect(nextSection?.body[1]).toBe(
       'The live catalog is [Eve agents](/agents). First-party agents include the [Eve GitHub issue agent](/agents/github-issue-maintainer), the [Eve docs Q&A agent](/agents/docs-knowledge-assistant), and the [Eve support reply agent](/agents/support-reply-draft).',
     )
     expect(nextSection?.body[2]).toBe(
       'How to install: [Install an Eve agent](/learn/install-eve-agent).',
+    )
+    expect(nextSection?.body[3]).toBe(
+      'How evex compares to agentcn: [evex vs agentcn](/learn/evex-vs-agentcn).',
     )
 
     const html = (nextSection?.body ?? [])
@@ -68,11 +71,75 @@ describe('docs in-body catalog links', () => {
     expect(html).toContain(
       'href="/learn/install-eve-agent">Install an Eve agent</a>',
     )
+    expect(html).toContain('href="/learn/evex-vs-agentcn">evex vs agentcn</a>')
     expect(html).not.toContain('/learn/eve-agent-registry')
     expect(html).not.toContain('[Eve agents](/agents)')
     expect(html).not.toContain(
       '[Install an Eve agent](/learn/install-eve-agent)',
     )
+    expect(html).not.toContain('[evex vs agentcn](/learn/evex-vs-agentcn)')
+  })
+
+  it('adds a crawlable comparison link in /docs/installation Run the install command', () => {
+    const page = getDocsPage('installation')
+    expect(page).not.toBeNull()
+    if (!page) {
+      return
+    }
+
+    expect(page.dateModified).toBe('2026-09-05')
+    expect(page.sections.map((section) => section.heading)).not.toContain(
+      'More docs',
+    )
+
+    const installSection = page.sections.find(
+      (section) => section.heading === 'Run the install command',
+    )
+    const installLine =
+      'How to install: [Install an Eve agent](/learn/install-eve-agent).'
+    const compareLine =
+      'How evex compares to agentcn: [evex vs agentcn](/learn/evex-vs-agentcn).'
+    expect(installSection?.body).toContain(installLine)
+    expect(installSection?.body).toContain(compareLine)
+    expect(installSection?.body.indexOf(compareLine)).toBe(
+      (installSection?.body.indexOf(installLine) ?? -1) + 1,
+    )
+
+    const html = (installSection?.body ?? [])
+      .map((paragraph) => renderInlineMarkdown(paragraph))
+      .join('')
+    expect(html).toContain(
+      'href="/learn/install-eve-agent">Install an Eve agent</a>',
+    )
+    expect(html).toContain('href="/learn/evex-vs-agentcn">evex vs agentcn</a>')
+    expect(html).not.toContain(
+      '[Install an Eve agent](/learn/install-eve-agent)',
+    )
+    expect(html).not.toContain('[evex vs agentcn](/learn/evex-vs-agentcn)')
+  })
+
+  it('adds crawlable Learn links after the /agents hub lede', () => {
+    const source = readFileSync(
+      path.join(import.meta.dirname, '../app/(main)/agents/page.tsx'),
+      'utf8',
+    )
+    const learnLinks =
+      'How to install from a registry: [Install an Eve agent](/learn/install-eve-agent). How evex differs from agentcn: [evex vs agentcn](/learn/evex-vs-agentcn).'
+
+    expect(source).toContain('LearnInlineMarkdown')
+    expect(source).toContain(learnLinks)
+    expect(source).not.toContain('As-of')
+    expect(source).not.toContain('as of')
+
+    const html = renderInlineMarkdown(learnLinks)
+    expect(html).toContain(
+      'href="/learn/install-eve-agent">Install an Eve agent</a>',
+    )
+    expect(html).toContain('href="/learn/evex-vs-agentcn">evex vs agentcn</a>')
+    expect(html).not.toContain(
+      '[Install an Eve agent](/learn/install-eve-agent)',
+    )
+    expect(html).not.toContain('[evex vs agentcn](/learn/evex-vs-agentcn)')
   })
 
   it('adds crawlable /agents anchor on the publishing deploy vs PR section', () => {

@@ -26,7 +26,7 @@ const DOCS_INDEX_SLUG = 'introduction'
 
 export const DOCS_PAGES: readonly DocsPage[] = [
   {
-    dateModified: '2026-09-04',
+    dateModified: '2026-09-05',
     datePublished: '2026-07-04',
     description:
       'Install community eve agents into your project with one command and own every file they write. What evex is and how the shadcn-compatible registry works.',
@@ -64,6 +64,7 @@ export const DOCS_PAGES: readonly DocsPage[] = [
           'The Installation page covers prerequisites, the install command, and what to do after the files are written. The Registry page documents the HTTP endpoints behind the catalog, including the machine-readable resources for tools and LLMs. The MCP page shows how to browse and install agents from editors like Cursor, VS Code, and Claude Code through the shadcn MCP server. The Publishing page walks through adding your own agent to the catalog by pull request.',
           'The live catalog is [Eve agents](/agents). First-party agents include the [Eve GitHub issue agent](/agents/github-issue-maintainer), the [Eve docs Q&A agent](/agents/docs-knowledge-assistant), and the [Eve support reply agent](/agents/support-reply-draft).',
           'How to install: [Install an Eve agent](/learn/install-eve-agent).',
+          'How evex compares to agentcn: [evex vs agentcn](/learn/evex-vs-agentcn).',
         ],
         heading: 'Where to go next',
       },
@@ -75,7 +76,7 @@ export const DOCS_PAGES: readonly DocsPage[] = [
     title: 'evex documentation: the community registry for eve agents',
   },
   {
-    dateModified: '2026-09-02',
+    dateModified: '2026-09-05',
     datePublished: '2026-07-04',
     description:
       'Add any evex agent to your eve project with npx shadcn add. Prerequisites, what the CLI writes, and how to configure and verify the agent after install.',
@@ -104,6 +105,7 @@ export const DOCS_PAGES: readonly DocsPage[] = [
           'Every agent installs with a single command. Replace the slug with the agent you picked from the catalog; the exact command is shown on every agent page.',
           'evex is part of the official shadcn community registry, so the @evex namespace resolves without any registry configuration on your side.',
           'How to install: [Install an Eve agent](/learn/install-eve-agent).',
+          'How evex compares to agentcn: [evex vs agentcn](/learn/evex-vs-agentcn).',
         ],
         code: [
           {

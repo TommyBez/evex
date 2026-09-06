@@ -4,6 +4,7 @@ import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { AgentCard } from '@/components/agent-card'
 import { JsonLd } from '@/components/json-ld'
+import { LearnInlineMarkdown } from '@/components/learn-inline-markdown'
 import { RegistryEmptyState } from '@/components/registry-empty-state'
 import { applyInstallCounts, getAgentRuntimeState } from '@/lib/data/agents'
 import { createPageMetadata, hasListingSearchFilter } from '@/lib/metadata'
@@ -20,6 +21,8 @@ const AGENTS_INDEX_DESCRIPTION =
   'Open registry of Eve agents for Cursor and shadcn. These are Vercel Eve agents, not the game or the TV show. Inspect the files and install with npx shadcn@latest add @evex/<slug>.'
 const AGENTS_INDEX_LEDE =
   'This is the open registry for Eve agents on Cursor and the shadcn CLI. These are Vercel Eve agents you can inspect and install, not the game and not the TV show. Install with npx shadcn@latest add @evex/<slug>.'
+const AGENTS_INDEX_LEARN_LINKS =
+  'How to install from a registry: [Install an Eve agent](/learn/install-eve-agent). How evex differs from agentcn: [evex vs agentcn](/learn/evex-vs-agentcn).'
 
 interface AgentsSearchParams {
   category?: string
@@ -70,6 +73,11 @@ export default function AgentsIndexPage() {
           </h1>
           <p className="mt-4 text-pretty text-base text-muted-foreground leading-relaxed sm:text-lg">
             {AGENTS_INDEX_LEDE}
+          </p>
+          <p className="mt-3 text-pretty text-base text-muted-foreground leading-relaxed sm:text-lg">
+            <LearnInlineMarkdown>
+              {AGENTS_INDEX_LEARN_LINKS}
+            </LearnInlineMarkdown>
           </p>
         </header>
 

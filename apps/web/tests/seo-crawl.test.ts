@@ -330,9 +330,14 @@ describe('/agents catalog index', () => {
     const agentsIndex = entries.find(
       (entry) => entry.url === 'https://www.evex.sh/agents',
     )
+    const installation = entries.find(
+      (entry) => entry.url === 'https://www.evex.sh/docs/installation',
+    )
 
     expect(agentsIndex).toBeDefined()
     expect(getAgentsUrl()).toBe('https://www.evex.sh/agents')
+    expect(installation).toBeDefined()
+    expect(installation?.lastModified).toEqual(new Date('2026-09-05'))
   })
 
   it('emits indexable metadata with a self-canonical', async () => {
@@ -361,7 +366,7 @@ describe('/agents catalog index', () => {
     )
   })
 
-  it('locks the hub H1 and single lede paragraph (no extra H2)', () => {
+  it('locks the hub H1 and lede, plus crawlable Learn notes (no extra H2)', () => {
     const pageSource = readFileSync(
       path.join(import.meta.dirname, '../app/(main)/agents/page.tsx'),
       'utf8',
@@ -372,6 +377,10 @@ describe('/agents catalog index', () => {
     expect(pageSource).toContain(
       'This is the open registry for Eve agents on Cursor and the shadcn CLI. These are Vercel Eve agents you can inspect and install, not the game and not the TV show. Install with npx shadcn@latest add @evex/<slug>.',
     )
+    expect(pageSource).toContain(
+      'How to install from a registry: [Install an Eve agent](/learn/install-eve-agent). How evex differs from agentcn: [evex vs agentcn](/learn/evex-vs-agentcn).',
+    )
+    expect(pageSource).toContain('LearnInlineMarkdown')
     expect(pageSource).not.toMatch(H2_TAG)
   })
 
