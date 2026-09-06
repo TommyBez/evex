@@ -4,7 +4,7 @@ import { parseDependencies } from '@/lib/agents'
 import { getAuthorMetaDescription } from '@/lib/author-detail'
 import type { DocsPage } from '@/lib/docs-content'
 import { HOME_FAQ_ITEMS } from '@/lib/home-faq-content'
-import type { LearnPage } from '@/lib/learn-content'
+import { getLearnPageHeading, type LearnPage } from '@/lib/learn-content'
 import { siteConfig } from '@/lib/metadata'
 import {
   buildInstallCommand,
@@ -316,7 +316,7 @@ export function createLearnArticleSchema(page: LearnPage): JsonLdObject {
   return {
     '@context': SCHEMA_CONTEXT,
     '@type': 'Article',
-    headline: page.title,
+    headline: getLearnPageHeading(page),
     description: page.description,
     url,
     mainEntityOfPage: url,

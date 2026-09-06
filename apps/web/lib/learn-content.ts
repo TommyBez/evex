@@ -42,6 +42,8 @@ export interface LearnPage {
   description: string
   examples: readonly LearnExample[]
   faqs: readonly LearnFaq[]
+  // Optional visible H1 when it must differ from document <title>.
+  heading?: string
   primaryKeyword: string
   relatedKeywords: readonly string[]
   sections: readonly LearnSection[]
@@ -1090,6 +1092,115 @@ export const LEARN_PAGES: readonly LearnPage[] = [
     ],
   },
   {
+    slug: 'eve-vs-flue',
+    title:
+      'Eve vs Flue: which TypeScript agent framework (and where Evex fits)',
+    heading: 'Eve vs Flue: Vercel-first vs deploy-anywhere',
+    shortTitle: 'Eve vs Flue',
+    description:
+      'Compare Eve and Flue on deployment gravity: Vercel-first vs deploy-anywhere. Then see where Evex fits as the registry for reusable Eve agents.',
+    cluster: 'comparisons',
+    datePublished: '2026-09-06',
+    dateModified: '2026-09-06',
+    primaryKeyword: 'eve vs flue',
+    relatedKeywords: [
+      'flue framework',
+      'eve agent framework',
+      'install eve agent',
+    ],
+    summary:
+      'Pick Eve when your default path is Vercel. Pick Flue when you need to write once and deploy across Node, Cloudflare, or CI. After you choose Eve (or already have an Eve app), Evex is how you install reusable agents with `npx shadcn@latest add @evex/<slug>`.',
+    sections: [
+      {
+        heading: 'The decision is deployment gravity',
+        body: [
+          'Eve and Flue are both TypeScript agent frameworks. The useful cut is where you expect the agent to run day to day.',
+          "Eve's first-class deploy path is Vercel: `eve deploy`, with Vercel running the web service, workflows, sandboxes, and schedules. On Vercel, the default sandbox backend is Vercel Sandbox ([Deploy to Vercel](https://eve.dev/docs/guides/deployment/vercel)).",
+          'Flue markets write-once, deploy-anywhere. Its getting started path covers Node.js, Cloudflare, and GitHub Actions or other CI, with `flue run` for local and CI runs and a Vite plus Hono path when you host the agent ([Flue getting started](https://flueframework.com/docs/guide/getting-started/)).',
+          "Choose on that gravity first. Feature lists matter less than whether your team's host is already decided.",
+        ],
+      },
+      {
+        heading: 'Eve in one paragraph',
+        body: [
+          'Eve builds an agent by walking the filesystem under `agent/`. Start with Node.js 24 or newer and `npx eve@latest init`. The default scaffold routes models through the Vercel AI Gateway. From there the natural production path is the Vercel deploy flow above ([Eve getting started](https://eve.dev/docs/getting-started)).',
+        ],
+      },
+      {
+        heading: 'Flue in one paragraph',
+        body: [
+          'Flue is an open agent framework from the creators of Astro, powered by Pi. You write agents with a React-like hooks API, run them with `flue run`, and target Node or Cloudflare in config. The site and docs frame it as a programmable harness you can run locally or deploy across those hosts ([Flue](https://flueframework.com/), [Flue getting started](https://flueframework.com/docs/guide/getting-started/), [withastro/flue](https://github.com/withastro/flue)).',
+        ],
+      },
+      {
+        heading: 'Where Evex fits',
+        body: [
+          'Eve is the TypeScript agent framework you author under `agent/`. Evex is the catalog where you browse reusable Eve agents and install them as source into that project.',
+          'Browse the catalog on [/agents](/agents). From the Eve app root, install with:',
+          '`npx shadcn@latest add @evex/<slug>`',
+          'The CLI writes under `agent/` (and related files). You own those files. There is no hosted Evex runtime ([Installation](/docs/installation)).',
+          'For editor-driven browse and install, configure the shadcn MCP server and resolve `@evex/<slug>` from chat ([MCP](/docs/mcp)). Product docs live at [/docs](/docs). For scaffold vs catalog vs standalone install paths, see [/learn/install-eve-agent](/learn/install-eve-agent).',
+          'If you chose Flue for deploy-anywhere, that choice stands. `@evex` installs still require an Eve project: Installation documents agents installing into an eve app, not into a Flue app. Use Eve when you want the Evex catalog path.',
+        ],
+      },
+    ],
+    decisionRows: [
+      {
+        choice: 'Eve',
+        useWhen:
+          'Your default host is Vercel, and you want filesystem agents under `agent/` with `eve init` / `eve deploy`.',
+        avoidWhen:
+          'You need Node, Cloudflare, or CI as equal first-class targets without a Vercel-first gravity.',
+      },
+      {
+        choice: 'Flue',
+        useWhen:
+          'You want an open harness/framework you can run locally and deploy across Node, Cloudflare, or CI.',
+        avoidWhen:
+          'Your team is already committed to Eve on Vercel and wants registry installs from Evex.',
+      },
+      {
+        choice: 'Evex install',
+        useWhen:
+          'You already have (or will create) an Eve app and want reusable agent source via `npx shadcn@latest add @evex/<slug>`.',
+        avoidWhen:
+          'You only have a Flue project and expected `@evex` to install there. Evex installs into an eve project.',
+      },
+    ],
+    examples: [
+      {
+        label: 'Eve on Vercel, then Evex',
+        body: 'Your default host is Vercel, so you scaffold with `npx eve@latest init`, deploy with the Eve Vercel flow, then install a catalog agent from [/agents](/agents) with `npx shadcn@latest add @evex/<slug>`.',
+      },
+      {
+        label: 'Flue for deploy-anywhere',
+        body: 'You need Node, Cloudflare, or CI as equal targets, so you pick Flue and follow [Flue getting started](https://flueframework.com/docs/guide/getting-started/). You do not use `@evex/<slug>` unless you also keep an Eve app for registry installs.',
+      },
+    ],
+    faqs: [
+      {
+        question: 'What is the difference between Eve and Evex?',
+        answer:
+          'Eve is the TypeScript agent framework (filesystem under `agent/`, Vercel-first deploy). Evex is the catalog of reusable Eve agents you inspect and install as source with `npx shadcn@latest add @evex/<slug>`.',
+      },
+      {
+        question: 'Can I install Evex agents into a Flue project?',
+        answer:
+          'No. Evex Installation says agents install into an eve project and write the `agent/` layout Eve loads. If you want `@evex/<slug>`, create or open an Eve app first. Flue remains the right framework when deploy-anywhere is the priority.',
+      },
+      {
+        question: 'When should I pick Flue?',
+        answer:
+          'Pick Flue when write-once and deploy across Node, Cloudflare, or CI matters more than a Vercel-first path, and you want the hooks-style Flue agent model.',
+      },
+      {
+        question: 'When should I pick Eve?',
+        answer:
+          'Pick Eve when Vercel is your default production host and you want filesystem-authored agents with the Eve init and deploy flow. After the Eve app exists, use Evex to install catalog agents.',
+      },
+    ],
+  },
+  {
     slug: 'install-eve-agent',
     title: 'Install an Eve agent',
     shortTitle: 'Install an Eve agent',
@@ -1217,6 +1328,10 @@ export function listLearnPages(): readonly LearnPage[] {
 
 export function getLearnPage(slug: string): LearnPage | null {
   return LEARN_PAGE_MAP.get(slug) ?? null
+}
+
+export function getLearnPageHeading(page: LearnPage): string {
+  return page.heading ?? page.title
 }
 
 export function getLearnCluster(id: LearnClusterId): LearnCluster {
