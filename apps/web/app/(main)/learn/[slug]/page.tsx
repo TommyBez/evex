@@ -228,7 +228,7 @@ export default async function LearnDetailPage({
                   <div className="bg-background p-4">
                     <p className="mono-label text-muted-foreground">Use when</p>
                     <p className="mt-2 text-muted-foreground text-sm leading-relaxed">
-                      {row.useWhen}
+                      <LearnInlineMarkdown>{row.useWhen}</LearnInlineMarkdown>
                     </p>
                   </div>
                   <div className="bg-background p-4">
@@ -236,7 +236,7 @@ export default async function LearnDetailPage({
                       Avoid when
                     </p>
                     <p className="mt-2 text-muted-foreground text-sm leading-relaxed">
-                      {row.avoidWhen}
+                      <LearnInlineMarkdown>{row.avoidWhen}</LearnInlineMarkdown>
                     </p>
                   </div>
                 </div>

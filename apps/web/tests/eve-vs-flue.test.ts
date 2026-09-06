@@ -185,6 +185,36 @@ describe('learn page: eve-vs-flue', () => {
     }
   })
 
+  it('renders decision-row backticks as inline code, not literal markdown', () => {
+    expect(page).not.toBeNull()
+    if (!page) {
+      return
+    }
+
+    const pageSource = readFileSync(
+      path.join(import.meta.dirname, '../app/(main)/learn/[slug]/page.tsx'),
+      'utf8',
+    )
+    expect(pageSource).toContain(
+      '<LearnInlineMarkdown>{row.useWhen}</LearnInlineMarkdown>',
+    )
+    expect(pageSource).toContain(
+      '<LearnInlineMarkdown>{row.avoidWhen}</LearnInlineMarkdown>',
+    )
+
+    const html = page.decisionRows
+      .flatMap((row) => [row.useWhen, row.avoidWhen])
+      .map(renderInlineMarkdown)
+      .join('')
+
+    expect(html).toContain('<code')
+    expect(html).toContain('>agent/</code>')
+    expect(html).toContain('@evex/&lt;slug&gt;')
+    expect(html).toContain('>eve init</code>')
+    expect(html).not.toContain('`agent/`')
+    expect(html).not.toContain(`\`${SLUG_PLACEHOLDER}\``)
+  })
+
   it('renders locked markdown links as crawlable anchors', () => {
     expect(page).not.toBeNull()
     if (!page) {
