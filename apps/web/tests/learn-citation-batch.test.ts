@@ -22,6 +22,7 @@ const EXCLUDED_SLUGS = [
   'install-eve-agent',
   'evex-vs-agentcn',
   'langgraph-vs-crewai',
+  'eve-vs-flue',
 ] as const
 
 const AUTOGEN_HREF = 'https://microsoft.github.io/autogen/stable//index.html'
@@ -56,6 +57,7 @@ function requireLearnPage(slug: string): LearnPage {
 function flattenPageText(page: LearnPage): string {
   return [
     page.title,
+    page.heading ?? '',
     page.shortTitle,
     page.description,
     page.summary,
@@ -109,6 +111,7 @@ describe('learn citation batch', () => {
     expect(requireLearnPage('langgraph-vs-crewai').dateModified).toBe(
       '2026-09-05',
     )
+    expect(requireLearnPage('eve-vs-flue').dateModified).toBe('2026-09-06')
   })
 
   it('keeps locked titles, H1s, and section order', () => {
@@ -267,7 +270,15 @@ describe('learn citation batch', () => {
       `[LangGraph](${LANGGRAPH_HREF})`,
     )
 
-    expect(EXCLUDED_SLUGS).toHaveLength(3)
+    const eveVsFlue = requireLearnPage('eve-vs-flue')
+    expect(eveVsFlue.title).toBe(
+      'Eve vs Flue: which TypeScript agent framework (and where Evex fits)',
+    )
+    expect(eveVsFlue.heading).toBe(
+      'Eve vs Flue: Vercel-first vs deploy-anywhere',
+    )
+
+    expect(EXCLUDED_SLUGS).toHaveLength(4)
   })
 })
 

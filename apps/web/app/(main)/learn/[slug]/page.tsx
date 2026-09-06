@@ -14,6 +14,7 @@ import {
 import {
   getLearnCluster,
   getLearnPage,
+  getLearnPageHeading,
   getRelatedLearnPages,
   listLearnPages,
 } from '@/lib/learn-content'
@@ -90,7 +91,7 @@ export default async function LearnDetailPage({
               <Badge variant="secondary">{cluster.label}</Badge>
             </div>
             <h1 className="mt-4 text-balance font-semibold text-3xl text-foreground sm:text-4xl">
-              {page.title}
+              {getLearnPageHeading(page)}
             </h1>
             <p className="mt-4 max-w-2xl text-pretty text-muted-foreground leading-relaxed">
               {page.description}

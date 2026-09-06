@@ -20,12 +20,15 @@ export const FEATURED_LEARN_SLUGS = [
   'install-eve-agent',
   'evex-vs-agentcn',
   'langgraph-vs-crewai',
+  'eve-vs-flue',
 ] as const
 
 // PMM-locked card one-liners. Falls back to page.description when omitted.
 const FEATURED_CARD_DESCRIPTIONS = {
   'install-eve-agent':
     'The install command depends on which catalog the agent came from.',
+  'eve-vs-flue':
+    'Vercel-first Eve vs deploy-anywhere Flue, then Evex installs.',
 } as const satisfies Partial<
   Record<(typeof FEATURED_LEARN_SLUGS)[number], string>
 >

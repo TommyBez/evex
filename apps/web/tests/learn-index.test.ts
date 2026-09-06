@@ -14,6 +14,8 @@ import { createLearnListSchema } from '@/lib/structured-data'
 const FEATURED_CARD_DESCRIPTIONS = {
   'install-eve-agent':
     'The install command depends on which catalog the agent came from.',
+  'eve-vs-flue':
+    'Vercel-first Eve vs deploy-anywhere Flue, then Evex installs.',
 } as const
 const AGENTS_HREF_WITH_VISIBLE_TEXT =
   /href="\/agents"[\s\S]*?>[\s\S]*?\/agents[\s\S]*?</
@@ -57,7 +59,7 @@ describe('/learn Eve agent guides index', () => {
     expect(pageSource).not.toContain('listLearnPages')
   })
 
-  it('features the Install an Eve agent card plus the two comparison cards', () => {
+  it('features the Install an Eve agent card plus the comparison cards', () => {
     const pageSource = readFileSync(
       path.join(import.meta.dirname, '../app/(main)/learn/page.tsx'),
       'utf8',
@@ -67,12 +69,14 @@ describe('/learn Eve agent guides index', () => {
     expect(pageSource).toContain("'install-eve-agent'")
     expect(pageSource).toContain("'evex-vs-agentcn'")
     expect(pageSource).toContain("'langgraph-vs-crewai'")
+    expect(pageSource).toContain("'eve-vs-flue'")
     expect(pageSource).not.toContain(
       'Browse the catalog, inspect every file, and install with one shadcn command.',
     )
     expect(pageSource).toContain(
       FEATURED_CARD_DESCRIPTIONS['install-eve-agent'],
     )
+    expect(pageSource).toContain(FEATURED_CARD_DESCRIPTIONS['eve-vs-flue'])
     expect(pageSource).not.toContain('publish-eve-agent')
     expect(pageSource).not.toContain('mcp-server-for-ai-agents')
     expect(pageSource).not.toContain('agentic-workflows')
@@ -97,12 +101,13 @@ describe('/learn Eve agent guides index', () => {
       'install-eve-agent',
       'evex-vs-agentcn',
       'langgraph-vs-crewai',
+      'eve-vs-flue',
     ])
 
     const schema = createLearnListSchema(featuredPages)
     expect(schema['@type']).toBe('ItemList')
     expect(schema.name).toBe('Eve agent guides')
-    expect(schema.numberOfItems).toBe(3)
+    expect(schema.numberOfItems).toBe(4)
     expect(schema.itemListElement).toEqual([
       {
         '@type': 'ListItem',
@@ -121,6 +126,12 @@ describe('/learn Eve agent guides index', () => {
         position: 3,
         url: 'https://www.evex.sh/learn/langgraph-vs-crewai',
         name: 'LangGraph vs CrewAI: graph control or role-based crews?',
+      },
+      {
+        '@type': 'ListItem',
+        position: 4,
+        url: 'https://www.evex.sh/learn/eve-vs-flue',
+        name: 'Eve vs Flue: which TypeScript agent framework (and where Evex fits)',
       },
     ])
   })

@@ -4,7 +4,7 @@ import type { RegistryItemDocs } from '@evex/agent-registry'
 import type { AgentRegistryFile, AgentWithAuthor } from '@/lib/agent-types'
 import { parseDependencies } from '@/lib/agents'
 import type { DocsPage } from '@/lib/docs-content'
-import type { LearnPage } from '@/lib/learn-content'
+import { getLearnPageHeading, type LearnPage } from '@/lib/learn-content'
 import {
   buildInstallCommand,
   getAgentUrl,
@@ -225,7 +225,7 @@ function learnFaqMarkdown(page: LearnPage): string {
 export function buildLearnPageMarkdown(page: LearnPage): string {
   const learnUrl = getLearnUrl(page.slug)
   const blocks = [
-    `# ${page.title}`,
+    `# ${getLearnPageHeading(page)}`,
     page.description,
     page.summary,
     learnComparisonMarkdown(page),
