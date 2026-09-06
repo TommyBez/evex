@@ -19,6 +19,15 @@ const HOME_H1 = 'Install Eve agents for the Eve agent framework'
 const HOME_LEDE =
   'The community Eve agent registry. Preview every file, then install with one shadcn command, including agents you run from MCP-ready editors.'
 const HOME_EYEBROW = 'evex · Eve agent registry'
+const HOME_H1_TAG = /<h1[^>]*>([\s\S]*?)<\/h1>/
+
+function readJsxElementText(source: string, tag: RegExp): string {
+  return (tag.exec(source)?.[1] ?? '')
+    .replaceAll("{' '}", ' ')
+    .replaceAll(/<[^>]+>/g, '')
+    .replaceAll(/\s+/g, ' ')
+    .trim()
+}
 
 const NOINDEX_NOFOLLOW = {
   follow: false,
@@ -172,11 +181,7 @@ describe('home page metadata', () => {
     const collapsed = source.replaceAll(/\s+/g, ' ')
 
     expect(source).toContain(HOME_EYEBROW)
-    expect(collapsed).toContain('Install Eve agents for the')
-    expect(collapsed).toContain(
-      '<span className="text-brand">Eve agent framework</span>',
-    )
-    expect(HOME_H1).toBe('Install Eve agents for the Eve agent framework')
+    expect(readJsxElementText(source, HOME_H1_TAG)).toBe(HOME_H1)
     expect(collapsed).toContain(HOME_LEDE)
     expect(source).toContain('Browse Agents')
     expect(source).toContain("buildInstallCommand('code-reviewer')")
