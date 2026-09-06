@@ -76,12 +76,16 @@ export function createHomeFaqSchema(): JsonLdObject {
 
 export function createAgentListSchema(
   agents: readonly AgentWithAuthor[],
+  options?: {
+    description?: string
+    name?: string
+  },
 ): JsonLdObject {
   return {
     '@context': SCHEMA_CONTEXT,
     '@type': 'ItemList',
-    name: 'eve agent registry',
-    description: siteConfig.description,
+    name: options?.name ?? 'eve agent registry',
+    description: options?.description ?? siteConfig.description,
     numberOfItems: agents.length,
     itemListElement: agents.map((agent, index) => ({
       '@type': 'ListItem',
