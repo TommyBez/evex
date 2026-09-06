@@ -22,9 +22,12 @@ describe('learn page: install-eve-agent', () => {
     expect(page?.slug).toBe('install-eve-agent')
     expect(page?.title).toBe('Install an Eve agent')
     expect(page?.shortTitle).toBe('Install an Eve agent')
-    expect(page?.dateModified).toBe('2026-09-04')
+    expect(page?.dateModified).toBe('2026-09-06')
+    expect(page?.description).toBe(
+      'Pick the right install for where the Eve agent came from: scaffold a new app, copy a catalog agent into an existing app, or create a standalone directory.',
+    )
     expect(page?.summary).toBe(
-      'The install command depends on the source. evex and agentcn copy an agent into an existing Eve app. bergside/awesome-eve-agents creates a standalone agent directory.',
+      'Installing an Eve agent depends on where the agent came from and where the files should land. `eve init` scaffolds a new Eve app when you do not have one yet. Catalog installs from evex or agentcn copy into an existing Eve app. bergside/awesome-eve-agents creates a standalone agent directory.',
     )
   })
 
@@ -49,8 +52,12 @@ describe('learn page: install-eve-agent', () => {
       '`npx eve@latest init my-agent`',
       '21 agents',
       'MIT license',
-      '26 GitHub stars on 3 Sep 2026',
       '24 or newer',
+      'Start from the source, then pick the install that matches that destination.',
+      'Those commands are not interchangeable with each other, with a hand-written `agent/` tree, or with `eve init`',
+      'Agent files for that path are listed on [/agents](/agents).',
+      'When you still need an Eve app, the official scaffold creates one:',
+      'Use this when you have no Eve app yet.',
       '[/agents](/agents)',
       '[Installation](/docs/installation)',
       '[evex and agentcn comparison](/learn/evex-vs-agentcn)',
@@ -68,16 +75,20 @@ describe('learn page: install-eve-agent', () => {
     expect(text).not.toContain('open catalog')
     expect(text).not.toContain('not the Eve runtime')
     expect(text).not.toContain('npx eve@latest init .')
-    expect(page.sections[3]?.body).toHaveLength(2)
+    expect(text).not.toContain('GitHub stars')
+    expect(text).not.toContain('—')
+    expect(page.description).not.toContain('—')
+    expect(page.summary).not.toContain('—')
+    expect(page.sections[3]?.body).toHaveLength(3)
   })
 
-  it('matches the four locked decision rows, examples, and three FAQs', () => {
+  it('matches the four locked decision rows, examples, and four FAQs', () => {
     expect(page?.decisionRows).toEqual([
       {
         choice: 'Scaffold a new Eve app',
         useWhen: 'You do not have an Eve app yet.',
         avoidWhen:
-          'You already have an Eve app, or you are choosing an agent from a registry for an existing app.',
+          'You already have an Eve app, or you are installing a catalog agent into an existing app.',
       },
       {
         choice: 'Write the agent yourself',
@@ -89,7 +100,7 @@ describe('learn page: install-eve-agent', () => {
         useWhen:
           'You want registry source copied into an Eve app you already have.',
         avoidWhen:
-          'You want a standalone agent directory, or you have no Eve app yet.',
+          'You want a standalone agent directory, or you still need to scaffold the app.',
       },
       {
         choice: 'Install from bergside/awesome-eve-agents',
@@ -101,26 +112,30 @@ describe('learn page: install-eve-agent', () => {
     expect(page?.examples).toEqual([
       {
         label: 'An evex agent in an existing Eve app',
-        body: 'You already have an Eve app and chose an agent on /agents. Read its source, then run `npx shadcn@latest add @evex/<slug>` from the app root. The agent source is copied under `agent/` in that app.',
+        body: 'You already have an Eve app and chose an agent on [/agents](/agents). From the app root, run `npx shadcn@latest add @evex/<slug>`. The agent source is copied under `agent/` in that app.',
       },
       {
         label: 'A bergside agent as a standalone directory',
-        body: 'You chose an agent from eveagents.dev and want its own directory. Run `npx @bergside/eveagents install <slug>`, move into the new directory with `cd <slug>`, then start Eve with `npx eve@latest`.',
+        body: 'You chose an agent from [eveagents.dev](https://www.eveagents.dev) and want its own directory. Run `npx @bergside/eveagents install <slug>`, move into the new directory with `cd <slug>`, then start Eve with `npx eve@latest`.',
       },
     ])
-    expect(page?.faqs).toHaveLength(3)
+    expect(page?.faqs).toHaveLength(4)
     expect(page?.faqs.map((faq) => faq.question)).toEqual([
+      'Is eve init the only way to install an Eve agent?',
       "Why aren't the install commands interchangeable?",
       'What lands where?',
       'Where is the source listed?',
     ])
     expect(page?.faqs[0]?.answer).toBe(
-      'The `@evex` and `@agentcn` commands copy registry entries into an existing app. The bergside CLI creates a standalone directory. `eve init` creates an Eve app.',
+      'No. `eve init` scaffolds a new Eve app when you do not have one. Catalog installs from evex or agentcn copy into an existing app. bergside creates a standalone agent directory. Match the command to the source and where the files should land.',
     )
     expect(page?.faqs[1]?.answer).toBe(
-      'evex writes the selected agent under `agent/`. agentcn writes its recipe into the existing app. bergside creates a new directory with the whole agent. `eve init` creates the app itself.',
+      'The `@evex` and `@agentcn` commands copy registry entries into an existing app. The bergside CLI creates a standalone directory. `eve init` creates an Eve app. Scaffold, catalog-into-app, and standalone are different jobs.',
     )
     expect(page?.faqs[2]?.answer).toBe(
+      'evex writes the selected agent under `agent/`. agentcn writes its recipe into the existing app. bergside creates a new directory with the whole agent. `eve init` creates the app itself.',
+    )
+    expect(page?.faqs[3]?.answer).toBe(
       'evex publishes agent files on [/agents](/agents). agentcn documents each recipe in its own docs, for example [Deep Search](https://www.agentcn.run/docs/agents/eve/deep-search); our [comparison](/learn/evex-vs-agentcn) covers how the two registries differ. bergside lists its agents at [eveagents.dev](https://www.eveagents.dev).',
     )
 
@@ -162,6 +177,12 @@ describe('learn page: install-eve-agent', () => {
       'href="https://www.agentcn.run/docs/agents/eve/deep-search"',
     )
     expect(faqHtml).toContain('href="https://www.eveagents.dev"')
+
+    const exampleHtml = (page.examples ?? [])
+      .map((example) => renderInlineMarkdown(example.body))
+      .join('')
+    expect(exampleHtml).toContain('href="/agents"')
+    expect(exampleHtml).toContain('href="https://www.eveagents.dev"')
   })
 
   it('is featured as the first /learn index card', () => {
