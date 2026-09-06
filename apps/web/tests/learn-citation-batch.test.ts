@@ -103,7 +103,7 @@ describe('learn citation batch', () => {
     }
 
     expect(requireLearnPage('install-eve-agent').dateModified).toBe(
-      '2026-09-04',
+      '2026-09-06',
     )
     expect(requireLearnPage('evex-vs-agentcn').dateModified).toBe('2026-09-04')
     expect(requireLearnPage('langgraph-vs-crewai').dateModified).toBe(
@@ -247,10 +247,10 @@ describe('learn citation batch', () => {
     const install = requireLearnPage('install-eve-agent')
     expect(install.title).toBe('Install an Eve agent')
     expect(install.summary).toBe(
-      'The install command depends on the source. evex and agentcn copy an agent into an existing Eve app. bergside/awesome-eve-agents creates a standalone agent directory.',
+      'Installing an Eve agent depends on where the agent came from and where the files should land. `eve init` scaffolds a new Eve app when you do not have one yet. Catalog installs from evex or agentcn copy into an existing Eve app. bergside/awesome-eve-agents creates a standalone agent directory.',
     )
     expect(install.examples[0]?.body).toBe(
-      'You already have an Eve app and chose an agent on /agents. Read its source, then run `npx shadcn@latest add @evex/<slug>` from the app root. The agent source is copied under `agent/` in that app.',
+      'You already have an Eve app and chose an agent on [/agents](/agents). From the app root, run `npx shadcn@latest add @evex/<slug>`. The agent source is copied under `agent/` in that app.',
     )
 
     const comparison = requireLearnPage('evex-vs-agentcn')
