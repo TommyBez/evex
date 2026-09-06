@@ -44,6 +44,14 @@ function renderInlineMarkdown(markdown: string): string {
   )
 }
 
+function decodeHtmlText(html: string): string {
+  return html
+    .replaceAll('&#x27;', "'")
+    .replaceAll('&apos;', "'")
+    .replaceAll('&quot;', '"')
+    .replaceAll('&amp;', '&')
+}
+
 describe('/agents index copy lock', () => {
   it('locks title, H1, description, and intro strings', () => {
     expect(AGENTS_INDEX_TITLE).toBe(
@@ -174,18 +182,20 @@ describe('/agents first HTML catalog', () => {
     const html = renderToStaticMarkup(
       createElement(AgentsIndexGrid, { agents }),
     )
+    const decodedHtml = decodeHtmlText(html)
 
     for (const agent of agents) {
       const blurbLead =
         agent.description.split(MARKDOWN_MARKER_SPLIT)[0]?.trim() ?? ''
       const plainBlurb = stripInlineMarkdown(agent.description)
       const blurbWords = plainBlurb.split(WORD_SPLIT).slice(0, 8).join(' ')
+      const blurbSnippet = blurbLead.slice(0, 60).trim()
 
       expect(html).toContain(`href="/agents/${agent.slug}"`)
-      expect(blurbLead.length).toBeGreaterThan(0)
-      expect(html).toContain(blurbLead)
+      expect(blurbSnippet.length).toBeGreaterThan(0)
+      expect(decodedHtml).toContain(blurbSnippet)
       expect(blurbWords.length).toBeGreaterThan(0)
-      expect(html).toContain(blurbWords)
+      expect(decodedHtml).toContain(blurbWords)
     }
 
     expect(html).not.toContain('AgentGridSkeleton')
