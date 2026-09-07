@@ -14,7 +14,11 @@ export interface DocsSection {
 export interface DocsPage {
   dateModified: string
   datePublished: string
+  // Second intro paragraph under H1 when it must differ from description.
+  definition?: string
   description: string
+  // Optional visible H1 when it must differ from document <title>.
+  heading?: string
   sections: readonly DocsSection[]
   shortTitle: string
   slug: string
@@ -26,44 +30,42 @@ const DOCS_INDEX_SLUG = 'introduction'
 
 export const DOCS_PAGES: readonly DocsPage[] = [
   {
-    dateModified: '2026-09-05',
+    dateModified: '2026-09-07',
     datePublished: '2026-07-04',
+    definition:
+      'An AI agent registry is a catalog of reusable agents you can audit and install into your project. evex is the open-source registry for Eve agents: each item is code-owned, reviewed by pull request, and installed with npx shadcn@latest add @evex/<slug> through the official shadcn community registry.',
     description:
-      'Install community eve agents into your project with one command and own every file they write. What evex is and how the shadcn-compatible registry works.',
+      'evex is an open-source AI agent registry. Browse Eve agents, inspect every file, then install as source with npx shadcn@latest add @evex/<slug>.',
+    heading: 'Open-source AI agent registry: install as source',
     sections: [
       {
         body: [
-          'evex is the community registry for eve agents. Each agent is a source-owned package: its files, metadata, dependencies, and author identity live in a public GitHub repository, and every agent enters or changes the catalog through a reviewed pull request.',
-          'The registry speaks the shadcn registry format, so the same CLI that installs UI components installs agents. There is no upload form and no opaque bundle. What you see in the repository is exactly what an install writes into your project.',
-          'The evex database stores runtime state only, such as install counts and favorites. The canonical definition of every agent is the code in the repository, which means you can audit an agent before you trust it.',
+          'Eve is the TypeScript agent framework you author under agent/ (Vercel-first). It defines how an agent is structured and run.',
+          'evex is the catalog on top of that convention. It does not run agents. It packages community Eve agents so you can browse them, preview files and dependencies, install them as source, and keep editing in your own repo.',
         ],
-        heading: 'What is an Eve agent registry?',
+        heading: 'Registry vs framework',
       },
       {
         body: [
-          'Installing an agent copies its full source into your project. The files land under the agent/ directory layout that eve expects, alongside evals, a README, and an environment template when the agent needs credentials.',
-          'After the install finishes, evex is out of the loop. Your project has no runtime dependency on the registry: the agent runs from the files in your repository, you can edit any of them, and nothing phones home.',
+          'AWS and GCP ship agent registries aimed at governed deployment inside their clouds: policies, environments, and operational control for agents you already run on their platforms.',
+          'evex is a different job. It is an open catalog of installable Eve agent source. You review the files on the agent page, run the install command into your Eve project, and the agent lives in your repository with no runtime dependency on the registry.',
         ],
-        bullets: [
-          'Full agent source under agent/ in your project, readable and editable',
-          'Evals, a README, and a .env.example template when the agent reads environment variables',
-          'npm dependencies declared by the agent, prompted during install',
-          'No runtime dependency on evex after the files are written',
-        ],
-        heading: 'What installing gets you',
+        heading: 'Not a cloud governance registry',
       },
       {
         body: [
-          "eve is Vercel's framework for building AI agents. It defines the agent/ directory convention that holds an agent's configuration, instructions, skills, tools, and subagents.",
-          'evex is the distribution layer on top of that convention. It does not run agents and it is not a hosted platform: it packages community agents so any eve project can install them with one command and own the result.',
+          'agentcn uses the same shadcn install mechanic for Eve agents. evex competes on the full registry loop: catalog UX, file preview, author profiles, favorites, leaderboard, and first-party publishing docs with PR-owned agents.',
+          "AgentsKit Registry is a shadcn-style install-as-source catalog for the AgentsKit stack (provider-agnostic agents). evex is Eve-native: agents follow Eve's agent/ layout and install with `npx shadcn@latest add @evex/<slug>`.",
+          'For a deeper Eve-vs-agentcn comparison, see [/learn/evex-vs-agentcn](/learn/evex-vs-agentcn).',
         ],
-        heading: 'How evex relates to eve',
+        heading: 'How evex compares to agentcn and AgentsKit',
       },
       {
         body: [
-          'The Installation page covers prerequisites, the install command, and what to do after the files are written. The Registry page documents the HTTP endpoints behind the catalog, including the machine-readable resources for tools and LLMs. The MCP page shows how to browse and install agents from editors like Cursor, VS Code, and Claude Code through the shadcn MCP server. The Publishing page walks through adding your own agent to the catalog by pull request.',
-          'The live catalog is [Eve agents](/agents). First-party agents include the [Eve GitHub issue agent](/agents/github-issue-maintainer), the [Eve docs Q&A agent](/agents/docs-knowledge-assistant), and the [Eve support reply agent](/agents/support-reply-draft).',
-          'How to install: [Install an Eve agent](/learn/install-eve-agent).',
+          'Browse the live catalog: [Eve agents](/agents). First-party agents include the [Eve GitHub issue agent](/agents/github-issue-maintainer), the [Eve docs Q&A agent](/agents/docs-knowledge-assistant), and the [Eve support reply agent](/agents/support-reply-draft).',
+          'Install walkthrough: [Install an Eve agent](/learn/install-eve-agent).',
+          'Browse and install from editors (Cursor, VS Code, Claude Code): [MCP](/docs/mcp).',
+          'The [Installation](/docs/installation) page covers prerequisites, the install command, and what to do after the files are written. The [Registry](/docs/registry) page documents the HTTP endpoints behind the catalog, including the machine-readable resources for tools and LLMs. The [Publishing](/docs/publishing) page walks through adding your own agent to the catalog by pull request.',
           'How evex compares to agentcn: [evex vs agentcn](/learn/evex-vs-agentcn).',
         ],
         heading: 'Where to go next',
@@ -72,8 +74,8 @@ export const DOCS_PAGES: readonly DocsPage[] = [
     shortTitle: 'Introduction',
     slug: 'introduction',
     summary:
-      'An Eve agent registry is a catalog of reusable agents for Eve developers. You inspect files, then install them as source with npx shadcn@latest add @evex/<slug>, instead of copying folders. evex is that registry. After install you own the files. There is no hosted runtime.',
-    title: 'evex documentation: the community registry for eve agents',
+      'Browse community AI agents built for Eve, inspect every file before you trust them, and install as source with one command. You own the files afterward. There is no hosted runtime.',
+    title: 'Open-source AI agent registry: install as source',
   },
   {
     dateModified: '2026-09-05',
@@ -386,4 +388,16 @@ export function getDocsIndexPage(): DocsPage {
 
 export function listDocsSubPages(): readonly DocsPage[] {
   return DOCS_PAGES.filter((page) => page.slug !== DOCS_INDEX_SLUG)
+}
+
+export function getDocsPageHeading(page: DocsPage): string {
+  return page.heading ?? page.title
+}
+
+export function getDocsPageIntro(page: DocsPage): readonly string[] {
+  if (page.definition) {
+    return [page.summary, page.definition]
+  }
+
+  return [page.description]
 }

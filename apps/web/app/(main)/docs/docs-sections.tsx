@@ -6,15 +6,17 @@ import type { DocsPage } from '@/lib/docs-content'
 export function DocsSections({ page }: { page: DocsPage }) {
   return (
     <>
-      <Card className="mt-8 rounded-md border border-border p-5 shadow-[var(--shadow-card)] ring-0">
-        <span className="mono-label inline-flex items-center gap-2 text-brand">
-          <BookOpen aria-hidden="true" className="size-4" />
-          the short version
-        </span>
-        <p className="mt-3 text-pretty font-medium text-foreground leading-relaxed">
-          {page.summary}
-        </p>
-      </Card>
+      {page.definition ? null : (
+        <Card className="mt-8 rounded-md border border-border p-5 shadow-[var(--shadow-card)] ring-0">
+          <span className="mono-label inline-flex items-center gap-2 text-brand">
+            <BookOpen aria-hidden="true" className="size-4" />
+            the short version
+          </span>
+          <p className="mt-3 text-pretty font-medium text-foreground leading-relaxed">
+            {page.summary}
+          </p>
+        </Card>
+      )}
 
       <div className="mt-10 grid gap-10">
         {page.sections.map((section) => (

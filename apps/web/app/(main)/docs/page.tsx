@@ -1,8 +1,13 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { JsonLd } from '@/components/json-ld'
-import { getDocsIndexPage, listDocsSubPages } from '@/lib/docs-content'
-import { createPageMetadata } from '@/lib/metadata'
+import {
+  getDocsIndexPage,
+  getDocsPageHeading,
+  getDocsPageIntro,
+  listDocsSubPages,
+} from '@/lib/docs-content'
+import { createPageMetadata, siteConfig } from '@/lib/metadata'
 import { getDocsUrl } from '@/lib/site-url'
 import {
   createDocsArticleSchema,
@@ -17,6 +22,9 @@ export function generateMetadata(): Metadata {
     description: page.description,
     path: '/docs',
     markdownPath: '/docs.md',
+    // Layout template is `%s · evex`. og/twitter skip the template, so pass
+    // the locked document title (with brand) once for social cards.
+    socialTitle: `${page.title} · ${siteConfig.name}`,
   })
 }
 
@@ -37,11 +45,18 @@ export default function DocsIndexPage() {
         <article>
           <header>
             <h1 className="text-balance font-semibold text-3xl text-foreground sm:text-4xl">
-              {page.title}
+              {getDocsPageHeading(page)}
             </h1>
-            <p className="mt-4 max-w-2xl text-pretty text-muted-foreground leading-relaxed">
-              {page.description}
-            </p>
+            <div className="mt-4 grid max-w-2xl gap-3">
+              {getDocsPageIntro(page).map((paragraph) => (
+                <p
+                  className="text-pretty text-muted-foreground leading-relaxed"
+                  key={paragraph}
+                >
+                  {paragraph}
+                </p>
+              ))}
+            </div>
           </header>
           <DocsSections page={page} />
         </article>

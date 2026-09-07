@@ -3,7 +3,12 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { JsonLd } from '@/components/json-ld'
-import { getDocsPage, listDocsSubPages } from '@/lib/docs-content'
+import {
+  getDocsPage,
+  getDocsPageHeading,
+  getDocsPageIntro,
+  listDocsSubPages,
+} from '@/lib/docs-content'
 import { createPageMetadata } from '@/lib/metadata'
 import { getDocsUrl } from '@/lib/site-url'
 import {
@@ -77,11 +82,18 @@ export default async function DocsDetailPage({
         <article className="mt-6">
           <header>
             <h1 className="text-balance font-semibold text-3xl text-foreground sm:text-4xl">
-              {page.title}
+              {getDocsPageHeading(page)}
             </h1>
-            <p className="mt-4 max-w-2xl text-pretty text-muted-foreground leading-relaxed">
-              {page.description}
-            </p>
+            <div className="mt-4 grid max-w-2xl gap-3">
+              {getDocsPageIntro(page).map((paragraph) => (
+                <p
+                  className="text-pretty text-muted-foreground leading-relaxed"
+                  key={paragraph}
+                >
+                  {paragraph}
+                </p>
+              ))}
+            </div>
           </header>
           <DocsSections page={page} />
         </article>

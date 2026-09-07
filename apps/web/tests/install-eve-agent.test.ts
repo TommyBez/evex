@@ -208,16 +208,14 @@ describe('in-body links to /learn/install-eve-agent', () => {
       return
     }
 
-    expect(docs.dateModified).toBe('2026-09-05')
-    expect(docs.title).toBe(
-      'evex documentation: the community registry for eve agents',
-    )
+    expect(docs.dateModified).toBe('2026-09-07')
+    expect(docs.title).toBe('Open-source AI agent registry: install as source')
 
     const nextSection = docs.sections.find(
       (section) => section.heading === 'Where to go next',
     )
     expect(nextSection?.body).toContain(
-      'How to install: [Install an Eve agent](/learn/install-eve-agent).',
+      'Install walkthrough: [Install an Eve agent](/learn/install-eve-agent).',
     )
 
     const html = (nextSection?.body ?? [])

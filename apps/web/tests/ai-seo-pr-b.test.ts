@@ -9,7 +9,6 @@ import { getDocsPage } from '@/lib/docs-content'
 import { getLearnPage, getRelatedLearnPages } from '@/lib/learn-content'
 import { buildLearnPageMarkdown } from '@/lib/markdown-content'
 
-const WORD_SPLIT = /\s+/
 const EVE_ADD_OUTSIDE_BACKTICKS = /(?:^|[^`])eve add(?:$|[^`])/m
 const EVE_ADD_CONTIGUOUS = /eve add/
 const NUMBERED_STEP_PREFIX = /^\d+\.\s/
@@ -48,20 +47,23 @@ function countOccurrences(haystack: string, needle: string): number {
 }
 
 describe('docs introduction AI-SEO definition', () => {
-  it('renames the first section and uses the exact 45-word summary', () => {
+  it('leads with the locked registry-vs-framework framing and install-as-source lede', () => {
     const page = getDocsPage('introduction')
     expect(page).not.toBeNull()
     if (!page) {
       return
     }
 
-    expect(page.sections[0]?.heading).toBe('What is an Eve agent registry?')
+    expect(page.sections[0]?.heading).toBe('Registry vs framework')
     expect(page.summary).toBe(
-      'An Eve agent registry is a catalog of reusable agents for Eve developers. You inspect files, then install them as source with npx shadcn@latest add @evex/<slug>, instead of copying folders. evex is that registry. After install you own the files. There is no hosted runtime.',
+      'Browse community AI agents built for Eve, inspect every file before you trust them, and install as source with one command. You own the files afterward. There is no hosted runtime.',
     )
-    expect(page.summary.split(WORD_SPLIT).filter(Boolean)).toHaveLength(45)
+    expect(page.definition).toContain(
+      'An AI agent registry is a catalog of reusable agents',
+    )
     expect(page.sections[0]?.body.join(' ')).not.toContain(page.summary)
     expect(page.summary).not.toContain('eve add')
+    expect(page.definition).not.toContain('eve add')
   })
 })
 
