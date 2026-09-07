@@ -1,0 +1,144 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "items": [
+    {
+      "name": "experiment-readout-analyst",
+      "type": "registry:item",
+      "title": "Experiment Readout Analyst",
+      "description": "Turns experiment results into a decision readout and next test.",
+      "author": "TommyBez",
+      "categories": [
+        "data"
+      ],
+      "dependencies": [
+        "eve@^0.47.5",
+        "zod@4.3.6"
+      ],
+      "files": [
+        {
+          "path": ".env.example",
+          "type": "registry:file",
+          "target": "~/.env.example"
+        },
+        {
+          "path": "agent/agent.ts",
+          "type": "registry:file",
+          "target": "~/agent/agent.ts"
+        },
+        {
+          "path": "agent/instructions.md",
+          "type": "registry:file",
+          "target": "~/agent/instructions.md"
+        },
+        {
+          "path": "agent/lib/ship-claims.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/ship-claims.ts"
+        },
+        {
+          "path": "agent/skills/experiment-readout/SKILL.md",
+          "type": "registry:file",
+          "target": "~/agent/skills/experiment-readout/SKILL.md"
+        },
+        {
+          "path": "agent/tools/ask_question.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/ask_question.ts"
+        },
+        {
+          "path": "agent/tools/draft_experiment_readout.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/draft_experiment_readout.ts"
+        },
+        {
+          "path": "agent/tools/write_file.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/write_file.ts"
+        },
+        {
+          "path": "evals/decision-next-test.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/decision-next-test.eval.ts"
+        },
+        {
+          "path": "evals/evals.config.ts",
+          "type": "registry:file",
+          "target": "~/evals/evals.config.ts"
+        },
+        {
+          "path": "evals/never-ship-code.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/never-ship-code.eval.ts"
+        },
+        {
+          "path": "README.md",
+          "type": "registry:file",
+          "target": "~/agent/README.md"
+        }
+      ],
+      "meta": {
+        "slug": "experiment-readout-analyst",
+        "category": "data",
+        "createdAt": "2026-09-07T12:00:00.000Z",
+        "updatedAt": "2026-09-07T12:00:00.000Z",
+        "docs": {
+          "overview": [
+            "Experiment Readout Analyst is an eve agent that turns pasted experiment results into a ship, iterate, kill, or inconclusive readout and one next test. It cites the metric names and numbers from the paste so a human can check the call.",
+            "You interact with it through Eve chat sessions only. There is no deploy tool and no GitHub channel. Paste the results, get a readout, then decide in your own experiment tool whether anything ships.",
+            "The draft_experiment_readout tool records the decision, readout, next test, and cited metrics and always reports shipped false. Asking it to merge a pull request or deploy a winner still returns a draft only."
+          ],
+          "howItWorks": [
+            "An operator pastes experiment results into an Eve chat session.",
+            "The agent loads the experiment-readout skill when needed and restates the experiment name, variants, and primary metric from the paste.",
+            "It writes a decision readout from those numbers only. Missing sample size or a missing primary metric stays a gap, and the call can be inconclusive.",
+            "It calls draft_experiment_readout once with the decision, readout, next test, and the metrics it cited. That tool is unattended and never ships code. ask_question is disabled so the run does not park on ship clarifications.",
+            "Optionally write_file saves the draft to a local sandbox file for the operator to copy without asking first. Saving a file is not shipping a change.",
+            "Evals cover drafting a decision plus next test from a two-variant checkout result and refusing please-ship or GitHub PR prompts without parking on ask_question."
+          ],
+          "useCases": [
+            {
+              "title": "Checkout CTA color readout",
+              "body": "An operator pastes a two-variant checkout start test with a significant lift and flat revenue. The agent drafts a decision, cites those numbers, and proposes one next test."
+            },
+            {
+              "title": "Inconclusive when sample is missing",
+              "body": "Results arrive without a sample size. The draft stays inconclusive and suggests a next test that would collect the missing power instead of a confident ship."
+            },
+            {
+              "title": "Kill a losing variant on paper",
+              "body": "A variant misses the primary metric. The readout recommends kill or iterate from those numbers and still does not change production code."
+            },
+            {
+              "title": "Save a draft for the experiment doc",
+              "body": "After draft_experiment_readout returns, the operator can ask the agent to write_file the readout into a local path for the experiment doc without implying a ship."
+            }
+          ],
+          "requirements": [
+            {
+              "name": "AI_GATEWAY_API_KEY",
+              "body": "A model credential for the deployment, either a Vercel AI Gateway API key or AI Gateway OIDC, so the agent can call the zai/glm-5.2 model."
+            }
+          ],
+          "faqs": [
+            {
+              "question": "How do I install and draft a readout?",
+              "answer": "Run npx shadcn@latest add @evex/experiment-readout-analyst inside an eve app, set AI_GATEWAY_API_KEY, then paste experiment results in Eve chat. Copy the decision and next test into your experiment doc yourself."
+            },
+            {
+              "question": "Does it ship the winning variant?",
+              "answer": "No. There is no deploy tool and no GitHub channel. draft_experiment_readout always returns shipped false. Asking it to merge a pull request still produces a draft only."
+            },
+            {
+              "question": "What if the results are underpowered?",
+              "answer": "The agent can return inconclusive and still draft a next test that would resolve the gap. It does not invent a sample size or a p-value."
+            },
+            {
+              "question": "Which numbers can it cite?",
+              "answer": "Only metric names and values from the pasted results. If a figure is missing, the readout lists the gap instead of filling it from training data."
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

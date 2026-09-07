@@ -99,16 +99,24 @@ describe('getAgentInstallSummaryDescription', () => {
 // template appends that once. The four first-party plays keep their existing
 // copy; the ten live catalog plays use the PMM-fitted strings below.
 const JOB_INTENT_METADATA_TITLES: Readonly<Record<string, string>> = {
+  'airtable-feedback-grouper':
+    'Eve Airtable feedback grouper - @evex/airtable-feedback-grouper',
   'brand-visual-asset-generator': 'Eve brand SVG agent',
   'branded-seo-page-builder': 'Eve branded SEO page agent',
   'code-reviewer': 'Eve PR review agent - install @evex/code-reviewer',
   'docs-knowledge-assistant':
     'Eve docs Q&A agent - install @evex/docs-knowledge-assistant',
   'eve-agent-builder': 'Eve agent builder - install @evex/eve-agent-builder',
+  'experiment-readout-analyst':
+    'Eve experiment readout analyst - @evex/experiment-readout-analyst',
   'github-ci-explainer':
     'Eve CI failure agent - install @evex/github-ci-explainer',
   'github-issue-maintainer':
     'Eve GitHub issue agent - install @evex/github-issue-maintainer',
+  'incident-commander':
+    'Eve incident commander agent - @evex/incident-commander',
+  'knowledge-base-gardener':
+    'Eve knowledge base gardener - @evex/knowledge-base-gardener',
   'linear-operations-agent':
     'Eve Linear ops agent - @evex/linear-operations-agent',
   'openui-assistant': 'Eve OpenUI agent - install @evex/openui-assistant',
@@ -123,14 +131,22 @@ const JOB_INTENT_METADATA_TITLES: Readonly<Record<string, string>> = {
 }
 
 const JOB_INTENT_LEDES: Readonly<Record<string, string>> = {
+  'airtable-feedback-grouper':
+    'Clusters Airtable feedback into themes with example quotes.',
   'brand-visual-asset-generator':
     'Generates brand-aligned SVG packs from a site.',
   'branded-seo-page-builder': 'Builds an on-brand SEO page from a domain.',
   'code-reviewer': 'PR review agent for Eve.',
   'docs-knowledge-assistant': 'Docs Q&A agent for Eve.',
   'eve-agent-builder': 'Scaffolds, checks, and deploys a new Eve agent.',
+  'experiment-readout-analyst':
+    'Turns experiment results into a decision readout and next test.',
   'github-ci-explainer': 'Explains failed GitHub Actions checks from the log.',
   'github-issue-maintainer': 'GitHub issue agent for Eve.',
+  'incident-commander':
+    'Drafts an incident timeline and next actions from status notes.',
+  'knowledge-base-gardener':
+    'Finds stale product docs and drafts updates with file cites.',
   'linear-operations-agent':
     'Triages Linear work and posts Slack cycle digests.',
   'openui-assistant': 'Streams OpenUI generative UI in an Eve chat.',
@@ -296,6 +312,36 @@ describe('getAgentJobIntentLede', () => {
   it('ignores prototype keys like constructor on the lede map', () => {
     expect(getAgentJobIntentLede('constructor')).toBeNull()
   })
+})
+
+const DEMAND_BACKED_PLAYS = [
+  'airtable-feedback-grouper',
+  'experiment-readout-analyst',
+  'incident-commander',
+  'knowledge-base-gardener',
+] as const
+
+describe('demand-backed first-party plays', () => {
+  for (const slug of DEMAND_BACKED_PLAYS) {
+    it(`locks title, lede, description, and install for ${slug}`, () => {
+      const agent = listStaticAgents().find((item) => item.slug === slug)
+      expect(agent).toBeDefined()
+      if (!agent) {
+        return
+      }
+
+      const title = JOB_INTENT_METADATA_TITLES[slug]
+      const lede = JOB_INTENT_LEDES[slug]
+      expect(title).toBeDefined()
+      expect(lede).toBeDefined()
+      expect(getAgentMetadataTitle(agent)).toBe(title)
+      expect(getAgentJobIntentLede(slug)).toBe(lede)
+      expect(agent.description).toBe(lede)
+      expect(buildInstallCommand(slug)).toBe(
+        `npx shadcn@latest add @evex/${slug}`,
+      )
+    })
+  }
 })
 
 describe('getAgentMetaDescription', () => {

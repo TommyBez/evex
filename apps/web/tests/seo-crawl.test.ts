@@ -338,6 +338,28 @@ describe('/agents catalog index', () => {
     expect(getAgentsUrl()).toBe('https://www.evex.sh/agents')
     expect(installation).toBeDefined()
     expect(installation?.lastModified).toEqual(new Date('2026-09-05'))
+
+    for (const slug of [
+      'airtable-feedback-grouper',
+      'experiment-readout-analyst',
+      'incident-commander',
+      'knowledge-base-gardener',
+    ]) {
+      expect(
+        entries.some(
+          (entry) => entry.url === `https://www.evex.sh/agents/${slug}`,
+        ),
+      ).toBe(true)
+    }
+  })
+
+  it('keeps the homepage hero install demo on code-reviewer', () => {
+    const homeSource = readFileSync(
+      path.join(import.meta.dirname, '../app/(main)/page.tsx'),
+      'utf8',
+    )
+    expect(homeSource).toContain("buildInstallCommand('code-reviewer')")
+    expect(homeSource).toContain("'> resolving code-reviewer...'")
   })
 
   it('emits indexable metadata with a self-canonical', async () => {

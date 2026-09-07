@@ -1,0 +1,144 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "items": [
+    {
+      "name": "incident-commander",
+      "type": "registry:item",
+      "title": "Incident Commander",
+      "description": "Drafts an incident timeline and next actions from status notes.",
+      "author": "TommyBez",
+      "categories": [
+        "devops"
+      ],
+      "dependencies": [
+        "eve@^0.47.5",
+        "zod@4.3.6"
+      ],
+      "files": [
+        {
+          "path": ".env.example",
+          "type": "registry:file",
+          "target": "~/.env.example"
+        },
+        {
+          "path": "agent/agent.ts",
+          "type": "registry:file",
+          "target": "~/agent/agent.ts"
+        },
+        {
+          "path": "agent/instructions.md",
+          "type": "registry:file",
+          "target": "~/agent/instructions.md"
+        },
+        {
+          "path": "agent/lib/notify-claims.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/notify-claims.ts"
+        },
+        {
+          "path": "agent/skills/incident-readout/SKILL.md",
+          "type": "registry:file",
+          "target": "~/agent/skills/incident-readout/SKILL.md"
+        },
+        {
+          "path": "agent/tools/ask_question.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/ask_question.ts"
+        },
+        {
+          "path": "agent/tools/draft_incident_readout.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/draft_incident_readout.ts"
+        },
+        {
+          "path": "agent/tools/write_file.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/write_file.ts"
+        },
+        {
+          "path": "evals/draft-timeline.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/draft-timeline.eval.ts"
+        },
+        {
+          "path": "evals/evals.config.ts",
+          "type": "registry:file",
+          "target": "~/evals/evals.config.ts"
+        },
+        {
+          "path": "evals/never-page-or-notify.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/never-page-or-notify.eval.ts"
+        },
+        {
+          "path": "README.md",
+          "type": "registry:file",
+          "target": "~/agent/README.md"
+        }
+      ],
+      "meta": {
+        "slug": "incident-commander",
+        "category": "devops",
+        "createdAt": "2026-09-07T12:00:00.000Z",
+        "updatedAt": "2026-09-07T12:00:00.000Z",
+        "docs": {
+          "overview": [
+            "Incident Commander is an eve agent that turns pasted status notes into a chronological timeline and a short list of next actions. It uses only the times, systems, and impact that appear in those notes so the draft stays checkable.",
+            "You interact with it through Eve chat sessions only. There is no paging tool, Slack send connection, or GitHub channel. Paste the notes, get a readout, then copy the next actions into your own incident channel yourself.",
+            "The draft_incident_readout tool records the timeline and actions and always reports sent false and paged false. Asking it to page on-call or notify a channel still returns a draft only."
+          ],
+          "howItWorks": [
+            "An operator pastes incident status notes into an Eve chat session.",
+            "The agent loads the incident-readout skill when needed and builds a chronological timeline from the pasted notes only.",
+            "Facts that are missing stay listed as gaps. The agent does not invent times, systems, or customer impact from training data.",
+            "It calls draft_incident_readout once with the timeline, next actions, a short notes summary, and any gaps. That tool is unattended and never pages, notifies, or sends. ask_question is disabled so the run does not park on send clarifications.",
+            "Optionally write_file saves the draft to a local sandbox file for the operator to copy without asking first. Saving a file is not a page or a notification.",
+            "Evals cover drafting a timeline from timestamped checkout notes and refusing please-page or GitHub prompts without parking on ask_question."
+          ],
+          "useCases": [
+            {
+              "title": "Checkout latency rollback notes",
+              "body": "An operator pastes timestamped notes about a checkout latency spike and a router rollback. The agent returns a timeline that keeps those times and a next-action list for a human to run."
+            },
+            {
+              "title": "Call out missing impact",
+              "body": "When the notes omit customer impact, the draft lists that gap instead of inventing an affected-user count. The operator can add the fact on the next paste."
+            },
+            {
+              "title": "Handoff without paging",
+              "body": "A commander wants a clean readout for the next person on the bridge. The agent drafts the timeline and stops, so no one is paged from Eve chat."
+            },
+            {
+              "title": "Save a draft for the incident doc",
+              "body": "After draft_incident_readout returns, the operator can ask the agent to write_file the readout into a local path for the incident doc without implying a page went out."
+            }
+          ],
+          "requirements": [
+            {
+              "name": "AI_GATEWAY_API_KEY",
+              "body": "A model credential for the deployment, either a Vercel AI Gateway API key or AI Gateway OIDC, so the agent can call the zai/glm-5.2 model."
+            }
+          ],
+          "faqs": [
+            {
+              "question": "How do I install and draft a readout?",
+              "answer": "Run npx shadcn@latest add @evex/incident-commander inside an eve app, set AI_GATEWAY_API_KEY, then paste status notes in Eve chat. Copy the timeline and next actions into your incident channel yourself."
+            },
+            {
+              "question": "Does it page on-call or send Slack?",
+              "answer": "No. There is no page tool and no Slack send connection. draft_incident_readout always returns sent false and paged false. Asking it to notify a channel still produces a draft only."
+            },
+            {
+              "question": "What if the notes are thin?",
+              "answer": "The agent still drafts a timeline from what you pasted and lists the missing facts as gaps. It does not invent times, systems, or impact."
+            },
+            {
+              "question": "Does it open GitHub issues?",
+              "answer": "No. There is no GitHub channel. Asking it to open a tracking issue still returns a draft only."
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

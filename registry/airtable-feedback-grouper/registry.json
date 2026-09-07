@@ -1,0 +1,144 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "items": [
+    {
+      "name": "airtable-feedback-grouper",
+      "type": "registry:item",
+      "title": "Airtable Feedback Grouper",
+      "description": "Clusters Airtable feedback into themes with example quotes.",
+      "author": "TommyBez",
+      "categories": [
+        "support"
+      ],
+      "dependencies": [
+        "eve@^0.47.5",
+        "zod@4.3.6"
+      ],
+      "files": [
+        {
+          "path": ".env.example",
+          "type": "registry:file",
+          "target": "~/.env.example"
+        },
+        {
+          "path": "agent/agent.ts",
+          "type": "registry:file",
+          "target": "~/agent/agent.ts"
+        },
+        {
+          "path": "agent/instructions.md",
+          "type": "registry:file",
+          "target": "~/agent/instructions.md"
+        },
+        {
+          "path": "agent/lib/write-claims.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/write-claims.ts"
+        },
+        {
+          "path": "agent/skills/feedback-themes/SKILL.md",
+          "type": "registry:file",
+          "target": "~/agent/skills/feedback-themes/SKILL.md"
+        },
+        {
+          "path": "agent/tools/ask_question.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/ask_question.ts"
+        },
+        {
+          "path": "agent/tools/draft_feedback_themes.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/draft_feedback_themes.ts"
+        },
+        {
+          "path": "agent/tools/write_file.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/write_file.ts"
+        },
+        {
+          "path": "evals/cluster-quotes.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/cluster-quotes.eval.ts"
+        },
+        {
+          "path": "evals/evals.config.ts",
+          "type": "registry:file",
+          "target": "~/evals/evals.config.ts"
+        },
+        {
+          "path": "evals/never-write-airtable.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/never-write-airtable.eval.ts"
+        },
+        {
+          "path": "README.md",
+          "type": "registry:file",
+          "target": "~/agent/README.md"
+        }
+      ],
+      "meta": {
+        "slug": "airtable-feedback-grouper",
+        "category": "support",
+        "createdAt": "2026-09-07T12:00:00.000Z",
+        "updatedAt": "2026-09-07T12:00:00.000Z",
+        "docs": {
+          "overview": [
+            "Airtable Feedback Grouper is an eve agent that clusters pasted or exported Airtable feedback into themes and keeps example quotes from those rows. It is draft-only analysis, so you do not need an Airtable write token for the MVP.",
+            "You interact with it through Eve chat sessions only. There is no Airtable write connection and no GitHub channel. Paste the export, get themes with quotes, then copy the grouping into your own sheet or doc.",
+            "The draft_feedback_themes tool records the themes, quotes, and row count and always reports writtenToAirtable false. Asking it to update the base still returns a draft only."
+          ],
+          "howItWorks": [
+            "An operator pastes exported Airtable rows, CSV, or a table into an Eve chat session.",
+            "The agent loads the feedback-themes skill when needed and groups the rows into a small set of themes.",
+            "Each theme keeps example quotes copied from the paste. The agent does not invent wording or require an Airtable API token.",
+            "It calls draft_feedback_themes once with the themes, quotes, how many rows it grouped, and any leftovers. That tool is unattended and never writes to Airtable. ask_question is disabled so the run does not park on write clarifications.",
+            "Optionally write_file saves the draft to a local sandbox file for the operator to copy without asking first. Saving a file is not an Airtable write.",
+            "Evals cover clustering a four-row export into themes with quotes and refusing please-write or GitHub prompts without parking on ask_question."
+          ],
+          "useCases": [
+            {
+              "title": "Group a weekly feedback export",
+              "body": "An operator pastes a week of Airtable rows. The agent returns a few themes with quotes copied from those rows so a human can brief the team."
+            },
+            {
+              "title": "Separate checkout bugs from export asks",
+              "body": "Safari checkout failures and invoice CSV requests land in the same table. The agent clusters them into two themes and keeps a quote from each side."
+            },
+            {
+              "title": "Leave thin rows ungrouped",
+              "body": "A one-word row is too thin to quote. The draft lists it as a leftover instead of inventing a sentence the customer never wrote."
+            },
+            {
+              "title": "Save a draft for a review doc",
+              "body": "After draft_feedback_themes returns, the operator can ask the agent to write_file the themes into a local path for review without implying Airtable was updated."
+            }
+          ],
+          "requirements": [
+            {
+              "name": "AI_GATEWAY_API_KEY",
+              "body": "A model credential for the deployment, either a Vercel AI Gateway API key or AI Gateway OIDC, so the agent can call the zai/glm-5.2 model."
+            }
+          ],
+          "faqs": [
+            {
+              "question": "How do I install and cluster feedback?",
+              "answer": "Run npx shadcn@latest add @evex/airtable-feedback-grouper inside an eve app, set AI_GATEWAY_API_KEY, then paste exported rows in Eve chat. Copy the themes and quotes into your own doc yourself."
+            },
+            {
+              "question": "Do I need an Airtable API token?",
+              "answer": "No. The MVP reads pasted or exported data only. There is no Airtable write token and draft_feedback_themes always returns writtenToAirtable false."
+            },
+            {
+              "question": "Will it write themes back to Airtable?",
+              "answer": "No. Asking it to update records or create a view still produces a draft only. Saving a local file is not an Airtable write."
+            },
+            {
+              "question": "Can it invent quotes to make a theme clearer?",
+              "answer": "No. Quotes must come from the pasted export. Thin rows stay leftover instead of getting polished wording."
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

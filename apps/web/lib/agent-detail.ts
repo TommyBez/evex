@@ -97,16 +97,24 @@ export function getAgentInstallSummaryDescription({
 // product copy wins; the layout still appends ` · evex` once. Title strings
 // must NOT include that suffix.
 const AGENT_METADATA_TITLE_OVERRIDES: Readonly<Record<string, string>> = {
+  'airtable-feedback-grouper':
+    'Eve Airtable feedback grouper - @evex/airtable-feedback-grouper',
   'brand-visual-asset-generator': 'Eve brand SVG agent',
   'branded-seo-page-builder': 'Eve branded SEO page agent',
   'code-reviewer': 'Eve PR review agent - install @evex/code-reviewer',
   'docs-knowledge-assistant':
     'Eve docs Q&A agent - install @evex/docs-knowledge-assistant',
   'eve-agent-builder': 'Eve agent builder - install @evex/eve-agent-builder',
+  'experiment-readout-analyst':
+    'Eve experiment readout analyst - @evex/experiment-readout-analyst',
   'github-ci-explainer':
     'Eve CI failure agent - install @evex/github-ci-explainer',
   'github-issue-maintainer':
     'Eve GitHub issue agent - install @evex/github-issue-maintainer',
+  'incident-commander':
+    'Eve incident commander agent - @evex/incident-commander',
+  'knowledge-base-gardener':
+    'Eve knowledge base gardener - @evex/knowledge-base-gardener',
   'linear-operations-agent':
     'Eve Linear ops agent - @evex/linear-operations-agent',
   'openui-assistant': 'Eve OpenUI agent - install @evex/openui-assistant',
@@ -142,14 +150,22 @@ export function getAgentMetadataTitle(agent: AgentWithAuthor): string {
 
 // Single lede under the agent H1. Job-intent plays only; other slugs render none.
 const AGENT_JOB_INTENT_LEDES: Readonly<Record<string, string>> = {
+  'airtable-feedback-grouper':
+    'Clusters Airtable feedback into themes with example quotes.',
   'brand-visual-asset-generator':
     'Generates brand-aligned SVG packs from a site.',
   'branded-seo-page-builder': 'Builds an on-brand SEO page from a domain.',
   'code-reviewer': 'PR review agent for Eve.',
   'docs-knowledge-assistant': 'Docs Q&A agent for Eve.',
   'eve-agent-builder': 'Scaffolds, checks, and deploys a new Eve agent.',
+  'experiment-readout-analyst':
+    'Turns experiment results into a decision readout and next test.',
   'github-ci-explainer': 'Explains failed GitHub Actions checks from the log.',
   'github-issue-maintainer': 'GitHub issue agent for Eve.',
+  'incident-commander':
+    'Drafts an incident timeline and next actions from status notes.',
+  'knowledge-base-gardener':
+    'Finds stale product docs and drafts updates with file cites.',
   'linear-operations-agent':
     'Triages Linear work and posts Slack cycle digests.',
   'openui-assistant': 'Streams OpenUI generative UI in an Eve chat.',
