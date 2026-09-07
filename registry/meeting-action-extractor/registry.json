@@ -1,0 +1,201 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "items": [
+    {
+      "name": "meeting-action-extractor",
+      "type": "registry:item",
+      "title": "Meeting Action Extractor",
+      "description": "Extracts owners and deadlines from a meeting transcript and drafts Linear follow-ups for approval.",
+      "author": "TommyBez",
+      "categories": [
+        "productivity",
+        "project-management"
+      ],
+      "dependencies": [
+        "@vercel/connect@^0.2.6",
+        "eve@^0.47.5",
+        "zod@4.3.6"
+      ],
+      "files": [
+        {
+          "path": ".env.example",
+          "type": "registry:file",
+          "target": "~/.env.example"
+        },
+        {
+          "path": "agent/agent.ts",
+          "type": "registry:file",
+          "target": "~/agent/agent.ts"
+        },
+        {
+          "path": "agent/connections/linear.ts",
+          "type": "registry:file",
+          "target": "~/agent/connections/linear.ts"
+        },
+        {
+          "path": "agent/instructions.md",
+          "type": "registry:file",
+          "target": "~/agent/instructions.md"
+        },
+        {
+          "path": "agent/lib/delivery-claims.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/delivery-claims.ts"
+        },
+        {
+          "path": "agent/lib/linear-connection.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/linear-connection.ts"
+        },
+        {
+          "path": "agent/lib/linear-issue-drafts.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/linear-issue-drafts.ts"
+        },
+        {
+          "path": "agent/lib/meeting-actions.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/meeting-actions.ts"
+        },
+        {
+          "path": "agent/lib/meeting-transcript-paths.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/meeting-transcript-paths.ts"
+        },
+        {
+          "path": "agent/skills/meeting-action-extract/SKILL.md",
+          "type": "registry:file",
+          "target": "~/agent/skills/meeting-action-extract/SKILL.md"
+        },
+        {
+          "path": "agent/tools/create_linear_issues.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/create_linear_issues.ts"
+        },
+        {
+          "path": "agent/tools/draft_linear_issues.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/draft_linear_issues.ts"
+        },
+        {
+          "path": "agent/tools/extract_meeting_actions.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/extract_meeting_actions.ts"
+        },
+        {
+          "path": "agent/tools/read_meeting_transcript.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/read_meeting_transcript.ts"
+        },
+        {
+          "path": "agent/tools/search_meeting_transcripts.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/search_meeting_transcripts.ts"
+        },
+        {
+          "path": "evals/draft-requires-approval.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/draft-requires-approval.eval.ts"
+        },
+        {
+          "path": "evals/evals.config.ts",
+          "type": "registry:file",
+          "target": "~/evals/evals.config.ts"
+        },
+        {
+          "path": "evals/extract-from-transcript.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/extract-from-transcript.eval.ts"
+        },
+        {
+          "path": "README.md",
+          "type": "registry:file",
+          "target": "~/agent/README.md"
+        }
+      ],
+      "meta": {
+        "slug": "meeting-action-extractor",
+        "category": "productivity",
+        "createdAt": "2026-09-07T15:00:00.000Z",
+        "updatedAt": "2026-09-07T16:10:00.000Z",
+        "docs": {
+          "overview": [
+            "Ask for follow-ups from a standup or planning notes already checked out. Meeting Action Extractor searches the local transcript tree, reads the matching files, and returns Linear issue drafts with owners and dates. Nothing is filed in Linear. You review the drafts, then create the issues yourself.",
+            "You interact with it through Eve chat sessions. Linear is a read-only lookup for team and people names while it drafts. Paste a request that names a transcript or a meeting date, get structured drafts, then approve them. The agent never creates the issues.",
+            "The extract_meeting_actions and draft_linear_issues tools record owners, deadlines, and issue payloads and always report created false so the agent cannot claim work was filed. create_linear_issues always pauses for a person. Even after you approve, that tool still does not create issues in Linear."
+          ],
+          "howItWorks": [
+            "An operator asks Eve chat to pull actions from a meeting transcript already on disk.",
+            "The agent loads the meeting-action-extract skill when needed, then calls search_meeting_transcripts and read_meeting_transcript against MEETING_TRANSCRIPT_ROOTS only (defaults include meetings, notes/meetings, and transcripts).",
+            "Those tools refuse application source, tests, configs, and lockfiles. Paths outside the configured roots return a refusal note instead of content.",
+            "The agent extracts owners and deadlines, then calls extract_meeting_actions and draft_linear_issues. draft_linear_issues always returns created false.",
+            "create_linear_issues pauses for human approval. Even after approval it never creates Linear issues. Linear connection reads stay available for team and people lookup.",
+            "Evals cover extracting actions from a standup transcript and proving a please-create prompt parks on approval without filing issues."
+          ],
+          "useCases": [
+            {
+              "title": "Standup follow-ups from disk",
+              "body": "An operator points the agent at meetings/standup-2026-09-07.md. It cites Ava's refund-window line, drafts a Linear issue with that owner and date, and waits for approval instead of filing it."
+            },
+            {
+              "title": "Planning notes without owners",
+              "body": "A planning transcript names work but no owners. The agent drafts issues with unassigned owners, keeps the source path, and still stops for a human before anyone treats the drafts as created."
+            },
+            {
+              "title": "Immediate create request",
+              "body": "Someone asks it to file the Linear issues right now. It still drafts, then parks on create_linear_issues. After approval the payloads stay drafts. Nothing is created in Linear."
+            },
+            {
+              "title": "Refuse an out-of-scope file",
+              "body": "A request cites an application source file instead of a transcript. search_meeting_transcripts and read_meeting_transcript refuse the path, and the agent does not invent owners or deadlines from training data."
+            }
+          ],
+          "requirements": [
+            {
+              "name": "AI_GATEWAY_API_KEY",
+              "body": "A model credential for the deployment, either a Vercel AI Gateway API key or AI Gateway OIDC, so the agent can call the zai/glm-5.2 model."
+            },
+            {
+              "name": "MEETING_TRANSCRIPT_ROOTS",
+              "body": "Comma-separated workspace-relative meeting transcript roots (placeholder example: meetings,notes/meetings,transcripts). Keep this narrower than the whole repository."
+            },
+            {
+              "name": "LINEAR_TEAM_ID",
+              "body": "Optional Linear team id stamped onto drafted issue payloads. Leave empty to draft without a team id."
+            },
+            {
+              "name": "LINEAR_TEAM_KEY",
+              "body": "Optional Linear team key stamped onto drafted issue payloads. Leave empty to draft without a team key."
+            },
+            {
+              "name": "LINEAR_CONNECT_UID",
+              "body": "Optional Vercel Connect Linear connector UID for read-only team and people lookup. Drafting works without it. The connection never creates issues."
+            }
+          ],
+          "faqs": [
+            {
+              "question": "How do I install and draft Linear follow-ups?",
+              "answer": "Run npx shadcn@latest add @evex/meeting-action-extractor inside an eve app, set AI_GATEWAY_API_KEY and MEETING_TRANSCRIPT_ROOTS, then ask Eve chat to pull actions from a transcript on disk. Copy the returned drafts into Linear yourself."
+            },
+            {
+              "question": "Does it create Linear issues after I approve?",
+              "answer": "No. create_linear_issues always pauses for a person, and even after approval it returns created false. There is no Linear write tool in the allow list. Asking it to file issues still produces drafts only."
+            },
+            {
+              "question": "Which files can it read?",
+              "answer": "Only paths under MEETING_TRANSCRIPT_ROOTS. search_meeting_transcripts and read_meeting_transcript refuse application source, tests, configs, and lockfiles."
+            },
+            {
+              "question": "What happens when a transcript names no owner?",
+              "answer": "The extract tool stores the owner as unassigned and still drafts the issue. It does not invent a person from training data."
+            },
+            {
+              "question": "How is this different from Linear Operations Agent?",
+              "answer": "Linear Operations Agent triages live Linear work and can write after approval. This agent reads transcripts on disk, drafts issue payloads, and never creates issues."
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
