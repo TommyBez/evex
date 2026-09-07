@@ -129,3 +129,24 @@ export function validateMeetingActions(
 
   return { ok: true, actions };
 }
+
+/** Model-facing extract payload. Keep every field the draft tool requires. */
+export function toExtractedActionsModelValue(
+  actions: readonly MeetingAction[],
+): {
+  extracted: true;
+  count: number;
+  actions: MeetingAction[];
+} {
+  return {
+    extracted: true,
+    count: actions.length,
+    actions: actions.map((action) => ({
+      title: action.title,
+      owner: action.owner,
+      deadline: action.deadline,
+      sourcePath: action.sourcePath,
+      evidence: action.evidence,
+    })),
+  };
+}

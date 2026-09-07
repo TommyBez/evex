@@ -22,6 +22,7 @@ Do not create Linear issues.
 
     t.succeeded();
     t.check(t.reply, includes("meetings/standup-2026-09-07.md").gate());
+    t.calledTool("read_meeting_transcript").gate();
     t.calledTool("extract_meeting_actions").gate();
     t.calledTool("draft_linear_issues").gate();
     t.notCalledTool("save_issue").gate();

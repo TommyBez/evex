@@ -8,10 +8,12 @@ import {
 import {
   buildLinearIssueDrafts,
   refuseLinearCreate,
+  toDraftedIssuesModelValue,
 } from "../agent/lib/linear-issue-drafts";
 import {
   normalizeDeadline,
   normalizeOwner,
+  toExtractedActionsModelValue,
   validateMeetingAction,
   validateMeetingActions,
 } from "../agent/lib/meeting-actions";
@@ -98,6 +100,11 @@ describe("meeting action validation", () => {
     if (decision.ok) {
       expect(decision.action.owner).toBe("Ava");
       expect(decision.action.deadline).toBe("2026-09-12");
+      const modelValue = toExtractedActionsModelValue([decision.action]);
+      expect(modelValue.actions[0]).toEqual(decision.action);
+      expect(modelValue.actions[0]?.evidence).toBe(
+        "Ava: I will ship the billing refund window by 2026-09-12.",
+      );
     }
   });
 
@@ -138,6 +145,47 @@ describe("Linear drafts never create", () => {
     expect(bundle.issues[0]?.dueDate).toBe("2026-09-12");
   });
 
+  it("keeps env-derived team fields on the model-facing draft payload", () => {
+    const previousTeamId = process.env.LINEAR_TEAM_ID;
+    const previousTeamKey = process.env.LINEAR_TEAM_KEY;
+    process.env.LINEAR_TEAM_ID = "team-123";
+    process.env.LINEAR_TEAM_KEY = "ENG";
+
+    try {
+      const action = {
+        title: "Ship billing refund window",
+        owner: "Ava",
+        deadline: "2026-09-12",
+        sourcePath: "meetings/standup-2026-09-07.md",
+        evidence: "Ava: I will ship the billing refund window by 2026-09-12.",
+      };
+      const bundle = buildLinearIssueDrafts([action]);
+      const modelValue = toDraftedIssuesModelValue(bundle.issues);
+
+      expect(modelValue.issues).toEqual(bundle.issues);
+      expect(modelValue.issues[0]).toMatchObject({
+        title: action.title,
+        description: expect.stringContaining(action.evidence),
+        teamId: "team-123",
+        teamKey: "ENG",
+        assigneeName: "Ava",
+        dueDate: "2026-09-12",
+        sourcePath: action.sourcePath,
+      });
+    } finally {
+      if (previousTeamId === undefined) {
+        delete process.env.LINEAR_TEAM_ID;
+      } else {
+        process.env.LINEAR_TEAM_ID = previousTeamId;
+      }
+      if (previousTeamKey === undefined) {
+        delete process.env.LINEAR_TEAM_KEY;
+      } else {
+        process.env.LINEAR_TEAM_KEY = previousTeamKey;
+      }
+    }
+  });
+
   it("keeps created false after human approval", () => {
     const refused = refuseLinearCreate(
       [
@@ -175,6 +223,11 @@ describe("replyClaimsLinearCreate", () => {
     expect(replyClaimsLinearCreate("I opened the Linear tickets.")).toBe(true);
   });
 
+  it("matches passive and alternative create claims", () => {
+    expect(replyClaimsLinearCreate("The Linear issues were created")).toBe(true);
+    expect(replyClaimsLinearCreate("I added the tickets to Linear")).toBe(true);
+  });
+
   it("does not treat negated statements as create claims", () => {
     expect(
       replyClaimsLinearCreate("I drafted the issues and did not create them."),
@@ -185,5 +238,8 @@ describe("replyClaimsLinearCreate", () => {
     expect(replyClaimsLinearCreate("Draft only. never created the issues.")).toBe(
       false,
     );
+    expect(
+      replyClaimsLinearCreate("I never actually opened the Linear tickets."),
+    ).toBe(false);
   });
 });

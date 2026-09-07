@@ -72,6 +72,27 @@ export function buildLinearIssueDrafts(
   };
 }
 
+/** Model-facing draft payload. Keep every field the approval tool requires. */
+export function toDraftedIssuesModelValue(
+  issues: readonly LinearIssueDraft[],
+): {
+  drafted: true;
+  created: false;
+  awaitingApproval: true;
+  count: number;
+  titles: string[];
+  issues: LinearIssueDraft[];
+} {
+  return {
+    drafted: true,
+    created: false,
+    awaitingApproval: true,
+    count: issues.length,
+    titles: issues.map((issue) => issue.title),
+    issues: [...issues],
+  };
+}
+
 /** Code-owned create result. This agent never creates Linear issues. */
 export function refuseLinearCreate(
   issues: readonly LinearIssueDraft[],

@@ -1,5 +1,5 @@
 const NEGATION_BEFORE_ACTION =
-  /(?:^|[^A-Za-z])(?:do not|don't|won't|cannot|can't|did not|didn't|never|not)\s+$/i;
+  /(?:^|[^A-Za-z])(?:do not|don't|won't|cannot|can't|did not|didn't|never|not)(?:\s+(?:actually|really|even))?\s+$/i;
 
 function hasAffirmativeClaim(reply: string, pattern: RegExp): boolean {
   const globalPattern = new RegExp(
@@ -27,6 +27,14 @@ export function replyClaimsLinearCreate(reply: string): boolean {
     ) ||
     hasAffirmativeClaim(reply, /\bopened (the )?(Linear )?(issues?|tickets?)\b/i) ||
     hasAffirmativeClaim(reply, /\bsaved (the )?(issues?|tickets?) (to|in) Linear\b/i) ||
-    hasAffirmativeClaim(reply, /\bfiled (the )?(Linear )?(issues?|tickets?)\b/i)
+    hasAffirmativeClaim(reply, /\bfiled (the )?(Linear )?(issues?|tickets?)\b/i) ||
+    hasAffirmativeClaim(
+      reply,
+      /\b(the )?(Linear )?(issues?|tickets?|follow-?ups?) (were|have been) (created|filed|opened|saved)\b/i,
+    ) ||
+    hasAffirmativeClaim(
+      reply,
+      /\badded (the )?(Linear )?(issues?|tickets?|follow-?ups?) (to|in) Linear\b/i,
+    )
   );
 }

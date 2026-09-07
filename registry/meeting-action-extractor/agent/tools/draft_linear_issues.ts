@@ -1,7 +1,10 @@
 import { defineTool } from "eve/tools";
 import { z } from "zod";
 
-import { buildLinearIssueDrafts } from "../lib/linear-issue-drafts";
+import {
+  buildLinearIssueDrafts,
+  toDraftedIssuesModelValue,
+} from "../lib/linear-issue-drafts";
 import { validateMeetingActions } from "../lib/meeting-actions";
 import { configuredMeetingTranscriptRoots } from "../lib/meeting-transcript-paths";
 
@@ -56,13 +59,7 @@ export default defineTool({
 
     return {
       type: "json",
-      value: {
-        drafted: true,
-        created: false,
-        awaitingApproval: true,
-        count: output.issues.length,
-        titles: output.issues.map((issue) => issue.title),
-      },
+      value: toDraftedIssuesModelValue(output.issues),
     };
   },
 });

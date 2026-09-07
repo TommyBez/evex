@@ -2,6 +2,7 @@ import { defineTool } from "eve/tools";
 import { z } from "zod";
 
 import {
+  toExtractedActionsModelValue,
   validateMeetingActions,
   type MeetingAction,
 } from "../lib/meeting-actions";
@@ -90,16 +91,7 @@ export default defineTool({
 
     return {
       type: "json",
-      value: {
-        extracted: true,
-        count: output.actions.length,
-        actions: output.actions.map((action) => ({
-          title: action.title,
-          owner: action.owner,
-          deadline: action.deadline,
-          sourcePath: action.sourcePath,
-        })),
-      },
+      value: toExtractedActionsModelValue(output.actions),
     };
   },
 });
