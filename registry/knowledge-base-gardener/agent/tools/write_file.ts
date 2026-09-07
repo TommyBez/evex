@@ -14,7 +14,7 @@ export default defineTool({
   ...writeFile,
   description:
     "Optionally write the drafted documentation update to a local file under /workspace/drafts/ for the operator to copy. Refuses product documentation (PRODUCT_DOCS_ROOTS such as docs, help, support) and other protected paths. Does not publish docs, open GitHub pull requests, or send the update.",
-  async execute(input, ctx) {
+  execute(input, ctx) {
     const decision = evaluateDraftWritePath(
       input.filePath,
       configuredProductDocsRoots(),
@@ -23,7 +23,7 @@ export default defineTool({
       throw new Error(decision.note);
     }
 
-    return await writeFile.execute(
+    return writeFile.execute(
       {
         ...input,
         filePath: decision.absolutePath,

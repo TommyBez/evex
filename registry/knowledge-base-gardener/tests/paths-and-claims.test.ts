@@ -107,4 +107,4 @@ describe("draft write paths", () => {
     ).toBe(false);
     expect(isAllowedDraftWritePath("drafts", roots)).toBe(false);
   });
-}););
+});
