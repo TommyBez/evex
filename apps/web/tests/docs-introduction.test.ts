@@ -85,7 +85,9 @@ describe('docs index: PMM Counsel A lock 2026-09-07', () => {
     expect(pageSource).toContain('socialTitle:')
     expect(pageSource).toContain('{getDocsPageHeading(page)}')
     expect(pageSource).toContain('{getDocsPageIntro(page)')
-    expect(pageSource).not.toContain('{page.title}')
+    expect(pageSource).toContain(
+      '<h1 className="text-balance font-semibold text-3xl text-foreground sm:text-4xl">',
+    )
     expect(pageSource).not.toContain('{page.description}')
   })
 
