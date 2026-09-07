@@ -114,6 +114,8 @@ const JOB_INTENT_METADATA_TITLES: Readonly<Record<string, string>> = {
     'Eve knowledge base gardener - @evex/knowledge-base-gardener',
   'linear-operations-agent':
     'Eve Linear ops agent - @evex/linear-operations-agent',
+  'meeting-action-extractor':
+    'Eve meeting action extractor - @evex/meeting-action-extractor',
   'openui-assistant': 'Eve OpenUI agent - install @evex/openui-assistant',
   'postgres-data-analyst':
     'Eve Postgres SQL agent - @evex/postgres-data-analyst',
@@ -138,6 +140,8 @@ const JOB_INTENT_LEDES: Readonly<Record<string, string>> = {
     'Finds stale product docs and drafts updates with file cites.',
   'linear-operations-agent':
     'Triages Linear work and posts Slack cycle digests.',
+  'meeting-action-extractor':
+    'Pulls meeting notes, extracts owners and deadlines, and drafts Linear follow-ups for approval.',
   'openui-assistant': 'Streams OpenUI generative UI in an Eve chat.',
   'postgres-data-analyst':
     'Answers Slack questions with read-only Postgres SQL.',
@@ -356,7 +360,15 @@ describe('shouldRenderAgentDescriptionParagraph', () => {
   })
 })
 
-const DEMAND_BACKED_PLAYS = ['knowledge-base-gardener'] as const
+const DEMAND_BACKED_PLAYS = [
+  'knowledge-base-gardener',
+  'meeting-action-extractor',
+] as const
+
+const DEMAND_BACKED_LEDE_STEMS: Readonly<Record<string, string>> = {
+  'knowledge-base-gardener': 'finds stale product docs',
+  'meeting-action-extractor': 'pulls meeting notes',
+}
 
 describe('demand-backed first-party plays', () => {
   for (const slug of DEMAND_BACKED_PLAYS) {
@@ -377,9 +389,9 @@ describe('demand-backed first-party plays', () => {
       expect(buildInstallCommand(slug)).toBe(
         `npx shadcn@latest add @evex/${slug}`,
       )
-      expect(agent.docs?.overview[0]?.toLowerCase()).not.toContain(
-        'finds stale product docs',
-      )
+      const ledeStem = DEMAND_BACKED_LEDE_STEMS[slug]
+      expect(ledeStem).toBeDefined()
+      expect(agent.docs?.overview[0]?.toLowerCase()).not.toContain(ledeStem)
       expect(
         shouldRenderAgentDescriptionParagraph({
           description: agent.description,
@@ -687,6 +699,30 @@ describe('getAgentDefinitionBlock', () => {
     )
     expect(block.plainText).toContain(
       'npx shadcn@latest add @evex/knowledge-base-gardener',
+    )
+  })
+
+  it('uses a distinct FS-framed clause for meeting-action-extractor', () => {
+    const agent = listStaticAgents().find(
+      (item) => item.slug === 'meeting-action-extractor',
+    )
+    expect(agent).toBeDefined()
+    if (!agent) {
+      return
+    }
+
+    const lede = getAgentJobIntentLede('meeting-action-extractor')
+    const block = getAgentDefinitionBlock(agent)
+    expect(lede).toBe(
+      'Pulls meeting notes, extracts owners and deadlines, and drafts Linear follow-ups for approval.',
+    )
+    expect(block.plainText).not.toContain(lede)
+    expect(block.plainText.toLowerCase()).not.toContain('pulls meeting notes')
+    expect(block.plainText).toContain(
+      'Meeting Action Extractor is an Eve agent that reads a transcript on disk and drafts Linear issues you approve.',
+    )
+    expect(block.plainText).toContain(
+      'npx shadcn@latest add @evex/meeting-action-extractor',
     )
   })
 
