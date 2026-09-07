@@ -120,6 +120,9 @@ describe('docs index: PMM Counsel A lock 2026-09-07', () => {
       "AgentsKit Registry is a shadcn-style install-as-source catalog for the AgentsKit stack (provider-agnostic agents). evex is Eve-native: agents follow Eve's agent/ layout and install with `npx shadcn@latest add @evex/<slug>`.",
       'For a deeper Eve-vs-agentcn comparison, see [/learn/evex-vs-agentcn](/learn/evex-vs-agentcn).',
     ])
+    expect(page.sections.flatMap((section) => section.body)).not.toContain(
+      'How evex compares to agentcn: [evex vs agentcn](/learn/evex-vs-agentcn).',
+    )
 
     const pageText = [
       page.title,
@@ -157,7 +160,8 @@ describe('docs index: PMM Counsel A lock 2026-09-07', () => {
     expect(html).toContain('href="/agents"')
     expect(html).toContain('href="/learn/install-eve-agent"')
     expect(html).toContain('href="/docs/mcp"')
-    expect(html).toContain('href="/learn/evex-vs-agentcn"')
+    expect(html).not.toContain('href="/learn/evex-vs-agentcn"')
+    expect(html).not.toContain('How evex compares to agentcn')
     expect(html).not.toContain('[Eve agents](/agents)')
     expect(html).not.toContain(
       '[Install an Eve agent](/learn/install-eve-agent)',

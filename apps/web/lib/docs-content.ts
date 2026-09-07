@@ -66,7 +66,6 @@ export const DOCS_PAGES: readonly DocsPage[] = [
           'Install walkthrough: [Install an Eve agent](/learn/install-eve-agent).',
           'Browse and install from editors (Cursor, VS Code, Claude Code): [MCP](/docs/mcp).',
           'The [Installation](/docs/installation) page covers prerequisites, the install command, and what to do after the files are written. The [Registry](/docs/registry) page documents the HTTP endpoints behind the catalog, including the machine-readable resources for tools and LLMs. The [Publishing](/docs/publishing) page walks through adding your own agent to the catalog by pull request.',
-          'How evex compares to agentcn: [evex vs agentcn](/learn/evex-vs-agentcn).',
         ],
         heading: 'Where to go next',
       },
