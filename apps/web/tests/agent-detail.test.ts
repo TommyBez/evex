@@ -315,6 +315,17 @@ describe('shouldRenderAgentDescriptionParagraph', () => {
     ).toBe(false)
   })
 
+  it('hides a Markdown-formatted description that matches the job-intent lede', () => {
+    expect(
+      shouldRenderAgentDescriptionParagraph({
+        description:
+          'Finds **stale** product docs and drafts updates with file cites.',
+        jobIntentLede:
+          'Finds stale product docs and drafts updates with file cites.',
+      }),
+    ).toBe(false)
+  })
+
   it('treats whitespace and case as the same sentence', () => {
     expect(
       shouldRenderAgentDescriptionParagraph({

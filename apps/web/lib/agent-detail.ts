@@ -191,7 +191,13 @@ export function shouldRenderAgentDescriptionParagraph({
   if (!jobIntentLede) {
     return true
   }
-  return normalizeAgentCopy(description) !== normalizeAgentCopy(jobIntentLede)
+  // Compare rendered prose, not raw Markdown. AgentDescription strips
+  // markers like **bold**, so `Finds **stale** product docs…` is the same
+  // sentence as the locked lede.
+  return (
+    normalizeAgentCopy(getAgentPlainDescription({ description })) !==
+    normalizeAgentCopy(getAgentPlainDescription({ description: jobIntentLede }))
+  )
 }
 
 // Distinct draft-only clauses for the What-is block. Must not restate a
@@ -425,7 +431,10 @@ function resolveDefinitionJob(
   const extractedMatchesLede =
     normalizeAgentCopy(extractedJob) ===
       normalizeAgentCopy(extractDefinitionJob(jobIntentLede)) ||
-    normalizeAgentCopy(agent.description) === normalizeAgentCopy(jobIntentLede)
+    normalizeAgentCopy(getAgentPlainDescription(agent)) ===
+      normalizeAgentCopy(
+        getAgentPlainDescription({ description: jobIntentLede }),
+      )
 
   if (extractedMatchesLede) {
     return {
