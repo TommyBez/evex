@@ -36,6 +36,11 @@
           "target": "~/agent/lib/delivery-claims.ts"
         },
         {
+          "path": "agent/lib/draft-write-paths.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/draft-write-paths.ts"
+        },
+        {
           "path": "agent/lib/product-docs-paths.ts",
           "type": "registry:file",
           "target": "~/agent/lib/product-docs-paths.ts"
@@ -95,7 +100,7 @@
         "slug": "knowledge-base-gardener",
         "category": "support",
         "createdAt": "2026-09-07T12:00:00.000Z",
-        "updatedAt": "2026-09-07T14:00:00.000Z",
+        "updatedAt": "2026-09-07T16:30:00.000Z",
         "docs": {
           "overview": [
             "Paste the stale page or changelog you want reconciled. Knowledge Base Gardener searches the local product-docs tree, reads the matching files, and writes a draft with file-path citations. Nothing is committed or overwritten. Copy the draft from the session, then you review and apply it.",
