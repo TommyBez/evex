@@ -13,6 +13,7 @@ import {
   METADATA_TITLE_MAX_LENGTH,
   METADATA_TITLE_SUFFIX,
   pluralize,
+  shouldRenderAgentDescriptionParagraph,
 } from '@/lib/agent-detail'
 import type { AgentRegistryFile, AgentWithAuthor } from '@/lib/agent-types'
 import { listStaticAgents } from '@/lib/registry'
@@ -96,8 +97,8 @@ describe('getAgentInstallSummaryDescription', () => {
 })
 
 // Locked job-intent metadata titles. Must not include ` · evex` — the layout
-// template appends that once. The four first-party plays keep their existing
-// copy; the ten live catalog plays use the PMM-fitted strings below.
+// template appends that once. Knowledge Base Gardener keeps its locked copy;
+// the live catalog plays use the PMM-fitted strings below.
 const JOB_INTENT_METADATA_TITLES: Readonly<Record<string, string>> = {
   'brand-visual-asset-generator': 'Eve brand SVG agent',
   'branded-seo-page-builder': 'Eve branded SEO page agent',
@@ -109,6 +110,8 @@ const JOB_INTENT_METADATA_TITLES: Readonly<Record<string, string>> = {
     'Eve CI failure agent - install @evex/github-ci-explainer',
   'github-issue-maintainer':
     'Eve GitHub issue agent - install @evex/github-issue-maintainer',
+  'knowledge-base-gardener':
+    'Eve knowledge base gardener - @evex/knowledge-base-gardener',
   'linear-operations-agent':
     'Eve Linear ops agent - @evex/linear-operations-agent',
   'openui-assistant': 'Eve OpenUI agent - install @evex/openui-assistant',
@@ -131,6 +134,8 @@ const JOB_INTENT_LEDES: Readonly<Record<string, string>> = {
   'eve-agent-builder': 'Scaffolds, checks, and deploys a new Eve agent.',
   'github-ci-explainer': 'Explains failed GitHub Actions checks from the log.',
   'github-issue-maintainer': 'GitHub issue agent for Eve.',
+  'knowledge-base-gardener':
+    'Finds stale product docs and drafts updates with file cites.',
   'linear-operations-agent':
     'Triages Linear work and posts Slack cycle digests.',
   'openui-assistant': 'Streams OpenUI generative UI in an Eve chat.',
@@ -296,6 +301,93 @@ describe('getAgentJobIntentLede', () => {
   it('ignores prototype keys like constructor on the lede map', () => {
     expect(getAgentJobIntentLede('constructor')).toBeNull()
   })
+})
+
+describe('shouldRenderAgentDescriptionParagraph', () => {
+  it('hides the registry description when it duplicates the job-intent lede', () => {
+    expect(
+      shouldRenderAgentDescriptionParagraph({
+        description:
+          'Finds stale product docs and drafts updates with file cites.',
+        jobIntentLede:
+          'Finds stale product docs and drafts updates with file cites.',
+      }),
+    ).toBe(false)
+  })
+
+  it('hides a Markdown-formatted description that matches the job-intent lede', () => {
+    expect(
+      shouldRenderAgentDescriptionParagraph({
+        description:
+          'Finds **stale** product docs and drafts updates with file cites.',
+        jobIntentLede:
+          'Finds stale product docs and drafts updates with file cites.',
+      }),
+    ).toBe(false)
+  })
+
+  it('treats whitespace and case as the same sentence', () => {
+    expect(
+      shouldRenderAgentDescriptionParagraph({
+        description:
+          '  Finds stale product docs and drafts updates with file cites.  ',
+        jobIntentLede:
+          'Finds stale product docs and drafts updates with file cites.',
+      }),
+    ).toBe(false)
+  })
+
+  it('keeps a distinct description when a job-intent lede is present', () => {
+    expect(
+      shouldRenderAgentDescriptionParagraph({
+        description: 'Review GitHub pull requests from a native GitHub App.',
+        jobIntentLede: 'PR review agent for Eve.',
+      }),
+    ).toBe(true)
+  })
+
+  it('keeps the description when there is no job-intent lede', () => {
+    expect(
+      shouldRenderAgentDescriptionParagraph({
+        description: 'A helper without a locked lede.',
+        jobIntentLede: null,
+      }),
+    ).toBe(true)
+  })
+})
+
+const DEMAND_BACKED_PLAYS = ['knowledge-base-gardener'] as const
+
+describe('demand-backed first-party plays', () => {
+  for (const slug of DEMAND_BACKED_PLAYS) {
+    it(`locks title, lede, description, and install for ${slug}`, () => {
+      const agent = listStaticAgents().find((item) => item.slug === slug)
+      expect(agent).toBeDefined()
+      if (!agent) {
+        return
+      }
+
+      const title = JOB_INTENT_METADATA_TITLES[slug]
+      const lede = JOB_INTENT_LEDES[slug]
+      expect(title).toBeDefined()
+      expect(lede).toBeDefined()
+      expect(getAgentMetadataTitle(agent)).toBe(title)
+      expect(getAgentJobIntentLede(slug)).toBe(lede)
+      expect(agent.description).toBe(lede)
+      expect(buildInstallCommand(slug)).toBe(
+        `npx shadcn@latest add @evex/${slug}`,
+      )
+      expect(agent.docs?.overview[0]?.toLowerCase()).not.toContain(
+        'finds stale product docs',
+      )
+      expect(
+        shouldRenderAgentDescriptionParagraph({
+          description: agent.description,
+          jobIntentLede: lede,
+        }),
+      ).toBe(false)
+    })
+  }
 })
 
 describe('getAgentMetaDescription', () => {
@@ -572,6 +664,32 @@ describe('getAgentDefinitionBlock', () => {
     expect(block.plainText).not.toMatch(ENDS_WITH_COMMA)
   })
 
+  it('uses a distinct draft-only clause for knowledge-base-gardener', () => {
+    const agent = listStaticAgents().find(
+      (item) => item.slug === 'knowledge-base-gardener',
+    )
+    expect(agent).toBeDefined()
+    if (!agent) {
+      return
+    }
+
+    const lede = getAgentJobIntentLede('knowledge-base-gardener')
+    const block = getAgentDefinitionBlock(agent)
+    expect(lede).toBe(
+      'Finds stale product docs and drafts updates with file cites.',
+    )
+    expect(block.plainText).not.toContain(lede)
+    expect(block.plainText.toLowerCase()).not.toContain(
+      'finds stale product docs',
+    )
+    expect(block.plainText).toContain(
+      'Knowledge Base Gardener is an Eve agent that reads docs on disk and drafts a cited update you review.',
+    )
+    expect(block.plainText).toContain(
+      'npx shadcn@latest add @evex/knowledge-base-gardener',
+    )
+  })
+
   for (const agent of listStaticAgents()) {
     it(`stays within the word budget for ${agent.slug}`, () => {
       const block = getAgentDefinitionBlock(agent)
@@ -661,8 +779,8 @@ describe('registry agent titles fit the rendered title tag', () => {
       if (override) {
         expect(title).toBe(override)
         expect(rendered).toBe(`${override}${METADATA_TITLE_SUFFIX}`)
-        // Locked PMM copy may intentionally exceed the fitted budget (the
-        // four first-party plays). Budget-fitted overrides stay within 60.
+        // Locked PMM copy may intentionally exceed the fitted budget
+        // (knowledge-base-gardener). Budget-fitted overrides stay within 60.
         if (override.length <= METADATA_TITLE_BUDGET) {
           expect(rendered.length).toBeLessThanOrEqual(METADATA_TITLE_MAX_LENGTH)
         }

@@ -1,0 +1,172 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "items": [
+    {
+      "name": "knowledge-base-gardener",
+      "type": "registry:item",
+      "title": "Knowledge Base Gardener",
+      "description": "Finds stale product docs and drafts updates with file cites.",
+      "author": "TommyBez",
+      "categories": [
+        "support"
+      ],
+      "dependencies": [
+        "eve@^0.47.5",
+        "zod@4.3.6"
+      ],
+      "files": [
+        {
+          "path": ".env.example",
+          "type": "registry:file",
+          "target": "~/.env.example"
+        },
+        {
+          "path": "agent/agent.ts",
+          "type": "registry:file",
+          "target": "~/agent/agent.ts"
+        },
+        {
+          "path": "agent/instructions.md",
+          "type": "registry:file",
+          "target": "~/agent/instructions.md"
+        },
+        {
+          "path": "agent/lib/delivery-claims.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/delivery-claims.ts"
+        },
+        {
+          "path": "agent/lib/draft-write-paths.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/draft-write-paths.ts"
+        },
+        {
+          "path": "agent/lib/product-docs-paths.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/product-docs-paths.ts"
+        },
+        {
+          "path": "agent/skills/knowledge-base-garden/SKILL.md",
+          "type": "registry:file",
+          "target": "~/agent/skills/knowledge-base-garden/SKILL.md"
+        },
+        {
+          "path": "agent/tools/ask_question.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/ask_question.ts"
+        },
+        {
+          "path": "agent/tools/draft_doc_update.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/draft_doc_update.ts"
+        },
+        {
+          "path": "agent/tools/read_product_doc.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/read_product_doc.ts"
+        },
+        {
+          "path": "agent/tools/search_product_docs.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/search_product_docs.ts"
+        },
+        {
+          "path": "agent/tools/write_file.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/write_file.ts"
+        },
+        {
+          "path": "evals/draft-cite-stale.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/draft-cite-stale.eval.ts"
+        },
+        {
+          "path": "evals/evals.config.ts",
+          "type": "registry:file",
+          "target": "~/evals/evals.config.ts"
+        },
+        {
+          "path": "evals/never-publish-or-github.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/never-publish-or-github.eval.ts"
+        },
+        {
+          "path": "README.md",
+          "type": "registry:file",
+          "target": "~/agent/README.md"
+        }
+      ],
+      "meta": {
+        "slug": "knowledge-base-gardener",
+        "category": "support",
+        "createdAt": "2026-09-07T12:00:00.000Z",
+        "updatedAt": "2026-09-07T16:30:00.000Z",
+        "docs": {
+          "overview": [
+            "Paste the stale page or changelog you want reconciled. Knowledge Base Gardener searches the local product-docs tree, reads the matching files, and writes a draft with file-path citations. Nothing is committed or overwritten. Copy the draft from the session, then you review and apply it.",
+            "You interact with it through Eve chat sessions only. There is no GitHub channel and no publish connection. Paste a gardening request or a suspected stale page, get a draft, then copy the update into your docs yourself. The agent never applies the edit.",
+            "The draft_doc_update tool records the proposed text and citations and always reports published false so the agent never claims the docs were shipped. When a cited page looks current, it says so instead of inventing churn from training data."
+          ],
+          "howItWorks": [
+            "An operator pastes a gardening request or a suspected stale page into an Eve chat session.",
+            "The agent loads the knowledge-base-garden skill when needed, then calls search_product_docs and read_product_doc against PRODUCT_DOCS_ROOTS only (defaults include docs, help, and support).",
+            "Those tools refuse application source, tests, configs, and lockfiles. Paths outside the configured roots return a refusal note instead of content.",
+            "The agent drafts an update, cites each path it used, and calls draft_doc_update once with the update text, citations, why the page looks stale, and whether it found a real gap. That tool is unattended and never publishes or opens GitHub pull requests. ask_question is disabled so the run does not park on publish clarifications.",
+            "Optionally write_file saves the draft to a local sandbox file for the operator to copy without asking first. Saving a file is not publishing.",
+            "Evals cover drafting a cited update from a stale help file and refusing please-publish or GitHub PR prompts without parking on ask_question."
+          ],
+          "useCases": [
+            {
+              "title": "Refresh a shipped coming-soon page",
+              "body": "An operator pastes a help article that still says a refund window is coming soon. The agent cites docs/help/billing.md, drafts replacement copy, and stops so a human can apply the edit."
+            },
+            {
+              "title": "Clear leftover TODOs in product docs",
+              "body": "A page still tells readers to ignore an old sentence after a TODO. The agent drafts a cleaned update from that file only and keeps the path in the draft."
+            },
+            {
+              "title": "Honest skip when the page is current",
+              "body": "When the cited product docs already match the request, the agent says the page looks current instead of inventing a rewrite from training data."
+            },
+            {
+              "title": "Save a draft for handoff",
+              "body": "After draft_doc_update returns, the operator can ask the agent to write_file the update into a local path for review or handoff without implying the docs were published."
+            }
+          ],
+          "requirements": [
+            {
+              "name": "AI_GATEWAY_API_KEY",
+              "body": "A model credential for the deployment, either a Vercel AI Gateway API key or AI Gateway OIDC, so the agent can call the zai/glm-5.2 model."
+            },
+            {
+              "name": "PRODUCT_DOCS_ROOTS",
+              "body": "Comma-separated workspace-relative product documentation roots (placeholder example: docs,help,support). Keep this narrower than the whole repository."
+            }
+          ],
+          "faqs": [
+            {
+              "question": "How do I install and draft a docs update?",
+              "answer": "Run npx shadcn@latest add @evex/knowledge-base-gardener inside an eve app, set AI_GATEWAY_API_KEY and PRODUCT_DOCS_ROOTS, then paste a gardening request in Eve chat. Copy the returned draft into your docs yourself."
+            },
+            {
+              "question": "Does it publish docs or open GitHub pull requests?",
+              "answer": "No. There is no publish tool and no GitHub channel. draft_doc_update always returns published false. Asking it to ship the page or open a pull request still produces a draft only."
+            },
+            {
+              "question": "Which files can it read?",
+              "answer": "Only paths under PRODUCT_DOCS_ROOTS. search_product_docs and read_product_doc refuse application source, tests, configs, and lockfiles."
+            },
+            {
+              "question": "What happens when the page is already current?",
+              "answer": "The agent says the cited product docs look current and does not invent churn. It may still call draft_doc_update with staleFound set to false."
+            },
+            {
+              "question": "How is this different from Support Reply Draft?",
+              "answer": "Support Reply Draft writes a customer-facing reply from help docs. This agent drafts a documentation update for a stale product page and still stops at the draft."
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

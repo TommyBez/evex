@@ -107,6 +107,8 @@ const AGENT_METADATA_TITLE_OVERRIDES: Readonly<Record<string, string>> = {
     'Eve CI failure agent - install @evex/github-ci-explainer',
   'github-issue-maintainer':
     'Eve GitHub issue agent - install @evex/github-issue-maintainer',
+  'knowledge-base-gardener':
+    'Eve knowledge base gardener - @evex/knowledge-base-gardener',
   'linear-operations-agent':
     'Eve Linear ops agent - @evex/linear-operations-agent',
   'openui-assistant': 'Eve OpenUI agent - install @evex/openui-assistant',
@@ -150,6 +152,8 @@ const AGENT_JOB_INTENT_LEDES: Readonly<Record<string, string>> = {
   'eve-agent-builder': 'Scaffolds, checks, and deploys a new Eve agent.',
   'github-ci-explainer': 'Explains failed GitHub Actions checks from the log.',
   'github-issue-maintainer': 'GitHub issue agent for Eve.',
+  'knowledge-base-gardener':
+    'Finds stale product docs and drafts updates with file cites.',
   'linear-operations-agent':
     'Triages Linear work and posts Slack cycle digests.',
   'openui-assistant': 'Streams OpenUI generative UI in an Eve chat.',
@@ -170,6 +174,40 @@ export function getAgentJobIntentLede(slug: string): string | null {
   }
   return AGENT_JOB_INTENT_LEDES[slug]
 }
+
+export function normalizeAgentCopy(value: string): string {
+  return value.replace(WHITESPACE_RUNS, ' ').trim().toLowerCase()
+}
+
+// Job-intent pages already render the locked lede under H1. Skip the raw
+// registry description when it is the same sentence.
+export function shouldRenderAgentDescriptionParagraph({
+  description,
+  jobIntentLede,
+}: {
+  description: string
+  jobIntentLede?: string | null
+}): boolean {
+  if (!jobIntentLede) {
+    return true
+  }
+  // Compare rendered prose, not raw Markdown. AgentDescription strips
+  // markers like **bold**, so `Finds **stale** product docs…` is the same
+  // sentence as the locked lede.
+  return (
+    normalizeAgentCopy(getAgentPlainDescription({ description })) !==
+    normalizeAgentCopy(jobIntentLede)
+  )
+}
+
+// Distinct draft-only clauses for the What-is block. Must not restate a
+// locked job-intent lede (that sentence already sits under the H1).
+const AGENT_DEFINITION_JOB_OVERRIDES: Readonly<Record<string, string>> = {
+  'knowledge-base-gardener':
+    'reads docs on disk and drafts a cited update you review',
+}
+const DEFAULT_DEFINITION_JOB_WHEN_LEDE_MATCHES =
+  'prepares a copy-ready draft you review and apply yourself'
 
 // Replace `[text](destination)` with `text`, including destinations that use
 // balanced parentheses (e.g. Wikipedia-style `Function_(mathematics)` URLs).
@@ -374,6 +412,40 @@ function extractDefinitionJob(
   return truncateToWords(conjugateLeadingVerb(sentence), maxWords)
 }
 
+function resolveDefinitionJob(
+  agent: Pick<AgentWithAuthor, 'slug' | 'description'>,
+): { job: string; usedDistinctDraftJob: boolean } {
+  if (Object.hasOwn(AGENT_DEFINITION_JOB_OVERRIDES, agent.slug)) {
+    return {
+      job: AGENT_DEFINITION_JOB_OVERRIDES[agent.slug],
+      usedDistinctDraftJob: true,
+    }
+  }
+
+  const extractedJob = extractDefinitionJob(agent.description)
+  const jobIntentLede = getAgentJobIntentLede(agent.slug)
+  if (!jobIntentLede) {
+    return { job: extractedJob, usedDistinctDraftJob: false }
+  }
+
+  const extractedMatchesLede =
+    normalizeAgentCopy(extractedJob) ===
+      normalizeAgentCopy(extractDefinitionJob(jobIntentLede)) ||
+    normalizeAgentCopy(getAgentPlainDescription(agent)) ===
+      normalizeAgentCopy(
+        getAgentPlainDescription({ description: jobIntentLede }),
+      )
+
+  if (extractedMatchesLede) {
+    return {
+      job: DEFAULT_DEFINITION_JOB_WHEN_LEDE_MATCHES,
+      usedDistinctDraftJob: true,
+    }
+  }
+
+  return { job: extractedJob, usedDistinctDraftJob: false }
+}
+
 function whoForCategory(category: string): string {
   switch (category) {
     case 'coding':
@@ -489,7 +561,7 @@ export function getAgentDefinitionBlock(
   >,
 ): AgentDefinitionBlock {
   const installCommand = buildInstallCommand(agent.slug)
-  const job = extractDefinitionJob(agent.description)
+  const { job, usedDistinctDraftJob } = resolveDefinitionJob(agent)
   const who = whoForCategory(agent.category)
   let { beforeCommand, afterCommand, plainText } = clampDefinitionParagraph(
     installCommand,
@@ -499,7 +571,11 @@ export function getAgentDefinitionBlock(
   )
 
   if (countWords(plainText) < MIN_DEFINITION_WORDS) {
-    const overviewClause = agent.docs?.overview[0]
+    // When the job clause was swapped to avoid restating the H1 lede, do not
+    // pull overview[0] back in (that paragraph is rendered later on the page).
+    const overviewClause = usedDistinctDraftJob
+      ? DEFINITION_OWNERSHIP_CLAUSE
+      : agent.docs?.overview[0]
     const fillerClause = overviewClause
       ? firstSentenceWithoutEnd(stripInlineMarkdown(overviewClause))
       : DEFINITION_OWNERSHIP_CLAUSE.replace(TRAILING_SENTENCE_PUNCTUATION, '')
