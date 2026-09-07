@@ -196,7 +196,7 @@ export function shouldRenderAgentDescriptionParagraph({
   // sentence as the locked lede.
   return (
     normalizeAgentCopy(getAgentPlainDescription({ description })) !==
-    normalizeAgentCopy(getAgentPlainDescription({ description: jobIntentLede }))
+    normalizeAgentCopy(jobIntentLede)
   )
 }
 
