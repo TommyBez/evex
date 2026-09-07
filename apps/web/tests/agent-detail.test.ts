@@ -683,7 +683,7 @@ describe('getAgentDefinitionBlock', () => {
       'finds stale product docs',
     )
     expect(block.plainText).toContain(
-      'Knowledge Base Gardener is an Eve agent that turns a pasted request into a copy-ready draft you review.',
+      'Knowledge Base Gardener is an Eve agent that reads docs on disk and drafts a cited update you review.',
     )
     expect(block.plainText).toContain(
       'npx shadcn@latest add @evex/knowledge-base-gardener',

@@ -204,7 +204,7 @@ export function shouldRenderAgentDescriptionParagraph({
 // locked job-intent lede (that sentence already sits under the H1).
 const AGENT_DEFINITION_JOB_OVERRIDES: Readonly<Record<string, string>> = {
   'knowledge-base-gardener':
-    'turns a pasted request into a copy-ready draft you review',
+    'reads docs on disk and drafts a cited update you review',
 }
 const DEFAULT_DEFINITION_JOB_WHEN_LEDE_MATCHES =
   'prepares a copy-ready draft you review and apply yourself'
