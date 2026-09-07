@@ -339,12 +339,7 @@ describe('/agents catalog index', () => {
     expect(installation).toBeDefined()
     expect(installation?.lastModified).toEqual(new Date('2026-09-05'))
 
-    for (const slug of [
-      'airtable-feedback-grouper',
-      'experiment-readout-analyst',
-      'incident-commander',
-      'knowledge-base-gardener',
-    ]) {
+    for (const slug of ['knowledge-base-gardener']) {
       expect(
         entries.some(
           (entry) => entry.url === `https://www.evex.sh/agents/${slug}`,

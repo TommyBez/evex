@@ -6,25 +6,6 @@ settings:
 
 importers:
 
-  airtable-feedback-grouper:
-    dependencies:
-      eve:
-        specifier: ^0.47.5
-        version: 0.47.5(@upstash/redis@1.38.0)(ai@7.0.58(zod@4.3.6))(just-bash@3.4.2)(rollup@4.63.1)(vite@7.3.6(@types/node@24.13.2)(yaml@2.9.0))
-      zod:
-        specifier: 4.3.6
-        version: 4.3.6
-    devDependencies:
-      '@types/node':
-        specifier: ^24
-        version: 24.13.2
-      typescript:
-        specifier: 5.7.3
-        version: 5.7.3
-      vitest:
-        specifier: ^3.2.6
-        version: 3.2.7(@types/debug@4.1.13)(@types/node@24.13.2)(yaml@2.9.0)
-
   brand-visual-asset-generator:
     dependencies:
       ai:
@@ -123,25 +104,6 @@ importers:
         specifier: 5.7.3
         version: 5.7.3
 
-  experiment-readout-analyst:
-    dependencies:
-      eve:
-        specifier: ^0.47.5
-        version: 0.47.5(@upstash/redis@1.38.0)(ai@7.0.58(zod@4.3.6))(just-bash@3.4.2)(rollup@4.63.1)(vite@7.3.6(@types/node@24.13.2)(yaml@2.9.0))
-      zod:
-        specifier: 4.3.6
-        version: 4.3.6
-    devDependencies:
-      '@types/node':
-        specifier: ^24
-        version: 24.13.2
-      typescript:
-        specifier: 5.7.3
-        version: 5.7.3
-      vitest:
-        specifier: ^3.2.6
-        version: 3.2.7(@types/debug@4.1.13)(@types/node@24.13.2)(yaml@2.9.0)
-
   github-ci-explainer:
     dependencies:
       '@upstash/ratelimit':
@@ -194,25 +156,6 @@ importers:
       typescript:
         specifier: 5.7.3
         version: 5.7.3
-
-  incident-commander:
-    dependencies:
-      eve:
-        specifier: ^0.47.5
-        version: 0.47.5(@upstash/redis@1.38.0)(ai@7.0.58(zod@4.3.6))(just-bash@3.4.2)(rollup@4.63.1)(vite@7.3.6(@types/node@24.13.2)(yaml@2.9.0))
-      zod:
-        specifier: 4.3.6
-        version: 4.3.6
-    devDependencies:
-      '@types/node':
-        specifier: ^24
-        version: 24.13.2
-      typescript:
-        specifier: 5.7.3
-        version: 5.7.3
-      vitest:
-        specifier: ^3.2.6
-        version: 3.2.7(@types/debug@4.1.13)(@types/node@24.13.2)(yaml@2.9.0)
 
   knowledge-base-gardener:
     dependencies:

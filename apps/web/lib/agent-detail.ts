@@ -97,22 +97,16 @@ export function getAgentInstallSummaryDescription({
 // product copy wins; the layout still appends ` · evex` once. Title strings
 // must NOT include that suffix.
 const AGENT_METADATA_TITLE_OVERRIDES: Readonly<Record<string, string>> = {
-  'airtable-feedback-grouper':
-    'Eve Airtable feedback grouper - @evex/airtable-feedback-grouper',
   'brand-visual-asset-generator': 'Eve brand SVG agent',
   'branded-seo-page-builder': 'Eve branded SEO page agent',
   'code-reviewer': 'Eve PR review agent - install @evex/code-reviewer',
   'docs-knowledge-assistant':
     'Eve docs Q&A agent - install @evex/docs-knowledge-assistant',
   'eve-agent-builder': 'Eve agent builder - install @evex/eve-agent-builder',
-  'experiment-readout-analyst':
-    'Eve experiment readout analyst - @evex/experiment-readout-analyst',
   'github-ci-explainer':
     'Eve CI failure agent - install @evex/github-ci-explainer',
   'github-issue-maintainer':
     'Eve GitHub issue agent - install @evex/github-issue-maintainer',
-  'incident-commander':
-    'Eve incident commander agent - @evex/incident-commander',
   'knowledge-base-gardener':
     'Eve knowledge base gardener - @evex/knowledge-base-gardener',
   'linear-operations-agent':
@@ -150,20 +144,14 @@ export function getAgentMetadataTitle(agent: AgentWithAuthor): string {
 
 // Single lede under the agent H1. Job-intent plays only; other slugs render none.
 const AGENT_JOB_INTENT_LEDES: Readonly<Record<string, string>> = {
-  'airtable-feedback-grouper':
-    'Clusters Airtable feedback into themes with example quotes.',
   'brand-visual-asset-generator':
     'Generates brand-aligned SVG packs from a site.',
   'branded-seo-page-builder': 'Builds an on-brand SEO page from a domain.',
   'code-reviewer': 'PR review agent for Eve.',
   'docs-knowledge-assistant': 'Docs Q&A agent for Eve.',
   'eve-agent-builder': 'Scaffolds, checks, and deploys a new Eve agent.',
-  'experiment-readout-analyst':
-    'Turns experiment results into a decision readout and next test.',
   'github-ci-explainer': 'Explains failed GitHub Actions checks from the log.',
   'github-issue-maintainer': 'GitHub issue agent for Eve.',
-  'incident-commander':
-    'Drafts an incident timeline and next actions from status notes.',
   'knowledge-base-gardener':
     'Finds stale product docs and drafts updates with file cites.',
   'linear-operations-agent':
@@ -186,6 +174,34 @@ export function getAgentJobIntentLede(slug: string): string | null {
   }
   return AGENT_JOB_INTENT_LEDES[slug]
 }
+
+export function normalizeAgentCopy(value: string): string {
+  return value.replace(WHITESPACE_RUNS, ' ').trim().toLowerCase()
+}
+
+// Job-intent pages already render the locked lede under H1. Skip the raw
+// registry description when it is the same sentence.
+export function shouldRenderAgentDescriptionParagraph({
+  description,
+  jobIntentLede,
+}: {
+  description: string
+  jobIntentLede?: string | null
+}): boolean {
+  if (!jobIntentLede) {
+    return true
+  }
+  return normalizeAgentCopy(description) !== normalizeAgentCopy(jobIntentLede)
+}
+
+// Distinct draft-only clauses for the What-is block. Must not restate a
+// locked job-intent lede (that sentence already sits under the H1).
+const AGENT_DEFINITION_JOB_OVERRIDES: Readonly<Record<string, string>> = {
+  'knowledge-base-gardener':
+    'turns a pasted request into a copy-ready draft you review',
+}
+const DEFAULT_DEFINITION_JOB_WHEN_LEDE_MATCHES =
+  'prepares a copy-ready draft you review and apply yourself'
 
 // Replace `[text](destination)` with `text`, including destinations that use
 // balanced parentheses (e.g. Wikipedia-style `Function_(mathematics)` URLs).
@@ -390,6 +406,37 @@ function extractDefinitionJob(
   return truncateToWords(conjugateLeadingVerb(sentence), maxWords)
 }
 
+function resolveDefinitionJob(
+  agent: Pick<AgentWithAuthor, 'slug' | 'description'>,
+): { job: string; usedDistinctDraftJob: boolean } {
+  if (Object.hasOwn(AGENT_DEFINITION_JOB_OVERRIDES, agent.slug)) {
+    return {
+      job: AGENT_DEFINITION_JOB_OVERRIDES[agent.slug],
+      usedDistinctDraftJob: true,
+    }
+  }
+
+  const extractedJob = extractDefinitionJob(agent.description)
+  const jobIntentLede = getAgentJobIntentLede(agent.slug)
+  if (!jobIntentLede) {
+    return { job: extractedJob, usedDistinctDraftJob: false }
+  }
+
+  const extractedMatchesLede =
+    normalizeAgentCopy(extractedJob) ===
+      normalizeAgentCopy(extractDefinitionJob(jobIntentLede)) ||
+    normalizeAgentCopy(agent.description) === normalizeAgentCopy(jobIntentLede)
+
+  if (extractedMatchesLede) {
+    return {
+      job: DEFAULT_DEFINITION_JOB_WHEN_LEDE_MATCHES,
+      usedDistinctDraftJob: true,
+    }
+  }
+
+  return { job: extractedJob, usedDistinctDraftJob: false }
+}
+
 function whoForCategory(category: string): string {
   switch (category) {
     case 'coding':
@@ -505,7 +552,7 @@ export function getAgentDefinitionBlock(
   >,
 ): AgentDefinitionBlock {
   const installCommand = buildInstallCommand(agent.slug)
-  const job = extractDefinitionJob(agent.description)
+  const { job, usedDistinctDraftJob } = resolveDefinitionJob(agent)
   const who = whoForCategory(agent.category)
   let { beforeCommand, afterCommand, plainText } = clampDefinitionParagraph(
     installCommand,
@@ -515,7 +562,11 @@ export function getAgentDefinitionBlock(
   )
 
   if (countWords(plainText) < MIN_DEFINITION_WORDS) {
-    const overviewClause = agent.docs?.overview[0]
+    // When the job clause was swapped to avoid restating the H1 lede, do not
+    // pull overview[0] back in (that paragraph is rendered later on the page).
+    const overviewClause = usedDistinctDraftJob
+      ? DEFINITION_OWNERSHIP_CLAUSE
+      : agent.docs?.overview[0]
     const fillerClause = overviewClause
       ? firstSentenceWithoutEnd(stripInlineMarkdown(overviewClause))
       : DEFINITION_OWNERSHIP_CLAUSE.replace(TRAILING_SENTENCE_PUNCTUATION, '')

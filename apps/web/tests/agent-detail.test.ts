@@ -13,6 +13,7 @@ import {
   METADATA_TITLE_MAX_LENGTH,
   METADATA_TITLE_SUFFIX,
   pluralize,
+  shouldRenderAgentDescriptionParagraph,
 } from '@/lib/agent-detail'
 import type { AgentRegistryFile, AgentWithAuthor } from '@/lib/agent-types'
 import { listStaticAgents } from '@/lib/registry'
@@ -96,25 +97,19 @@ describe('getAgentInstallSummaryDescription', () => {
 })
 
 // Locked job-intent metadata titles. Must not include ` · evex` — the layout
-// template appends that once. The four first-party plays keep their existing
-// copy; the ten live catalog plays use the PMM-fitted strings below.
+// template appends that once. Knowledge Base Gardener keeps its locked copy;
+// the live catalog plays use the PMM-fitted strings below.
 const JOB_INTENT_METADATA_TITLES: Readonly<Record<string, string>> = {
-  'airtable-feedback-grouper':
-    'Eve Airtable feedback grouper - @evex/airtable-feedback-grouper',
   'brand-visual-asset-generator': 'Eve brand SVG agent',
   'branded-seo-page-builder': 'Eve branded SEO page agent',
   'code-reviewer': 'Eve PR review agent - install @evex/code-reviewer',
   'docs-knowledge-assistant':
     'Eve docs Q&A agent - install @evex/docs-knowledge-assistant',
   'eve-agent-builder': 'Eve agent builder - install @evex/eve-agent-builder',
-  'experiment-readout-analyst':
-    'Eve experiment readout analyst - @evex/experiment-readout-analyst',
   'github-ci-explainer':
     'Eve CI failure agent - install @evex/github-ci-explainer',
   'github-issue-maintainer':
     'Eve GitHub issue agent - install @evex/github-issue-maintainer',
-  'incident-commander':
-    'Eve incident commander agent - @evex/incident-commander',
   'knowledge-base-gardener':
     'Eve knowledge base gardener - @evex/knowledge-base-gardener',
   'linear-operations-agent':
@@ -131,20 +126,14 @@ const JOB_INTENT_METADATA_TITLES: Readonly<Record<string, string>> = {
 }
 
 const JOB_INTENT_LEDES: Readonly<Record<string, string>> = {
-  'airtable-feedback-grouper':
-    'Clusters Airtable feedback into themes with example quotes.',
   'brand-visual-asset-generator':
     'Generates brand-aligned SVG packs from a site.',
   'branded-seo-page-builder': 'Builds an on-brand SEO page from a domain.',
   'code-reviewer': 'PR review agent for Eve.',
   'docs-knowledge-assistant': 'Docs Q&A agent for Eve.',
   'eve-agent-builder': 'Scaffolds, checks, and deploys a new Eve agent.',
-  'experiment-readout-analyst':
-    'Turns experiment results into a decision readout and next test.',
   'github-ci-explainer': 'Explains failed GitHub Actions checks from the log.',
   'github-issue-maintainer': 'GitHub issue agent for Eve.',
-  'incident-commander':
-    'Drafts an incident timeline and next actions from status notes.',
   'knowledge-base-gardener':
     'Finds stale product docs and drafts updates with file cites.',
   'linear-operations-agent':
@@ -314,12 +303,49 @@ describe('getAgentJobIntentLede', () => {
   })
 })
 
-const DEMAND_BACKED_PLAYS = [
-  'airtable-feedback-grouper',
-  'experiment-readout-analyst',
-  'incident-commander',
-  'knowledge-base-gardener',
-] as const
+describe('shouldRenderAgentDescriptionParagraph', () => {
+  it('hides the registry description when it duplicates the job-intent lede', () => {
+    expect(
+      shouldRenderAgentDescriptionParagraph({
+        description:
+          'Finds stale product docs and drafts updates with file cites.',
+        jobIntentLede:
+          'Finds stale product docs and drafts updates with file cites.',
+      }),
+    ).toBe(false)
+  })
+
+  it('treats whitespace and case as the same sentence', () => {
+    expect(
+      shouldRenderAgentDescriptionParagraph({
+        description:
+          '  Finds stale product docs and drafts updates with file cites.  ',
+        jobIntentLede:
+          'Finds stale product docs and drafts updates with file cites.',
+      }),
+    ).toBe(false)
+  })
+
+  it('keeps a distinct description when a job-intent lede is present', () => {
+    expect(
+      shouldRenderAgentDescriptionParagraph({
+        description: 'Review GitHub pull requests from a native GitHub App.',
+        jobIntentLede: 'PR review agent for Eve.',
+      }),
+    ).toBe(true)
+  })
+
+  it('keeps the description when there is no job-intent lede', () => {
+    expect(
+      shouldRenderAgentDescriptionParagraph({
+        description: 'A helper without a locked lede.',
+        jobIntentLede: null,
+      }),
+    ).toBe(true)
+  })
+})
+
+const DEMAND_BACKED_PLAYS = ['knowledge-base-gardener'] as const
 
 describe('demand-backed first-party plays', () => {
   for (const slug of DEMAND_BACKED_PLAYS) {
@@ -340,6 +366,15 @@ describe('demand-backed first-party plays', () => {
       expect(buildInstallCommand(slug)).toBe(
         `npx shadcn@latest add @evex/${slug}`,
       )
+      expect(agent.docs?.overview[0]?.toLowerCase()).not.toContain(
+        'finds stale product docs',
+      )
+      expect(
+        shouldRenderAgentDescriptionParagraph({
+          description: agent.description,
+          jobIntentLede: lede,
+        }),
+      ).toBe(false)
     })
   }
 })
@@ -618,6 +653,32 @@ describe('getAgentDefinitionBlock', () => {
     expect(block.plainText).not.toMatch(ENDS_WITH_COMMA)
   })
 
+  it('uses a distinct draft-only clause for knowledge-base-gardener', () => {
+    const agent = listStaticAgents().find(
+      (item) => item.slug === 'knowledge-base-gardener',
+    )
+    expect(agent).toBeDefined()
+    if (!agent) {
+      return
+    }
+
+    const lede = getAgentJobIntentLede('knowledge-base-gardener')
+    const block = getAgentDefinitionBlock(agent)
+    expect(lede).toBe(
+      'Finds stale product docs and drafts updates with file cites.',
+    )
+    expect(block.plainText).not.toContain(lede)
+    expect(block.plainText.toLowerCase()).not.toContain(
+      'finds stale product docs',
+    )
+    expect(block.plainText).toContain(
+      'Knowledge Base Gardener is an Eve agent that turns a pasted request into a copy-ready draft you review.',
+    )
+    expect(block.plainText).toContain(
+      'npx shadcn@latest add @evex/knowledge-base-gardener',
+    )
+  })
+
   for (const agent of listStaticAgents()) {
     it(`stays within the word budget for ${agent.slug}`, () => {
       const block = getAgentDefinitionBlock(agent)
@@ -707,8 +768,8 @@ describe('registry agent titles fit the rendered title tag', () => {
       if (override) {
         expect(title).toBe(override)
         expect(rendered).toBe(`${override}${METADATA_TITLE_SUFFIX}`)
-        // Locked PMM copy may intentionally exceed the fitted budget (the
-        // four first-party plays). Budget-fitted overrides stay within 60.
+        // Locked PMM copy may intentionally exceed the fitted budget
+        // (knowledge-base-gardener). Budget-fitted overrides stay within 60.
         if (override.length <= METADATA_TITLE_BUDGET) {
           expect(rendered.length).toBeLessThanOrEqual(METADATA_TITLE_MAX_LENGTH)
         }

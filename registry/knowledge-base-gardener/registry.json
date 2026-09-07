@@ -95,10 +95,10 @@
         "slug": "knowledge-base-gardener",
         "category": "support",
         "createdAt": "2026-09-07T12:00:00.000Z",
-        "updatedAt": "2026-09-07T12:00:00.000Z",
+        "updatedAt": "2026-09-07T14:00:00.000Z",
         "docs": {
           "overview": [
-            "Knowledge Base Gardener is an eve agent that finds stale product documentation and drafts file-cited updates. It searches the roots listed in PRODUCT_DOCS_ROOTS, reads the matching articles, and returns a draft update that names every file path it used so a human can apply the edit.",
+            "Paste the stale page or changelog you want reconciled. Knowledge Base Gardener searches the local product-docs tree, reads the matching files, and writes a draft with file-path citations. Nothing is committed or overwritten. Copy the draft from the session, then you review and apply it.",
             "You interact with it through Eve chat sessions only. There is no GitHub channel and no publish connection. Paste a gardening request or a suspected stale page, get a draft, then copy the update into your docs yourself. The agent never applies the edit.",
             "The draft_doc_update tool records the proposed text and citations and always reports published false so the agent never claims the docs were shipped. When a cited page looks current, it says so instead of inventing churn from training data."
           ],

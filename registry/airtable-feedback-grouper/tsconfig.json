@@ -1,4 +1,0 @@
-{
-  "extends": "../tsconfig.agent.json",
-  "include": ["agent/**/*.ts", "evals/**/*.ts"]
-}

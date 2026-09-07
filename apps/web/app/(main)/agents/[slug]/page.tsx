@@ -27,6 +27,7 @@ import {
   getAgentMetadataTitle,
   getAgentOgImageAlt,
   pluralize,
+  shouldRenderAgentDescriptionParagraph,
 } from '@/lib/agent-detail'
 import type { AgentRegistryFile, AgentWithAuthor } from '@/lib/agent-types'
 import { parseDependencies } from '@/lib/agents'
@@ -264,9 +265,14 @@ async function AgentDetailContent({ agent }: { agent: AgentWithAuthor }) {
       </p>
 
       <AgentDefinitionSection agent={agent} />
-      <p className="mt-1 max-w-2xl text-pretty text-muted-foreground">
-        <AgentDescription>{agent.description}</AgentDescription>
-      </p>
+      {shouldRenderAgentDescriptionParagraph({
+        description: agent.description,
+        jobIntentLede,
+      }) ? (
+        <p className="mt-1 max-w-2xl text-pretty text-muted-foreground">
+          <AgentDescription>{agent.description}</AgentDescription>
+        </p>
+      ) : null}
 
       <Card className="mt-8 w-full min-w-0 rounded-md border border-border p-5 shadow-[var(--shadow-card)] ring-0">
         <h2 className="font-medium text-foreground text-sm">
