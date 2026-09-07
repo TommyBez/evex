@@ -2,7 +2,7 @@ import { getAgentMetaDescription } from '@/lib/agent-detail'
 import type { AgentWithAuthor } from '@/lib/agent-types'
 import { parseDependencies } from '@/lib/agents'
 import { getAuthorMetaDescription } from '@/lib/author-detail'
-import type { DocsPage } from '@/lib/docs-content'
+import { type DocsPage, getDocsPageHeading } from '@/lib/docs-content'
 import { HOME_FAQ_ITEMS } from '@/lib/home-faq-content'
 import { getLearnPageHeading, type LearnPage } from '@/lib/learn-content'
 import { siteConfig } from '@/lib/metadata'
@@ -381,7 +381,7 @@ export function createDocsArticleSchema(
   return {
     '@context': SCHEMA_CONTEXT,
     '@type': 'TechArticle',
-    headline: page.title,
+    headline: getDocsPageHeading(page),
     description: page.description,
     datePublished: page.datePublished,
     dateModified: page.dateModified,

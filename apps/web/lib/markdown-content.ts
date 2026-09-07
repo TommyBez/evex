@@ -3,7 +3,7 @@ import 'server-only'
 import type { RegistryItemDocs } from '@evex/agent-registry'
 import type { AgentRegistryFile, AgentWithAuthor } from '@/lib/agent-types'
 import { parseDependencies } from '@/lib/agents'
-import type { DocsPage } from '@/lib/docs-content'
+import { type DocsPage, getDocsPageHeading } from '@/lib/docs-content'
 import { getLearnPageHeading, type LearnPage } from '@/lib/learn-content'
 import {
   buildInstallCommand,
@@ -142,9 +142,10 @@ export function buildDocsPageMarkdown(page: DocsPage): string {
   const isIndex = page.slug === 'introduction'
   const docsUrl = isIndex ? getDocsUrl() : getDocsUrl(page.slug)
   const blocks = [
-    `# ${page.title}`,
+    `# ${getDocsPageHeading(page)}`,
     page.description,
     page.summary,
+    page.definition,
     docsSectionMarkdown(page),
     `---
 

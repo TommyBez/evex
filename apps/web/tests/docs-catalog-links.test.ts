@@ -33,26 +33,30 @@ describe('docs in-body catalog links', () => {
       return
     }
 
-    expect(page.dateModified).toBe('2026-09-05')
-    expect(page.title).toBe(
-      'evex documentation: the community registry for eve agents',
-    )
+    expect(page.dateModified).toBe('2026-09-07')
+    expect(page.title).toBe('Open-source AI agent registry: install as source')
 
     const nextSection = page.sections.find(
       (section) => section.heading === 'Where to go next',
     )
     expect(nextSection).toBeDefined()
     expect(nextSection?.body).toHaveLength(4)
-    expect(nextSection?.body[0]).toContain('The Installation page covers')
+    expect(nextSection?.body[0]).toBe(
+      'Browse the live catalog: [Eve agents](/agents). First-party agents include the [Eve GitHub issue agent](/agents/github-issue-maintainer), the [Eve docs Q&A agent](/agents/docs-knowledge-assistant), and the [Eve support reply agent](/agents/support-reply-draft).',
+    )
     expect(nextSection?.body[1]).toBe(
-      'The live catalog is [Eve agents](/agents). First-party agents include the [Eve GitHub issue agent](/agents/github-issue-maintainer), the [Eve docs Q&A agent](/agents/docs-knowledge-assistant), and the [Eve support reply agent](/agents/support-reply-draft).',
+      'Install walkthrough: [Install an Eve agent](/learn/install-eve-agent).',
     )
     expect(nextSection?.body[2]).toBe(
-      'How to install: [Install an Eve agent](/learn/install-eve-agent).',
+      'Browse and install from editors (Cursor, VS Code, Claude Code): [MCP](/docs/mcp).',
     )
-    expect(nextSection?.body[3]).toBe(
-      'How evex compares to agentcn: [evex vs agentcn](/learn/evex-vs-agentcn).',
+    expect(nextSection?.body[3]).toContain(
+      'The [Installation](/docs/installation) page covers',
     )
+    expect(nextSection?.body.join('\n')).not.toContain(
+      'How evex compares to agentcn',
+    )
+    expect(nextSection?.body.join('\n')).not.toContain('/learn/evex-vs-agentcn')
 
     const html = (nextSection?.body ?? [])
       .map((paragraph) => renderInlineMarkdown(paragraph))
@@ -71,13 +75,13 @@ describe('docs in-body catalog links', () => {
     expect(html).toContain(
       'href="/learn/install-eve-agent">Install an Eve agent</a>',
     )
-    expect(html).toContain('href="/learn/evex-vs-agentcn">evex vs agentcn</a>')
+    expect(html).toContain('href="/docs/mcp">MCP</a>')
+    expect(html).not.toContain('href="/learn/evex-vs-agentcn"')
     expect(html).not.toContain('/learn/eve-agent-registry')
     expect(html).not.toContain('[Eve agents](/agents)')
     expect(html).not.toContain(
       '[Install an Eve agent](/learn/install-eve-agent)',
     )
-    expect(html).not.toContain('[evex vs agentcn](/learn/evex-vs-agentcn)')
   })
 
   it('adds a crawlable install link in /docs/installation Run the install command', () => {
