@@ -74,6 +74,14 @@ describe("replyClaimsPublish", () => {
     expect(replyClaimsPublish("I opened a PR.")).toBe(true);
     expect(replyClaimsPublish("I published a PR review.")).toBe(true);
   });
+
+  it("treats a mixed reply as published when one claim is affirmative", () => {
+    expect(
+      replyClaimsPublish(
+        "I never published the old page, but I published the update.",
+      ),
+    ).toBe(true);
+  });
 });
 
 describe("draft write paths", () => {

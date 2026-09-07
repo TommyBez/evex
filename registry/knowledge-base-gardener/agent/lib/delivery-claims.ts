@@ -29,21 +29,12 @@ export function replyClaimsPublish(reply: string): boolean {
     return true;
   }
 
-  const claimsPublished =
+  return (
     hasAffirmativeClaim(
       reply,
       /\bpublished (it|the (docs|update|page|article))\b/i,
     ) ||
     hasAffirmativeClaim(reply, /\bshipped (the )?(docs|update|page)\b/i) ||
-    hasAffirmativeClaim(reply, /\bupdated the live (docs|page|article)\b/i);
-  if (!claimsPublished) {
-    return false;
-  }
-
-  const negatedPublished =
-    /\b(do not|don't|won't|cannot|can't|did not|didn't|never)\s+(publish|published|ship|shipped)\b/i.test(
-      reply,
-    ) || /\bnot published\b/i.test(reply);
-
-  return !negatedPublished;
+    hasAffirmativeClaim(reply, /\bupdated the live (docs|page|article)\b/i)
+  );
 }
