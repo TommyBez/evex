@@ -1,0 +1,282 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "items": [
+    {
+      "name": "competitor-intel-monitor",
+      "type": "registry:item",
+      "title": "Competitor Intel Monitor",
+      "description": "Scheduled competitor URL monitor that diffs pages and delivers scored Slack or email digests.",
+      "author": "TommyBez",
+      "categories": [
+        "research"
+      ],
+      "dependencies": [
+        "eve@^0.47.5",
+        "resend@^6.14.0",
+        "zod@4.3.6"
+      ],
+      "files": [
+        {
+          "path": ".env.example",
+          "type": "registry:file",
+          "target": "~/.env.example"
+        },
+        {
+          "path": "agent/agent.ts",
+          "type": "registry:file",
+          "target": "~/agent/agent.ts"
+        },
+        {
+          "path": "agent/instructions.md",
+          "type": "registry:file",
+          "target": "~/agent/instructions.md"
+        },
+        {
+          "path": "agent/lib/digest.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/digest.ts"
+        },
+        {
+          "path": "agent/lib/fetch-page.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/fetch-page.ts"
+        },
+        {
+          "path": "agent/lib/page-diff.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/page-diff.ts"
+        },
+        {
+          "path": "agent/lib/robots.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/robots.ts"
+        },
+        {
+          "path": "agent/lib/snapshot-store.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/snapshot-store.ts"
+        },
+        {
+          "path": "agent/lib/thresholds.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/thresholds.ts"
+        },
+        {
+          "path": "agent/lib/watch-config.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/watch-config.ts"
+        },
+        {
+          "path": "agent/schedules/watch-competitor-pages.ts",
+          "type": "registry:file",
+          "target": "~/agent/schedules/watch-competitor-pages.ts"
+        },
+        {
+          "path": "agent/skills/competitor-intel-watch/SKILL.md",
+          "type": "registry:file",
+          "target": "~/agent/skills/competitor-intel-watch/SKILL.md"
+        },
+        {
+          "path": "agent/skills/email-best-practices/references/accessibility.md",
+          "type": "registry:file",
+          "target": "~/agent/skills/email-best-practices/references/accessibility.md"
+        },
+        {
+          "path": "agent/skills/email-best-practices/references/sending-reliability.md",
+          "type": "registry:file",
+          "target": "~/agent/skills/email-best-practices/references/sending-reliability.md"
+        },
+        {
+          "path": "agent/skills/email-best-practices/SKILL.md",
+          "type": "registry:file",
+          "target": "~/agent/skills/email-best-practices/SKILL.md"
+        },
+        {
+          "path": "agent/tools/diff_page_snapshot.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/diff_page_snapshot.ts"
+        },
+        {
+          "path": "agent/tools/fetch_competitor_page.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/fetch_competitor_page.ts"
+        },
+        {
+          "path": "agent/tools/load_watch_config.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/load_watch_config.ts"
+        },
+        {
+          "path": "agent/tools/preview_digest.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/preview_digest.ts"
+        },
+        {
+          "path": "agent/tools/send_digest.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/send_digest.ts"
+        },
+        {
+          "path": "evals/digest-preview.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/digest-preview.eval.ts"
+        },
+        {
+          "path": "evals/evals.config.ts",
+          "type": "registry:file",
+          "target": "~/evals/evals.config.ts"
+        },
+        {
+          "path": "evals/failed-send-not-delivered.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/failed-send-not-delivered.eval.ts"
+        },
+        {
+          "path": "evals/missing-config-does-not-send.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/missing-config-does-not-send.eval.ts"
+        },
+        {
+          "path": "evals/robots-blocks-fetch.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/robots-blocks-fetch.eval.ts"
+        },
+        {
+          "path": "evals/schedule-watch.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/schedule-watch.eval.ts"
+        },
+        {
+          "path": "evals/send-confirmation.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/send-confirmation.eval.ts"
+        },
+        {
+          "path": "evals/threshold-gating.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/threshold-gating.eval.ts"
+        },
+        {
+          "path": "README.md",
+          "type": "registry:file",
+          "target": "~/agent/README.md"
+        }
+      ],
+      "meta": {
+        "slug": "competitor-intel-monitor",
+        "category": "research",
+        "createdAt": "2026-09-07T20:00:00.000Z",
+        "updatedAt": "2026-09-07T20:10:00.000Z",
+        "docs": {
+          "overview": [
+            "Competitor Intel Monitor is a scheduled eve agent that re-reads a list of competitor pages you already chose. On each cron tick it checks robots.txt, pulls the HTML that is allowed, and compares normalized text to the last snapshot in a JSON file or Upstash Redis. You configure the list and thresholds once, then leave it running.",
+            "You interact with it through environment variables and your inbox or Slack. Set COMPETITOR_INTEL_URLS or a JSON or text file, pick Slack, Resend, or both, and trigger watch-competitor-pages. The agent previews every digest and only sends when confirmSend is true and a date-derived idempotency key is present.",
+            "It is useful when you want a quiet baseline plus alerts that ignore tiny edits. First-seen URLs are stored without a ping. Later diffs report a score from changed character weight, and only rows that clear both gates go out. Robots disallows and missing config stop that path instead of inventing a page."
+          ],
+          "howItWorks": [
+            "On the watch-competitor-pages schedule (cron from COMPETITOR_INTEL_CRON, default 08:00 UTC), the agent loads the competitor-intel-watch skill and, before any email, the email-best-practices skill.",
+            "It calls load_watch_config to read the https URL list, alert gates, store kind, and whether Slack or email is configured, and stops if COMPETITOR_INTEL_URLS or delivery settings are missing.",
+            "For each listed URL it calls fetch_competitor_page, which loads that origin's robots.txt with EveCompetitorIntelMonitor/1.0 and skips the page when robots disallows the path or the robots file cannot be reached.",
+            "Each successful fetch goes to diff_page_snapshot, which compares normalized text to the stored snapshot, writes the new snapshot, and returns score, changedChars, and clearsThreshold. First-seen URLs are baselines with score 0.",
+            "If any row clears both COMPETITOR_INTEL_ALERT_MIN_SCORE and COMPETITOR_INTEL_ALERT_MIN_CHANGED_CHARS, the agent calls preview_digest, then send_digest with confirmSend true and an idempotency key such as competitor-intel-monitor-YYYY-MM-DD.",
+            "Seven evals cover the schedule path, robots skips, below-threshold silence, digest preview, send confirmation, missing config, and a failed send that must not be reported as delivered."
+          ],
+          "useCases": [
+            {
+              "title": "Pricing page drift",
+              "body": "Point the watch list at two competitor pricing URLs. After the first baseline run, a later seat-price rewrite that clears the score and character gates lands in Slack or email with the excerpt from diff_page_snapshot."
+            },
+            {
+              "title": "Changelog without the noise",
+              "body": "Watch a public changelog. A one-word typo stays under COMPETITOR_INTEL_ALERT_MIN_CHANGED_CHARS and is stored only. A new version notes section that clears both gates is the row that gets previewed."
+            },
+            {
+              "title": "Robots-respecting research crawl",
+              "body": "A competitor blocks /compare in robots.txt. fetch_competitor_page returns blockedByRobots for that path, the agent skips it, and send_digest is never called for an invented compare table."
+            },
+            {
+              "title": "Team alias on a weekday cron",
+              "body": "Set COMPETITOR_INTEL_CRON to weekday mornings and COMPETITOR_INTEL_DIGEST_TO to a team alias. Operators get one Resend HTML mail with the URLs that cleared the gates, not a ping for every tiny HTML shuffle."
+            }
+          ],
+          "requirements": [
+            {
+              "name": "COMPETITOR_INTEL_URLS",
+              "body": "Comma-separated https URLs to watch. Required unless COMPETITOR_INTEL_URLS_FILE lists at least one https URL. Non-https values are dropped."
+            },
+            {
+              "name": "COMPETITOR_INTEL_URLS_FILE",
+              "body": "Optional JSON object with urls and alert, or a text file with one URL per line. Those URLs are unioned with COMPETITOR_INTEL_URLS."
+            },
+            {
+              "name": "COMPETITOR_INTEL_CRON",
+              "body": "5-field cron for watch-competitor-pages. Defaults to 0 8 * * * (08:00 UTC on Vercel)."
+            },
+            {
+              "name": "COMPETITOR_INTEL_ALERT_MIN_SCORE",
+              "body": "Minimum score from 0 to 100. Score is round(100 * changedChars / max(beforeLength, afterLength, 1)). Defaults to 25."
+            },
+            {
+              "name": "COMPETITOR_INTEL_ALERT_MIN_CHANGED_CHARS",
+              "body": "Minimum added-plus-removed character weight before a change can clear the gate. Defaults to 40."
+            },
+            {
+              "name": "COMPETITOR_INTEL_STORE_PATH",
+              "body": "JSON snapshot file path. Defaults to .data/competitor-intel-store.json. Use a durable volume if the app filesystem is ephemeral."
+            },
+            {
+              "name": "UPSTASH_REDIS_REST_URL",
+              "body": "Optional Upstash Redis REST URL. When set with UPSTASH_REDIS_REST_TOKEN, snapshots are stored in Redis instead of the file."
+            },
+            {
+              "name": "UPSTASH_REDIS_REST_TOKEN",
+              "body": "Optional Upstash Redis REST token used with UPSTASH_REDIS_REST_URL."
+            },
+            {
+              "name": "COMPETITOR_INTEL_USER_AGENT",
+              "body": "User-Agent for page and robots.txt fetches. Defaults to EveCompetitorIntelMonitor/1.0."
+            },
+            {
+              "name": "COMPETITOR_INTEL_SLACK_WEBHOOK_URL",
+              "body": "Slack incoming webhook. Leave empty to skip Slack. At least one of Slack or a complete email trio is required to send."
+            },
+            {
+              "name": "RESEND_API_KEY",
+              "body": "Resend API key used by send_digest when email recipients are configured. The idempotency key is forwarded to Resend."
+            },
+            {
+              "name": "COMPETITOR_INTEL_DIGEST_FROM",
+              "body": "Verified Resend sender for the HTML digest. Recipients and sender cannot be overridden through tool input."
+            },
+            {
+              "name": "COMPETITOR_INTEL_DIGEST_TO",
+              "body": "Comma-separated recipient addresses. Optional COMPETITOR_INTEL_DIGEST_SUBJECT defaults to Competitor intel digest."
+            }
+          ],
+          "faqs": [
+            {
+              "question": "How do I install and run a watch?",
+              "answer": "Install with npx shadcn@latest add @evex/competitor-intel-monitor, copy .env.example, set at least one https URL plus Slack or Resend, then POST to /eve/v1/dev/schedules/watch-competitor-pages while iterating."
+            },
+            {
+              "question": "Will the first run email or Slack me?",
+              "answer": "No. diff_page_snapshot stores a first-seen URL as a baseline with score 0 and clearsThreshold false. Only a later run whose score and changedChars both clear the gates can call preview_digest and send_digest."
+            },
+            {
+              "question": "What if robots.txt blocks a URL?",
+              "answer": "fetch_competitor_page returns blockedByRobots and skips the HTTP body. The agent records the skip, does not invent text, and does not send a digest for that URL."
+            },
+            {
+              "question": "How is the score calculated?",
+              "answer": "changedChars is the character weight of words added or removed after HTML is stripped. score is round(100 * changedChars / max(beforeLength, afterLength, 1)), capped at 100. Both that score and minChangedChars must pass."
+            },
+            {
+              "question": "Can a replayed run send twice?",
+              "answer": "send_digest refuses unless confirmSend is true, and it requires a stable idempotency key. Successful sends are cached on that key and the same key is sent to Resend, so a replayed eve step does not duplicate email."
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
