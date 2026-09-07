@@ -115,7 +115,7 @@ const JOB_INTENT_METADATA_TITLES: Readonly<Record<string, string>> = {
   'linear-operations-agent':
     'Eve Linear ops agent - @evex/linear-operations-agent',
   'meeting-action-extractor':
-    'Eve meeting action extractor - @evex/meeting-action-extractor',
+    'Meeting action extractor · @evex/meeting-action-extractor',
   'openui-assistant': 'Eve OpenUI agent - install @evex/openui-assistant',
   'postgres-data-analyst':
     'Eve Postgres SQL agent - @evex/postgres-data-analyst',
@@ -141,7 +141,7 @@ const JOB_INTENT_LEDES: Readonly<Record<string, string>> = {
   'linear-operations-agent':
     'Triages Linear work and posts Slack cycle digests.',
   'meeting-action-extractor':
-    'Pulls meeting notes, extracts owners and deadlines, and drafts Linear follow-ups for approval.',
+    'Extracts owners and deadlines from meeting transcripts, then drafts Linear follow-ups you approve.',
   'openui-assistant': 'Streams OpenUI generative UI in an Eve chat.',
   'postgres-data-analyst':
     'Answers Slack questions with read-only Postgres SQL.',
@@ -365,9 +365,17 @@ const DEMAND_BACKED_PLAYS = [
   'meeting-action-extractor',
 ] as const
 
+const DEMAND_BACKED_DESCRIPTIONS: Readonly<Record<string, string>> = {
+  'knowledge-base-gardener':
+    'Finds stale product docs and drafts updates with file cites.',
+  'meeting-action-extractor':
+    'Extracts owners and deadlines from a meeting transcript and drafts Linear follow-ups for approval.',
+}
+
 const DEMAND_BACKED_LEDE_STEMS: Readonly<Record<string, string>> = {
   'knowledge-base-gardener': 'finds stale product docs',
-  'meeting-action-extractor': 'pulls meeting notes',
+  'meeting-action-extractor':
+    'extracts owners and deadlines from meeting transcripts',
 }
 
 describe('demand-backed first-party plays', () => {
@@ -381,11 +389,13 @@ describe('demand-backed first-party plays', () => {
 
       const title = JOB_INTENT_METADATA_TITLES[slug]
       const lede = JOB_INTENT_LEDES[slug]
+      const description = DEMAND_BACKED_DESCRIPTIONS[slug]
       expect(title).toBeDefined()
       expect(lede).toBeDefined()
+      expect(description).toBeDefined()
       expect(getAgentMetadataTitle(agent)).toBe(title)
       expect(getAgentJobIntentLede(slug)).toBe(lede)
-      expect(agent.description).toBe(lede)
+      expect(agent.description).toBe(description)
       expect(buildInstallCommand(slug)).toBe(
         `npx shadcn@latest add @evex/${slug}`,
       )
@@ -397,7 +407,7 @@ describe('demand-backed first-party plays', () => {
           description: agent.description,
           jobIntentLede: lede,
         }),
-      ).toBe(false)
+      ).toBe(description !== lede)
     })
   }
 })
@@ -714,10 +724,12 @@ describe('getAgentDefinitionBlock', () => {
     const lede = getAgentJobIntentLede('meeting-action-extractor')
     const block = getAgentDefinitionBlock(agent)
     expect(lede).toBe(
-      'Pulls meeting notes, extracts owners and deadlines, and drafts Linear follow-ups for approval.',
+      'Extracts owners and deadlines from meeting transcripts, then drafts Linear follow-ups you approve.',
     )
     expect(block.plainText).not.toContain(lede)
-    expect(block.plainText.toLowerCase()).not.toContain('pulls meeting notes')
+    expect(block.plainText.toLowerCase()).not.toContain(
+      'extracts owners and deadlines from meeting transcripts',
+    )
     expect(block.plainText).toContain(
       'Meeting Action Extractor is an Eve agent that reads a transcript on disk and drafts Linear issues you approve.',
     )

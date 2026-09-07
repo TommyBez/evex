@@ -112,7 +112,7 @@ const AGENT_METADATA_TITLE_OVERRIDES: Readonly<Record<string, string>> = {
   'linear-operations-agent':
     'Eve Linear ops agent - @evex/linear-operations-agent',
   'meeting-action-extractor':
-    'Eve meeting action extractor - @evex/meeting-action-extractor',
+    'Meeting action extractor · @evex/meeting-action-extractor',
   'openui-assistant': 'Eve OpenUI agent - install @evex/openui-assistant',
   'postgres-data-analyst':
     'Eve Postgres SQL agent - @evex/postgres-data-analyst',
@@ -159,7 +159,7 @@ const AGENT_JOB_INTENT_LEDES: Readonly<Record<string, string>> = {
   'linear-operations-agent':
     'Triages Linear work and posts Slack cycle digests.',
   'meeting-action-extractor':
-    'Pulls meeting notes, extracts owners and deadlines, and drafts Linear follow-ups for approval.',
+    'Extracts owners and deadlines from meeting transcripts, then drafts Linear follow-ups you approve.',
   'openui-assistant': 'Streams OpenUI generative UI in an Eve chat.',
   'postgres-data-analyst':
     'Answers Slack questions with read-only Postgres SQL.',

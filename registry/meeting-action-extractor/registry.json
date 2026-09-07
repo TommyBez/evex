@@ -5,7 +5,7 @@
       "name": "meeting-action-extractor",
       "type": "registry:item",
       "title": "Meeting Action Extractor",
-      "description": "Pulls meeting notes, extracts owners and deadlines, and drafts Linear follow-ups for approval.",
+      "description": "Extracts owners and deadlines from a meeting transcript and drafts Linear follow-ups for approval.",
       "author": "TommyBez",
       "categories": [
         "productivity",
@@ -117,7 +117,7 @@
         "slug": "meeting-action-extractor",
         "category": "productivity",
         "createdAt": "2026-09-07T15:00:00.000Z",
-        "updatedAt": "2026-09-07T15:00:00.000Z",
+        "updatedAt": "2026-09-07T15:30:00.000Z",
         "docs": {
           "overview": [
             "Ask for follow-ups from a standup or planning notes already checked out. Meeting Action Extractor searches the local transcript tree, reads the matching files, and returns Linear issue drafts with owners and dates. Nothing is filed in Linear. You review the drafts, then create the issues yourself.",

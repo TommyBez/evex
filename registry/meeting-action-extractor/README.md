@@ -1,6 +1,6 @@
 # Meeting Action Extractor
 
-Pulls meeting notes, extracts owners and deadlines, and drafts Linear follow-ups for approval.
+Extracts owners and deadlines from a meeting transcript and drafts Linear follow-ups for approval.
 
 This Eve agent reads meeting transcripts from disk, extracts owners and
 deadlines, and drafts Linear issues. A human must approve the drafts. It
