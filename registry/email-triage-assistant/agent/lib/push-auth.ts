@@ -11,6 +11,11 @@ export type InboxPushAuthResult =
   | { readonly authorized: true; readonly method: InboxPushAuthMethod }
   | { readonly authorized: false };
 
+export type GmailOidcExpectations = {
+  readonly audience?: string;
+  readonly serviceAccountEmail?: string;
+};
+
 const GOOGLE_ISSUERS = new Set([
   "accounts.google.com",
   "https://accounts.google.com",
@@ -20,6 +25,7 @@ export async function authorizeInboxPush(input: {
   readonly request: Request;
   readonly body: unknown;
   readonly expectedSecret: string | undefined;
+  readonly gmailOidc?: GmailOidcExpectations;
   readonly fetchImpl?: FetchLike;
 }): Promise<InboxPushAuthResult> {
   const headerSecret = readWebhookSecret(input.request);
@@ -36,7 +42,11 @@ export async function authorizeInboxPush(input: {
     const token = bearerToken(input.request);
     if (
       token &&
-      (await verifyGoogleOidcToken(token, input.fetchImpl ?? fetch))
+      (await verifyGoogleOidcToken(
+        token,
+        input.fetchImpl ?? fetch,
+        input.gmailOidc ?? {},
+      ))
     ) {
       return { authorized: true, method: "gmail-oidc" };
     }
@@ -66,25 +76,66 @@ function bearerToken(request: Request): string | null {
 async function verifyGoogleOidcToken(
   token: string,
   fetchImpl: FetchLike,
+  expectations: GmailOidcExpectations,
 ): Promise<boolean> {
+  const audience = expectations.audience?.trim();
+  const serviceAccountEmail = expectations.serviceAccountEmail?.trim();
+  if (!(audience && serviceAccountEmail)) {
+    return false;
+  }
+
   const url = `https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(token)}`;
   try {
     const response = await fetchImpl(url);
     if (!response.ok) {
       return false;
     }
-    const payload = (await response.json()) as {
-      readonly iss?: string;
-      readonly exp?: string | number;
-    };
-    if (!payload.iss || !GOOGLE_ISSUERS.has(payload.iss)) {
+    const payload = asRecord(await response.json());
+    if (typeof payload.iss !== "string" || !GOOGLE_ISSUERS.has(payload.iss)) {
       return false;
     }
-    const expiresAt = Number(payload.exp ?? 0);
-    return Number.isFinite(expiresAt) && expiresAt * 1000 > Date.now();
+    if (!audienceMatches(payload.aud, audience)) {
+      return false;
+    }
+    if (
+      typeof payload.email !== "string" ||
+      payload.email !== serviceAccountEmail
+    ) {
+      return false;
+    }
+    if (!isEmailVerified(payload.email_verified)) {
+      return false;
+    }
+    const expiresAt = parseOidcExpiry(payload.exp);
+    return expiresAt !== null && expiresAt * 1000 > Date.now();
   } catch {
     return false;
   }
+}
+
+function parseOidcExpiry(exp: unknown): number | null {
+  if (typeof exp === "number") {
+    return Number.isFinite(exp) ? exp : null;
+  }
+  if (typeof exp === "string") {
+    const parsed = Number(exp);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+  return null;
+}
+
+function audienceMatches(aud: unknown, expected: string): boolean {
+  if (typeof aud === "string") {
+    return aud === expected;
+  }
+  if (Array.isArray(aud)) {
+    return aud.some((item) => item === expected);
+  }
+  return false;
+}
+
+function isEmailVerified(value: unknown): boolean {
+  return value === true || value === "true";
 }
 
 function graphClientState(body: unknown): string | null {

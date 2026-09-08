@@ -17,6 +17,8 @@ export type EmailTriageConfig = {
   readonly sentSampleSize: number;
   readonly maxThreads: number;
   readonly pushWebhookSecret?: string;
+  readonly gmailPushOidcAudience?: string;
+  readonly gmailPushOidcEmail?: string;
   readonly slackConnectUid?: string;
   readonly slackChannelId?: string;
   readonly gmail: {
@@ -98,6 +100,8 @@ export function loadEmailTriageConfig(
     ),
     maxThreads: parsePositiveInteger(env.EMAIL_MAX_THREADS, DEFAULT_MAX_THREADS),
     pushWebhookSecret: optional(env.EMAIL_PUSH_WEBHOOK_SECRET),
+    gmailPushOidcAudience: optional(env.EMAIL_PUSH_GMAIL_OIDC_AUDIENCE),
+    gmailPushOidcEmail: optional(env.EMAIL_PUSH_GMAIL_OIDC_EMAIL),
     slackConnectUid: optional(env.EMAIL_TRIAGE_SLACK_CONNECT_UID),
     slackChannelId: optional(env.EMAIL_TRIAGE_SLACK_CHANNEL_ID),
     gmail: {

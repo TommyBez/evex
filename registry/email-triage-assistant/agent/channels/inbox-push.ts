@@ -52,6 +52,10 @@ export default defineChannel({
         request,
         body,
         expectedSecret: emailTriageConfig.pushWebhookSecret,
+        gmailOidc: {
+          audience: emailTriageConfig.gmailPushOidcAudience,
+          serviceAccountEmail: emailTriageConfig.gmailPushOidcEmail,
+        },
       });
       if (!auth.authorized) {
         return new Response("Unauthorized", { status: 401 });

@@ -14,7 +14,7 @@ import {
   mintConnectAccessToken,
   type ConnectTokenMint,
 } from '../agent/lib/oauth'
-import { parseMimeMessage } from '../agent/lib/mime'
+import { MAX_MULTIPART_NESTING, parseMimeMessage } from '../agent/lib/mime'
 import { createGmailMailbox } from '../agent/lib/providers/gmail'
 import {
   createGraphMailbox,
@@ -392,12 +392,12 @@ describe('IMAP APPEND to Drafts', () => {
           pending = script[cursor] ?? ''
           cursor += 1
         }
-        if (!predicate(pending)) {
+        const pendingBytes = Buffer.from(pending, 'utf8')
+        if (!predicate(pendingBytes)) {
           throw new Error(`IMAP fixture did not satisfy read: ${pending}`)
         }
-        const snapshot = pending
         pending = ''
-        return snapshot
+        return pendingBytes
       },
       async close() {},
     }
@@ -451,7 +451,7 @@ describe('IMAP APPEND to Drafts', () => {
       async readUntil() {
         const snapshot = script[cursor] ?? ''
         cursor += 1
-        return snapshot
+        return Buffer.from(snapshot, 'utf8')
       },
       async close() {},
     }
@@ -488,7 +488,7 @@ describe('IMAP APPEND to Drafts', () => {
       async readUntil() {
         const snapshot = script[cursor] ?? ''
         cursor += 1
-        return snapshot
+        return Buffer.from(snapshot, 'utf8')
       },
       async close() {},
     }
@@ -698,23 +698,91 @@ describe('MIME decode', () => {
     expect(parsed.body).toContain('Can we get a refund?')
     expect(parsed.body).not.toContain('HTML')
   })
+
+  it('decodes declared MIME charset instead of assuming UTF-8', () => {
+    const latin1 = parseMimeMessage(
+      [
+        'Subject: cafe',
+        'From: ava@example.com',
+        'To: support@example.com',
+        'Content-Type: text/plain; charset=iso-8859-1',
+        'Content-Transfer-Encoding: quoted-printable',
+        '',
+        'caf=E9',
+      ].join('\r\n'),
+    )
+    expect(latin1.body).toBe('café')
+
+    const raw = Buffer.concat([
+      Buffer.from(
+        'Subject: cafe\r\nFrom: ava@example.com\r\nTo: support@example.com\r\nContent-Type: text/plain; charset=iso-8859-1\r\n\r\n',
+        'ascii',
+      ),
+      Buffer.from([0x63, 0x61, 0x66, 0xe9]),
+    ])
+    expect(parseMimeMessage(raw).body).toBe('café')
+  })
+
+  it('stops nested multipart decode at the depth cap', () => {
+    const inner = [
+      'Content-Type: text/plain; charset=utf-8',
+      '',
+      'plain innermost',
+    ].join('\r\n')
+    const nest = (body: string, levels: number): string => {
+      let current = body
+      for (let level = 1; level <= levels; level += 1) {
+        const boundary = `b${level}`
+        current = [
+          `Content-Type: multipart/mixed; boundary="${boundary}"`,
+          '',
+          `--${boundary}`,
+          current,
+          `--${boundary}--`,
+        ].join('\r\n')
+      }
+      return current
+    }
+    const overLimit = nest(inner, MAX_MULTIPART_NESTING + 1)
+    const parsed = parseMimeMessage(`Subject: nest\r\nFrom: a@b.c\r\nTo: c@d.e\r\n${overLimit}`)
+    expect(parsed.body).toBe('')
+  })
 })
+
+const GMAIL_OIDC = {
+  audience: 'https://example.com/inbox/push',
+  serviceAccountEmail: 'pubsub@gcp-sa-pubsub.iam.gserviceaccount.com',
+} as const
+
+function gmailOidcRequest() {
+  return new Request('https://example.com/inbox/push', {
+    method: 'POST',
+    headers: { authorization: 'Bearer aaa.bbb.ccc' },
+    body: JSON.stringify({ message: { data: 'e30=' } }),
+  })
+}
+
+function gmailOidcPayload(
+  overrides: Record<string, unknown> = {},
+): Record<string, unknown> {
+  return {
+    iss: 'accounts.google.com',
+    aud: GMAIL_OIDC.audience,
+    email: GMAIL_OIDC.serviceAccountEmail,
+    email_verified: 'true',
+    exp: Math.floor(Date.now() / 1000) + 300,
+    ...overrides,
+  }
+}
 
 describe('push auth and OData', () => {
   it('accepts Gmail OIDC and Graph clientState', async () => {
     const gmail = await authorizeInboxPush({
-      request: new Request('https://example.com/inbox/push', {
-        method: 'POST',
-        headers: { authorization: 'Bearer aaa.bbb.ccc' },
-        body: JSON.stringify({ message: { data: 'e30=' } }),
-      }),
+      request: gmailOidcRequest(),
       body: { message: { data: 'e30=' } },
       expectedSecret: 'secret',
-      fetchImpl: async () =>
-        Response.json({
-          iss: 'accounts.google.com',
-          exp: Math.floor(Date.now() / 1000) + 300,
-        }),
+      gmailOidc: GMAIL_OIDC,
+      fetchImpl: async () => Response.json(gmailOidcPayload()),
     })
     expect(gmail).toEqual({ authorized: true, method: 'gmail-oidc' })
 
@@ -741,6 +809,35 @@ describe('push auth and OData', () => {
     expect(denied).toEqual({ authorized: false })
   })
 
+  it('rejects malformed OIDC exp and unbound Gmail tokens', async () => {
+    const deny = async (payload: Record<string, unknown>) => {
+      const result = await authorizeInboxPush({
+        request: gmailOidcRequest(),
+        body: { message: { data: 'e30=' } },
+        expectedSecret: 'secret',
+        gmailOidc: GMAIL_OIDC,
+        fetchImpl: async () => Response.json(payload),
+      })
+      expect(result).toEqual({ authorized: false })
+    }
+
+    await deny(gmailOidcPayload({ exp: [Math.floor(Date.now() / 1000) + 300] }))
+    await deny(gmailOidcPayload({ exp: { seconds: 9999999999 } }))
+    await deny(gmailOidcPayload({ aud: 'https://evil.example/inbox/push' }))
+    await deny(
+      gmailOidcPayload({ email: 'attacker@evil.iam.gserviceaccount.com' }),
+    )
+    await deny(gmailOidcPayload({ email_verified: false }))
+
+    const missingBind = await authorizeInboxPush({
+      request: gmailOidcRequest(),
+      body: { message: { data: 'e30=' } },
+      expectedSecret: 'secret',
+      fetchImpl: async () => Response.json(gmailOidcPayload()),
+    })
+    expect(missingBind).toEqual({ authorized: false })
+  })
+
   it('escapes OData apostrophes', () => {
     expect(escapeODataStringLiteral("O'Bryan")).toBe("O''Bryan")
   })
@@ -750,7 +847,23 @@ describe('IMAP session helpers', () => {
   it('uses the declared literal length and hides LOGIN passwords', async () => {
     const body = 'From: a@example.com\r\n\r\nLine with )\r\nA9 OK not a tag\r\n'
     const wrapped = `* 1 FETCH (FLAGS (\\Seen) RFC822 {${Buffer.byteLength(body, 'utf8')}}\r\n${body})\r\nA3 OK FETCH\r\n`
-    expect(extractRfc822Literal(wrapped)).toBe(body)
+    expect(extractRfc822Literal(wrapped).toString('utf8')).toBe(body)
+
+    const latin1Body = Buffer.concat([
+      Buffer.from(
+        'From: a@example.com\r\nContent-Type: text/plain; charset=iso-8859-1\r\n\r\n',
+        'ascii',
+      ),
+      Buffer.from([0x63, 0x61, 0x66, 0xe9]),
+    ])
+    const latin1Wrapped = Buffer.concat([
+      Buffer.from(`* 1 FETCH (RFC822 {${latin1Body.length}}\r\n`, 'ascii'),
+      latin1Body,
+      Buffer.from(')\r\nA3 OK FETCH\r\n', 'ascii'),
+    ])
+    const extracted = extractRfc822Literal(latin1Wrapped)
+    expect(extracted.equals(latin1Body)).toBe(true)
+    expect(parseMimeMessage(extracted).body).toBe('café')
 
     const writes: string[] = []
     const transport: ImapTransport = {
@@ -758,7 +871,7 @@ describe('IMAP session helpers', () => {
         writes.push(chunk)
       },
       async readUntil() {
-        return 'A1 NO LOGIN failed\r\n'
+        return Buffer.from('A1 NO LOGIN failed\r\n', 'utf8')
       },
       async close() {},
     }
@@ -774,6 +887,44 @@ describe('IMAP session helpers', () => {
       expect((error as Error).message).toBe('IMAP login failed')
       expect((error as Error).message).not.toContain('super-secret')
     }
+  })
+
+  it('treats CREATE ALREADYEXISTS as success and throws on other NO', async () => {
+    const alreadyExists: string[] = [
+      '* OK IMAP ready\r\n',
+      'A1 NO [ALREADYEXISTS] Mailbox exists\r\n',
+    ]
+    let existsCursor = 0
+    const existsClient = new ImapClient({
+      async write() {},
+      async readUntil() {
+        const snapshot = alreadyExists[existsCursor] ?? ''
+        existsCursor += 1
+        return Buffer.from(snapshot, 'utf8')
+      },
+      async close() {},
+    })
+    await existsClient.connectGreeting()
+    await existsClient.ensureMailbox('Triage')
+
+    const denied: string[] = [
+      '* OK IMAP ready\r\n',
+      'A1 NO [NOPERM] Permission denied\r\n',
+    ]
+    let deniedCursor = 0
+    const deniedClient = new ImapClient({
+      async write() {},
+      async readUntil() {
+        const snapshot = denied[deniedCursor] ?? ''
+        deniedCursor += 1
+        return Buffer.from(snapshot, 'utf8')
+      },
+      async close() {},
+    })
+    await deniedClient.connectGreeting()
+    await expect(deniedClient.ensureMailbox('Triage')).rejects.toThrow(
+      'IMAP CREATE Triage failed.',
+    )
   })
 })
 

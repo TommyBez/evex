@@ -4,7 +4,7 @@ import { assertDraftsOnlyImap } from "../send-guard";
 
 export type ImapTransport = {
   write(chunk: string): Promise<void>;
-  readUntil(predicate: (buffer: string) => boolean): Promise<string>;
+  readUntil(predicate: (buffer: Buffer) => boolean): Promise<Buffer>;
   close(): Promise<void>;
 };
 
@@ -17,7 +17,7 @@ export type ImapConnectOptions = {
 export type ImapConnect = (options: ImapConnectOptions) => Promise<ImapTransport>;
 
 export type ImapFetchedMessage = {
-  readonly rfc822: string;
+  readonly rfc822: Buffer;
   readonly flags: readonly string[];
 };
 
@@ -48,11 +48,12 @@ export function createTlsImapConnect(): ImapConnect {
       });
     });
 
-    let buffer = "";
-    socket.setEncoding("utf8");
-    socket.on("data", (chunk: string) => {
-      buffer += chunk;
+    const chunks: Buffer[] = [];
+    socket.on("data", (chunk: Buffer) => {
+      chunks.push(chunk);
     });
+
+    const currentBuffer = (): Buffer => Buffer.concat(chunks);
 
     return {
       async write(chunk) {
@@ -68,7 +69,7 @@ export function createTlsImapConnect(): ImapConnect {
       },
       async readUntil(predicate) {
         const started = Date.now();
-        while (!predicate(buffer)) {
+        while (!predicate(currentBuffer())) {
           if (Date.now() - started > timeoutMs) {
             throw new Error("IMAP read timed out.");
           }
@@ -76,8 +77,8 @@ export function createTlsImapConnect(): ImapConnect {
             setTimeout(resolve, 10);
           });
         }
-        const snapshot = buffer;
-        buffer = "";
+        const snapshot = currentBuffer();
+        chunks.length = 0;
         return snapshot;
       },
       async close() {
@@ -93,7 +94,7 @@ export class ImapClient {
   constructor(private readonly transport: ImapTransport) {}
 
   async connectGreeting(): Promise<void> {
-    await this.transport.readUntil((buffer) => /\* OK /i.test(buffer));
+    await this.transport.readUntil((buffer) => /\* OK /i.test(imapText(buffer)));
   }
 
   async login(user: string, password: string): Promise<void> {
@@ -105,7 +106,7 @@ export class ImapClient {
   }
 
   async searchAll(): Promise<readonly number[]> {
-    const raw = await this.command("UID SEARCH ALL");
+    const raw = imapText(await this.command("UID SEARCH ALL"));
     const match = /\* SEARCH([\d\s]*)/i.exec(raw);
     if (!match?.[1]) {
       return [];
@@ -117,7 +118,7 @@ export class ImapClient {
       .filter((item) => Number.isInteger(item) && item > 0);
   }
 
-  async fetchRfc822(uid: number): Promise<string> {
+  async fetchRfc822(uid: number): Promise<Buffer> {
     const fetched = await this.fetchRfc822AndFlags(uid);
     return fetched.rfc822;
   }
@@ -126,7 +127,7 @@ export class ImapClient {
     const raw = await this.command(`UID FETCH ${uid} (FLAGS RFC822)`);
     return {
       rfc822: extractRfc822Literal(raw),
-      flags: extractFlags(raw),
+      flags: extractFlags(imapText(raw)),
     };
   }
 
@@ -142,12 +143,12 @@ export class ImapClient {
     await this.transport.write(
       `${tag} APPEND ${quote(mailbox)} (\\Draft) {${Buffer.byteLength(rfc822, "utf8")}}\r\n`,
     );
-    await this.transport.readUntil((buffer) => /\+\s/.test(buffer));
+    await this.transport.readUntil((buffer) => /\+\s/.test(imapText(buffer)));
     await this.transport.write(`${rfc822}\r\n`);
-    const result = await this.transport.readUntil((buffer) =>
-      new RegExp(`^${tag} (OK|NO|BAD)`, "im").test(buffer),
+    const result = imapText(
+      await this.transport.readUntil((buffer) => hasTaggedStatus(buffer, tag)),
     );
-    if (!new RegExp(`^${tag} OK`, "im").test(result)) {
+    if (!taggedOk(result, tag)) {
       throw new Error(`IMAP APPEND to ${mailbox} failed.`);
     }
     const uid = /APPENDUID \d+ (\d+)/i.exec(result)?.[1];
@@ -174,26 +175,26 @@ export class ImapClient {
     this.tag += 1;
     const tag = `A${this.tag}`;
     await this.transport.write(`${tag} CREATE ${quote(mailbox)}\r\n`);
-    const result = await this.transport.readUntil((buffer) =>
-      new RegExp(`^${tag} (OK|NO|BAD)`, "im").test(buffer),
+    const result = imapText(
+      await this.transport.readUntil((buffer) => hasTaggedStatus(buffer, tag)),
     );
-    if (new RegExp(`^${tag} OK`, "im").test(result)) {
+    if (taggedOk(result, tag)) {
       return;
     }
-    if (/ALREADYEXISTS/i.test(result) || new RegExp(`^${tag} NO`, "im").test(result)) {
+    if (/ALREADYEXISTS/i.test(result)) {
       return;
     }
     throw new Error(`IMAP CREATE ${mailbox} failed.`);
   }
 
-  private async command(line: string): Promise<string> {
+  private async command(line: string): Promise<Buffer> {
     this.tag += 1;
     const tag = `A${this.tag}`;
     await this.transport.write(`${tag} ${line}\r\n`);
     const result = await this.transport.readUntil((buffer) =>
-      new RegExp(`^${tag} (OK|NO|BAD)`, "im").test(buffer),
+      hasTaggedStatus(buffer, tag),
     );
-    if (!new RegExp(`^${tag} OK`, "im").test(result)) {
+    if (!taggedOk(imapText(result), tag)) {
       if (line.startsWith("LOGIN ")) {
         throw new Error("IMAP login failed");
       }
@@ -203,18 +204,18 @@ export class ImapClient {
   }
 }
 
-export function extractRfc822Literal(raw: string): string {
-  const header = /\{(\d+)\}\r?\n/.exec(raw);
-  if (!header?.[1]) {
-    return raw;
+export function extractRfc822Literal(raw: string | Buffer): Buffer {
+  const bytes = typeof raw === "string" ? Buffer.from(raw, "utf8") : raw;
+  const header = /\{(\d+)\}\r?\n/.exec(imapText(bytes));
+  if (!header?.[1] || header.index === undefined) {
+    return bytes;
   }
   const declared = Number.parseInt(header[1], 10);
   if (!Number.isInteger(declared) || declared < 0) {
-    return raw;
+    return bytes;
   }
   const start = header.index + header[0].length;
-  const bytes = Buffer.from(raw.slice(start), "utf8");
-  return bytes.subarray(0, declared).toString("utf8");
+  return bytes.subarray(start, start + declared);
 }
 
 export function extractFlags(raw: string): readonly string[] {
@@ -240,4 +241,16 @@ function mailboxAncestors(mailbox: string): string[] {
 
 function quote(value: string): string {
   return `"${value.replaceAll("\\", "\\\\").replaceAll('"', '\\"')}"`;
+}
+
+function imapText(buffer: Buffer): string {
+  return buffer.toString("latin1");
+}
+
+function hasTaggedStatus(buffer: Buffer, tag: string): boolean {
+  return new RegExp(`^${tag} (OK|NO|BAD)`, "im").test(imapText(buffer));
+}
+
+function taggedOk(result: string, tag: string): boolean {
+  return new RegExp(`^${tag} OK`, "im").test(result);
 }

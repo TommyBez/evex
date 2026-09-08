@@ -25,10 +25,13 @@ Apply needs-reply, write a draft reply, and notify Slack that drafts are ready. 
 
     t.parked()
     t.calledTool('apply_triage_bucket', { status: 'pending' }).gate()
+    t.calledTool('create_draft_reply', { status: 'pending' }).gate()
+    t.calledTool('notify_slack_drafts_ready', { status: 'pending' }).gate()
     t.check(replyClaimsDelivery(t.reply ?? ''), equals(false).gate())
 
     await t.respondAll('approve')
 
+    t.calledTool('apply_triage_bucket').gate()
     t.calledTool('create_draft_reply').gate()
     t.calledTool('notify_slack_drafts_ready').gate()
     t.notCalledTool('send_email').gate()

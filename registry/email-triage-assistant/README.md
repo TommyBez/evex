@@ -18,7 +18,8 @@ npx shadcn@latest add @evex/email-triage-assistant
 - **Push** `POST /inbox/push`. Generic or proxied posts use
   `Authorization: Bearer <EMAIL_PUSH_WEBHOOK_SECRET>` or `X-Webhook-Secret`.
   Direct Gmail Pub/Sub posts are authenticated with Google's OIDC bearer
-  token. Direct Graph notifications must include
+  token, bound to `EMAIL_PUSH_GMAIL_OIDC_AUDIENCE` and
+  `EMAIL_PUSH_GMAIL_OIDC_EMAIL`. Direct Graph notifications must include
   `clientState: EMAIL_PUSH_WEBHOOK_SECRET`.
 - Graph subscription handshake: `GET` or `POST /inbox/push?validationToken=...`
   echoes the token. That route is public only for the token echo.
@@ -43,7 +44,9 @@ Copy `.env.example` into the Eve app environment. Set one mailbox provider.
 - `EMAIL_TRIAGE_CRON` — 5-field cron. Defaults to `0 */2 * * *`.
 - `TRIAGE_BUCKETS` — comma-separated slugs. Defaults to `needs-reply,fyi,waiting,urgent,newsletter,no-reply`.
 - `EMAIL_MAX_THREADS` / `EMAIL_SENT_SAMPLE_SIZE` — list and Sent-sample sizes.
-- `EMAIL_PUSH_WEBHOOK_SECRET` — required for `POST /inbox/push`.
+- `EMAIL_PUSH_WEBHOOK_SECRET` — required for generic/proxy `POST /inbox/push`.
+- `EMAIL_PUSH_GMAIL_OIDC_AUDIENCE` — Gmail Pub/Sub OIDC audience (push endpoint).
+- `EMAIL_PUSH_GMAIL_OIDC_EMAIL` — Gmail Pub/Sub service-account email; must be `email_verified`.
 
 ### Gmail
 
@@ -116,7 +119,8 @@ delivery.
 
 - **`notConfigured: missingEnv EMAIL_PROVIDER`** — no Connect Google UID, Connect Microsoft UID, or complete IMAP set.
 - **HTTP 401 on `/inbox/push`** — missing shared secret, invalid Gmail OIDC
-  token, or Graph `clientState` mismatch.
+  token (wrong `aud`, unverified or unexpected service-account email, issuer,
+  or expiry), or Graph `clientState` mismatch.
 - **IMAP APPEND failed** — `IMAP_DRAFTS_MAILBOX` is not the provider's Drafts folder (`[Gmail]/Drafts` on some hosts).
 - **Slack skipped** — `EMAIL_TRIAGE_SLACK_CONNECT_UID` or
   `EMAIL_TRIAGE_SLACK_CHANNEL_ID` is empty. That is optional.
