@@ -2,7 +2,10 @@ import { defineTool } from "eve/tools";
 import { always } from "eve/tools/approval";
 import { z } from "zod";
 
-import { emailTriageConfig } from "../lib/email-config";
+import {
+  emailTriageConfig,
+  isSlackNotifyConfigured,
+} from "../lib/email-config";
 import { notifySlackDraftsReady } from "../lib/slack-notify";
 
 const notifySlackDraftsReadyInput = z.object({
@@ -12,22 +15,22 @@ const notifySlackDraftsReadyInput = z.object({
 
 export default defineTool({
   description:
-    "Optionally post a Slack incoming-webhook note that drafts are waiting in Drafts. Always pauses for Eve human approval before the webhook call. Does not send email. Skip when EMAIL_TRIAGE_SLACK_WEBHOOK_URL is unset.",
+    "Optionally post a Slack drafts-ready note through the Eve Slack Connect channel. Always pauses for Eve human approval before the channel send. Does not send email. Skip when EMAIL_TRIAGE_SLACK_CONNECT_UID or EMAIL_TRIAGE_SLACK_CHANNEL_ID is unset.",
   inputSchema: notifySlackDraftsReadyInput,
   approval: always<z.infer<typeof notifySlackDraftsReadyInput>>(),
   async execute({ draftCount, buckets }) {
-    const webhookUrl = emailTriageConfig.slackWebhookUrl;
-    if (!webhookUrl) {
+    if (!isSlackNotifyConfigured()) {
       return {
         notified: false,
         sent: false,
         skipped: true,
-        note: "EMAIL_TRIAGE_SLACK_WEBHOOK_URL is unset. Slack notify is optional.",
+        note: "EMAIL_TRIAGE_SLACK_CONNECT_UID or EMAIL_TRIAGE_SLACK_CHANNEL_ID is unset. Slack notify is optional.",
       };
     }
 
     const result = await notifySlackDraftsReady({
-      webhookUrl,
+      connectUid: emailTriageConfig.slackConnectUid ?? "",
+      channelId: emailTriageConfig.slackChannelId ?? "",
       draftCount,
       buckets: buckets ?? [],
     });

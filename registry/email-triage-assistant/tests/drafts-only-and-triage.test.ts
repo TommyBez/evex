@@ -3,10 +3,17 @@ import { describe, expect, it } from 'vitest'
 import { replyClaimsDelivery } from '../agent/lib/delivery-claims'
 import {
   DEFAULT_TRIAGE_CRON,
+  isSlackNotifyConfigured,
   loadEmailTriageConfig,
   missingEmailProviderEnv,
   resolveEmailProvider,
 } from '../agent/lib/email-config'
+import {
+  GMAIL_CONNECT_SCOPES,
+  MICROSOFT_CONNECT_SCOPES,
+  mintConnectAccessToken,
+  type ConnectTokenMint,
+} from '../agent/lib/oauth'
 import { parseMimeMessage } from '../agent/lib/mime'
 import { createGmailMailbox } from '../agent/lib/providers/gmail'
 import {
@@ -29,7 +36,10 @@ import {
   isForbiddenSendUrl,
   isForbiddenSmtpEndpoint,
 } from '../agent/lib/send-guard'
-import { notifySlackDraftsReady } from '../agent/lib/slack-notify'
+import {
+  buildSlackDraftsReadyText,
+  notifySlackDraftsReady,
+} from '../agent/lib/slack-notify'
 import { buildToneProfile } from '../agent/lib/tone-profile'
 import {
   DEFAULT_TRIAGE_BUCKETS,
@@ -43,12 +53,20 @@ import { webhookSecretsMatch } from '../agent/lib/webhook-auth'
 function gmailConfig() {
   return loadEmailTriageConfig({
     EMAIL_PROVIDER: 'gmail',
-    GMAIL_CLIENT_ID: 'id',
-    GMAIL_CLIENT_SECRET: 'secret',
-    GMAIL_REFRESH_TOKEN: 'refresh',
+    EMAIL_TRIAGE_GOOGLE_CONNECT_UID: 'google/email-triage-assistant',
     GMAIL_USER: 'me@example.com',
   })
 }
+
+const mintGmailToken: ConnectTokenMint = async () => ({
+  accessToken: 'ya29.token',
+  expiresIn: 3600,
+})
+
+const mintGraphToken: ConnectTokenMint = async () => ({
+  accessToken: 'eyJ',
+  expiresIn: 3600,
+})
 
 describe('send guard', () => {
   it('refuses Gmail send, Graph sendMail, and SMTP', () => {
@@ -110,33 +128,31 @@ describe('schedule and provider config', () => {
 
     expect(
       resolveEmailProvider({
-        GMAIL_CLIENT_ID: 'id',
-        GMAIL_CLIENT_SECRET: 'secret',
-        GMAIL_REFRESH_TOKEN: 'refresh',
+        EMAIL_TRIAGE_GOOGLE_CONNECT_UID: 'google/email-triage-assistant',
       }),
     ).toBe('gmail')
     expect(
       resolveEmailProvider({
         GMAIL_CLIENT_ID: 'id',
+        GMAIL_CLIENT_SECRET: 'secret',
         GMAIL_REFRESH_TOKEN: 'refresh',
       }),
     ).toBeNull()
     expect(
       resolveEmailProvider({
-        GMAIL_CLIENT_ID: 'id',
-        GMAIL_REFRESH_TOKEN: 'refresh',
-        MICROSOFT_CLIENT_ID: 'id',
-        MICROSOFT_CLIENT_SECRET: 'secret',
-        MICROSOFT_TENANT_ID: 'tenant',
-        MICROSOFT_REFRESH_TOKEN: 'refresh',
+        EMAIL_TRIAGE_GOOGLE_CONNECT_UID: 'google/email-triage-assistant',
+        EMAIL_TRIAGE_MICROSOFT_CONNECT_UID: 'microsoft/email-triage-assistant',
+      }),
+    ).toBe('gmail')
+    expect(
+      resolveEmailProvider({
+        EMAIL_TRIAGE_MICROSOFT_CONNECT_UID: 'microsoft/email-triage-assistant',
       }),
     ).toBe('outlook')
     expect(
       resolveEmailProvider({
         EMAIL_PROVIDER: 'outlok',
-        GMAIL_CLIENT_ID: 'id',
-        GMAIL_CLIENT_SECRET: 'secret',
-        GMAIL_REFRESH_TOKEN: 'refresh',
+        EMAIL_TRIAGE_GOOGLE_CONNECT_UID: 'google/email-triage-assistant',
       }),
     ).toBeNull()
     expect(
@@ -147,18 +163,39 @@ describe('schedule and provider config', () => {
         IMAP_PASSWORD: 'pw',
       }),
     ).toBe('imap')
+    expect(
+      missingEmailProviderEnv(
+        loadEmailTriageConfig({ EMAIL_PROVIDER: 'gmail' }),
+      ),
+    ).toEqual(['EMAIL_TRIAGE_GOOGLE_CONNECT_UID'])
+  })
+
+  it('mints a Connect access token through the injected helper', async () => {
+    const token = await mintConnectAccessToken({
+      connectorUid: 'google/email-triage-assistant',
+      scopes: GMAIL_CONNECT_SCOPES,
+      mintImpl: async (input) => {
+        expect(input.connectorUid).toBe('google/email-triage-assistant')
+        expect(input.scopes).toEqual([...GMAIL_CONNECT_SCOPES])
+        return { accessToken: 'ya29.token', expiresIn: 3600 }
+      },
+    })
+    expect(token).toEqual({ accessToken: 'ya29.token', expiresIn: 3600 })
   })
 })
 
 describe('Gmail drafts.create never hits send', () => {
-  it('refreshes OAuth once, lists inbox, and POSTs /drafts only', async () => {
+  it('mints a Connect token once, lists inbox, and POSTs /drafts only', async () => {
     const urls: string[] = []
+    let mintCount = 0
+    let mintedUid = ''
+    let mintedScopes: readonly string[] = []
     let draftRaw = ''
     const fetchImpl: typeof fetch = async (input, init) => {
       const url = String(input)
       urls.push(`${init?.method ?? 'GET'} ${url}`)
       if (url.includes('oauth2.googleapis.com/token')) {
-        return Response.json({ access_token: 'ya29.token', expires_in: 3600 })
+        throw new Error('refresh-token OAuth must not run')
       }
       if (url.includes('/threads?') && url.includes('inbox')) {
         return Response.json({ threads: [{ id: 't1' }, { id: 't-done' }] })
@@ -207,7 +244,12 @@ describe('Gmail drafts.create never hits send', () => {
       throw new Error(`unexpected ${url}`)
     }
 
-    const mailbox = createGmailMailbox(gmailConfig(), fetchImpl)
+    const mailbox = createGmailMailbox(gmailConfig(), fetchImpl, async (input) => {
+      mintCount += 1
+      mintedUid = input.connectorUid
+      mintedScopes = input.scopes
+      return mintGmailToken(input)
+    })
     const threads = await mailbox.listThreads({ max: 5 })
     expect(threads.map((thread) => thread.id)).toEqual(['t1'])
     const draft = await mailbox.createDraftReply({
@@ -224,9 +266,12 @@ describe('Gmail drafts.create never hits send', () => {
     expect(mime).toContain(
       'Hi Ava — I will check the annual-plan refund window and follow up.',
     )
-    expect(
-      urls.filter((url) => url.includes('oauth2.googleapis.com/token')),
-    ).toHaveLength(1)
+    expect(mintCount).toBe(1)
+    expect(mintedUid).toBe('google/email-triage-assistant')
+    expect(mintedScopes).toEqual([...GMAIL_CONNECT_SCOPES])
+    expect(urls.some((url) => url.includes('oauth2.googleapis.com/token'))).toBe(
+      false,
+    )
     expect(urls.some((url) => url.includes('/messages/send'))).toBe(false)
     expect(urls.some((url) => url.includes('/drafts/send'))).toBe(false)
     expect(
@@ -246,7 +291,7 @@ describe('Graph createReply never sendMail', () => {
       const url = String(input)
       urls.push(`${init?.method ?? 'GET'} ${url}`)
       if (url.includes('/oauth2/v2.0/token')) {
-        return Response.json({ access_token: 'eyJ', expires_in: 3600 })
+        throw new Error('refresh-token OAuth must not run')
       }
       if (url.includes('/mailFolders/drafts')) {
         return Response.json({ value: [{ conversationId: 'already-drafted' }] })
@@ -281,15 +326,19 @@ describe('Graph createReply never sendMail', () => {
       throw new Error(`unexpected ${url}`)
     }
 
+    let mintCount = 0
+    let mintedScopes: readonly string[] = []
     const mailbox = createGraphMailbox(
       loadEmailTriageConfig({
         EMAIL_PROVIDER: 'outlook',
-        MICROSOFT_CLIENT_ID: 'id',
-        MICROSOFT_CLIENT_SECRET: 'secret',
-        MICROSOFT_TENANT_ID: 'tenant',
-        MICROSOFT_REFRESH_TOKEN: 'refresh',
+        EMAIL_TRIAGE_MICROSOFT_CONNECT_UID: 'microsoft/email-triage-assistant',
       }),
       fetchImpl,
+      async (input) => {
+        mintCount += 1
+        mintedScopes = input.scopes
+        return mintGraphToken(input)
+      },
     )
     const threads = await mailbox.listThreads({ max: 5 })
     expect(threads.map((thread) => thread.id)).toEqual(['c1'])
@@ -304,9 +353,9 @@ describe('Graph createReply never sendMail', () => {
     expect(patchBody.body?.content).toContain(
       'Hi Ava — I will check the annual-plan refund window and follow up.',
     )
-    expect(
-      urls.filter((url) => url.includes('/oauth2/v2.0/token')),
-    ).toHaveLength(1)
+    expect(mintCount).toBe(1)
+    expect(mintedScopes).toEqual([...MICROSOFT_CONNECT_SCOPES])
+    expect(urls.some((url) => url.includes('/oauth2/v2.0/token'))).toBe(false)
     expect(urls.some((url) => url.toLowerCase().includes('sendmail'))).toBe(
       false,
     )
@@ -493,29 +542,91 @@ describe('push and Slack', () => {
     })
   })
 
-  it('posts a drafts-ready Slack note without claiming email send', async () => {
-    const result = await notifySlackDraftsReady({
-      webhookUrl: 'https://hooks.slack.com/services/test',
-      draftCount: 2,
-      buckets: ['needs-reply'],
-      fetchImpl: async () => new Response('ok'),
-    })
-    expect(result).toEqual({ notified: true, sent: false })
+  it('treats Slack as unset unless Connect UID and channel id are both set', () => {
+    expect(isSlackNotifyConfigured(loadEmailTriageConfig({}))).toBe(false)
+    expect(
+      isSlackNotifyConfigured(
+        loadEmailTriageConfig({
+          EMAIL_TRIAGE_SLACK_CONNECT_UID: 'slack/email-triage-assistant',
+        }),
+      ),
+    ).toBe(false)
+    expect(
+      isSlackNotifyConfigured(
+        loadEmailTriageConfig({
+          EMAIL_TRIAGE_SLACK_CHANNEL_ID: 'C0123456789',
+        }),
+      ),
+    ).toBe(false)
+    expect(
+      isSlackNotifyConfigured(
+        loadEmailTriageConfig({
+          EMAIL_TRIAGE_SLACK_CONNECT_UID: 'slack/email-triage-assistant',
+          EMAIL_TRIAGE_SLACK_CHANNEL_ID: 'C0123456789',
+        }),
+      ),
+    ).toBe(true)
   })
 
-  it('returns a failure result when Slack fetch rejects', async () => {
+  it('posts a drafts-ready Slack note without claiming email send', async () => {
+    let posted:
+      | {
+          connectUid: string
+          channelId: string
+          text: string
+        }
+      | undefined
     const result = await notifySlackDraftsReady({
-      webhookUrl: 'https://hooks.slack.com/services/test',
+      connectUid: 'slack/email-triage-assistant',
+      channelId: 'C0123456789',
+      draftCount: 2,
+      buckets: ['needs-reply'],
+      sendImpl: async (input) => {
+        posted = input
+        return { ok: true }
+      },
+    })
+    expect(result).toEqual({ notified: true, sent: false })
+    expect(posted).toEqual({
+      connectUid: 'slack/email-triage-assistant',
+      channelId: 'C0123456789',
+      text: buildSlackDraftsReadyText(2, ['needs-reply']),
+    })
+    expect(posted?.text).toContain('2 inbox drafts ready in Drafts.')
+    expect(posted?.text).toContain('Buckets: needs-reply.')
+    expect(posted?.text).toContain('Nothing was sent.')
+    expect(posted?.text).not.toContain('hooks.slack.com')
+  })
+
+  it('returns a failure result when Slack channel send is not ok', async () => {
+    const result = await notifySlackDraftsReady({
+      connectUid: 'slack/email-triage-assistant',
+      channelId: 'C0123456789',
       draftCount: 1,
       buckets: [],
-      fetchImpl: async () => {
+      sendImpl: async () => ({ ok: false, error: 'channel_not_found' }),
+    })
+    expect(result).toEqual({
+      notified: false,
+      sent: false,
+      note: 'channel_not_found',
+    })
+  })
+
+  it('returns a failure result when Slack channel send rejects', async () => {
+    const result = await notifySlackDraftsReady({
+      connectUid: 'slack/email-triage-assistant',
+      channelId: 'C0123456789',
+      draftCount: 1,
+      buckets: [],
+      sendImpl: async () => {
         throw new Error('network down')
       },
     })
     expect(result).toEqual({
       notified: false,
       sent: false,
-      note: 'Slack webhook request failed: network down',
+      note: 'Slack channel send failed: network down',
     })
   })
 

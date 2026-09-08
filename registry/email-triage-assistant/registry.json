@@ -8,7 +8,7 @@
       "description": "Inbox triage that classifies threads and writes draft replies without sending.",
       "author": "TommyBez",
       "categories": ["support"],
-      "dependencies": ["eve@^0.47.5", "zod@4.3.6"],
+      "dependencies": ["@vercel/connect@^0.2.6", "eve@^0.47.5", "zod@4.3.6"],
       "files": [
         {
           "path": ".env.example",
@@ -29,6 +29,11 @@
           "path": "agent/channels/inbox-push.ts",
           "type": "registry:file",
           "target": "~/agent/channels/inbox-push.ts"
+        },
+        {
+          "path": "agent/channels/slack.ts",
+          "type": "registry:file",
+          "target": "~/agent/channels/slack.ts"
         },
         {
           "path": "agent/instructions.md",
@@ -220,11 +225,11 @@
         "slug": "email-triage-assistant",
         "category": "support",
         "createdAt": "2026-09-08T10:00:00.000Z",
-        "updatedAt": "2026-09-08T12:00:00.000Z",
+        "updatedAt": "2026-09-08T13:00:00.000Z",
         "docs": {
           "overview": [
             "Email Triage Assistant is an eve agent that connects to one mailbox you already own. On each cron tick or signed inbox push it lists threads, reads the ones that need a human, and writes replies into the provider Drafts folder. You review those drafts in Gmail, Outlook, or IMAP and hit send yourself.",
-            "You interact with it through the inbox-triage schedule, the /inbox/push channel, or an on-demand Eve chat that still reads the mailbox. Set Gmail OAuth, Microsoft Graph, or IMAP, plus optional EMAIL_TRIAGE_SLACK_WEBHOOK_URL. The agent applies TRIAGE_BUCKETS labels and matches Sent-folder tone before it calls create_draft_reply.",
+            "You interact with it through the inbox-triage schedule, the /inbox/push channel, or an on-demand Eve chat that still reads the mailbox. Set EMAIL_TRIAGE_GOOGLE_CONNECT_UID, EMAIL_TRIAGE_MICROSOFT_CONNECT_UID, or IMAP, plus optional Slack Connect. The agent applies TRIAGE_BUCKETS labels and matches Sent-folder tone before it calls create_draft_reply.",
             "It is useful when you want autonomous sorting without an auto-send. Code refuses SMTP ports and send URLs. create_draft_reply always returns sent false. Newsletter and FYI threads get a bucket and no draft unless a real question is waiting in the thread."
           ],
           "howItWorks": [
@@ -250,7 +255,7 @@
             },
             {
               "title": "Slack queue when drafts pile up",
-              "body": "After a cron run writes three Drafts, notify_slack_drafts_ready pings EMAIL_TRIAGE_SLACK_WEBHOOK_URL. The note says drafts are ready. Nothing is emailed."
+              "body": "After a cron run writes three Drafts, notify_slack_drafts_ready posts to the Eve Slack Connect channel. The note says drafts are ready. Nothing is emailed."
             }
           ],
           "requirements": [
@@ -283,40 +288,24 @@
               "body": "Shared secret for POST /inbox/push. Graph validationToken echoes do not require it."
             },
             {
-              "name": "EMAIL_TRIAGE_SLACK_WEBHOOK_URL",
-              "body": "Optional Slack incoming webhook for a drafts-ready queue note. Leave empty to skip."
+              "name": "EMAIL_TRIAGE_SLACK_CONNECT_UID",
+              "body": "Optional Vercel Connect Slack connector UID for the Eve Slack channel. Leave empty to skip Slack notify."
             },
             {
-              "name": "GMAIL_CLIENT_ID",
-              "body": "Google OAuth client id for gmail.readonly plus gmail.compose. The agent never calls messages.send or drafts.send."
+              "name": "EMAIL_TRIAGE_SLACK_CHANNEL_ID",
+              "body": "Optional Slack channel id for the drafts-ready note. Leave empty to skip Slack notify."
             },
             {
-              "name": "GMAIL_CLIENT_SECRET",
-              "body": "Google OAuth client secret used with GMAIL_REFRESH_TOKEN."
-            },
-            {
-              "name": "GMAIL_REFRESH_TOKEN",
-              "body": "Refresh token for Gmail inbox read and drafts.create only."
+              "name": "EMAIL_TRIAGE_GOOGLE_CONNECT_UID",
+              "body": "Vercel Connect Google connector UID from vercel connect create google. Mints gmail.readonly, gmail.compose, and gmail.modify tokens. The agent never calls messages.send or drafts.send."
             },
             {
               "name": "GMAIL_USER",
               "body": "Optional From address written onto Gmail drafts."
             },
             {
-              "name": "MICROSOFT_CLIENT_ID",
-              "body": "Azure app id for Mail.Read, Mail.ReadWrite, and offline_access. The agent never calls sendMail."
-            },
-            {
-              "name": "MICROSOFT_CLIENT_SECRET",
-              "body": "Azure app secret used with MICROSOFT_REFRESH_TOKEN."
-            },
-            {
-              "name": "MICROSOFT_TENANT_ID",
-              "body": "Azure tenant id for the token endpoint."
-            },
-            {
-              "name": "MICROSOFT_REFRESH_TOKEN",
-              "body": "Refresh token for Graph inbox read and createReply drafts."
+              "name": "EMAIL_TRIAGE_MICROSOFT_CONNECT_UID",
+              "body": "Vercel Connect Microsoft connector UID from vercel connect create microsoft. Mints Mail.Read and Mail.ReadWrite tokens. The agent never calls sendMail."
             },
             {
               "name": "IMAP_HOST",
@@ -366,7 +355,7 @@
             },
             {
               "question": "Is Slack required?",
-              "answer": "No. EMAIL_TRIAGE_SLACK_WEBHOOK_URL is optional. When set, notify_slack_drafts_ready posts that drafts are waiting. That ping is not email delivery."
+              "answer": "No. EMAIL_TRIAGE_SLACK_CONNECT_UID and EMAIL_TRIAGE_SLACK_CHANNEL_ID are optional. When both are set, notify_slack_drafts_ready posts that drafts are waiting through the Eve Slack channel. That ping is not email delivery."
             }
           ]
         }

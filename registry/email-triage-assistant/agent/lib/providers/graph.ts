@@ -2,7 +2,9 @@ import type { EmailTriageConfig } from "../email-config";
 import { draftsOnlyJson } from "../http";
 import {
   createAccessTokenCache,
-  refreshMicrosoftAccessToken,
+  MICROSOFT_CONNECT_SCOPES,
+  mintConnectAccessToken,
+  type ConnectTokenMint,
   type FetchLike,
 } from "../oauth";
 import { graphCategoryForBucket, hasTriageMarker } from "../triage-buckets";
@@ -44,21 +46,17 @@ export function escapeODataStringLiteral(value: string): string {
 export function createGraphMailbox(
   config: EmailTriageConfig,
   fetchImpl: FetchLike = fetch,
+  mintImpl?: ConnectTokenMint,
 ): EmailMailbox {
   const accessToken = createAccessTokenCache(async () => {
-    const clientId = config.outlook.clientId;
-    const clientSecret = config.outlook.clientSecret;
-    const tenantId = config.outlook.tenantId;
-    const refreshToken = config.outlook.refreshToken;
-    if (!(clientId && clientSecret && tenantId && refreshToken)) {
-      throw new Error("Microsoft Graph OAuth is not configured.");
+    const connectorUid = config.outlook.connectUid;
+    if (!connectorUid) {
+      throw new Error("Microsoft Graph Connect is not configured.");
     }
-    return refreshMicrosoftAccessToken({
-      clientId,
-      clientSecret,
-      tenantId,
-      refreshToken,
-      fetchImpl,
+    return mintConnectAccessToken({
+      connectorUid,
+      scopes: MICROSOFT_CONNECT_SCOPES,
+      mintImpl,
     });
   });
 

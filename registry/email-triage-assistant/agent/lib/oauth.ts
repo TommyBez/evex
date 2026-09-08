@@ -1,10 +1,4 @@
-import { assertDraftsOnlyHttp } from "./send-guard";
-
-export type TokenResponse = {
-  readonly access_token: string;
-  readonly token_type?: string;
-  readonly expires_in?: number;
-};
+import { getTokenResponse } from "@vercel/connect";
 
 export type RefreshedAccessToken = {
   readonly accessToken: string;
@@ -13,6 +7,22 @@ export type RefreshedAccessToken = {
 
 export const DEFAULT_ACCESS_TOKEN_TTL_SECONDS = 3600;
 export const ACCESS_TOKEN_EXPIRY_SKEW_MS = 60_000;
+
+export const GMAIL_CONNECT_SCOPES = [
+  "https://www.googleapis.com/auth/gmail.readonly",
+  "https://www.googleapis.com/auth/gmail.compose",
+  "https://www.googleapis.com/auth/gmail.modify",
+] as const;
+
+export const MICROSOFT_CONNECT_SCOPES = [
+  "https://graph.microsoft.com/Mail.Read",
+  "https://graph.microsoft.com/Mail.ReadWrite",
+] as const;
+
+export type ConnectTokenMint = (input: {
+  readonly connectorUid: string;
+  readonly scopes: readonly string[];
+}) => Promise<RefreshedAccessToken>;
 
 export function createAccessTokenCache(
   refresh: () => Promise<RefreshedAccessToken>,
@@ -47,66 +57,28 @@ export type FetchLike = (
   init?: RequestInit,
 ) => Promise<Response>;
 
-export async function refreshGoogleAccessToken(input: {
-  readonly clientId: string;
-  readonly clientSecret: string;
-  readonly refreshToken: string;
-  readonly fetchImpl?: FetchLike;
+export async function mintConnectAccessToken(input: {
+  readonly connectorUid: string;
+  readonly scopes: readonly string[];
+  readonly mintImpl?: ConnectTokenMint;
 }): Promise<RefreshedAccessToken> {
-  const url = "https://oauth2.googleapis.com/token";
-  assertDraftsOnlyHttp(url, "POST");
-  const fetchImpl = input.fetchImpl ?? fetch;
-  const response = await fetchImpl(url, {
-    method: "POST",
-    headers: { "content-type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({
-      client_id: input.clientId,
-      client_secret: input.clientSecret,
-      refresh_token: input.refreshToken,
-      grant_type: "refresh_token",
-    }),
-  });
-  const payload = (await response.json()) as TokenResponse & { error?: string };
-  if (!response.ok || !payload.access_token) {
-    throw new Error(
-      `Gmail OAuth refresh failed: ${payload.error ?? response.status}`,
-    );
+  if (input.mintImpl) {
+    return input.mintImpl({
+      connectorUid: input.connectorUid,
+      scopes: input.scopes,
+    });
   }
-  return {
-    accessToken: payload.access_token,
-    expiresIn: payload.expires_in ?? DEFAULT_ACCESS_TOKEN_TTL_SECONDS,
-  };
-}
 
-export async function refreshMicrosoftAccessToken(input: {
-  readonly clientId: string;
-  readonly clientSecret: string;
-  readonly tenantId: string;
-  readonly refreshToken: string;
-  readonly fetchImpl?: FetchLike;
-}): Promise<RefreshedAccessToken> {
-  const url = `https://login.microsoftonline.com/${encodeURIComponent(input.tenantId)}/oauth2/v2.0/token`;
-  assertDraftsOnlyHttp(url, "POST");
-  const fetchImpl = input.fetchImpl ?? fetch;
-  const response = await fetchImpl(url, {
-    method: "POST",
-    headers: { "content-type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({
-      client_id: input.clientId,
-      client_secret: input.clientSecret,
-      refresh_token: input.refreshToken,
-      grant_type: "refresh_token",
-      scope: "https://graph.microsoft.com/Mail.Read https://graph.microsoft.com/Mail.ReadWrite offline_access",
-    }),
+  const response = await getTokenResponse(input.connectorUid, {
+    subject: { type: "app" },
+    scopes: [...input.scopes],
   });
-  const payload = (await response.json()) as TokenResponse & { error?: string };
-  if (!response.ok || !payload.access_token) {
-    throw new Error(
-      `Microsoft OAuth refresh failed: ${payload.error ?? response.status}`,
-    );
-  }
+  const remainingMs = response.expiresAt - Date.now();
   return {
-    accessToken: payload.access_token,
-    expiresIn: payload.expires_in ?? DEFAULT_ACCESS_TOKEN_TTL_SECONDS,
+    accessToken: response.token,
+    expiresIn:
+      remainingMs > 0
+        ? Math.max(1, Math.floor(remainingMs / 1000))
+        : DEFAULT_ACCESS_TOKEN_TTL_SECONDS,
   };
 }

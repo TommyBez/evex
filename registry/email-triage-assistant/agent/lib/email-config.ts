@@ -17,18 +17,14 @@ export type EmailTriageConfig = {
   readonly sentSampleSize: number;
   readonly maxThreads: number;
   readonly pushWebhookSecret?: string;
-  readonly slackWebhookUrl?: string;
+  readonly slackConnectUid?: string;
+  readonly slackChannelId?: string;
   readonly gmail: {
-    readonly clientId?: string;
-    readonly clientSecret?: string;
-    readonly refreshToken?: string;
+    readonly connectUid?: string;
     readonly user?: string;
   };
   readonly outlook: {
-    readonly clientId?: string;
-    readonly clientSecret?: string;
-    readonly tenantId?: string;
-    readonly refreshToken?: string;
+    readonly connectUid?: string;
   };
   readonly imap: {
     readonly host?: string;
@@ -73,19 +69,10 @@ export function resolveEmailProvider(
     return null;
   }
 
-  if (
-    optional(env.GMAIL_CLIENT_ID) &&
-    optional(env.GMAIL_CLIENT_SECRET) &&
-    optional(env.GMAIL_REFRESH_TOKEN)
-  ) {
+  if (optional(env.EMAIL_TRIAGE_GOOGLE_CONNECT_UID)) {
     return "gmail";
   }
-  if (
-    optional(env.MICROSOFT_CLIENT_ID) &&
-    optional(env.MICROSOFT_CLIENT_SECRET) &&
-    optional(env.MICROSOFT_TENANT_ID) &&
-    optional(env.MICROSOFT_REFRESH_TOKEN)
-  ) {
+  if (optional(env.EMAIL_TRIAGE_MICROSOFT_CONNECT_UID)) {
     return "outlook";
   }
   if (
@@ -111,18 +98,14 @@ export function loadEmailTriageConfig(
     ),
     maxThreads: parsePositiveInteger(env.EMAIL_MAX_THREADS, DEFAULT_MAX_THREADS),
     pushWebhookSecret: optional(env.EMAIL_PUSH_WEBHOOK_SECRET),
-    slackWebhookUrl: optional(env.EMAIL_TRIAGE_SLACK_WEBHOOK_URL),
+    slackConnectUid: optional(env.EMAIL_TRIAGE_SLACK_CONNECT_UID),
+    slackChannelId: optional(env.EMAIL_TRIAGE_SLACK_CHANNEL_ID),
     gmail: {
-      clientId: optional(env.GMAIL_CLIENT_ID),
-      clientSecret: optional(env.GMAIL_CLIENT_SECRET),
-      refreshToken: optional(env.GMAIL_REFRESH_TOKEN),
+      connectUid: optional(env.EMAIL_TRIAGE_GOOGLE_CONNECT_UID),
       user: optional(env.GMAIL_USER),
     },
     outlook: {
-      clientId: optional(env.MICROSOFT_CLIENT_ID),
-      clientSecret: optional(env.MICROSOFT_CLIENT_SECRET),
-      tenantId: optional(env.MICROSOFT_TENANT_ID),
-      refreshToken: optional(env.MICROSOFT_REFRESH_TOKEN),
+      connectUid: optional(env.EMAIL_TRIAGE_MICROSOFT_CONNECT_UID),
     },
     imap: {
       host: optional(env.IMAP_HOST),
@@ -139,38 +122,23 @@ export function loadEmailTriageConfig(
 
 export const emailTriageConfig = loadEmailTriageConfig();
 
+export function isSlackNotifyConfigured(
+  config: EmailTriageConfig = emailTriageConfig,
+): boolean {
+  return Boolean(config.slackConnectUid && config.slackChannelId);
+}
+
 export function missingEmailProviderEnv(
   config: EmailTriageConfig = emailTriageConfig,
 ): string[] {
   if (config.provider === "gmail") {
-    const missing: string[] = [];
-    if (!config.gmail.clientId) {
-      missing.push("GMAIL_CLIENT_ID");
-    }
-    if (!config.gmail.clientSecret) {
-      missing.push("GMAIL_CLIENT_SECRET");
-    }
-    if (!config.gmail.refreshToken) {
-      missing.push("GMAIL_REFRESH_TOKEN");
-    }
-    return missing;
+    return config.gmail.connectUid ? [] : ["EMAIL_TRIAGE_GOOGLE_CONNECT_UID"];
   }
 
   if (config.provider === "outlook") {
-    const missing: string[] = [];
-    if (!config.outlook.clientId) {
-      missing.push("MICROSOFT_CLIENT_ID");
-    }
-    if (!config.outlook.clientSecret) {
-      missing.push("MICROSOFT_CLIENT_SECRET");
-    }
-    if (!config.outlook.tenantId) {
-      missing.push("MICROSOFT_TENANT_ID");
-    }
-    if (!config.outlook.refreshToken) {
-      missing.push("MICROSOFT_REFRESH_TOKEN");
-    }
-    return missing;
+    return config.outlook.connectUid
+      ? []
+      : ["EMAIL_TRIAGE_MICROSOFT_CONNECT_UID"];
   }
 
   if (config.provider === "imap") {

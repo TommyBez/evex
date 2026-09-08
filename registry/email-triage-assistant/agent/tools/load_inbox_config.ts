@@ -1,7 +1,11 @@
 import { defineTool } from "eve/tools";
 import { z } from "zod";
 
-import { emailTriageConfig, missingEmailProviderEnv } from "../lib/email-config";
+import {
+  emailTriageConfig,
+  isSlackNotifyConfigured,
+  missingEmailProviderEnv,
+} from "../lib/email-config";
 
 export default defineTool({
   description:
@@ -15,7 +19,7 @@ export default defineTool({
       buckets: emailTriageConfig.buckets,
       sentSampleSize: emailTriageConfig.sentSampleSize,
       maxThreads: emailTriageConfig.maxThreads,
-      slackConfigured: Boolean(emailTriageConfig.slackWebhookUrl),
+      slackConfigured: isSlackNotifyConfigured(),
       pushConfigured: Boolean(emailTriageConfig.pushWebhookSecret),
       missingEnv: missing,
       notConfigured: missing.length > 0,

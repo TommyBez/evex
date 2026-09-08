@@ -2,7 +2,9 @@ import type { EmailTriageConfig } from "../email-config";
 import { draftsOnlyJson } from "../http";
 import {
   createAccessTokenCache,
-  refreshGoogleAccessToken,
+  GMAIL_CONNECT_SCOPES,
+  mintConnectAccessToken,
+  type ConnectTokenMint,
   type FetchLike,
 } from "../oauth";
 import { encodeBase64Url, buildRfc822 } from "../rfc822";
@@ -47,19 +49,17 @@ const GMAIL_API = "https://gmail.googleapis.com/gmail/v1/users/me";
 export function createGmailMailbox(
   config: EmailTriageConfig,
   fetchImpl: FetchLike = fetch,
+  mintImpl?: ConnectTokenMint,
 ): EmailMailbox {
   const accessToken = createAccessTokenCache(async () => {
-    const clientId = config.gmail.clientId;
-    const clientSecret = config.gmail.clientSecret;
-    const refreshToken = config.gmail.refreshToken;
-    if (!(clientId && clientSecret && refreshToken)) {
-      throw new Error("Gmail OAuth is not configured.");
+    const connectorUid = config.gmail.connectUid;
+    if (!connectorUid) {
+      throw new Error("Gmail Connect is not configured.");
     }
-    return refreshGoogleAccessToken({
-      clientId,
-      clientSecret,
-      refreshToken,
-      fetchImpl,
+    return mintConnectAccessToken({
+      connectorUid,
+      scopes: GMAIL_CONNECT_SCOPES,
+      mintImpl,
     });
   });
 

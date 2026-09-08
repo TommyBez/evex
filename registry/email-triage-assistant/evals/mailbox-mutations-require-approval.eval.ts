@@ -30,6 +30,7 @@ Apply needs-reply, write a draft reply, and notify Slack that drafts are ready. 
     await t.respondAll('approve')
 
     t.calledTool('create_draft_reply').gate()
+    t.calledTool('notify_slack_drafts_ready').gate()
     t.notCalledTool('send_email').gate()
     t.check(replyClaimsDelivery(t.reply ?? ''), equals(false).gate())
   },

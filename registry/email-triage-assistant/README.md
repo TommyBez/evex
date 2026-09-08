@@ -45,26 +45,25 @@ Copy `.env.example` into the Eve app environment. Set one mailbox provider.
 - `EMAIL_MAX_THREADS` / `EMAIL_SENT_SAMPLE_SIZE` — list and Sent-sample sizes.
 - `EMAIL_PUSH_WEBHOOK_SECRET` — required for `POST /inbox/push`.
 
-### Gmail OAuth
+### Gmail
 
-Read inbox, apply labels, and write drafts. Consent `gmail.readonly`,
+Read inbox, apply labels, and write drafts via Vercel Connect. Create a
+Google connector (`vercel connect create google`) with `gmail.readonly`,
 `gmail.compose`, and `gmail.modify` (`gmail.modify` is required for label
-writes). The agent never calls `messages.send` or `drafts.send`.
+writes). The agent never calls `messages.send` or `drafts.send`. Tokens
+come from Connect `getToken` (`subject: app`), not a refresh-token pair.
 
-- `GMAIL_CLIENT_ID`
-- `GMAIL_CLIENT_SECRET`
-- `GMAIL_REFRESH_TOKEN`
+- `EMAIL_TRIAGE_GOOGLE_CONNECT_UID` — Connect Google connector UID
 - `GMAIL_USER` — optional From header on drafts
 
 ### Microsoft Graph
 
-Drafts only. Consent `Mail.Read`, `Mail.ReadWrite`, and `offline_access`.
-The agent never calls `sendMail`.
+Drafts only via Vercel Connect. Create a Microsoft connector
+(`vercel connect create microsoft`) with `Mail.Read` and `Mail.ReadWrite`.
+The agent never calls `sendMail`. Tokens come from Connect `getToken`
+(`subject: app`), not a refresh-token pair.
 
-- `MICROSOFT_CLIENT_ID`
-- `MICROSOFT_CLIENT_SECRET`
-- `MICROSOFT_TENANT_ID`
-- `MICROSOFT_REFRESH_TOKEN`
+- `EMAIL_TRIAGE_MICROSOFT_CONNECT_UID` — Connect Microsoft connector UID
 
 ### IMAP
 
@@ -78,8 +77,16 @@ APPEND to Drafts. No SMTP.
 
 ### Optional Slack
 
-- `EMAIL_TRIAGE_SLACK_WEBHOOK_URL` — incoming webhook for a "drafts ready"
-  queue note. Leave empty to skip.
+Uses the Eve Slack channel (`agent/channels/slack.ts`) with Vercel Connect.
+Create a Slack connector and attach triggers to `/eve/v1/slack`
+(`vercel connect create slack --triggers`, or `eve add channel/slack`).
+
+- `EMAIL_TRIAGE_SLACK_CONNECT_UID` — Connect Slack connector UID.
+- `EMAIL_TRIAGE_SLACK_CHANNEL_ID` — Slack channel id for the drafts-ready note.
+
+Leave either empty to skip. `notify_slack_drafts_ready` pauses for Eve
+approval, then posts through the Eve Slack channel. That ping is not email
+delivery.
 
 ### Model
 
@@ -107,11 +114,12 @@ APPEND to Drafts. No SMTP.
 
 ## Troubleshooting
 
-- **`notConfigured: missingEnv EMAIL_PROVIDER`** — no complete Gmail, Graph, or IMAP set.
+- **`notConfigured: missingEnv EMAIL_PROVIDER`** — no Connect Google UID, Connect Microsoft UID, or complete IMAP set.
 - **HTTP 401 on `/inbox/push`** — missing shared secret, invalid Gmail OIDC
   token, or Graph `clientState` mismatch.
 - **IMAP APPEND failed** — `IMAP_DRAFTS_MAILBOX` is not the provider's Drafts folder (`[Gmail]/Drafts` on some hosts).
-- **Slack skipped** — `EMAIL_TRIAGE_SLACK_WEBHOOK_URL` is empty. That is optional.
+- **Slack skipped** — `EMAIL_TRIAGE_SLACK_CONNECT_UID` or
+  `EMAIL_TRIAGE_SLACK_CHANNEL_ID` is empty. That is optional.
 
 ## Development
 

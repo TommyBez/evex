@@ -3,7 +3,7 @@ import {
   emailTriageConfig,
   missingEmailProviderEnv,
 } from "../email-config";
-import type { FetchLike } from "../oauth";
+import type { ConnectTokenMint, FetchLike } from "../oauth";
 import { createGmailMailbox } from "./gmail";
 import { createGraphMailbox } from "./graph";
 import { createImapMailbox } from "./imap";
@@ -14,6 +14,7 @@ export function createConfiguredMailbox(
   config: EmailTriageConfig = emailTriageConfig,
   options: {
     readonly fetchImpl?: FetchLike;
+    readonly mintImpl?: ConnectTokenMint;
     readonly imapConnect?: ImapConnect;
   } = {},
 ): MailboxResult<EmailMailbox> {
@@ -27,10 +28,16 @@ export function createConfiguredMailbox(
   }
 
   if (config.provider === "gmail") {
-    return { ok: true, value: createGmailMailbox(config, options.fetchImpl) };
+    return {
+      ok: true,
+      value: createGmailMailbox(config, options.fetchImpl, options.mintImpl),
+    };
   }
   if (config.provider === "outlook") {
-    return { ok: true, value: createGraphMailbox(config, options.fetchImpl) };
+    return {
+      ok: true,
+      value: createGraphMailbox(config, options.fetchImpl, options.mintImpl),
+    };
   }
   if (config.provider === "imap") {
     return {
