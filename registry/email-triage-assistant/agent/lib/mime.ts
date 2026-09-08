@@ -153,7 +153,10 @@ function decodeTransfer(
 ): string {
   const normalized = encoding.trim().toLowerCase();
   if (normalized === "base64") {
-    const bytes = Buffer.from(value.toString("ascii").replaceAll(/\s+/g, ""), "base64");
+    const bytes = Buffer.from(
+      value.toString("ascii").replaceAll(/\s+/g, ""),
+      "base64",
+    );
     return decodeCharset(bytes, charset);
   }
   if (normalized === "quoted-printable") {
