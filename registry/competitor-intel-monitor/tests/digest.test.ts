@@ -27,7 +27,8 @@ describe("digest delivery draft", () => {
     expect(draft.slackText).toContain("https://example.com/pricing");
     expect(draft.slackText).toContain("score 48/100");
     expect(draft.html).toContain('lang="en"');
-    expect(draft.html).toContain('role="presentation"');
+    expect(draft.html).toContain("<table>");
+    expect(draft.html).not.toContain('role="presentation"');
     expect(draft.html).toContain("<h1>");
     expect(draft.html).toContain('href="https://example.com/pricing"');
     expect(draft.text).toContain("Added: 29 annual billing");

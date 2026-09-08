@@ -62,3 +62,13 @@ export const toScoredChange = ({
 export const changesThatClearThreshold = (
   changes: readonly ScoredChange[],
 ): readonly ScoredChange[] => changes.filter((change) => change.clearsThreshold);
+
+export const selectDigestAlerts = <
+  T extends Pick<ScoredChange, "isBaseline" | "changed" | "score" | "changedChars">,
+>(
+  changes: readonly T[],
+  thresholds: AlertThresholds,
+): T[] =>
+  changes.filter(
+    (change) => !change.isBaseline && changeClearsThreshold(change, thresholds),
+  );

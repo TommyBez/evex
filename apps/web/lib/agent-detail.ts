@@ -212,7 +212,7 @@ export function shouldRenderAgentDescriptionParagraph({
 // locked job-intent lede (that sentence already sits under the H1).
 const AGENT_DEFINITION_JOB_OVERRIDES: Readonly<Record<string, string>> = {
   'competitor-intel-monitor':
-    'Fetches your URL list, diffs each page against a store, and delivers only changes that clear your alert thresholds.',
+    'fetches your URL list, diffs each page against a store, and delivers only changes that clear your alert thresholds.',
   'knowledge-base-gardener':
     'reads docs on disk and drafts a cited update you review',
   'meeting-action-extractor':

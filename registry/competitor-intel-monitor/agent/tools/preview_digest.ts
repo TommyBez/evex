@@ -1,7 +1,8 @@
 import { defineTool } from "eve/tools";
 import { z } from "zod";
 
-import { buildDigestDraft, utcDateStamp } from "../lib/digest.js";
+import { buildDigestDraft, buildDigestIdempotencyKey, utcDateStamp } from "../lib/digest.js";
+import { selectDigestAlerts } from "../lib/thresholds.js";
 import { watchConfig } from "../lib/watch-config.js";
 
 const changeSchema = z.object({
@@ -17,13 +18,13 @@ const changeSchema = z.object({
 
 export default defineTool({
   description:
-    "Preview the Slack and/or email digest without sending it. Builds a scored draft from changes that already cleared the alert thresholds. Recipients and the Slack webhook come from configuration and cannot be overridden via input.",
+    "Preview the Slack and/or email digest without sending it. Rebuilds eligibility from score, changedChars, and the configured alert thresholds. Recipients and the Slack webhook come from configuration and cannot be overridden via input. Returns the idempotencyKey to reuse for send_digest retries of this logical digest.",
   inputSchema: z.object({
     changes: z.array(changeSchema).min(1),
     runDate: z.string().min(1).optional(),
   }),
   execute({ changes, runDate }) {
-    const alerts = changes.filter((change) => change.clearsThreshold && !change.isBaseline);
+    const alerts = selectDigestAlerts(changes, watchConfig.alert);
     if (alerts.length === 0) {
       return {
         dryRun: true,
@@ -46,7 +47,8 @@ export default defineTool({
       };
     }
 
-    const draft = buildDigestDraft(alerts, watchConfig, runDate ?? utcDateStamp());
+    const date = runDate ?? utcDateStamp();
+    const draft = buildDigestDraft(alerts, watchConfig, date);
     return {
       dryRun: true,
       nothingToDeliver: false,
@@ -59,6 +61,7 @@ export default defineTool({
       htmlPreview: draft.html.slice(0, 500),
       htmlLength: draft.html.length,
       textLength: draft.text.length,
+      idempotencyKey: buildDigestIdempotencyKey(alerts, date),
       draft,
     };
   },

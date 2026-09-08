@@ -166,7 +166,7 @@
         "slug": "competitor-intel-monitor",
         "category": "research",
         "createdAt": "2026-09-07T20:00:00.000Z",
-        "updatedAt": "2026-09-07T20:10:00.000Z",
+        "updatedAt": "2026-09-08T09:20:00.000Z",
         "docs": {
           "overview": [
             "Competitor Intel Monitor is a scheduled eve agent that re-reads a list of competitor pages you already chose. On each cron tick it checks robots.txt, pulls the HTML that is allowed, and compares normalized text to the last snapshot in a JSON file or Upstash Redis. You configure the list and thresholds once, then leave it running.",

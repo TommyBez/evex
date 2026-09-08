@@ -742,7 +742,7 @@ describe('getAgentDefinitionBlock', () => {
       'watches competitor pages on a schedule',
     )
     expect(block.plainText).toContain(
-      'Competitor Intel Monitor is an Eve agent that Fetches your URL list, diffs each page against a store, and delivers only changes that clear your alert thresholds.',
+      'Competitor Intel Monitor is an Eve agent that fetches your URL list, diffs each page against a store, and delivers only changes that clear your alert thresholds.',
     )
     expect(block.plainText).toContain(
       'npx shadcn@latest add @evex/competitor-intel-monitor',

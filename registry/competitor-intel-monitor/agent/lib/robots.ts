@@ -113,11 +113,23 @@ const groupSpecificity = (group: RobotsGroup, userAgent: string): number => {
   return best;
 };
 
+const escapeRegex = (value: string): string => value.replace(/[.+?^${}()|[\]\\]/g, "\\$&");
+
+const ruleToPattern = (rulePath: string): RegExp => {
+  const anchored = rulePath.endsWith("$");
+  const body = anchored ? rulePath.slice(0, -1) : rulePath;
+  const source = body.split("*").map(escapeRegex).join(".*");
+  return new RegExp(`^${source}${anchored ? "$" : ""}`);
+};
+
 const pathMatches = (rulePath: string, urlPath: string): boolean => {
   if (rulePath.length === 0) {
     return false;
   }
-  return urlPath === rulePath || urlPath.startsWith(rulePath);
+  if (!rulePath.includes("*") && !rulePath.endsWith("$")) {
+    return urlPath === rulePath || urlPath.startsWith(rulePath);
+  }
+  return ruleToPattern(rulePath).test(urlPath);
 };
 
 export const isUrlAllowedByRobots = (

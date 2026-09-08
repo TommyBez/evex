@@ -1,3 +1,5 @@
+import { createHash } from "node:crypto";
+
 import type { ScoredChange } from "./thresholds.js";
 import type { WatchConfig } from "./watch-config.js";
 
@@ -52,7 +54,7 @@ export const buildDigestDraft = (
     <div lang="en" dir="ltr">
       <h1>${escapeHtml(subject)}</h1>
       <p>${escapeHtml(intro)}</p>
-      <table role="presentation">
+      <table>
         <thead>
           <tr>
             <th>URL</th>
@@ -84,3 +86,15 @@ ${rows}
 };
 
 export const utcDateStamp = (now: Date = new Date()): string => now.toISOString().slice(0, 10);
+
+export const buildDigestIdempotencyKey = (
+  changes: readonly Pick<ScoredChange, "url" | "fetchedAt" | "score" | "changedChars">[],
+  runDate: string,
+): string => {
+  const fingerprint = changes
+    .map((change) => `${change.url}\0${change.fetchedAt}\0${change.score}\0${change.changedChars}`)
+    .sort()
+    .join("\n");
+  const digest = createHash("sha256").update(fingerprint).digest("hex").slice(0, 16);
+  return `competitor-intel-monitor-${runDate}-${digest}`;
+};
