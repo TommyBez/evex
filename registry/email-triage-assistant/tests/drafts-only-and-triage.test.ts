@@ -422,6 +422,116 @@ describe('Graph createReply never sendMail', () => {
     ).toHaveLength(2)
     expect(urls.some((url) => url.includes('$skiptoken=page2'))).toBe(true)
   })
+
+  it('follows inbox @odata.nextLink until max unique conversations', async () => {
+    const urls: string[] = []
+    const fetchImpl: typeof fetch = async (input) => {
+      const url = String(input)
+      urls.push(url)
+      if (url.includes('/mailFolders/drafts/messages')) {
+        return Response.json({ value: [] })
+      }
+      if (
+        url.includes('/mailFolders/inbox/messages') &&
+        url.includes('$skiptoken=inbox2')
+      ) {
+        return Response.json({
+          value: [
+            {
+              id: 'm2',
+              conversationId: 'c2',
+              subject: 'Access',
+              bodyPreview: 'Need a key reset',
+              from: { emailAddress: { address: 'sam@example.com' } },
+            },
+          ],
+        })
+      }
+      if (url.includes('/mailFolders/inbox/messages')) {
+        return Response.json({
+          value: [
+            {
+              id: 'm1',
+              conversationId: 'c1',
+              subject: 'Refund',
+              bodyPreview: 'Can we get a refund?',
+              from: { emailAddress: { address: 'ava@example.com' } },
+            },
+          ],
+          '@odata.nextLink':
+            'https://graph.microsoft.com/v1.0/me/mailFolders/inbox/messages?$top=5&$select=id,conversationId,subject,bodyPreview,receivedDateTime,from,categories,isDraft&$skiptoken=inbox2',
+        })
+      }
+      throw new Error(`unexpected ${url}`)
+    }
+
+    const mailbox = createGraphMailbox(
+      loadEmailTriageConfig({
+        EMAIL_PROVIDER: 'outlook',
+        EMAIL_TRIAGE_MICROSOFT_CONNECT_UID: 'microsoft/email-triage-assistant',
+      }),
+      fetchImpl,
+      mintGraphToken,
+    )
+    const threads = await mailbox.listThreads({ max: 5 })
+    expect(threads.map((thread) => thread.id)).toEqual(['c1', 'c2'])
+    expect(
+      urls.filter((url) => url.includes('/mailFolders/inbox/messages')),
+    ).toHaveLength(2)
+    expect(urls.some((url) => url.includes('$skiptoken=inbox2'))).toBe(true)
+  })
+
+  it('follows readThread @odata.nextLink across conversation pages', async () => {
+    const urls: string[] = []
+    const fetchImpl: typeof fetch = async (input) => {
+      const url = String(input)
+      urls.push(url)
+      if (url.includes('$skiptoken=thread2')) {
+        return Response.json({
+          value: [
+            {
+              id: 'm2',
+              conversationId: 'c1',
+              subject: 'Refund',
+              body: { content: 'Second message' },
+              from: { emailAddress: { address: 'sam@example.com' } },
+              toRecipients: [{ emailAddress: { address: 'ava@example.com' } }],
+            },
+          ],
+        })
+      }
+      if (url.includes('/messages?') && url.includes('conversationId')) {
+        return Response.json({
+          value: [
+            {
+              id: 'm1',
+              conversationId: 'c1',
+              subject: 'Refund',
+              body: { content: 'First message' },
+              from: { emailAddress: { address: 'ava@example.com' } },
+              toRecipients: [{ emailAddress: { address: 'sam@example.com' } }],
+            },
+          ],
+          '@odata.nextLink':
+            "https://graph.microsoft.com/v1.0/me/messages?$filter=conversationId eq 'c1'&$skiptoken=thread2",
+        })
+      }
+      throw new Error(`unexpected ${url}`)
+    }
+
+    const mailbox = createGraphMailbox(
+      loadEmailTriageConfig({
+        EMAIL_PROVIDER: 'outlook',
+        EMAIL_TRIAGE_MICROSOFT_CONNECT_UID: 'microsoft/email-triage-assistant',
+      }),
+      fetchImpl,
+      mintGraphToken,
+    )
+    const thread = await mailbox.readThread('c1')
+    expect(thread.messages.map((message) => message.id)).toEqual(['m1', 'm2'])
+    expect(thread.messages[1]?.body).toBe('Second message')
+    expect(urls.some((url) => url.includes('$skiptoken=thread2'))).toBe(true)
+  })
 })
 
 describe('IMAP APPEND to Drafts', () => {
