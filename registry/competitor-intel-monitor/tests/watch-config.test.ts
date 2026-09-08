@@ -5,6 +5,7 @@ import {
   isHttpsUrl,
   isSlackDeliveryConfigured,
   loadWatchConfig,
+  missingDeliveryEnv,
   missingWatchConfig,
   parseWatchConfigFile,
 } from "../agent/lib/watch-config";
@@ -115,5 +116,33 @@ https://example.com/changelog
     );
     expect(missing).not.toContain("COMPETITOR_INTEL_SLACK_CONNECT_UID");
     expect(missing).not.toContain("COMPETITOR_INTEL_SLACK_CHANNEL_ID");
+  });
+
+  it("reports only the unset Slack variable when Slack delivery is incomplete", () => {
+    const uidOnly = missingDeliveryEnv(
+      loadWatchConfig(
+        { COMPETITOR_INTEL_SLACK_CONNECT_UID: "slack/competitor-intel-monitor" },
+        () => ({ urls: [] }),
+      ),
+    );
+    expect(uidOnly).toContain("COMPETITOR_INTEL_SLACK_CHANNEL_ID");
+    expect(uidOnly).not.toContain("COMPETITOR_INTEL_SLACK_CONNECT_UID");
+
+    const channelOnly = missingDeliveryEnv(
+      loadWatchConfig(
+        { COMPETITOR_INTEL_SLACK_CHANNEL_ID: "C0123456789" },
+        () => ({ urls: [] }),
+      ),
+    );
+    expect(channelOnly).toContain("COMPETITOR_INTEL_SLACK_CONNECT_UID");
+    expect(channelOnly).not.toContain("COMPETITOR_INTEL_SLACK_CHANNEL_ID");
+
+    const neither = missingDeliveryEnv(loadWatchConfig({}, () => ({ urls: [] })));
+    expect(neither).toEqual([
+      "COMPETITOR_INTEL_SLACK_CONNECT_UID",
+      "COMPETITOR_INTEL_SLACK_CHANNEL_ID",
+      "COMPETITOR_INTEL_DIGEST_FROM",
+      "COMPETITOR_INTEL_DIGEST_TO",
+    ]);
   });
 });

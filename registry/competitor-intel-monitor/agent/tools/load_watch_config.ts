@@ -2,6 +2,7 @@ import { defineTool } from "eve/tools";
 import { z } from "zod";
 
 import {
+  isEmailDeliveryConfigured,
   isSlackDeliveryConfigured,
   missingWatchConfig,
   watchConfig,
@@ -23,7 +24,7 @@ export default defineTool({
       userAgent: watchConfig.userAgent,
       delivery: {
         slackConfigured: isSlackDeliveryConfigured(watchConfig),
-        emailConfigured: Boolean(watchConfig.digest.from && watchConfig.digest.to.length > 0),
+        emailConfigured: isEmailDeliveryConfigured(watchConfig),
         emailRecipientCount: watchConfig.digest.to.length,
         subject: watchConfig.digest.subject,
       },

@@ -3,7 +3,12 @@ import { z } from "zod";
 
 import { buildDigestDraft, buildDigestIdempotencyKey, utcDateStamp } from "../lib/digest.js";
 import { selectDigestAlerts } from "../lib/thresholds.js";
-import { isSlackDeliveryConfigured, watchConfig } from "../lib/watch-config.js";
+import {
+  isEmailDeliveryConfigured,
+  isSlackDeliveryConfigured,
+  missingDeliveryEnv,
+  watchConfig,
+} from "../lib/watch-config.js";
 
 const changeSchema = z.object({
   url: z.string().url(),
@@ -34,17 +39,12 @@ export default defineTool({
     }
 
     const slackConfigured = isSlackDeliveryConfigured(watchConfig);
-    const emailConfigured = Boolean(watchConfig.digest.from && watchConfig.digest.to.length > 0);
+    const emailConfigured = isEmailDeliveryConfigured(watchConfig);
     if (!slackConfigured && !emailConfigured) {
       return {
         dryRun: true,
         notConfigured: true,
-        missingEnv: [
-          "COMPETITOR_INTEL_SLACK_CONNECT_UID",
-          "COMPETITOR_INTEL_SLACK_CHANNEL_ID",
-          "COMPETITOR_INTEL_DIGEST_FROM",
-          "COMPETITOR_INTEL_DIGEST_TO",
-        ],
+        missingEnv: missingDeliveryEnv(watchConfig),
       };
     }
 

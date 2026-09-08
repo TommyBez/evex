@@ -170,6 +170,28 @@ export const isSlackDeliveryConfigured = (
   config: WatchConfig = watchConfig,
 ): boolean => Boolean(config.slackConnectUid && config.slackChannelId);
 
+export const isEmailDeliveryConfigured = (
+  config: WatchConfig = watchConfig,
+): boolean => Boolean(config.digest.from && config.digest.to.length > 0);
+
+export const missingDeliveryEnv = (
+  config: WatchConfig = watchConfig,
+): readonly string[] => {
+  if (isSlackDeliveryConfigured(config) || isEmailDeliveryConfigured(config)) {
+    return [];
+  }
+  const missing: string[] = [];
+  if (!config.slackConnectUid) {
+    missing.push("COMPETITOR_INTEL_SLACK_CONNECT_UID");
+  }
+  if (!config.slackChannelId) {
+    missing.push("COMPETITOR_INTEL_SLACK_CHANNEL_ID");
+  }
+  missing.push("COMPETITOR_INTEL_DIGEST_FROM");
+  missing.push("COMPETITOR_INTEL_DIGEST_TO");
+  return missing;
+};
+
 export const missingWatchConfig = (
   config: WatchConfig = watchConfig,
 ): readonly string[] => {
@@ -177,15 +199,8 @@ export const missingWatchConfig = (
   if (config.urls.length === 0) {
     missing.push("COMPETITOR_INTEL_URLS");
   }
-  const hasSlack = isSlackDeliveryConfigured(config);
-  const hasEmail = Boolean(config.digest.from && config.digest.to.length > 0);
-  if (!hasSlack && !hasEmail) {
-    missing.push("COMPETITOR_INTEL_SLACK_CONNECT_UID");
-    missing.push("COMPETITOR_INTEL_SLACK_CHANNEL_ID");
-    missing.push("COMPETITOR_INTEL_DIGEST_FROM");
-    missing.push("COMPETITOR_INTEL_DIGEST_TO");
-  }
-  if (hasEmail && !process.env.RESEND_API_KEY?.trim()) {
+  missing.push(...missingDeliveryEnv(config));
+  if (isEmailDeliveryConfigured(config) && !process.env.RESEND_API_KEY?.trim()) {
     missing.push("RESEND_API_KEY");
   }
   return missing;
