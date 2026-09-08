@@ -35,9 +35,13 @@ type GraphMessage = {
   readonly isDraft?: boolean;
 };
 
-type GraphList = { readonly value?: readonly GraphMessage[] };
+type GraphList = {
+  readonly value?: readonly GraphMessage[];
+  readonly "@odata.nextLink"?: string;
+};
 
 const GRAPH_API = "https://graph.microsoft.com/v1.0/me";
+const GRAPH_ORIGIN = "https://graph.microsoft.com";
 
 export function escapeODataStringLiteral(value: string): string {
   return value.replaceAll("'", "''");
@@ -64,12 +68,14 @@ export function createGraphMailbox(
     authorization: `Bearer ${await accessToken()}`,
   });
 
-  const get = async <T>(path: string): Promise<T> =>
+  const getUrl = async <T>(url: string): Promise<T> =>
     draftsOnlyJson<T>({
-      url: `${GRAPH_API}${path}`,
+      url,
       headers: await authHeaders(),
       fetchImpl,
     });
+
+  const get = async <T>(path: string): Promise<T> => getUrl<T>(`${GRAPH_API}${path}`);
 
   const post = async <T>(path: string, body: unknown): Promise<T> =>
     draftsOnlyJson<T>({
@@ -95,18 +101,19 @@ export function createGraphMailbox(
   return {
     provider: "outlook",
     async listThreads({ max }) {
-      const [listed, drafts] = await Promise.all([
-        get<GraphList>(
-          `/mailFolders/inbox/messages?$top=${max}&$select=id,conversationId,subject,bodyPreview,receivedDateTime,from,categories,isDraft`,
-        ),
-        get<GraphList>(
-          `/mailFolders/drafts/messages?$top=${max}&$select=conversationId`,
-        ),
-      ]);
-      const drafted = new Set(
-        (drafts.value ?? [])
-          .map((message) => message.conversationId)
-          .filter((id): id is string => Boolean(id)),
+      const listed = await get<GraphList>(
+        `/mailFolders/inbox/messages?$top=${max}&$select=id,conversationId,subject,bodyPreview,receivedDateTime,from,categories,isDraft`,
+      );
+      const candidates = new Set<string>();
+      for (const message of listed.value ?? []) {
+        if (!message.isDraft) {
+          candidates.add(message.conversationId ?? message.id);
+        }
+      }
+      const drafted = await collectDraftConversationIds(
+        (url) => getUrl<GraphList>(url),
+        candidates,
+        max,
       );
       const seen = new Set<string>();
       const threads: InboxThread[] = [];
@@ -232,4 +239,41 @@ function toThreadMessage(message: GraphMessage): ThreadMessage {
 
 function stripHtml(value: string): string {
   return value.replaceAll(/<[^>]+>/g, " ").replaceAll(/\s+/g, " ").trim();
+}
+
+async function collectDraftConversationIds(
+  getUrl: (url: string) => Promise<GraphList>,
+  candidates: ReadonlySet<string>,
+  pageSize: number,
+): Promise<Set<string>> {
+  const drafted = new Set<string>();
+  if (candidates.size === 0) {
+    return drafted;
+  }
+
+  let url: string | undefined =
+    `${GRAPH_API}/mailFolders/drafts/messages?$top=${pageSize}&$select=conversationId`;
+  while (url) {
+    const page = await getUrl(url);
+    for (const message of page.value ?? []) {
+      if (message.conversationId) {
+        drafted.add(message.conversationId);
+      }
+    }
+    if (Array.from(candidates).every((id) => drafted.has(id))) {
+      break;
+    }
+    const nextLink: string | undefined = page["@odata.nextLink"];
+    url = nextLink && isGraphNextLink(nextLink) ? nextLink : undefined;
+  }
+  return drafted;
+}
+
+function isGraphNextLink(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    return parsed.origin === GRAPH_ORIGIN && parsed.protocol === "https:";
+  } catch {
+    return false;
+  }
 }

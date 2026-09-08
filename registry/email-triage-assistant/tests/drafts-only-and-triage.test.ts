@@ -363,6 +363,65 @@ describe('Graph createReply never sendMail', () => {
     await mailbox.readThread("O'Bryan")
     expect(urls.some((url) => url.includes("O''Bryan"))).toBe(true)
   })
+
+  it('follows Drafts @odata.nextLink before skipping already-drafted threads', async () => {
+    const urls: string[] = []
+    const fetchImpl: typeof fetch = async (input) => {
+      const url = String(input)
+      urls.push(url)
+      if (url.includes('/mailFolders/inbox')) {
+        return Response.json({
+          value: [
+            {
+              id: 'm1',
+              conversationId: 'c1',
+              subject: 'Refund',
+              bodyPreview: 'Can we get a refund?',
+              from: { emailAddress: { address: 'ava@example.com' } },
+            },
+            {
+              id: 'm2',
+              conversationId: 'already-drafted',
+              subject: 'Old',
+              bodyPreview: 'Already drafted',
+              from: { emailAddress: { address: 'sam@example.com' } },
+            },
+          ],
+        })
+      }
+      if (
+        url.includes('/mailFolders/drafts/messages') &&
+        url.includes('$skiptoken=page2')
+      ) {
+        return Response.json({
+          value: [{ conversationId: 'already-drafted' }],
+        })
+      }
+      if (url.includes('/mailFolders/drafts/messages')) {
+        return Response.json({
+          value: [{ conversationId: 'other-draft' }],
+          '@odata.nextLink':
+            'https://graph.microsoft.com/v1.0/me/mailFolders/drafts/messages?$top=5&$select=conversationId&$skiptoken=page2',
+        })
+      }
+      throw new Error(`unexpected ${url}`)
+    }
+
+    const mailbox = createGraphMailbox(
+      loadEmailTriageConfig({
+        EMAIL_PROVIDER: 'outlook',
+        EMAIL_TRIAGE_MICROSOFT_CONNECT_UID: 'microsoft/email-triage-assistant',
+      }),
+      fetchImpl,
+      mintGraphToken,
+    )
+    const threads = await mailbox.listThreads({ max: 5 })
+    expect(threads.map((thread) => thread.id)).toEqual(['c1'])
+    expect(
+      urls.filter((url) => url.includes('/mailFolders/drafts/messages')),
+    ).toHaveLength(2)
+    expect(urls.some((url) => url.includes('$skiptoken=page2'))).toBe(true)
+  })
 })
 
 describe('IMAP APPEND to Drafts', () => {
