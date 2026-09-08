@@ -341,6 +341,7 @@ describe('/agents catalog index', () => {
 
     for (const slug of [
       'competitor-intel-monitor',
+      'email-triage-assistant',
       'knowledge-base-gardener',
       'meeting-action-extractor',
     ]) {

@@ -107,6 +107,8 @@ const JOB_INTENT_METADATA_TITLES: Readonly<Record<string, string>> = {
     'Eve competitor intel monitor - @evex/competitor-intel-monitor',
   'docs-knowledge-assistant':
     'Eve docs Q&A agent - install @evex/docs-knowledge-assistant',
+  'email-triage-assistant':
+    'Eve email triage assistant - @evex/email-triage-assistant',
   'eve-agent-builder': 'Eve agent builder - install @evex/eve-agent-builder',
   'github-ci-explainer':
     'Eve CI failure agent - install @evex/github-ci-explainer',
@@ -137,6 +139,8 @@ const JOB_INTENT_LEDES: Readonly<Record<string, string>> = {
   'competitor-intel-monitor':
     'Watches competitor pages on a schedule and sends a scored Slack or email digest when something changes.',
   'docs-knowledge-assistant': 'Docs Q&A agent for Eve.',
+  'email-triage-assistant':
+    'Triages Gmail, Outlook, or IMAP threads and writes tone-matched draft replies you send yourself.',
   'eve-agent-builder': 'Scaffolds, checks, and deploys a new Eve agent.',
   'github-ci-explainer': 'Explains failed GitHub Actions checks from the log.',
   'github-issue-maintainer': 'GitHub issue agent for Eve.',
@@ -366,6 +370,7 @@ describe('shouldRenderAgentDescriptionParagraph', () => {
 
 const DEMAND_BACKED_PLAYS = [
   'competitor-intel-monitor',
+  'email-triage-assistant',
   'knowledge-base-gardener',
   'meeting-action-extractor',
 ] as const
@@ -373,6 +378,8 @@ const DEMAND_BACKED_PLAYS = [
 const DEMAND_BACKED_DESCRIPTIONS: Readonly<Record<string, string>> = {
   'competitor-intel-monitor':
     'Scheduled competitor URL monitor that diffs pages and delivers scored Slack or email digests.',
+  'email-triage-assistant':
+    'Inbox triage that classifies threads and writes draft replies without sending.',
   'knowledge-base-gardener':
     'Finds stale product docs and drafts updates with file cites.',
   'meeting-action-extractor':
@@ -381,6 +388,7 @@ const DEMAND_BACKED_DESCRIPTIONS: Readonly<Record<string, string>> = {
 
 const DEMAND_BACKED_LEDE_STEMS: Readonly<Record<string, string>> = {
   'competitor-intel-monitor': 'watches competitor pages on a schedule',
+  'email-triage-assistant': 'triages gmail, outlook, or imap',
   'knowledge-base-gardener': 'finds stale product docs',
   'meeting-action-extractor':
     'extracts owners and deadlines from meeting transcripts',
@@ -717,6 +725,40 @@ describe('getAgentDefinitionBlock', () => {
     )
     expect(block.plainText).toContain(
       'npx shadcn@latest add @evex/knowledge-base-gardener',
+    )
+  })
+
+  it('uses a distinct lowercase What-is clause for email-triage-assistant', () => {
+    const agent = listStaticAgents().find(
+      (item) => item.slug === 'email-triage-assistant',
+    )
+    expect(agent).toBeDefined()
+    if (!agent) {
+      return
+    }
+
+    const job =
+      'reads the inbox on a schedule or push, sorts threads into buckets, and leaves replies in Drafts only'
+    expect(job.startsWith('reads')).toBe(true)
+    expect(job.endsWith('.')).toBe(false)
+
+    const lede = getAgentJobIntentLede('email-triage-assistant')
+    const block = getAgentDefinitionBlock(agent)
+    expect(lede).toBe(
+      'Triages Gmail, Outlook, or IMAP threads and writes tone-matched draft replies you send yourself.',
+    )
+    expect(agent.description).toBe(
+      'Inbox triage that classifies threads and writes draft replies without sending.',
+    )
+    expect(block.plainText).not.toContain(lede)
+    expect(block.plainText.toLowerCase()).not.toContain(
+      'triages gmail, outlook, or imap',
+    )
+    expect(block.plainText).toContain(
+      `Email Triage Assistant is an Eve agent that ${job}.`,
+    )
+    expect(block.plainText).toContain(
+      'npx shadcn@latest add @evex/email-triage-assistant',
     )
   })
 
