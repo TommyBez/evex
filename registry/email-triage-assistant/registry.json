@@ -1,0 +1,365 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "items": [
+    {
+      "name": "email-triage-assistant",
+      "type": "registry:item",
+      "title": "Email Triage Assistant",
+      "description": "Inbox triage that classifies threads and writes draft replies without sending.",
+      "author": "TommyBez",
+      "categories": ["support"],
+      "dependencies": ["@vercel/connect@^0.2.6", "eve@^0.47.5", "zod@4.3.6"],
+      "files": [
+        {
+          "path": ".env.example",
+          "type": "registry:file",
+          "target": "~/.env.example"
+        },
+        {
+          "path": "README.md",
+          "type": "registry:file",
+          "target": "~/agent/README.md"
+        },
+        {
+          "path": "agent/agent.ts",
+          "type": "registry:file",
+          "target": "~/agent/agent.ts"
+        },
+        {
+          "path": "agent/channels/inbox-push.ts",
+          "type": "registry:file",
+          "target": "~/agent/channels/inbox-push.ts"
+        },
+        {
+          "path": "agent/channels/slack.ts",
+          "type": "registry:file",
+          "target": "~/agent/channels/slack.ts"
+        },
+        {
+          "path": "agent/instructions.md",
+          "type": "registry:file",
+          "target": "~/agent/instructions.md"
+        },
+        {
+          "path": "agent/lib/delivery-claims.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/delivery-claims.ts"
+        },
+        {
+          "path": "agent/lib/email-config.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/email-config.ts"
+        },
+        {
+          "path": "agent/lib/http.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/http.ts"
+        },
+        {
+          "path": "agent/lib/mime.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/mime.ts"
+        },
+        {
+          "path": "agent/lib/push-auth.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/push-auth.ts"
+        },
+        {
+          "path": "agent/lib/oauth.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/oauth.ts"
+        },
+        {
+          "path": "agent/lib/providers/gmail.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/providers/gmail.ts"
+        },
+        {
+          "path": "agent/lib/providers/graph.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/providers/graph.ts"
+        },
+        {
+          "path": "agent/lib/providers/imap-session.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/providers/imap-session.ts"
+        },
+        {
+          "path": "agent/lib/providers/imap.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/providers/imap.ts"
+        },
+        {
+          "path": "agent/lib/providers/index.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/providers/index.ts"
+        },
+        {
+          "path": "agent/lib/providers/types.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/providers/types.ts"
+        },
+        {
+          "path": "agent/lib/push-events.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/push-events.ts"
+        },
+        {
+          "path": "agent/lib/rfc822.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/rfc822.ts"
+        },
+        {
+          "path": "agent/lib/send-guard.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/send-guard.ts"
+        },
+        {
+          "path": "agent/lib/slack-notify.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/slack-notify.ts"
+        },
+        {
+          "path": "agent/lib/tone-profile.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/tone-profile.ts"
+        },
+        {
+          "path": "agent/lib/triage-buckets.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/triage-buckets.ts"
+        },
+        {
+          "path": "agent/lib/webhook-auth.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/webhook-auth.ts"
+        },
+        {
+          "path": "agent/schedules/inbox-triage.ts",
+          "type": "registry:file",
+          "target": "~/agent/schedules/inbox-triage.ts"
+        },
+        {
+          "path": "agent/skills/inbox-triage/SKILL.md",
+          "type": "registry:file",
+          "target": "~/agent/skills/inbox-triage/SKILL.md"
+        },
+        {
+          "path": "agent/tools/apply_triage_bucket.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/apply_triage_bucket.ts"
+        },
+        {
+          "path": "agent/tools/create_draft_reply.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/create_draft_reply.ts"
+        },
+        {
+          "path": "agent/tools/ingest_push_event.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/ingest_push_event.ts"
+        },
+        {
+          "path": "agent/tools/list_inbox_threads.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/list_inbox_threads.ts"
+        },
+        {
+          "path": "agent/tools/load_inbox_config.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/load_inbox_config.ts"
+        },
+        {
+          "path": "agent/tools/notify_slack_drafts_ready.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/notify_slack_drafts_ready.ts"
+        },
+        {
+          "path": "agent/tools/read_thread.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/read_thread.ts"
+        },
+        {
+          "path": "agent/tools/sample_sent_style.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/sample_sent_style.ts"
+        },
+        {
+          "path": "evals/evals.config.ts",
+          "type": "registry:file",
+          "target": "~/evals/evals.config.ts"
+        },
+        {
+          "path": "evals/mailbox-mutations-require-approval.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/mailbox-mutations-require-approval.eval.ts"
+        },
+        {
+          "path": "evals/never-send.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/never-send.eval.ts"
+        },
+        {
+          "path": "evals/schedule-or-push.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/schedule-or-push.eval.ts"
+        },
+        {
+          "path": "evals/scheduled-run.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/scheduled-run.eval.ts"
+        },
+        {
+          "path": "evals/triage-buckets.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/triage-buckets.eval.ts"
+        },
+        {
+          "path": "evals/untrusted-mailbox.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/untrusted-mailbox.eval.ts"
+        }
+      ],
+      "meta": {
+        "slug": "email-triage-assistant",
+        "category": "support",
+        "createdAt": "2026-09-08T10:00:00.000Z",
+        "updatedAt": "2026-09-08T13:00:00.000Z",
+        "docs": {
+          "overview": [
+            "Email Triage Assistant is an eve agent that connects to one mailbox you already own. On each cron tick or signed inbox push it lists threads, reads the ones that need a human, and writes replies into the provider Drafts folder. You review those drafts in Gmail, Outlook, or IMAP and hit send yourself.",
+            "You interact with it through the inbox-triage schedule, the /inbox/push channel, or an on-demand Eve chat that still reads the mailbox. Set EMAIL_TRIAGE_GOOGLE_CONNECT_UID, EMAIL_TRIAGE_MICROSOFT_CONNECT_UID, or IMAP, plus optional Slack Connect. The agent applies TRIAGE_BUCKETS labels and matches Sent-folder tone before it calls create_draft_reply.",
+            "It is useful when you want autonomous sorting without an auto-send. Code refuses SMTP ports and send URLs. create_draft_reply always returns sent false. Newsletter and FYI threads get a bucket and no draft unless a real question is waiting in the thread."
+          ],
+          "howItWorks": [
+            "On the inbox-triage schedule (cron from EMAIL_TRIAGE_CRON, default every two hours UTC) or a signed POST to /inbox/push, the agent loads the inbox-triage skill.",
+            "It calls load_inbox_config and stops when Gmail, Microsoft Graph, or IMAP credentials are missing. Push runs also call ingest_push_event.",
+            "list_inbox_threads and read_thread pull live mailbox data. sample_sent_style reads the Sent folder and returns a greeting, sign-off, and sentence-length brief.",
+            "apply_triage_bucket writes a Gmail triage/ label, an Outlook category, or an IMAP Triage/ folder for one configured TRIAGE_BUCKETS slug.",
+            "create_draft_reply writes Gmail drafts.create, Graph createReply, or IMAP APPEND to Drafts and always returns sent false. Optional notify_slack_drafts_ready posts a drafts-ready queue note.",
+            "Three evals cover never-send, triage buckets, and the schedule or push path so a paste-to-text skill shape cannot replace the mailbox loop."
+          ],
+          "useCases": [
+            {
+              "title": "Refund thread that stays in Drafts",
+              "body": "A customer asks about an annual-plan refund. The agent reads the thread, applies needs-reply, writes a Sent-matched draft, and leaves it in Drafts for you to send."
+            },
+            {
+              "title": "Newsletter bucket, no draft",
+              "body": "A weekly changelog lands in the IMAP inbox. apply_triage_bucket files it under newsletter. create_draft_reply is skipped because there is no question waiting in the thread."
+            },
+            {
+              "title": "Graph push during the day",
+              "body": "Outlook posts a change notification to /inbox/push with EMAIL_PUSH_WEBHOOK_SECRET. The channel starts a mailbox run that drafts a reply without calling sendMail."
+            },
+            {
+              "title": "Slack queue when drafts pile up",
+              "body": "After a cron run writes three Drafts, notify_slack_drafts_ready posts to the Eve Slack Connect channel. The note says drafts are ready. Nothing is emailed."
+            }
+          ],
+          "requirements": [
+            {
+              "name": "AI_GATEWAY_API_KEY",
+              "body": "A model credential for the deployment, either a Vercel AI Gateway API key or AI Gateway OIDC, so the agent can call zai/glm-5.2."
+            },
+            {
+              "name": "EMAIL_PROVIDER",
+              "body": "Optional force of gmail, outlook, or imap. When empty, the first complete credential set wins."
+            },
+            {
+              "name": "EMAIL_TRIAGE_CRON",
+              "body": "5-field cron for inbox-triage. Defaults to 0 */2 * * * (every two hours UTC on Vercel)."
+            },
+            {
+              "name": "TRIAGE_BUCKETS",
+              "body": "Comma-separated slugs. Defaults to needs-reply, fyi, waiting, urgent, newsletter, no-reply."
+            },
+            {
+              "name": "EMAIL_MAX_THREADS",
+              "body": "Maximum inbox threads to list per run. Defaults to 20."
+            },
+            {
+              "name": "EMAIL_SENT_SAMPLE_SIZE",
+              "body": "How many Sent-folder messages to sample for tone. Defaults to 8."
+            },
+            {
+              "name": "EMAIL_PUSH_WEBHOOK_SECRET",
+              "body": "Shared secret for POST /inbox/push. Graph validationToken echoes do not require it."
+            },
+            {
+              "name": "EMAIL_TRIAGE_SLACK_CONNECT_UID",
+              "body": "Optional Vercel Connect Slack connector UID for the Eve Slack channel. Leave empty to skip Slack notify."
+            },
+            {
+              "name": "EMAIL_TRIAGE_SLACK_CHANNEL_ID",
+              "body": "Optional Slack channel id for the drafts-ready note. Leave empty to skip Slack notify."
+            },
+            {
+              "name": "EMAIL_TRIAGE_GOOGLE_CONNECT_UID",
+              "body": "Vercel Connect Google connector UID from vercel connect create google. Mints gmail.readonly, gmail.compose, and gmail.modify tokens. The agent never calls messages.send or drafts.send."
+            },
+            {
+              "name": "GMAIL_USER",
+              "body": "Optional From address written onto Gmail drafts."
+            },
+            {
+              "name": "EMAIL_TRIAGE_MICROSOFT_CONNECT_UID",
+              "body": "Vercel Connect Microsoft connector UID from vercel connect create microsoft. Mints Mail.Read and Mail.ReadWrite tokens. The agent never calls sendMail."
+            },
+            {
+              "name": "IMAP_HOST",
+              "body": "IMAP hostname. SMTP hosts and ports 25, 465, 587, and 2525 are refused."
+            },
+            {
+              "name": "IMAP_PORT",
+              "body": "IMAP port. Defaults to 993."
+            },
+            {
+              "name": "IMAP_USER",
+              "body": "IMAP username."
+            },
+            {
+              "name": "IMAP_PASSWORD",
+              "body": "IMAP password. Placeholder only in .env.example."
+            },
+            {
+              "name": "IMAP_DRAFTS_MAILBOX",
+              "body": "Mailbox used for APPEND. Defaults to Drafts. Some hosts use [Gmail]/Drafts."
+            },
+            {
+              "name": "IMAP_INBOX_MAILBOX",
+              "body": "Mailbox to read. Defaults to INBOX."
+            },
+            {
+              "name": "IMAP_SENT_MAILBOX",
+              "body": "Mailbox sampled for tone. Defaults to Sent."
+            }
+          ],
+          "faqs": [
+            {
+              "question": "How do I install and run a triage pass?",
+              "answer": "Run npx shadcn@latest add @evex/email-triage-assistant in an Eve app, copy .env.example, set one mailbox provider, then POST /eve/v1/dev/schedules/inbox-triage while iterating."
+            },
+            {
+              "question": "Does it ever send the email?",
+              "answer": "No. create_draft_reply always returns sent false. Gmail stops at drafts.create, Graph uses createReply, and IMAP APPENDs to Drafts. SMTP and send URLs are refused in code."
+            },
+            {
+              "question": "How do Gmail watch and Graph push work?",
+              "answer": "Point the provider webhook at POST /inbox/push with EMAIL_PUSH_WEBHOOK_SECRET. Graph validationToken on GET or POST is echoed as plain text so the subscription can complete."
+            },
+            {
+              "question": "Can I just paste a thread into chat?",
+              "answer": "No. The inbox-triage skill reads the connected mailbox. A paste-and-copy-text flow is not this agent. Use support-reply-draft if you want a docs-cited paste draft."
+            },
+            {
+              "question": "Is Slack required?",
+              "answer": "No. EMAIL_TRIAGE_SLACK_CONNECT_UID and EMAIL_TRIAGE_SLACK_CHANNEL_ID are optional. When both are set, notify_slack_drafts_ready posts that drafts are waiting through the Eve Slack channel. That ping is not email delivery."
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

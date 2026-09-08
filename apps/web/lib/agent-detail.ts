@@ -104,6 +104,8 @@ const AGENT_METADATA_TITLE_OVERRIDES: Readonly<Record<string, string>> = {
     'Eve competitor intel monitor - @evex/competitor-intel-monitor',
   'docs-knowledge-assistant':
     'Eve docs Q&A agent - install @evex/docs-knowledge-assistant',
+  'email-triage-assistant':
+    'Eve email triage assistant - @evex/email-triage-assistant',
   'eve-agent-builder': 'Eve agent builder - install @evex/eve-agent-builder',
   'github-ci-explainer':
     'Eve CI failure agent - install @evex/github-ci-explainer',
@@ -155,6 +157,8 @@ const AGENT_JOB_INTENT_LEDES: Readonly<Record<string, string>> = {
   'competitor-intel-monitor':
     'Watches competitor pages on a schedule and sends a scored Slack or email digest when something changes.',
   'docs-knowledge-assistant': 'Docs Q&A agent for Eve.',
+  'email-triage-assistant':
+    'Triages Gmail, Outlook, or IMAP threads and writes tone-matched draft replies you send yourself.',
   'eve-agent-builder': 'Scaffolds, checks, and deploys a new Eve agent.',
   'github-ci-explainer': 'Explains failed GitHub Actions checks from the log.',
   'github-issue-maintainer': 'GitHub issue agent for Eve.',
@@ -213,6 +217,8 @@ export function shouldRenderAgentDescriptionParagraph({
 const AGENT_DEFINITION_JOB_OVERRIDES: Readonly<Record<string, string>> = {
   'competitor-intel-monitor':
     'fetches your URL list, diffs each page against a store, and delivers only changes that clear your alert thresholds.',
+  'email-triage-assistant':
+    'reads the inbox on a schedule or push, sorts threads into buckets, and leaves replies in Drafts only',
   'knowledge-base-gardener':
     'reads docs on disk and drafts a cited update you review',
   'meeting-action-extractor':
