@@ -113,13 +113,37 @@ const groupSpecificity = (group: RobotsGroup, userAgent: string): number => {
   return best;
 };
 
-const escapeRegex = (value: string): string => value.replace(/[.+?^${}()|[\]\\]/g, "\\$&");
+const matchWildcard = (pattern: string, text: string): boolean => {
+  let textIndex = 0;
+  let patternIndex = 0;
+  let starIndex = -1;
+  let matchIndex = 0;
 
-const ruleToPattern = (rulePath: string): RegExp => {
-  const anchored = rulePath.endsWith("$");
-  const body = anchored ? rulePath.slice(0, -1) : rulePath;
-  const source = body.split("*").map(escapeRegex).join(".*");
-  return new RegExp(`^${source}${anchored ? "$" : ""}`);
+  while (textIndex < text.length) {
+    if (patternIndex < pattern.length && pattern[patternIndex] === text[textIndex]) {
+      textIndex += 1;
+      patternIndex += 1;
+      continue;
+    }
+    if (patternIndex < pattern.length && pattern[patternIndex] === "*") {
+      starIndex = patternIndex;
+      patternIndex += 1;
+      matchIndex = textIndex;
+      continue;
+    }
+    if (starIndex !== -1) {
+      patternIndex = starIndex + 1;
+      matchIndex += 1;
+      textIndex = matchIndex;
+      continue;
+    }
+    return false;
+  }
+
+  while (patternIndex < pattern.length && pattern[patternIndex] === "*") {
+    patternIndex += 1;
+  }
+  return patternIndex === pattern.length;
 };
 
 const pathMatches = (rulePath: string, urlPath: string): boolean => {
@@ -129,7 +153,9 @@ const pathMatches = (rulePath: string, urlPath: string): boolean => {
   if (!rulePath.includes("*") && !rulePath.endsWith("$")) {
     return urlPath === rulePath || urlPath.startsWith(rulePath);
   }
-  return ruleToPattern(rulePath).test(urlPath);
+  const anchored = rulePath.endsWith("$");
+  const pattern = anchored ? rulePath.slice(0, -1) : `${rulePath}*`;
+  return matchWildcard(pattern, urlPath);
 };
 
 export const isUrlAllowedByRobots = (

@@ -37,6 +37,11 @@
           "target": "~/agent/lib/digest.ts"
         },
         {
+          "path": "agent/lib/deliver-digest.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/deliver-digest.ts"
+        },
+        {
           "path": "agent/lib/fetch-page.ts",
           "type": "registry:file",
           "target": "~/agent/lib/fetch-page.ts"

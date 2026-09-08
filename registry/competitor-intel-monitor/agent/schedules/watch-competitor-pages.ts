@@ -11,7 +11,7 @@ export default defineSchedule({
 3. For every successful fetch, call diff_page_snapshot with the returned text, hash, and fetchedAt. First-seen pages are committed baselines and must not be treated as alerts. Threshold-clearing changes stay pending until send_digest succeeds.
 4. Keep only changes where the tool reported clearsThreshold is true. Score and changedChars already come from the tool — do not invent a different score.
 5. If no change cleared the thresholds, report that nothing is being delivered and do not call send_digest.
-6. If one or more changes cleared the thresholds, call preview_digest with those changes, then send_digest with confirmSend=true and the idempotencyKey returned by preview_digest. That key includes the run date and the logical change set. Reuse it only when retrying that same send. send_digest always pauses for Eve human approval before Slack or Resend; confirmSend is not a substitute for that approval.
+6. If one or more changes cleared the thresholds, call preview_digest with those changes, then send_digest with confirmSend=true, the idempotencyKey returned by preview_digest, and the runDate returned by preview_digest. That key includes the run date and the logical change set. Reuse the same key and runDate only when retrying that same send. send_digest always pauses for Eve human approval before Slack or Resend; confirmSend is not a substitute for that approval.
 7. If send_digest returns sent=false with an error, report that the digest was not delivered. Do not retry send_digest in the same run.
 
 Never claim a page changed unless diff_page_snapshot said it changed. Never send when confirmSend is not true.`,

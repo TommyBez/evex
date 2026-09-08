@@ -1,5 +1,5 @@
 import { lookup as dnsLookup } from "node:dns/promises";
-import { isIP } from "node:net";
+import { BlockList, isIP } from "node:net";
 
 import { isHttpsUrl } from "./watch-config.js";
 import { isUrlAllowedByRobots, parseRobotsTxt, type RobotsTxt } from "./robots.js";
@@ -54,65 +54,31 @@ const MAX_REDIRECTS = 5;
 const REDIRECT_STATUS = new Set([301, 302, 303, 307, 308]);
 const robotsCache = new Map<string, RobotsDecision>();
 
-const ipv4ToInt = (ip: string): number | null => {
-  const parts = ip.split(".");
-  if (parts.length !== 4) {
-    return null;
-  }
-  let value = 0;
-  for (const part of parts) {
-    const octet = Number.parseInt(part, 10);
-    if (!Number.isInteger(octet) || octet < 0 || octet > 255) {
-      return null;
-    }
-    value = (value << 8) + octet;
-  }
-  return value >>> 0;
-};
-
-const inCidr = (ip: number, base: string, bits: number): boolean => {
-  const network = ipv4ToInt(base);
-  if (network === null) {
-    return false;
-  }
-  const mask = bits === 0 ? 0 : (~0 << (32 - bits)) >>> 0;
-  return (ip & mask) === (network & mask);
-};
+const reservedDestinations = new BlockList();
+reservedDestinations.addSubnet("0.0.0.0", 8, "ipv4");
+reservedDestinations.addSubnet("10.0.0.0", 8, "ipv4");
+reservedDestinations.addSubnet("100.64.0.0", 10, "ipv4");
+reservedDestinations.addSubnet("127.0.0.0", 8, "ipv4");
+reservedDestinations.addSubnet("169.254.0.0", 16, "ipv4");
+reservedDestinations.addSubnet("172.16.0.0", 12, "ipv4");
+reservedDestinations.addSubnet("192.0.0.0", 24, "ipv4");
+reservedDestinations.addSubnet("192.168.0.0", 16, "ipv4");
+reservedDestinations.addSubnet("198.18.0.0", 15, "ipv4");
+reservedDestinations.addSubnet("224.0.0.0", 4, "ipv4");
+reservedDestinations.addSubnet("240.0.0.0", 4, "ipv4");
+reservedDestinations.addAddress("::", "ipv6");
+reservedDestinations.addAddress("::1", "ipv6");
+reservedDestinations.addSubnet("fe80::", 10, "ipv6");
+reservedDestinations.addSubnet("fc00::", 7, "ipv6");
+reservedDestinations.addSubnet("ff00::", 8, "ipv6");
 
 export const isPrivateIp = (address: string): boolean => {
   const version = isIP(address);
   if (version === 4) {
-    const ip = ipv4ToInt(address);
-    if (ip === null) {
-      return true;
-    }
-    return (
-      inCidr(ip, "0.0.0.0", 8) ||
-      inCidr(ip, "10.0.0.0", 8) ||
-      inCidr(ip, "127.0.0.0", 8) ||
-      inCidr(ip, "169.254.0.0", 16) ||
-      inCidr(ip, "172.16.0.0", 12) ||
-      inCidr(ip, "192.168.0.0", 16)
-    );
+    return reservedDestinations.check(address, "ipv4");
   }
   if (version === 6) {
-    const normalized = address.toLowerCase();
-    if (normalized === "::" || normalized === "::1") {
-      return true;
-    }
-    const mapped = /^::ffff:(\d+\.\d+\.\d+\.\d+)$/i.exec(normalized);
-    if (mapped?.[1]) {
-      return isPrivateIp(mapped[1]);
-    }
-    if (
-      normalized.startsWith("fe8") ||
-      normalized.startsWith("fe9") ||
-      normalized.startsWith("fea") ||
-      normalized.startsWith("feb")
-    ) {
-      return true;
-    }
-    return normalized.startsWith("fc") || normalized.startsWith("fd");
+    return reservedDestinations.check(address, "ipv6");
   }
   return false;
 };

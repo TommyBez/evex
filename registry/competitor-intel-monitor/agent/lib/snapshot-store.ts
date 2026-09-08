@@ -17,8 +17,21 @@ export type PageSnapshot = SnapshotPayload & {
 };
 
 export type DeliveryState = {
+  readonly status?: "in_progress" | "complete";
   readonly slackSent: boolean;
+  readonly slackUncertain?: boolean;
   readonly emailMessageId?: string;
+  readonly runDate?: string;
+  readonly alertUrls?: readonly string[];
+  readonly committedUrls?: readonly string[];
+  readonly claimedAt?: string;
+  readonly claimOwner?: string;
+};
+
+export type DeliveryClaim = {
+  readonly acquired: boolean;
+  readonly inProgress: boolean;
+  readonly state: DeliveryState;
 };
 
 export type SnapshotStore = {
@@ -28,6 +41,7 @@ export type SnapshotStore = {
   list(): Promise<readonly PageSnapshot[]>;
   getDelivery(idempotencyKey: string): Promise<DeliveryState | null>;
   setDelivery(idempotencyKey: string, state: DeliveryState): Promise<void>;
+  claimDelivery(idempotencyKey: string, initial: DeliveryState): Promise<DeliveryClaim>;
 };
 
 type StoreDocument = {
@@ -40,6 +54,7 @@ const REDIS_SNAPSHOT_PREFIX = "competitor-intel-monitor:snapshot:";
 const REDIS_DELIVERY_PREFIX = "competitor-intel-monitor:delivery:";
 const LOCK_RETRIES = 50;
 const LOCK_WAIT_MS = 20;
+export const DELIVERY_CLAIM_TTL_MS = 120_000;
 
 const emptyDocument = (): StoreDocument => ({ snapshots: {}, deliveries: {} });
 
@@ -48,9 +63,62 @@ const sleep = (ms: number): Promise<void> =>
     setTimeout(resolve, ms);
   });
 
-const withFileLock = async <T>(lockPath: string, work: () => Promise<T>): Promise<T> => {
+export const isProcessAlive = (pid: number): boolean => {
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (error) {
+    return (error as NodeJS.ErrnoException).code !== "ESRCH";
+  }
+};
+
+type LockOwner = {
+  readonly content: string;
+  readonly pid: number | null;
+};
+
+const readLockOwner = async (lockPath: string): Promise<LockOwner | null> => {
+  try {
+    const content = await readFile(lockPath, "utf8");
+    const pid = Number.parseInt(content.trim(), 10);
+    return {
+      content,
+      pid: Number.isInteger(pid) && pid > 0 ? pid : null,
+    };
+  } catch {
+    return null;
+  }
+};
+
+const reclaimAbandonedLock = async (lockPath: string): Promise<void> => {
+  const owner = await readLockOwner(lockPath);
+  if (!owner) {
+    return;
+  }
+  if (owner.pid !== null && isProcessAlive(owner.pid)) {
+    return;
+  }
+  const confirmed = await readLockOwner(lockPath);
+  if (!confirmed || confirmed.content !== owner.content) {
+    return;
+  }
+  await unlink(lockPath).catch(() => undefined);
+};
+
+type FileLockOptions = {
+  readonly retries?: number;
+  readonly waitMs?: number;
+};
+
+const withFileLock = async <T>(
+  lockPath: string,
+  work: () => Promise<T>,
+  options: FileLockOptions = {},
+): Promise<T> => {
+  const retries = options.retries ?? LOCK_RETRIES;
+  const waitMs = options.waitMs ?? LOCK_WAIT_MS;
   await mkdir(path.dirname(lockPath), { recursive: true });
-  for (let attempt = 0; attempt < LOCK_RETRIES; attempt += 1) {
+  for (let attempt = 0; attempt < retries; attempt += 1) {
     try {
       const handle = await open(lockPath, "wx");
       try {
@@ -64,10 +132,65 @@ const withFileLock = async <T>(lockPath: string, work: () => Promise<T>): Promis
       if ((error as NodeJS.ErrnoException).code !== "EEXIST") {
         throw error;
       }
-      await sleep(LOCK_WAIT_MS);
+      await reclaimAbandonedLock(lockPath);
+      await sleep(waitMs);
     }
   }
   throw new Error("Timed out waiting for the snapshot store lock.");
+};
+
+export const isLiveDeliveryClaim = (
+  state: DeliveryState,
+  options: { readonly checkPid: boolean; readonly now?: number },
+): boolean => {
+  if (state.slackUncertain) {
+    return true;
+  }
+  const owner = Number.parseInt(state.claimOwner ?? "", 10);
+  if (options.checkPid && Number.isInteger(owner) && owner > 0) {
+    return isProcessAlive(owner);
+  }
+  if (!state.claimedAt) {
+    return false;
+  }
+  const claimedAt = Date.parse(state.claimedAt);
+  if (!Number.isFinite(claimedAt)) {
+    return false;
+  }
+  return (options.now ?? Date.now()) - claimedAt < DELIVERY_CLAIM_TTL_MS;
+};
+
+export const evaluateDeliveryClaim = (
+  existing: DeliveryState | null,
+  initial: DeliveryState,
+  options: { readonly checkPid: boolean; readonly now?: number },
+): DeliveryClaim => {
+  if (!existing) {
+    return { acquired: true, inProgress: false, state: initial };
+  }
+  if (existing.slackSent || existing.emailMessageId) {
+    return { acquired: false, inProgress: false, state: existing };
+  }
+  if (existing.slackUncertain) {
+    return { acquired: false, inProgress: false, state: existing };
+  }
+  if (isLiveDeliveryClaim(existing, options)) {
+    return { acquired: false, inProgress: true, state: existing };
+  }
+  return {
+    acquired: true,
+    inProgress: false,
+    state: {
+      ...existing,
+      ...initial,
+      slackSent: existing.slackSent,
+      slackUncertain: existing.slackUncertain,
+      emailMessageId: existing.emailMessageId,
+      committedUrls: existing.committedUrls ?? initial.committedUrls,
+      alertUrls: existing.alertUrls ?? initial.alertUrls,
+      runDate: existing.runDate ?? initial.runDate,
+    },
+  };
 };
 
 const promotePending = (snapshot: PageSnapshot): PageSnapshot => {
@@ -115,10 +238,22 @@ export class MemorySnapshotStore implements SnapshotStore {
   async setDelivery(idempotencyKey: string, state: DeliveryState): Promise<void> {
     this.#deliveries.set(idempotencyKey, state);
   }
+
+  async claimDelivery(idempotencyKey: string, initial: DeliveryState): Promise<DeliveryClaim> {
+    const existing = this.#deliveries.get(idempotencyKey) ?? null;
+    const claim = evaluateDeliveryClaim(existing, initial, { checkPid: true });
+    if (claim.acquired) {
+      this.#deliveries.set(idempotencyKey, claim.state);
+    }
+    return claim;
+  }
 }
 
 export class FileSnapshotStore implements SnapshotStore {
-  constructor(private readonly filePath: string) {}
+  constructor(
+    private readonly filePath: string,
+    private readonly lockOptions: FileLockOptions = {},
+  ) {}
 
   async get(url: string): Promise<PageSnapshot | null> {
     const document = await this.#read();
@@ -162,24 +297,44 @@ export class FileSnapshotStore implements SnapshotStore {
     }));
   }
 
+  async claimDelivery(idempotencyKey: string, initial: DeliveryState): Promise<DeliveryClaim> {
+    let claim: DeliveryClaim = { acquired: false, inProgress: false, state: initial };
+    await this.#update((document) => {
+      const existing = document.deliveries[idempotencyKey] ?? null;
+      claim = evaluateDeliveryClaim(existing, initial, { checkPid: true });
+      if (!claim.acquired) {
+        return document;
+      }
+      return {
+        ...document,
+        deliveries: { ...document.deliveries, [idempotencyKey]: claim.state },
+      };
+    });
+    return claim;
+  }
+
   get #lockPath(): string {
     return `${this.filePath}.lock`;
   }
 
   async #update(mutator: (document: StoreDocument) => StoreDocument): Promise<StoreDocument> {
-    return withFileLock(this.#lockPath, async () => {
-      const document = await this.#readUnlocked();
-      const next = mutator(document);
-      await mkdir(path.dirname(this.filePath), { recursive: true });
-      const tempPath = `${this.filePath}.${process.pid}.${Date.now()}.tmp`;
-      await writeFile(tempPath, `${JSON.stringify(next, null, 2)}\n`, "utf8");
-      await rename(tempPath, this.filePath);
-      return next;
-    });
+    return withFileLock(
+      this.#lockPath,
+      async () => {
+        const document = await this.#readUnlocked();
+        const next = mutator(document);
+        await mkdir(path.dirname(this.filePath), { recursive: true });
+        const tempPath = `${this.filePath}.${process.pid}.${Date.now()}.tmp`;
+        await writeFile(tempPath, `${JSON.stringify(next, null, 2)}\n`, "utf8");
+        await rename(tempPath, this.filePath);
+        return next;
+      },
+      this.lockOptions,
+    );
   }
 
   async #read(): Promise<StoreDocument> {
-    return withFileLock(this.#lockPath, () => this.#readUnlocked());
+    return withFileLock(this.#lockPath, () => this.#readUnlocked(), this.lockOptions);
   }
 
   async #readUnlocked(): Promise<StoreDocument> {
@@ -253,6 +408,24 @@ export class RedisSnapshotStore implements SnapshotStore {
     await this.#setJson(`${REDIS_DELIVERY_PREFIX}${idempotencyKey}`, state);
   }
 
+  async claimDelivery(idempotencyKey: string, initial: DeliveryState): Promise<DeliveryClaim> {
+    const existing = await this.getDelivery(idempotencyKey);
+    const claim = evaluateDeliveryClaim(existing, initial, { checkPid: false });
+    if (!claim.acquired) {
+      return claim;
+    }
+    if (!existing) {
+      const created = await this.#setJsonNx(`${REDIS_DELIVERY_PREFIX}${idempotencyKey}`, claim.state);
+      if (created) {
+        return claim;
+      }
+      const raced = await this.getDelivery(idempotencyKey);
+      return evaluateDeliveryClaim(raced, initial, { checkPid: false });
+    }
+    await this.setDelivery(idempotencyKey, claim.state);
+    return claim;
+  }
+
   #base(): string {
     return this.restUrl.replace(/\/+$/, "");
   }
@@ -273,6 +446,19 @@ export class RedisSnapshotStore implements SnapshotStore {
     if (!response.ok) {
       throw new Error(`Redis snapshot write failed with HTTP ${response.status}.`);
     }
+  }
+
+  async #setJsonNx(key: string, value: unknown): Promise<boolean> {
+    const response = await this.fetchImpl(this.#base(), {
+      method: "POST",
+      headers: this.#headers(),
+      body: JSON.stringify(["SET", key, JSON.stringify(value), "NX"]),
+    });
+    if (!response.ok) {
+      throw new Error(`Redis snapshot claim failed with HTTP ${response.status}.`);
+    }
+    const payload = (await response.json()) as { result?: string | null };
+    return payload.result === "OK";
   }
 
   async #getJson<T>(key: string): Promise<T | null> {

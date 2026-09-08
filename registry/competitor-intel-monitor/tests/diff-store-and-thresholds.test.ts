@@ -1,4 +1,4 @@
-import { mkdtemp, readFile } from "node:fs/promises";
+import { mkdtemp, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
@@ -269,6 +269,35 @@ describe("snapshot store atomicity", () => {
     const raw = await readFile(path.join(directory, "store.json"), "utf8");
     expect(raw).toContain("https://example.com/a");
     expect(raw).toContain("https://example.com/b");
+  });
+
+  it("reclaims a lock file whose owner process is gone", async () => {
+    const directory = await mkdtemp(path.join(tmpdir(), "cim-lock-"));
+    const filePath = path.join(directory, "store.json");
+    await writeFile(`${filePath}.lock`, "999999001\n", "utf8");
+    const store = new FileSnapshotStore(filePath, { retries: 8, waitMs: 5 });
+    await store.set({
+      url: "https://example.com/recovered",
+      hash: "ccc",
+      text: "C",
+      fetchedAt: "2026-09-07T08:00:00.000Z",
+    });
+    expect((await store.get("https://example.com/recovered"))?.text).toBe("C");
+  });
+
+  it("does not steal a lock owned by a live process", async () => {
+    const directory = await mkdtemp(path.join(tmpdir(), "cim-live-lock-"));
+    const filePath = path.join(directory, "store.json");
+    await writeFile(`${filePath}.lock`, `${process.pid}\n`, "utf8");
+    const store = new FileSnapshotStore(filePath, { retries: 3, waitMs: 5 });
+    await expect(
+      store.set({
+        url: "https://example.com/blocked",
+        hash: "ddd",
+        text: "D",
+        fetchedAt: "2026-09-07T08:00:00.000Z",
+      }),
+    ).rejects.toThrow("Timed out waiting for the snapshot store lock.");
   });
 
   it("records Slack delivery independently of email", async () => {

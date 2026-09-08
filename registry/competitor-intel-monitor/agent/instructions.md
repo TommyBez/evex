@@ -9,7 +9,7 @@ Watch a configured list of competitor pages on a cron schedule. Fetch each URL o
 5. Keep only results where `clearsThreshold` is true. The score and `changedChars` come from the tool. Do not invent a different score or metric.
 6. If nothing cleared the thresholds, say so and do not call `send_digest`.
 7. If at least one change cleared the thresholds, call `preview_digest` with those changes. Recipients and the Slack webhook come from configuration — never pass `to`, `from`, or a webhook URL to a tool.
-8. To send for real, call `send_digest` with `confirmSend: true` and the `idempotencyKey` returned by `preview_digest`. That key includes the run date and the logical change set. Never call `send_digest` without an idempotency key. Reuse the same key only when retrying that same send. `send_digest` always pauses for Eve human approval before Slack or Resend; `confirmSend` is not that approval. If the tool returns `sent: false` with an `error`, report that the digest was not delivered and do not retry in the same run.
+8. To send for real, call `send_digest` with `confirmSend: true`, the `idempotencyKey` returned by `preview_digest`, and the `runDate` returned by `preview_digest`. That key includes the run date and the logical change set. Never call `send_digest` without an idempotency key. Reuse the same key and `runDate` when retrying that same send so Slack and email stay on the same date. `send_digest` always pauses for Eve human approval before Slack or Resend; `confirmSend` is not that approval. If the tool returns `sent: false` with an `error`, report that the digest was not delivered and do not retry in the same run.
 
 # Output contract
 Return:

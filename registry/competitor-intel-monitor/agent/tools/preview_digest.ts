@@ -18,7 +18,7 @@ const changeSchema = z.object({
 
 export default defineTool({
   description:
-    "Preview the Slack and/or email digest without sending it. Rebuilds eligibility from score, changedChars, and the configured alert thresholds. Recipients and the Slack webhook come from configuration and cannot be overridden via input. Returns the idempotencyKey to reuse for send_digest retries of this logical digest.",
+    "Preview the Slack and/or email digest without sending it. Rebuilds eligibility from score, changedChars, and the configured alert thresholds. Recipients and the Slack webhook come from configuration and cannot be overridden via input. Returns the idempotencyKey and runDate to pass into every send_digest call, including retries of this logical digest.",
   inputSchema: z.object({
     changes: z.array(changeSchema).min(1),
     runDate: z.string().min(1).optional(),
@@ -61,6 +61,7 @@ export default defineTool({
       htmlPreview: draft.html.slice(0, 500),
       htmlLength: draft.html.length,
       textLength: draft.text.length,
+      runDate: date,
       idempotencyKey: buildDigestIdempotencyKey(alerts, date),
       draft,
     };

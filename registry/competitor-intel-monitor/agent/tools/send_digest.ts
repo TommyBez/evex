@@ -3,7 +3,7 @@ import { defineTool } from "eve/tools";
 import { always } from "eve/tools/approval";
 import { z } from "zod";
 
-import { buildDigestDraft, utcDateStamp } from "../lib/digest.js";
+import { deliverCompetitorDigest } from "../lib/deliver-digest.js";
 import { createSnapshotStore } from "../lib/snapshot-store.js";
 import { selectDigestAlerts } from "../lib/thresholds.js";
 import { watchConfig } from "../lib/watch-config.js";
@@ -21,7 +21,13 @@ const changeSchema = z.object({
 
 const sendDigestInput = z.object({
   changes: z.array(changeSchema).min(1),
-  runDate: z.string().min(1).optional(),
+  runDate: z
+    .string()
+    .min(1)
+    .optional()
+    .describe(
+      "UTC date from preview_digest. Pass it on every send_digest retry so Slack and email stay on the same date.",
+    ),
   confirmSend: z
     .boolean()
     .describe("Must be true to send. Acts as an explicit guard against accidental sends."),
@@ -36,7 +42,7 @@ const sendDigestInput = z.object({
 
 export default defineTool({
   description:
-    "Send the scored competitor digest through the configured Slack incoming webhook and/or Resend email. Always pauses for Eve human approval before any Slack or Resend call. Requires confirmSend=true and a stable idempotencyKey from preview_digest so a replayed step never duplicates delivery. Recipients and webhook URL come from configuration. Always call preview_digest first. Do not send when no change cleared the thresholds. After a successful send, pending snapshots for those URLs become the new baseline.",
+    "Send the scored competitor digest through the configured Slack incoming webhook and/or Resend email. Always pauses for Eve human approval before any Slack or Resend call. Requires confirmSend=true, the idempotencyKey from preview_digest, and the runDate returned by preview_digest so retries keep Slack and email on the same date. Recipients and webhook URL come from configuration. Always call preview_digest first. Do not send when no change cleared the thresholds. After a successful send, pending snapshots for those URLs become the new baseline.",
   inputSchema: sendDigestInput,
   approval: always<z.infer<typeof sendDigestInput>>(),
   async execute({ changes, runDate, confirmSend, idempotencyKey }) {
@@ -80,74 +86,33 @@ export default defineTool({
     }
 
     const store = createSnapshotStore(process.env, watchConfig.storePath);
-    const cached = await store.getDelivery(idempotencyKey);
-    const emailComplete = Boolean(cached?.emailMessageId);
-    const slackComplete = Boolean(cached?.slackSent);
-    if (cached && (!slackConfigured || slackComplete) && (!emailConfigured || emailComplete)) {
-      return {
-        replayed: true,
-        idempotencyKey,
-        slackSent: cached.slackSent,
-        emailMessageId: cached.emailMessageId,
-      };
-    }
-
-    const draft = buildDigestDraft(alerts, watchConfig, runDate ?? utcDateStamp());
-    let slackSent = slackComplete;
-    let emailMessageId = cached?.emailMessageId;
-
-    if (slackUrl && !slackSent) {
-      const slackResponse = await fetch(slackUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: draft.slackText }),
-      });
-      if (!slackResponse.ok) {
-        return {
-          sent: false,
-          idempotencyKey,
-          channel: "slack",
-          error: { message: `Slack webhook returned HTTP ${slackResponse.status}`, name: "slack_webhook_failed" },
-        };
-      }
-      slackSent = true;
-      await store.setDelivery(idempotencyKey, { slackSent: true, emailMessageId });
-    }
-
-    if (emailConfigured && emailFrom && apiKey && !emailMessageId) {
-      const resend = new Resend(apiKey);
-      const { data, error } = await resend.emails.send(
-        {
-          from: emailFrom,
-          to: [...emailTo],
-          subject: draft.subject,
-          html: draft.html,
-          text: draft.text,
-        },
-        { idempotencyKey },
-      );
-      if (error) {
-        return {
-          sent: false,
-          idempotencyKey,
-          slackSent,
-          error: { message: error.message, name: error.name },
-        };
-      }
-      emailMessageId = data.id;
-      await store.setDelivery(idempotencyKey, { slackSent, emailMessageId });
-    }
-
-    for (const alert of alerts) {
-      await store.commitPending(alert.url);
-    }
-
-    return {
-      sent: true,
+    return deliverCompetitorDigest({
+      store,
+      alerts,
+      digest: watchConfig.digest,
+      slackWebhookUrl: slackUrl,
+      runDate,
       idempotencyKey,
-      slackSent,
-      emailMessageId,
-      changeCount: draft.changeCount,
-    };
+      sendEmail:
+        emailConfigured && emailFrom && apiKey
+          ? async (payload) => {
+              const resend = new Resend(apiKey);
+              const { data, error } = await resend.emails.send(
+                {
+                  from: payload.from,
+                  to: [...payload.to],
+                  subject: payload.subject,
+                  html: payload.html,
+                  text: payload.text,
+                },
+                { idempotencyKey: payload.idempotencyKey },
+              );
+              return {
+                id: data?.id,
+                error: error ? { message: error.message, name: error.name } : undefined,
+              };
+            }
+          : undefined,
+    });
   },
 });

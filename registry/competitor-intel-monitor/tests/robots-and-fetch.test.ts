@@ -79,6 +79,22 @@ Disallow: /docs/*/internal
         .allowed,
     ).toBe(true);
   });
+
+  it("matches crafted wildcard rules without exponential backtracking", () => {
+    const rule = `/${"a*".repeat(32)}b$`;
+    const robots = parseRobotsTxt(`User-agent: *\nDisallow: ${rule}\n`);
+    const started = Date.now();
+    for (let index = 0; index < 200; index += 1) {
+      expect(
+        isUrlAllowedByRobots(
+          robots,
+          `https://example.com/${"a".repeat(256)}c`,
+          USER_AGENT,
+        ).allowed,
+      ).toBe(true);
+    }
+    expect(Date.now() - started).toBeLessThan(250);
+  });
 });
 
 describe("fetch + robots", () => {
@@ -253,6 +269,15 @@ describe("fetch + robots", () => {
     expect(isPrivateIp("::1")).toBe(true);
     expect(isPrivateIp("fd12::1")).toBe(true);
     expect(isPrivateIp("93.184.216.34")).toBe(false);
+    expect(isPrivateIp("100.64.0.1")).toBe(true);
+    expect(isPrivateIp("192.0.0.8")).toBe(true);
+    expect(isPrivateIp("198.18.0.1")).toBe(true);
+    expect(isPrivateIp("224.0.0.1")).toBe(true);
+    expect(isPrivateIp("240.0.0.1")).toBe(true);
+    expect(isPrivateIp("8.8.8.8")).toBe(false);
+    expect(isPrivateIp("0:0:0:0:0:0:0:1")).toBe(true);
+    expect(isPrivateIp("::ffff:127.0.0.1")).toBe(true);
+    expect(isPrivateIp("::ffff:100.64.0.1")).toBe(true);
 
     const blocked = await evaluateFetchDestination("https://127.0.0.1/admin", publicLookup);
     expect(blocked.ok).toBe(false);
