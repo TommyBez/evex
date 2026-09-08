@@ -340,6 +340,7 @@ describe('/agents catalog index', () => {
     expect(installation?.lastModified).toEqual(new Date('2026-09-05'))
 
     for (const slug of [
+      'competitor-intel-monitor',
       'knowledge-base-gardener',
       'meeting-action-extractor',
     ]) {

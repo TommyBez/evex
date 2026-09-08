@@ -103,6 +103,8 @@ const JOB_INTENT_METADATA_TITLES: Readonly<Record<string, string>> = {
   'brand-visual-asset-generator': 'Eve brand SVG agent',
   'branded-seo-page-builder': 'Eve branded SEO page agent',
   'code-reviewer': 'Eve PR review agent - install @evex/code-reviewer',
+  'competitor-intel-monitor':
+    'Eve competitor intel monitor - @evex/competitor-intel-monitor',
   'docs-knowledge-assistant':
     'Eve docs Q&A agent - install @evex/docs-knowledge-assistant',
   'eve-agent-builder': 'Eve agent builder - install @evex/eve-agent-builder',
@@ -132,6 +134,8 @@ const JOB_INTENT_LEDES: Readonly<Record<string, string>> = {
     'Generates brand-aligned SVG packs from a site.',
   'branded-seo-page-builder': 'Builds an on-brand SEO page from a domain.',
   'code-reviewer': 'PR review agent for Eve.',
+  'competitor-intel-monitor':
+    'Watches competitor pages on a schedule and sends a scored Slack or email digest when something changes.',
   'docs-knowledge-assistant': 'Docs Q&A agent for Eve.',
   'eve-agent-builder': 'Scaffolds, checks, and deploys a new Eve agent.',
   'github-ci-explainer': 'Explains failed GitHub Actions checks from the log.',
@@ -361,11 +365,14 @@ describe('shouldRenderAgentDescriptionParagraph', () => {
 })
 
 const DEMAND_BACKED_PLAYS = [
+  'competitor-intel-monitor',
   'knowledge-base-gardener',
   'meeting-action-extractor',
 ] as const
 
 const DEMAND_BACKED_DESCRIPTIONS: Readonly<Record<string, string>> = {
+  'competitor-intel-monitor':
+    'Scheduled competitor URL monitor that diffs pages and delivers scored Slack or email digests.',
   'knowledge-base-gardener':
     'Finds stale product docs and drafts updates with file cites.',
   'meeting-action-extractor':
@@ -373,6 +380,7 @@ const DEMAND_BACKED_DESCRIPTIONS: Readonly<Record<string, string>> = {
 }
 
 const DEMAND_BACKED_LEDE_STEMS: Readonly<Record<string, string>> = {
+  'competitor-intel-monitor': 'watches competitor pages on a schedule',
   'knowledge-base-gardener': 'finds stale product docs',
   'meeting-action-extractor':
     'extracts owners and deadlines from meeting transcripts',
@@ -709,6 +717,35 @@ describe('getAgentDefinitionBlock', () => {
     )
     expect(block.plainText).toContain(
       'npx shadcn@latest add @evex/knowledge-base-gardener',
+    )
+  })
+
+  it('uses a distinct What-is clause for competitor-intel-monitor', () => {
+    const agent = listStaticAgents().find(
+      (item) => item.slug === 'competitor-intel-monitor',
+    )
+    expect(agent).toBeDefined()
+    if (!agent) {
+      return
+    }
+
+    const lede = getAgentJobIntentLede('competitor-intel-monitor')
+    const block = getAgentDefinitionBlock(agent)
+    expect(lede).toBe(
+      'Watches competitor pages on a schedule and sends a scored Slack or email digest when something changes.',
+    )
+    expect(agent.description).toBe(
+      'Scheduled competitor URL monitor that diffs pages and delivers scored Slack or email digests.',
+    )
+    expect(block.plainText).not.toContain(lede)
+    expect(block.plainText.toLowerCase()).not.toContain(
+      'watches competitor pages on a schedule',
+    )
+    expect(block.plainText).toContain(
+      'Competitor Intel Monitor is an Eve agent that fetches your URL list, diffs each page against a store, and delivers only changes that clear your alert thresholds.',
+    )
+    expect(block.plainText).toContain(
+      'npx shadcn@latest add @evex/competitor-intel-monitor',
     )
   })
 

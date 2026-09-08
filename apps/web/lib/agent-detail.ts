@@ -100,6 +100,8 @@ const AGENT_METADATA_TITLE_OVERRIDES: Readonly<Record<string, string>> = {
   'brand-visual-asset-generator': 'Eve brand SVG agent',
   'branded-seo-page-builder': 'Eve branded SEO page agent',
   'code-reviewer': 'Eve PR review agent - install @evex/code-reviewer',
+  'competitor-intel-monitor':
+    'Eve competitor intel monitor - @evex/competitor-intel-monitor',
   'docs-knowledge-assistant':
     'Eve docs Q&A agent - install @evex/docs-knowledge-assistant',
   'eve-agent-builder': 'Eve agent builder - install @evex/eve-agent-builder',
@@ -150,6 +152,8 @@ const AGENT_JOB_INTENT_LEDES: Readonly<Record<string, string>> = {
     'Generates brand-aligned SVG packs from a site.',
   'branded-seo-page-builder': 'Builds an on-brand SEO page from a domain.',
   'code-reviewer': 'PR review agent for Eve.',
+  'competitor-intel-monitor':
+    'Watches competitor pages on a schedule and sends a scored Slack or email digest when something changes.',
   'docs-knowledge-assistant': 'Docs Q&A agent for Eve.',
   'eve-agent-builder': 'Scaffolds, checks, and deploys a new Eve agent.',
   'github-ci-explainer': 'Explains failed GitHub Actions checks from the log.',
@@ -207,6 +211,8 @@ export function shouldRenderAgentDescriptionParagraph({
 // Distinct draft-only clauses for the What-is block. Must not restate a
 // locked job-intent lede (that sentence already sits under the H1).
 const AGENT_DEFINITION_JOB_OVERRIDES: Readonly<Record<string, string>> = {
+  'competitor-intel-monitor':
+    'fetches your URL list, diffs each page against a store, and delivers only changes that clear your alert thresholds.',
   'knowledge-base-gardener':
     'reads docs on disk and drafts a cited update you review',
   'meeting-action-extractor':
@@ -530,9 +536,10 @@ function clampDefinitionParagraph(
   who: string,
   job: string,
   agentName: string,
+  maxJobWords = MAX_DEFINITION_JOB_WORDS,
 ): { afterCommand: string; beforeCommand: string; plainText: string } {
   let currentWho = truncateToWords(who, MAX_DEFINITION_WHO_WORDS)
-  let currentJob = truncateToWords(job, MAX_DEFINITION_JOB_WORDS)
+  let currentJob = truncateToWords(job, maxJobWords)
 
   const build = (suffix = '') => {
     const beforeCommand = `${agentName} is an Eve agent that ${currentJob}. It is for ${currentWho}. Preview every file on this page, then install with `
@@ -574,6 +581,7 @@ export function getAgentDefinitionBlock(
     who,
     job,
     agent.name,
+    usedDistinctDraftJob ? 24 : MAX_DEFINITION_JOB_WORDS,
   )
 
   if (countWords(plainText) < MIN_DEFINITION_WORDS) {
