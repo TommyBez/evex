@@ -1,9 +1,13 @@
 import type { EmailTriageConfig } from "../email-config";
 import { draftsOnlyJson } from "../http";
-import type { FetchLike } from "../oauth";
-import { refreshGoogleAccessToken } from "../oauth";
+import {
+  createAccessTokenCache,
+  refreshGoogleAccessToken,
+  type FetchLike,
+} from "../oauth";
 import { encodeBase64Url, buildRfc822 } from "../rfc822";
-import { gmailLabelForBucket } from "../triage-buckets";
+import { gmailLabelForBucket, hasTriageMarker } from "../triage-buckets";
+import type { ToneSample } from "../tone-profile";
 import type {
   BucketApplyResult,
   DraftReplyInput,
@@ -13,7 +17,6 @@ import type {
   ThreadDetail,
   ThreadMessage,
 } from "./types";
-import type { ToneSample } from "../tone-profile";
 
 type GmailHeader = { readonly name?: string; readonly value?: string };
 type GmailPayload = {
@@ -45,7 +48,7 @@ export function createGmailMailbox(
   config: EmailTriageConfig,
   fetchImpl: FetchLike = fetch,
 ): EmailMailbox {
-  const accessToken = async (): Promise<string> => {
+  const accessToken = createAccessTokenCache(async () => {
     const clientId = config.gmail.clientId;
     const clientSecret = config.gmail.clientSecret;
     const refreshToken = config.gmail.refreshToken;
@@ -58,7 +61,7 @@ export function createGmailMailbox(
       refreshToken,
       fetchImpl,
     });
-  };
+  });
 
   const authHeaders = async () => ({
     authorization: `Bearer ${await accessToken()}`,
@@ -84,11 +87,14 @@ export function createGmailMailbox(
     provider: "gmail",
     async listThreads({ max }) {
       const listed = await get<GmailList>(
-        `/threads?maxResults=${max}&q=${encodeURIComponent("in:inbox -in:drafts")}`,
+        `/threads?maxResults=${max}&q=${encodeURIComponent(gmailInboxQuery(config.buckets))}`,
       );
       const threads: InboxThread[] = [];
       for (const item of listed.threads ?? []) {
         const thread = await get<GmailThread>(`/threads/${item.id}?format=metadata`);
+        if (isAlreadyTriagedGmail(thread)) {
+          continue;
+        }
         const first = thread.messages?.[0];
         threads.push({
           id: thread.id,
@@ -191,6 +197,20 @@ export function createGmailMailbox(
       } satisfies DraftReplyResult;
     },
   };
+}
+
+export function gmailInboxQuery(buckets: readonly string[]): string {
+  const exclusions = buckets
+    .map((bucket) => `-label:${gmailLabelForBucket(bucket)}`)
+    .join(" ");
+  return `in:inbox -in:drafts -has:draft ${exclusions}`.trim();
+}
+
+function isAlreadyTriagedGmail(thread: GmailThread): boolean {
+  const labels = (thread.messages ?? []).flatMap(
+    (message) => message.labelIds ?? [],
+  );
+  return hasTriageMarker(labels);
 }
 
 function header(message: GmailMessage | undefined, name: string): string | null {

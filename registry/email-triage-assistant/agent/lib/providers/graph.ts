@@ -1,8 +1,11 @@
 import type { EmailTriageConfig } from "../email-config";
 import { draftsOnlyJson } from "../http";
-import type { FetchLike } from "../oauth";
-import { refreshMicrosoftAccessToken } from "../oauth";
-import { graphCategoryForBucket } from "../triage-buckets";
+import {
+  createAccessTokenCache,
+  refreshMicrosoftAccessToken,
+  type FetchLike,
+} from "../oauth";
+import { graphCategoryForBucket, hasTriageMarker } from "../triage-buckets";
 import type { ToneSample } from "../tone-profile";
 import type {
   BucketApplyResult,
@@ -34,11 +37,15 @@ type GraphList = { readonly value?: readonly GraphMessage[] };
 
 const GRAPH_API = "https://graph.microsoft.com/v1.0/me";
 
+export function escapeODataStringLiteral(value: string): string {
+  return value.replaceAll("'", "''");
+}
+
 export function createGraphMailbox(
   config: EmailTriageConfig,
   fetchImpl: FetchLike = fetch,
 ): EmailMailbox {
-  const accessToken = async (): Promise<string> => {
+  const accessToken = createAccessTokenCache(async () => {
     const clientId = config.outlook.clientId;
     const clientSecret = config.outlook.clientSecret;
     const tenantId = config.outlook.tenantId;
@@ -53,7 +60,7 @@ export function createGraphMailbox(
       refreshToken,
       fetchImpl,
     });
-  };
+  });
 
   const authHeaders = async () => ({
     authorization: `Bearer ${await accessToken()}`,
@@ -84,11 +91,24 @@ export function createGraphMailbox(
       fetchImpl,
     });
 
+  const conversationFilter = (threadId: string): string =>
+    encodeURIComponent(`conversationId eq '${escapeODataStringLiteral(threadId)}'`);
+
   return {
     provider: "outlook",
     async listThreads({ max }) {
-      const listed = await get<GraphList>(
-        `/mailFolders/inbox/messages?$top=${max}&$select=id,conversationId,subject,bodyPreview,receivedDateTime,from,categories,isDraft`,
+      const [listed, drafts] = await Promise.all([
+        get<GraphList>(
+          `/mailFolders/inbox/messages?$top=${max}&$select=id,conversationId,subject,bodyPreview,receivedDateTime,from,categories,isDraft`,
+        ),
+        get<GraphList>(
+          `/mailFolders/drafts/messages?$top=${max}&$select=conversationId`,
+        ),
+      ]);
+      const drafted = new Set(
+        (drafts.value ?? [])
+          .map((message) => message.conversationId)
+          .filter((id): id is string => Boolean(id)),
       );
       const seen = new Set<string>();
       const threads: InboxThread[] = [];
@@ -97,7 +117,7 @@ export function createGraphMailbox(
           continue;
         }
         const id = message.conversationId ?? message.id;
-        if (seen.has(id)) {
+        if (seen.has(id) || drafted.has(id) || hasTriageMarker(message.categories ?? [])) {
           continue;
         }
         seen.add(id);
@@ -115,7 +135,7 @@ export function createGraphMailbox(
     },
     async readThread(threadId) {
       const listed = await get<GraphList>(
-        `/messages?$filter=${encodeURIComponent(`conversationId eq '${threadId}'`)}&$select=id,conversationId,subject,bodyPreview,receivedDateTime,from,toRecipients,body,internetMessageId,categories,isDraft`,
+        `/messages?$filter=${conversationFilter(threadId)}&$select=id,conversationId,subject,bodyPreview,receivedDateTime,from,toRecipients,body,internetMessageId,categories,isDraft`,
       );
       const messages = (listed.value ?? [])
         .filter((message) => !message.isDraft)
@@ -144,7 +164,7 @@ export function createGraphMailbox(
     async applyBucket(threadId, bucket) {
       const category = graphCategoryForBucket(bucket);
       const listed = await get<GraphList>(
-        `/messages?$filter=${encodeURIComponent(`conversationId eq '${threadId}'`)}&$select=id,categories`,
+        `/messages?$filter=${conversationFilter(threadId)}&$select=id,categories`,
       );
       for (const message of listed.value ?? []) {
         const categories = new Set(message.categories ?? []);
@@ -164,7 +184,7 @@ export function createGraphMailbox(
     },
     async createDraftReply(input: DraftReplyInput) {
       const listed = await get<GraphList>(
-        `/messages?$filter=${encodeURIComponent(`conversationId eq '${input.threadId}'`)}&$top=1&$select=id`,
+        `/messages?$filter=${conversationFilter(input.threadId)}&$top=1&$select=id`,
       );
       const latest = listed.value?.[0];
       if (!latest) {

@@ -7,13 +7,8 @@
       "title": "Email Triage Assistant",
       "description": "Inbox triage that classifies threads and writes draft replies without sending.",
       "author": "TommyBez",
-      "categories": [
-        "support"
-      ],
-      "dependencies": [
-        "eve@^0.47.5",
-        "zod@4.3.6"
-      ],
+      "categories": ["support"],
+      "dependencies": ["eve@^0.47.5", "zod@4.3.6"],
       "files": [
         {
           "path": ".env.example",
@@ -54,6 +49,16 @@
           "path": "agent/lib/http.ts",
           "type": "registry:file",
           "target": "~/agent/lib/http.ts"
+        },
+        {
+          "path": "agent/lib/mime.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/mime.ts"
+        },
+        {
+          "path": "agent/lib/push-auth.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/push-auth.ts"
         },
         {
           "path": "agent/lib/oauth.ts",
@@ -181,6 +186,11 @@
           "target": "~/evals/evals.config.ts"
         },
         {
+          "path": "evals/mailbox-mutations-require-approval.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/mailbox-mutations-require-approval.eval.ts"
+        },
+        {
           "path": "evals/never-send.eval.ts",
           "type": "registry:file",
           "target": "~/evals/never-send.eval.ts"
@@ -191,16 +201,26 @@
           "target": "~/evals/schedule-or-push.eval.ts"
         },
         {
+          "path": "evals/scheduled-run.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/scheduled-run.eval.ts"
+        },
+        {
           "path": "evals/triage-buckets.eval.ts",
           "type": "registry:file",
           "target": "~/evals/triage-buckets.eval.ts"
+        },
+        {
+          "path": "evals/untrusted-mailbox.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/untrusted-mailbox.eval.ts"
         }
       ],
       "meta": {
         "slug": "email-triage-assistant",
         "category": "support",
         "createdAt": "2026-09-08T10:00:00.000Z",
-        "updatedAt": "2026-09-08T10:20:00.000Z",
+        "updatedAt": "2026-09-08T12:00:00.000Z",
         "docs": {
           "overview": [
             "Email Triage Assistant is an eve agent that connects to one mailbox you already own. On each cron tick or signed inbox push it lists threads, reads the ones that need a human, and writes replies into the provider Drafts folder. You review those drafts in Gmail, Outlook, or IMAP and hit send yourself.",

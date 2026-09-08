@@ -7,7 +7,7 @@ export type SlackNotifyInput = {
 
 export type SlackNotifyResult =
   | { readonly notified: true; readonly sent: false }
-  | { readonly notified: false; readonly note: string };
+  | { readonly notified: false; readonly sent: false; readonly note: string };
 
 export async function notifySlackDraftsReady(
   input: SlackNotifyInput,
@@ -23,18 +23,30 @@ export async function notifySlackDraftsReady(
     .join(" ");
 
   const fetchImpl = input.fetchImpl ?? fetch;
-  const response = await fetchImpl(input.webhookUrl, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({ text }),
-  });
+  try {
+    const response = await fetchImpl(input.webhookUrl, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ text }),
+    });
 
-  if (!response.ok) {
+    if (!response.ok) {
+      return {
+        notified: false,
+        sent: false,
+        note: `Slack webhook returned ${response.status}.`,
+      };
+    }
+
+    return { notified: true, sent: false };
+  } catch (error) {
     return {
       notified: false,
-      note: `Slack webhook returned ${response.status}.`,
+      sent: false,
+      note:
+        error instanceof Error
+          ? `Slack webhook request failed: ${error.message}`
+          : "Slack webhook request failed.",
     };
   }
-
-  return { notified: true, sent: false };
 }

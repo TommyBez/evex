@@ -48,3 +48,12 @@ export function imapFolderForBucket(bucket: string): string {
 export function graphCategoryForBucket(bucket: string): string {
   return `triage/${bucket.trim().toLowerCase()}`;
 }
+
+export function isTriageMarker(label: string): boolean {
+  const normalized = label.replace(/^\\/, "").trim().toLowerCase();
+  return normalized === "draft" || normalized.startsWith("triage/");
+}
+
+export function hasTriageMarker(labels: readonly string[]): boolean {
+  return labels.some((label) => isTriageMarker(label));
+}

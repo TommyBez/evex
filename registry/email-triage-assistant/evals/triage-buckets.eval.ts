@@ -15,6 +15,7 @@ This is a newsletter. Apply the newsletter bucket. Do not write a draft unless a
 
     t.succeeded();
     t.calledTool("apply_triage_bucket").gate();
+    t.notCalledTool("create_draft_reply").gate();
     t.notCalledTool("send_email").gate();
   },
 });

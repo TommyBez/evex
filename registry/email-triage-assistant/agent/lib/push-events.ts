@@ -23,7 +23,7 @@ export function parsePushEvent(input: {
     };
   }
 
-  if (typeof body.subscriptionId === "string" || typeof body.value === "object") {
+  if (typeof body.subscriptionId === "string" || Array.isArray(body.value)) {
     return {
       source: "outlook",
       reason: "push",

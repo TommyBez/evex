@@ -15,12 +15,13 @@ npx shadcn@latest add @evex/email-triage-assistant
 ## Surfaces
 
 - **Schedule** `inbox-triage` on `EMAIL_TRIAGE_CRON` (default `0 */2 * * *` UTC).
-- **Push** `POST /inbox/push` with `Authorization: Bearer <EMAIL_PUSH_WEBHOOK_SECRET>`
-  or `X-Webhook-Secret`. Gmail watch, Microsoft Graph subscriptions, and a
-  generic `{ "reason": "push" }` body all start a mailbox run.
+- **Push** `POST /inbox/push`. Generic or proxied posts use
+  `Authorization: Bearer <EMAIL_PUSH_WEBHOOK_SECRET>` or `X-Webhook-Secret`.
+  Direct Gmail Pub/Sub posts are authenticated with Google's OIDC bearer
+  token. Direct Graph notifications must include
+  `clientState: EMAIL_PUSH_WEBHOOK_SECRET`.
 - Graph subscription handshake: `GET` or `POST /inbox/push?validationToken=...`
-  echoes the token. That route is public only for the token echo; every other
-  POST requires the secret.
+  echoes the token. That route is public only for the token echo.
 
 The Eve app must be reachable over HTTPS for provider push. Localhost URLs
 do not receive Gmail or Graph notifications.
@@ -46,9 +47,9 @@ Copy `.env.example` into the Eve app environment. Set one mailbox provider.
 
 ### Gmail OAuth
 
-Read inbox plus write drafts only. Consent
-`gmail.readonly` and `gmail.compose`. The agent never calls `messages.send`
-or `drafts.send`.
+Read inbox, apply labels, and write drafts. Consent `gmail.readonly`,
+`gmail.compose`, and `gmail.modify` (`gmail.modify` is required for label
+writes). The agent never calls `messages.send` or `drafts.send`.
 
 - `GMAIL_CLIENT_ID`
 - `GMAIL_CLIENT_SECRET`
@@ -107,7 +108,8 @@ APPEND to Drafts. No SMTP.
 ## Troubleshooting
 
 - **`notConfigured: missingEnv EMAIL_PROVIDER`** — no complete Gmail, Graph, or IMAP set.
-- **HTTP 401 on `/inbox/push`** — secret missing or mismatched.
+- **HTTP 401 on `/inbox/push`** — missing shared secret, invalid Gmail OIDC
+  token, or Graph `clientState` mismatch.
 - **IMAP APPEND failed** — `IMAP_DRAFTS_MAILBOX` is not the provider's Drafts folder (`[Gmail]/Drafts` on some hosts).
 - **Slack skipped** — `EMAIL_TRIAGE_SLACK_WEBHOOK_URL` is empty. That is optional.
 

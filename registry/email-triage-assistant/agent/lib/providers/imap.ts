@@ -1,7 +1,8 @@
 import type { EmailTriageConfig } from "../email-config";
+import { parseMimeMessage } from "../mime";
 import { buildRfc822 } from "../rfc822";
 import { assertDraftsOnlyImap } from "../send-guard";
-import { imapFolderForBucket } from "../triage-buckets";
+import { hasTriageMarker, imapFolderForBucket } from "../triage-buckets";
 import type { ToneSample } from "../tone-profile";
 import {
   createTlsImapConnect,
@@ -47,15 +48,18 @@ export function createImapMailbox(
         const uids = (await client.searchAll()).slice(-max);
         const threads: InboxThread[] = [];
         for (const uid of uids) {
-          const rfc822 = await client.fetchRfc822(uid);
-          const parsed = parseRfc822(rfc822);
+          const fetched = await client.fetchRfc822AndFlags(uid);
+          if (hasTriageMarker(fetched.flags)) {
+            continue;
+          }
+          const parsed = parseMimeMessage(fetched.rfc822);
           threads.push({
             id: String(uid),
             provider: "imap",
             subject: parsed.subject || "(no subject)",
             from: parsed.from,
             snippet: parsed.body.slice(0, 240),
-            labels: [],
+            labels: [...fetched.flags],
             receivedAt: parsed.date,
           });
         }
@@ -68,7 +72,7 @@ export function createImapMailbox(
       const client = await open(config.imap.inboxMailbox);
       try {
         const rfc822 = await client.fetchRfc822(Number(threadId));
-        const parsed = parseRfc822(rfc822);
+        const parsed = parseMimeMessage(rfc822);
         return {
           id: threadId,
           provider: "imap",
@@ -99,7 +103,7 @@ export function createImapMailbox(
         const uids = (await client.searchAll()).slice(-max);
         const samples: ToneSample[] = [];
         for (const uid of uids) {
-          const parsed = parseRfc822(await client.fetchRfc822(uid));
+          const parsed = parseMimeMessage(await client.fetchRfc822(uid));
           samples.push({
             subject: parsed.subject,
             body: parsed.body,
@@ -114,6 +118,7 @@ export function createImapMailbox(
       const client = await open(config.imap.inboxMailbox);
       try {
         const folder = imapFolderForBucket(bucket);
+        await client.ensureMailbox(folder);
         await client.copy(Number(threadId), folder);
         await client.storeKeyword(Number(threadId), `triage/${bucket}`);
         return {
@@ -155,29 +160,4 @@ export function createImapMailbox(
       }
     },
   };
-}
-
-function parseRfc822(raw: string): {
-  subject: string;
-  from: string;
-  to: string;
-  body: string;
-  date: string | null;
-  messageId?: string;
-} {
-  const [headerBlock, ...rest] = raw.split(/\r?\n\r?\n/);
-  const headers = headerBlock ?? "";
-  return {
-    subject: headerValue(headers, "Subject"),
-    from: headerValue(headers, "From"),
-    to: headerValue(headers, "To"),
-    body: rest.join("\n\n").trim(),
-    date: headerValue(headers, "Date") || null,
-    messageId: headerValue(headers, "Message-ID") || undefined,
-  };
-}
-
-function headerValue(headers: string, name: string): string {
-  const match = new RegExp(`^${name}:\\s*(.+)$`, "im").exec(headers);
-  return match?.[1]?.trim() ?? "";
 }

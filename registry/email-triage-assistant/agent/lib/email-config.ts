@@ -66,20 +66,33 @@ export function resolveEmailProvider(
   env: NodeJS.Dict<string>,
 ): EmailProvider | null {
   const forced = optional(env.EMAIL_PROVIDER)?.toLowerCase();
-  if (forced === "gmail" || forced === "outlook" || forced === "imap") {
-    return forced;
+  if (forced) {
+    if (forced === "gmail" || forced === "outlook" || forced === "imap") {
+      return forced;
+    }
+    return null;
   }
 
-  if (optional(env.GMAIL_REFRESH_TOKEN) && optional(env.GMAIL_CLIENT_ID)) {
+  if (
+    optional(env.GMAIL_CLIENT_ID) &&
+    optional(env.GMAIL_CLIENT_SECRET) &&
+    optional(env.GMAIL_REFRESH_TOKEN)
+  ) {
     return "gmail";
   }
   if (
-    optional(env.MICROSOFT_REFRESH_TOKEN) &&
-    optional(env.MICROSOFT_CLIENT_ID)
+    optional(env.MICROSOFT_CLIENT_ID) &&
+    optional(env.MICROSOFT_CLIENT_SECRET) &&
+    optional(env.MICROSOFT_TENANT_ID) &&
+    optional(env.MICROSOFT_REFRESH_TOKEN)
   ) {
     return "outlook";
   }
-  if (optional(env.IMAP_HOST) && optional(env.IMAP_USER)) {
+  if (
+    optional(env.IMAP_HOST) &&
+    optional(env.IMAP_USER) &&
+    optional(env.IMAP_PASSWORD)
+  ) {
     return "imap";
   }
   return null;

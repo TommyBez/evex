@@ -16,17 +16,35 @@ export type ImapConnectOptions = {
 
 export type ImapConnect = (options: ImapConnectOptions) => Promise<ImapTransport>;
 
+export type ImapFetchedMessage = {
+  readonly rfc822: string;
+  readonly flags: readonly string[];
+};
+
 export function createTlsImapConnect(): ImapConnect {
   return async ({ host, port, timeoutMs = 20_000 }) => {
     assertDraftsOnlyImap(host, port);
     const socket = await new Promise<TLSSocket>((resolve, reject) => {
+      let settled = false;
       const connection = tlsConnect({ host, port, servername: host }, () => {
+        if (settled) {
+          return;
+        }
+        settled = true;
         resolve(connection);
       });
       connection.setTimeout(timeoutMs);
-      connection.once("error", reject);
+      const fail = (error: Error) => {
+        if (settled) {
+          return;
+        }
+        settled = true;
+        reject(error);
+      };
+      connection.once("error", fail);
       connection.once("timeout", () => {
-        reject(new Error(`IMAP TLS timeout connecting to ${host}:${port}`));
+        connection.destroy();
+        fail(new Error(`IMAP TLS timeout connecting to ${host}:${port}`));
       });
     });
 
@@ -100,12 +118,22 @@ export class ImapClient {
   }
 
   async fetchRfc822(uid: number): Promise<string> {
-    const raw = await this.command(`UID FETCH ${uid} (RFC822)`);
-    const literal = /\{(\d+)\}\r?\n([\s\S]*)$/i.exec(raw);
-    if (literal?.[2]) {
-      return literal[2].replace(/\r?\n(?:A\d+ OK|\)).*$/is, "").trimEnd();
+    const fetched = await this.fetchRfc822AndFlags(uid);
+    return fetched.rfc822;
+  }
+
+  async fetchRfc822AndFlags(uid: number): Promise<ImapFetchedMessage> {
+    const raw = await this.command(`UID FETCH ${uid} (FLAGS RFC822)`);
+    return {
+      rfc822: extractRfc822Literal(raw),
+      flags: extractFlags(raw),
+    };
+  }
+
+  async ensureMailbox(mailbox: string): Promise<void> {
+    for (const ancestor of mailboxAncestors(mailbox)) {
+      await this.createMailbox(ancestor);
     }
-    return raw;
   }
 
   async appendDraft(mailbox: string, rfc822: string): Promise<string> {
@@ -142,6 +170,22 @@ export class ImapClient {
     }
   }
 
+  private async createMailbox(mailbox: string): Promise<void> {
+    this.tag += 1;
+    const tag = `A${this.tag}`;
+    await this.transport.write(`${tag} CREATE ${quote(mailbox)}\r\n`);
+    const result = await this.transport.readUntil((buffer) =>
+      new RegExp(`^${tag} (OK|NO|BAD)`, "im").test(buffer),
+    );
+    if (new RegExp(`^${tag} OK`, "im").test(result)) {
+      return;
+    }
+    if (/ALREADYEXISTS/i.test(result) || new RegExp(`^${tag} NO`, "im").test(result)) {
+      return;
+    }
+    throw new Error(`IMAP CREATE ${mailbox} failed.`);
+  }
+
   private async command(line: string): Promise<string> {
     this.tag += 1;
     const tag = `A${this.tag}`;
@@ -150,10 +194,48 @@ export class ImapClient {
       new RegExp(`^${tag} (OK|NO|BAD)`, "im").test(buffer),
     );
     if (!new RegExp(`^${tag} OK`, "im").test(result)) {
+      if (line.startsWith("LOGIN ")) {
+        throw new Error("IMAP login failed");
+      }
       throw new Error(`IMAP command failed: ${line}`);
     }
     return result;
   }
+}
+
+export function extractRfc822Literal(raw: string): string {
+  const header = /\{(\d+)\}\r?\n/.exec(raw);
+  if (!header?.[1]) {
+    return raw;
+  }
+  const declared = Number.parseInt(header[1], 10);
+  if (!Number.isInteger(declared) || declared < 0) {
+    return raw;
+  }
+  const start = header.index + header[0].length;
+  const bytes = Buffer.from(raw.slice(start), "utf8");
+  return bytes.subarray(0, declared).toString("utf8");
+}
+
+export function extractFlags(raw: string): readonly string[] {
+  const match = /FLAGS\s*\(([^)]*)\)/i.exec(raw);
+  if (!match?.[1]) {
+    return [];
+  }
+  return match[1]
+    .trim()
+    .split(/\s+/)
+    .map((flag) => flag.trim())
+    .filter(Boolean);
+}
+
+function mailboxAncestors(mailbox: string): string[] {
+  const parts = mailbox.split("/").filter(Boolean);
+  const names: string[] = [];
+  for (let index = 0; index < parts.length; index += 1) {
+    names.push(parts.slice(0, index + 1).join("/"));
+  }
+  return names;
 }
 
 function quote(value: string): string {
