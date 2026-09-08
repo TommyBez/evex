@@ -39,9 +39,17 @@ Copy `.env.example` into your Eve app environment.
 - `COMPETITOR_INTEL_STORE_PATH` — JSON file for snapshots. Defaults to `.data/competitor-intel-store.json`. Use a durable volume in production.
 - `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` — when both are set, snapshots are stored in Redis instead of the file.
 
-### Slack incoming webhook
+### Optional Slack (Vercel Connect)
 
-- `COMPETITOR_INTEL_SLACK_WEBHOOK_URL` — Slack incoming webhook. Leave empty to skip Slack.
+Uses the Eve Slack channel (`agent/channels/slack.ts`) with Vercel Connect.
+Create a Slack connector and attach triggers to `/eve/v1/slack`
+(`vercel connect create slack --triggers`, or `eve add channel/slack`).
+
+- `COMPETITOR_INTEL_SLACK_CONNECT_UID` — Connect Slack connector UID.
+- `COMPETITOR_INTEL_SLACK_CHANNEL_ID` — Slack channel id for the digest.
+
+Leave either empty to skip Slack. `send_digest` still pauses for Eve
+approval before the channel send.
 
 ### Email digest (Resend)
 
@@ -50,11 +58,11 @@ Copy `.env.example` into your Eve app environment.
 - `COMPETITOR_INTEL_DIGEST_TO` — comma-separated recipient addresses.
 - `COMPETITOR_INTEL_DIGEST_SUBJECT` — subject prefix. Defaults to `Competitor intel digest`.
 
-At least one delivery target (Slack webhook or a complete email trio) is required before `send_digest` will send. Sending is two-step: `preview_digest`, then `send_digest` with `confirmSend: true` and an `idempotencyKey` such as `competitor-intel-monitor-YYYY-MM-DD`.
+At least one delivery target (Slack Connect UID + channel id, or a complete email trio) is required before `send_digest` will send. Sending is two-step: `preview_digest`, then `send_digest` with `confirmSend: true` and an `idempotencyKey` such as `competitor-intel-monitor-YYYY-MM-DD`. `send_digest` always pauses for Eve human approval before Slack or Resend.
 
 ## Smoke test
 
-1. Set at least one URL in `COMPETITOR_INTEL_URLS` and either a Slack webhook or Resend + from/to.
+1. Set at least one URL in `COMPETITOR_INTEL_URLS` and either Slack Connect (UID + channel id) or Resend + from/to.
 2. Trigger the schedule in dev:
 
    ```bash
@@ -69,7 +77,8 @@ At least one delivery target (Slack webhook or a complete email trio) is require
 - **`blockedByRobots`** — that origin's robots.txt disallows this user-agent, or robots.txt could not be fetched. The agent skips the page.
 - **`clearsThreshold: false`** — the page changed but stayed under `COMPETITOR_INTEL_ALERT_MIN_SCORE` or `COMPETITOR_INTEL_ALERT_MIN_CHANGED_CHARS`.
 - **`notConfirmed: true`** — `send_digest` was called without `confirmSend: true`.
-- **No Slack or email arrives** — the agent only sends after `preview_digest` and `send_digest` with `confirmSend: true`. Confirm the webhook URL or that `COMPETITOR_INTEL_DIGEST_FROM` is a verified Resend sender.
+- **Slack skipped** — `COMPETITOR_INTEL_SLACK_CONNECT_UID` or `COMPETITOR_INTEL_SLACK_CHANNEL_ID` is empty. That is optional when email is configured.
+- **No Slack or email arrives** — the agent only sends after `preview_digest` and `send_digest` with `confirmSend: true`, and after Eve approval. Confirm the Connect UID and channel id, or that `COMPETITOR_INTEL_DIGEST_FROM` is a verified Resend sender.
 
 ## Development
 

@@ -3,7 +3,9 @@ import { describe, expect, it } from "vitest";
 import {
   DEFAULT_CRON,
   isHttpsUrl,
+  isSlackDeliveryConfigured,
   loadWatchConfig,
+  missingWatchConfig,
   parseWatchConfigFile,
 } from "../agent/lib/watch-config";
 
@@ -66,5 +68,52 @@ https://example.com/changelog
   it("rejects non-https URLs", () => {
     expect(isHttpsUrl("http://example.com")).toBe(false);
     expect(isHttpsUrl("https://example.com/pricing")).toBe(true);
+  });
+
+  it("treats Slack as unset unless Connect UID and channel id are both set", () => {
+    expect(isSlackDeliveryConfigured(loadWatchConfig({}, () => ({ urls: [] })))).toBe(
+      false,
+    );
+    expect(
+      isSlackDeliveryConfigured(
+        loadWatchConfig(
+          { COMPETITOR_INTEL_SLACK_CONNECT_UID: "slack/competitor-intel-monitor" },
+          () => ({ urls: [] }),
+        ),
+      ),
+    ).toBe(false);
+    expect(
+      isSlackDeliveryConfigured(
+        loadWatchConfig({ COMPETITOR_INTEL_SLACK_CHANNEL_ID: "C0123456789" }, () => ({
+          urls: [],
+        })),
+      ),
+    ).toBe(false);
+    expect(
+      isSlackDeliveryConfigured(
+        loadWatchConfig(
+          {
+            COMPETITOR_INTEL_SLACK_CONNECT_UID: "slack/competitor-intel-monitor",
+            COMPETITOR_INTEL_SLACK_CHANNEL_ID: "C0123456789",
+          },
+          () => ({ urls: [] }),
+        ),
+      ),
+    ).toBe(true);
+  });
+
+  it("does not require Slack when email delivery is configured", () => {
+    const missing = missingWatchConfig(
+      loadWatchConfig(
+        {
+          COMPETITOR_INTEL_URLS: "https://example.com/pricing",
+          COMPETITOR_INTEL_DIGEST_FROM: "alerts@example.com",
+          COMPETITOR_INTEL_DIGEST_TO: "ops@example.com",
+        },
+        () => ({ urls: [] }),
+      ),
+    );
+    expect(missing).not.toContain("COMPETITOR_INTEL_SLACK_CONNECT_UID");
+    expect(missing).not.toContain("COMPETITOR_INTEL_SLACK_CHANNEL_ID");
   });
 });

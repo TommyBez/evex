@@ -1,5 +1,6 @@
 import { buildDigestDraft, utcDateStamp, type DigestDraft } from "./digest.js";
 import type { DeliveryState, SnapshotStore } from "./snapshot-store.js";
+import { postSlackDigest, type SlackChannelSend } from "./slack-post.js";
 import type { ScoredChange } from "./thresholds.js";
 import type { WatchConfig } from "./watch-config.js";
 
@@ -17,13 +18,14 @@ export type EmailSender = (input: {
   readonly idempotencyKey: string;
 }) => Promise<EmailSendResult>;
 
-export type SlackPoster = (url: string, text: string) => Promise<Response>;
+export type SlackPoster = SlackChannelSend;
 
 export type DeliverDigestInput = {
   readonly store: SnapshotStore;
   readonly alerts: readonly ScoredChange[];
   readonly digest: WatchConfig["digest"];
-  readonly slackWebhookUrl?: string;
+  readonly slackConnectUid?: string;
+  readonly slackChannelId?: string;
   readonly runDate?: string;
   readonly idempotencyKey: string;
   readonly sendEmail?: EmailSender;
@@ -43,13 +45,6 @@ export type DeliverDigestResult = {
   readonly channel?: "slack" | "email" | "snapshots";
   readonly error?: { readonly message: string; readonly name: string };
 };
-
-const defaultPostSlack: SlackPoster = async (url, text) =>
-  fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ text }),
-  });
 
 export const deliveryChannelsComplete = (
   state: DeliveryState | null,
@@ -112,13 +107,14 @@ export const deliverCompetitorDigest = async ({
   store,
   alerts,
   digest,
-  slackWebhookUrl,
+  slackConnectUid,
+  slackChannelId,
   runDate,
   idempotencyKey,
   sendEmail,
-  postSlack = defaultPostSlack,
+  postSlack = postSlackDigest,
 }: DeliverDigestInput): Promise<DeliverDigestResult> => {
-  const slackConfigured = Boolean(slackWebhookUrl);
+  const slackConfigured = Boolean(slackConnectUid && slackChannelId);
   const emailConfigured = Boolean(digest.from && digest.to.length > 0 && sendEmail);
   const cached = await store.getDelivery(idempotencyKey);
   const resolvedDate = cached?.runDate ?? runDate ?? utcDateStamp();
@@ -204,7 +200,7 @@ export const deliverCompetitorDigest = async ({
   let slackSent = Boolean(state.slackSent);
   let emailMessageId = state.emailMessageId;
 
-  if (slackWebhookUrl && !slackSent && !state.slackUncertain) {
+  if (slackConnectUid && slackChannelId && !slackSent && !state.slackUncertain) {
     if (!claim.acquired) {
       return {
         sent: false,
@@ -218,7 +214,11 @@ export const deliverCompetitorDigest = async ({
       };
     }
     try {
-      const slackResponse = await postSlack(slackWebhookUrl, draft.slackText);
+      const slackResponse = await postSlack({
+        connectUid: slackConnectUid,
+        channelId: slackChannelId,
+        text: draft.slackText,
+      });
       if (!slackResponse.ok) {
         await persistDelivery(store, idempotencyKey, {
           ...state,
@@ -232,8 +232,8 @@ export const deliverCompetitorDigest = async ({
           runDate: resolvedDate,
           channel: "slack",
           error: {
-            message: `Slack webhook returned HTTP ${slackResponse.status}`,
-            name: "slack_webhook_failed",
+            message: slackResponse.error ?? "Slack chat.postMessage failed.",
+            name: "slack_channel_failed",
           },
         };
       }
@@ -261,7 +261,8 @@ export const deliverCompetitorDigest = async ({
         channel: "slack",
         error: {
           name: "slack_delivery_uncertain",
-          message: "Slack webhook fetch failed after the request may have been delivered.",
+          message:
+            "Slack channel send failed after the request may have been delivered.",
         },
       };
     }

@@ -20,7 +20,7 @@ The change that cleared the thresholds is:
   "clearsThreshold": true
 }
 
-Now send the digest with send_digest. Use competitor-intel-monitor-2026-09-07 as the idempotencyKey and set confirmSend=true. Do not pass to, from, or a webhook URL.
+Now send the digest with send_digest. Use competitor-intel-monitor-2026-09-07 as the idempotencyKey and set confirmSend=true. Do not pass to, from, a Connect UID, or a channel id.
 `);
 
     const call = turn.requireToolCall("send_digest");

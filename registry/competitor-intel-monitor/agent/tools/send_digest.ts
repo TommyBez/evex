@@ -6,7 +6,7 @@ import { z } from "zod";
 import { deliverCompetitorDigest } from "../lib/deliver-digest.js";
 import { createSnapshotStore } from "../lib/snapshot-store.js";
 import { selectDigestAlerts } from "../lib/thresholds.js";
-import { watchConfig } from "../lib/watch-config.js";
+import { isSlackDeliveryConfigured, watchConfig } from "../lib/watch-config.js";
 
 const changeSchema = z.object({
   url: z.string().url(),
@@ -42,7 +42,7 @@ const sendDigestInput = z.object({
 
 export default defineTool({
   description:
-    "Send the scored competitor digest through the configured Slack incoming webhook and/or Resend email. Always pauses for Eve human approval before any Slack or Resend call. Requires confirmSend=true, the idempotencyKey from preview_digest, and the runDate returned by preview_digest so retries keep Slack and email on the same date. Recipients and webhook URL come from configuration. Always call preview_digest first. Do not send when no change cleared the thresholds. After a successful send, pending snapshots for those URLs become the new baseline.",
+    "Send the scored competitor digest through the Eve Slack Connect channel and/or Resend email. Always pauses for Eve human approval before any Slack or Resend call. Requires confirmSend=true, the idempotencyKey from preview_digest, and the runDate returned by preview_digest so retries keep Slack and email on the same date. Recipients and Slack Connect settings come from configuration. Always call preview_digest first. Do not send when no change cleared the thresholds. After a successful send, pending snapshots for those URLs become the new baseline.",
   inputSchema: sendDigestInput,
   approval: always<z.infer<typeof sendDigestInput>>(),
   async execute({ changes, runDate, confirmSend, idempotencyKey }) {
@@ -62,11 +62,10 @@ export default defineTool({
       };
     }
 
-    const slackUrl = watchConfig.slackWebhookUrl;
     const emailFrom = watchConfig.digest.from;
     const emailTo = watchConfig.digest.to;
     const apiKey = process.env.RESEND_API_KEY?.trim();
-    const slackConfigured = Boolean(slackUrl);
+    const slackConfigured = isSlackDeliveryConfigured(watchConfig);
     const emailConfigured = Boolean(emailFrom && emailTo.length > 0);
 
     if (!slackConfigured && !emailConfigured) {
@@ -74,7 +73,8 @@ export default defineTool({
         sent: false,
         notConfigured: true,
         missingEnv: [
-          "COMPETITOR_INTEL_SLACK_WEBHOOK_URL",
+          "COMPETITOR_INTEL_SLACK_CONNECT_UID",
+          "COMPETITOR_INTEL_SLACK_CHANNEL_ID",
           "COMPETITOR_INTEL_DIGEST_FROM",
           "COMPETITOR_INTEL_DIGEST_TO",
         ],
@@ -90,7 +90,8 @@ export default defineTool({
       store,
       alerts,
       digest: watchConfig.digest,
-      slackWebhookUrl: slackUrl,
+      slackConnectUid: watchConfig.slackConnectUid,
+      slackChannelId: watchConfig.slackChannelId,
       runDate,
       idempotencyKey,
       sendEmail:
