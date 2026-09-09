@@ -12,8 +12,35 @@ export type DigestDraft = {
   readonly paidDropped: number;
 };
 
+export type DigestDeliveryKey =
+  | {
+      readonly ok: true;
+      readonly runDate: string;
+      readonly idempotencyKey: string;
+    }
+  | {
+      readonly ok: false;
+      readonly runDate: string;
+      readonly expected: string;
+    };
+
 export const buildDigestIdempotencyKey = (runDate: string): string =>
   `invoice-chase-drafter-${runDate}`;
+
+export const resolveDigestDeliveryKey = (input: {
+  readonly runDate?: string;
+  readonly idempotencyKey: string;
+}): DigestDeliveryKey => {
+  const runDate = input.runDate ?? utcDateStamp();
+  const expected = buildDigestIdempotencyKey(runDate);
+  if (input.idempotencyKey !== expected) {
+    return { ok: false, runDate, expected };
+  }
+  return { ok: true, runDate, idempotencyKey: expected };
+};
+
+export const escapeSlackMrkdwn = (value: string): string =>
+  value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
 
 export const buildDigestDraft = (
   invoices: readonly OpenInvoice[],
@@ -32,8 +59,10 @@ export const buildDigestDraft = (
     invoices.filter((invoice) => invoice.bucket !== "current").length;
   const paidDropped = options.paidDropped ?? 0;
   const lines = invoices.slice(0, 20).map((invoice) => {
-    const email = invoice.email ?? "no email";
-    return `• ${invoice.number} ${invoice.customerName} ${invoice.balance.toFixed(2)} ${invoice.bucket} (${email})`;
+    const email = escapeSlackMrkdwn(invoice.email ?? "no email");
+    const number = escapeSlackMrkdwn(invoice.number);
+    const customerName = escapeSlackMrkdwn(invoice.customerName);
+    return `• ${number} ${customerName} ${invoice.balance.toFixed(2)} ${invoice.bucket} (${email})`;
   });
   const slackText = [
     `AR chase digest (${runDate})`,

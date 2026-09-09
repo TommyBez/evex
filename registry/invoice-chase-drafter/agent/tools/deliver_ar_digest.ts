@@ -10,6 +10,7 @@ import {
 } from "../lib/chase-config";
 import { deliverArDigest } from "../lib/deliver-digest";
 import { createDeliveryStore } from "../lib/delivery-store";
+import { resolveDigestDeliveryKey } from "../lib/digest";
 
 const invoiceSchema = z.object({
   id: z.string().min(1),
@@ -59,6 +60,17 @@ export default defineTool({
       };
     }
 
+    const deliveryKey = resolveDigestDeliveryKey({ runDate, idempotencyKey });
+    if (!deliveryKey.ok) {
+      return {
+        sent: false,
+        keyMismatch: true,
+        expected: deliveryKey.expected,
+        runDate: deliveryKey.runDate,
+        note: "idempotencyKey must equal the date key from preview_ar_digest.",
+      };
+    }
+
     if (!isSlackDeliveryConfigured()) {
       return {
         sent: false,
@@ -72,8 +84,8 @@ export default defineTool({
       invoices,
       slackConnectUid: invoiceChaseConfig.slackConnectUid,
       slackChannelId: invoiceChaseConfig.slackChannelId,
-      runDate,
-      idempotencyKey,
+      runDate: deliveryKey.runDate,
+      idempotencyKey: deliveryKey.idempotencyKey,
       paidDropped,
       reminderCount,
       subject: invoiceChaseConfig.digestSubject,

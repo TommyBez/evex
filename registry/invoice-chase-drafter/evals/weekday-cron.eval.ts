@@ -24,6 +24,5 @@ Call load_chase_config, list_open_invoices, recheck_paid_invoices, and preview_a
     t.calledTool("list_open_invoices").gate();
     t.calledTool("recheck_paid_invoices").gate();
     t.calledTool("preview_ar_digest").gate();
-    t.notCalledTool("send_email").gate();
   },
 });

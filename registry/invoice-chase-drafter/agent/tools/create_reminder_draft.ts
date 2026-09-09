@@ -12,7 +12,7 @@ const invoiceSchema = z.object({
   provider: z.enum(["quickbooks", "xero"]),
   number: z.string().min(1),
   customerName: z.string().min(1),
-  email: z.string().min(3).optional(),
+  email: z.email().optional(),
   balance: z.number(),
   total: z.number(),
   dueDate: z.string().optional(),

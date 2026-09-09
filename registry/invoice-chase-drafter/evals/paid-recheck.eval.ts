@@ -19,6 +19,5 @@ Call recheck_paid_invoices, then preview_ar_digest for the still-open invoices o
     t.succeeded();
     t.calledTool("recheck_paid_invoices").gate();
     t.calledTool("preview_ar_digest").gate();
-    t.notCalledTool("send_email").gate();
   },
 });

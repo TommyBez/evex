@@ -20,6 +20,7 @@ export type DeliverArDigestInput = {
 export type DeliverArDigestResult = {
   readonly sent: boolean;
   readonly replayed?: boolean;
+  readonly inProgress?: boolean;
   readonly idempotencyKey: string;
   readonly slackSent?: boolean;
   readonly openCount?: number;
@@ -71,6 +72,30 @@ export const deliverArDigest = async ({
     };
   }
 
+  const claim = store.claim(idempotencyKey, resolvedDate);
+  if (claim.replayed && claim.state?.slackSent) {
+    return {
+      sent: true,
+      replayed: true,
+      idempotencyKey,
+      slackSent: true,
+      openCount: draft.openCount,
+      runDate: claim.state.runDate,
+    };
+  }
+  if (!claim.acquired) {
+    return {
+      sent: false,
+      inProgress: true,
+      idempotencyKey,
+      runDate: resolvedDate,
+      error: {
+        name: "delivery_in_progress",
+        message: "Another send already claimed this idempotency key.",
+      },
+    };
+  }
+
   try {
     const slackResponse = await postSlack({
       connectUid: slackConnectUid,
@@ -78,6 +103,7 @@ export const deliverArDigest = async ({
       text: draft.slackText,
     });
     if (!slackResponse.ok) {
+      store.release(idempotencyKey);
       return {
         sent: false,
         idempotencyKey,
@@ -89,6 +115,7 @@ export const deliverArDigest = async ({
       };
     }
   } catch (error) {
+    store.release(idempotencyKey);
     return {
       sent: false,
       idempotencyKey,
@@ -106,6 +133,7 @@ export const deliverArDigest = async ({
     runDate: resolvedDate,
     slackSent: true,
     postedAt: new Date().toISOString(),
+    status: "complete",
   });
 
   return {

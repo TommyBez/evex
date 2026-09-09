@@ -34,11 +34,16 @@ export async function recheckPaidInvoices(
   return { stillOpen, paid, missing };
 }
 
+export function formatInvoiceAmount(invoice: OpenInvoice): string {
+  const amount = invoice.balance.toFixed(2);
+  return invoice.currency ? `${invoice.currency} ${amount}` : amount;
+}
+
 export function reminderCopy(invoice: OpenInvoice): {
   readonly subject: string;
   readonly body: string;
 } {
-  const amount = invoice.balance.toFixed(2);
+  const amount = formatInvoiceAmount(invoice);
   const due = invoice.dueDate ?? "the due date";
   return {
     subject: `Invoice ${invoice.number} is past due`,

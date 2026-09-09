@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { loadInvoiceChaseConfig } from "../agent/lib/chase-config";
-import { reminderCopy } from "../agent/lib/invoices";
+import { formatInvoiceAmount, reminderCopy } from "../agent/lib/invoices";
 import { createGmailMailbox } from "../agent/lib/providers/gmail";
 import { createGraphMailbox } from "../agent/lib/providers/graph";
 import { buildRfc822 } from "../agent/lib/rfc822";
@@ -22,6 +22,7 @@ const overdue: OpenInvoice = {
   balance: 240,
   total: 240,
   dueDate: "2026-08-28",
+  currency: "USD",
   daysPastDue: 12,
   bucket: "1-30",
 };
@@ -81,6 +82,8 @@ describe("draft-only mailbox path", () => {
       async () => ({ accessToken: "ya29.token", expiresIn: 3600 }),
     );
     const copy = reminderCopy(overdue);
+    expect(formatInvoiceAmount(overdue)).toBe("USD 240.00");
+    expect(copy.body).toContain("for USD 240.00");
     const result = await mailbox.createReminderDraft({
       to: overdue.email ?? "",
       subject: copy.subject,
