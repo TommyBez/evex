@@ -117,6 +117,17 @@ describe("HMAC intake", () => {
     }
     expect(typeform.source).toBe("typeform");
     expect(typeform.lead.company).toBe("Acme");
+
+    expect(
+      parseLeadEvent({
+        body: { form_response: { answers: { email: "ava@acme.com" } } },
+      }),
+    ).toEqual({ ignored: true });
+    expect(
+      parseLeadEvent({
+        body: { form_response: { answers: [] } },
+      }),
+    ).toEqual({ ignored: true });
   });
 
   it("embeds the sanitized lead and persist id in the queued push prompt", () => {

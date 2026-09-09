@@ -60,14 +60,66 @@ export function isWorkEmail(email: string): boolean {
   return !FREE_EMAIL_DOMAINS.has(domain);
 }
 
+const MULTI_PART_PUBLIC_SUFFIXES = [
+  "ac.uk",
+  "co.in",
+  "co.jp",
+  "co.kr",
+  "co.nz",
+  "co.uk",
+  "co.za",
+  "com.ar",
+  "com.au",
+  "com.br",
+  "com.cn",
+  "com.hk",
+  "com.mx",
+  "com.sg",
+  "com.tw",
+  "gov.uk",
+  "me.uk",
+  "ne.jp",
+  "net.au",
+  "or.jp",
+  "org.au",
+  "org.nz",
+  "org.uk",
+] as const;
+
+export function registrableDomainLabel(domain: string): string {
+  const labels = domain
+    .trim()
+    .toLowerCase()
+    .replace(/\.$/, "")
+    .split(".")
+    .filter(Boolean);
+  if (labels.length === 0) {
+    return domain;
+  }
+  const joined = labels.join(".");
+  const suffix = MULTI_PART_PUBLIC_SUFFIXES.find(
+    (item) => joined === item || joined.endsWith(`.${item}`),
+  );
+  if (suffix) {
+    const index = labels.length - suffix.split(".").length - 1;
+    return labels[index] ?? labels[0] ?? domain;
+  }
+  return labels.length >= 2 ? (labels.at(-2) ?? labels[0]) : (labels[0] ?? domain);
+}
+
 export function companyFromDomain(domain: string): string {
-  const root = domain.split(".").slice(0, -1).join(".") || domain;
-  const label = root.split(".").at(-1) ?? root;
+  const label = registrableDomainLabel(domain);
   return label
     .split(/[-_]/)
     .filter(Boolean)
     .map((part) => `${part.slice(0, 1).toUpperCase()}${part.slice(1)}`)
     .join(" ");
+}
+
+export function refuseInstructionMarkedWrite(lead: LeadFields): string | undefined {
+  if (leadFieldsLookLikeInstructions(lead)) {
+    return "Refused CRM write. Lead fields looked like instructions.";
+  }
 }
 
 export function enrichLead(
@@ -76,6 +128,14 @@ export function enrichLead(
 ): EnrichLeadResult {
   const lead = sanitizeLeadFields(raw);
   const looksLikeInstructions = leadFieldsLookLikeInstructions(lead);
+  if (looksLikeInstructions) {
+    return {
+      enriched: false,
+      failClosed: true,
+      note: "Enrichment failed closed: lead fields looked like instructions. Fields were treated as untrusted data.",
+      looksLikeInstructions: true,
+    };
+  }
   const email = lead.email?.toLowerCase();
 
   if (!email || !EMAIL_PATTERN.test(email)) {

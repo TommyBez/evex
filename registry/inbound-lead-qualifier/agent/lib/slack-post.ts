@@ -10,24 +10,51 @@ export type SlackChannelSend = (input: {
   readonly text: string;
 }) => Promise<{ readonly ok: boolean; readonly error?: string }>;
 
-export const postSlackHotLead: SlackChannelSend = async ({
-  connectUid,
-  channelId,
-  text,
-}) => {
-  const { botToken } = connectSlackCredentials(connectUid);
-  const response = await callSlackApi({
-    botToken,
-    operation: "chat.postMessage",
-    body: { channel: channelId, text },
-  });
-  if (!response.ok) {
+export type SlackPostDeps = {
+  readonly credentials?: (connectUid: string) => { readonly botToken: string };
+  readonly callApi?: (input: {
+    readonly botToken: string;
+    readonly operation: string;
+    readonly body: Record<string, unknown>;
+  }) => Promise<{ readonly ok: boolean; readonly error?: string }>;
+};
+
+export const postSlackHotLead = async (
+  input: {
+    readonly connectUid: string;
+    readonly channelId: string;
+    readonly text: string;
+  },
+  deps: SlackPostDeps = {},
+): Promise<{ readonly ok: boolean; readonly error?: string }> => {
+  try {
+    const resolve = deps.credentials ?? connectSlackCredentials;
+    const callApi = deps.callApi ?? callSlackApi;
+    const { botToken } = resolve(input.connectUid);
+    if (!botToken) {
+      return { ok: false, error: "Slack bot token is missing." };
+    }
+    const response = await callApi({
+      botToken: botToken as never,
+      operation: "chat.postMessage",
+      body: { channel: input.channelId, text: input.text },
+    });
+    if (!response.ok) {
+      return {
+        ok: false,
+        error: String(response.error ?? "Slack chat.postMessage failed."),
+      };
+    }
+    return { ok: true };
+  } catch (error) {
     return {
       ok: false,
-      error: String(response.error ?? "Slack chat.postMessage failed."),
+      error:
+        error instanceof Error
+          ? error.message
+          : "Slack chat.postMessage failed.",
     };
   }
-  return { ok: true };
 };
 
 export function buildHotLeadSlackText(input: {

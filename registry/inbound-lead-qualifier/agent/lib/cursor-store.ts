@@ -12,6 +12,26 @@ const EMPTY_CURSOR: LeadCursor = {
 };
 
 const MAX_SEEN_IDS = 500;
+const USABLE_INSTANT =
+  /^\d{4}-\d{2}-\d{2}(?:T|\s)\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?(?:Z|[+-]\d{2}:?\d{2})?$/;
+
+export function usableCursorTimestamp(
+  value: string,
+  nowMs = Date.now(),
+): string | undefined {
+  const trimmed = value.trim();
+  if (!USABLE_INSTANT.test(trimmed)) {
+    return undefined;
+  }
+  const normalized = trimmed.includes("T")
+    ? trimmed.replace(/([+-]\d{2})(\d{2})$/, "$1:$2")
+    : `${trimmed.replace(" ", "T")}Z`;
+  const parsed = Date.parse(normalized);
+  if (!Number.isFinite(parsed) || parsed > nowMs) {
+    return undefined;
+  }
+  return new Date(parsed).toISOString();
+}
 
 export function takeOldestEligible<T extends { readonly submittedAt?: string }>(
   leads: readonly T[],
@@ -26,9 +46,12 @@ export function takeOldestEligible<T extends { readonly submittedAt?: string }>(
 
 export function nextCursorSince<T extends { readonly submittedAt?: string }>(
   leads: readonly T[],
+  nowMs = Date.now(),
 ): string | undefined {
   const timestamps = leads
-    .map((lead) => lead.submittedAt)
+    .map((lead) =>
+      lead.submittedAt ? usableCursorTimestamp(lead.submittedAt, nowMs) : undefined,
+    )
     .filter((value): value is string => Boolean(value))
     .sort();
   return timestamps.at(-1);
@@ -65,8 +88,11 @@ export function createCursorStore(filePath: string): {
     },
     remember({ ids, since }) {
       const current = this.read();
+      const usableSince = since ? usableCursorTimestamp(since) : undefined;
       const nextSince =
-        since && since > current.since ? since : current.since;
+        usableSince && usableSince > current.since
+          ? usableSince
+          : current.since;
       const seen = [...current.seenIds];
       for (const id of ids) {
         if (id && !seen.includes(id)) {

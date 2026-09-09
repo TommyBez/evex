@@ -33,14 +33,44 @@ const toRecord = (contact: SalesforceContact): CrmLeadRecord => ({
   source: "crm",
 });
 
-const escapeSoql = (value: string): string => value.replaceAll("'", "\\'");
+const SALESFORCE_DATETIME =
+  /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?(?:Z|[+-]\d{2}:?\d{2})$/;
+const DEFAULT_SALESFORCE_PAGE_SIZE = 50;
+const MAX_SALESFORCE_PAGE_SIZE = 200;
+
+export function escapeSoql(value: string): string {
+  return value.replaceAll("\\", "\\\\").replaceAll("'", "\\'");
+}
+
+export function toSalesforceDateTime(since: string): string | undefined {
+  const trimmed = since.trim();
+  const normalized = trimmed.replace(/([+-]\d{2})(\d{2})$/, "$1:$2");
+  if (!SALESFORCE_DATETIME.test(normalized)) {
+    return undefined;
+  }
+  const parsed = Date.parse(normalized);
+  if (!Number.isFinite(parsed)) {
+    return undefined;
+  }
+  return new Date(parsed).toISOString();
+}
+
+export function clampSalesforceLimit(max: number): number {
+  if (!Number.isInteger(max) || max < 1) {
+    return DEFAULT_SALESFORCE_PAGE_SIZE;
+  }
+  return Math.min(max, MAX_SALESFORCE_PAGE_SIZE);
+}
 
 export function buildSalesforceCreatedSinceQuery(
   since: string,
   max: number,
-): string {
-  const iso = since.replaceAll("'", "");
-  return `SELECT Id, Email, FirstName, LastName, Phone, Title, CreatedDate, Account.Name FROM Contact WHERE CreatedDate > ${iso} ORDER BY CreatedDate ASC LIMIT ${max}`;
+): string | undefined {
+  const iso = toSalesforceDateTime(since);
+  if (!iso) {
+    return undefined;
+  }
+  return `SELECT Id, Email, FirstName, LastName, Phone, Title, CreatedDate, Account.Name FROM Contact WHERE CreatedDate > ${iso} ORDER BY CreatedDate ASC LIMIT ${clampSalesforceLimit(max)}`;
 }
 
 export function createSalesforceClient(
@@ -66,9 +96,11 @@ export function createSalesforceClient(
   return {
     provider: "salesforce",
     async listNewSince({ since, seenIds, max = 50 }) {
-      const query = encodeURIComponent(
-        buildSalesforceCreatedSinceQuery(since, max),
-      );
+      const soql = buildSalesforceCreatedSinceQuery(since, max);
+      if (!soql) {
+        return [];
+      }
+      const query = encodeURIComponent(soql);
       const response = await crmFetch({
         fetchImpl,
         url: `${instanceUrl}/services/data/v59.0/query?q=${query}`,

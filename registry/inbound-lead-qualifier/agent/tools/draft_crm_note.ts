@@ -2,7 +2,7 @@ import { defineTool } from "eve/tools";
 import { always } from "eve/tools/approval";
 import { z } from "zod";
 
-import { enrichLead } from "../lib/enrich";
+import { enrichLead, refuseInstructionMarkedWrite } from "../lib/enrich";
 import { inboundLeadConfig, isCrmConfigured } from "../lib/lead-config";
 import { draftCrmNoteBody } from "../lib/note-copy";
 import { createConfiguredCrmClient } from "../lib/providers/index";
@@ -96,6 +96,17 @@ export default defineTool({
         emailedLead: false,
         note: client.note,
         missingEnv: client.missingEnv,
+      };
+    }
+
+    const refusedWrite = refuseInstructionMarkedWrite(enriched.value.lead);
+    if (refusedWrite) {
+      return {
+        written: false,
+        emailedLead: false,
+        failClosed: true,
+        leadId,
+        note: refusedWrite,
       };
     }
 

@@ -60,12 +60,12 @@ describe("enrich fail-closed and ICP score", () => {
     };
     expect(leadFieldsLookLikeInstructions(fields)).toBe(true);
     const enriched = enrichLead(fields, icpConfig);
-    expect(enriched.enriched).toBe(true);
-    if (!enriched.enriched) {
-      throw new Error("expected enrichment");
+    expect(enriched.enriched).toBe(false);
+    if (enriched.enriched) {
+      throw new Error("expected enrichment to fail closed");
     }
-    expect(scoreIcp(enriched.value, icpConfig).hot).toBe(false);
-    expect(scoreIcp(enriched.value, icpConfig).band).toBe("unscored");
+    expect(enriched.failClosed).toBe(true);
+    expect(enriched.looksLikeInstructions).toBe(true);
   });
 });
 

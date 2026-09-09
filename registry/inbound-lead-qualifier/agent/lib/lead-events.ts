@@ -67,14 +67,14 @@ function parseTypeformPayload(
   body: Record<string, unknown>,
 ): ParsedLeadEvent | undefined {
   const formResponse = asRecord(body.form_response);
-  if (!formResponse.answers && !Array.isArray(body.answers)) {
-    return undefined;
-  }
   const answers = Array.isArray(formResponse.answers)
     ? formResponse.answers
     : Array.isArray(body.answers)
       ? body.answers
-      : [];
+      : undefined;
+  if (!answers) {
+    return undefined;
+  }
   const fields: LeadFields = {
     id:
       stringField(formResponse, "token", "landing_id") ??
@@ -112,10 +112,14 @@ function parseTypeformPayload(
     }
   }
 
+  const lead = sanitizeLeadFields(collected);
+  if (!(lead.email || lead.id || lead.company)) {
+    return undefined;
+  }
   return {
     source: "typeform",
     reason: "push",
-    lead: sanitizeLeadFields(collected),
+    lead,
   };
 }
 
