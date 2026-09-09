@@ -113,11 +113,9 @@ variables are validated at startup. Sign-in uses email one-time codes with
 optional GitHub OAuth. See [AGENTS.md](./AGENTS.md) for the full environment
 and setup notes.
 
-IndexNow (Bing / Copilot): the public key is a committed static file at
-`apps/web/public/<key>.txt`, served at `https://www.evex.sh/<key>.txt`.
-After the production deploy that ships that file, Soft Eng submits money
-URLs with `pnpm --filter ./apps/web indexnow:submit` (or `pnpm indexnow:submit`
-from the repo root). There is no Vercel env var and no deploy cron.
+IndexNow (Bing / Copilot): the public key is the committed static file
+`apps/web/public/722f9dbdbaa7cdae691ad3fbf85aad80a13e57b451aab1b656f84b26b0d0aa84.txt`,
+served at `https://www.evex.sh/722f9dbdbaa7cdae691ad3fbf85aad80a13e57b451aab1b656f84b26b0d0aa84.txt`.
 
 ## License
 
