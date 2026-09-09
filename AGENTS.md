@@ -150,3 +150,4 @@ Most formatting and common issues are automatically fixed by Biome. Run `pnpm dl
 - GitHub OAuth is optional: the provider is only registered when both `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET` are set (setting only one fails env validation). Email one-time-code sign-in works without it.
 - The `pg` "SSL modes ... treated as aliases for verify-full" warnings are benign.
 - `pnpm install` reports ignored build scripts (`esbuild`, `msw`, `sharp`); the dev server runs fine without approving them.
+- IndexNow (Bing / Copilot freshness) uses a committed public key file at `apps/web/public/<key>.txt`, served as `https://www.evex.sh/<key>.txt`. Do not add `INDEXNOW_KEY` or `CRON_SECRET` to Vercel. After the production deploy that ships the file, Soft Eng submits money URLs with `pnpm --filter ./apps/web indexnow:submit` (add `-- --dry-run` to print the payload without POSTing).

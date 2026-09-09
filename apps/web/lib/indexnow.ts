@@ -1,11 +1,7 @@
-import 'server-only'
-
-import { env } from '@/lib/env'
-import { listLearnPages } from '@/lib/learn-content'
-import { listStaticAgents } from '@/lib/registry'
-import { getSiteUrl } from '@/lib/site-url'
-
 export const INDEXNOW_ENDPOINT = 'https://api.indexnow.org/indexnow'
+export const INDEXNOW_SITE_URL = 'https://www.evex.sh'
+export const INDEXNOW_KEY =
+  '722f9dbdbaa7cdae691ad3fbf85aad80a13e57b451aab1b656f84b26b0d0aa84'
 
 export interface IndexNowPayload {
   host: string
@@ -16,10 +12,6 @@ export interface IndexNowPayload {
 
 export type IndexNowSubmitResult =
   | {
-      readonly reason: 'missing_key' | 'not_production'
-      readonly status: 'skipped'
-    }
-  | {
       readonly count: number
       readonly httpStatus: number
       readonly status: 'submitted'
@@ -28,17 +20,16 @@ export type IndexNowSubmitResult =
 
 interface SubmitIndexNowOptions {
   fetchImpl?: typeof fetch
-  key?: string | undefined
+  key: string
   siteUrl?: string
-  urls?: readonly string[]
-  vercelEnv?: string | undefined
+  urls: readonly string[]
 }
 
-// Money URLs only. Catalog lastmod lives in source, so production deploys
-// are the publish event; the Vercel cron is the post-deploy submit hook.
+// Money URLs only. Catalog lastmod lives in source; Soft Eng submits after
+// the production deploy that ships the committed public key file.
 export function listIndexNowPaths(
-  agents: readonly { slug: string }[] = listStaticAgents(),
-  learnPages: readonly { slug: string }[] = listLearnPages(),
+  agents: readonly { slug: string }[],
+  learnPages: readonly { slug: string }[],
 ): string[] {
   const agentPaths = agents.map((agent) => `/agents/${agent.slug}`).sort()
   const learnPaths = learnPages.map((page) => `/learn/${page.slug}`).sort()
@@ -46,19 +37,33 @@ export function listIndexNowPaths(
   return ['/', '/docs', '/agents', ...agentPaths, '/learn', ...learnPaths]
 }
 
-export function getIndexNowKeyFilePath(key: string): string {
-  return `/${key}.txt`
+export function getIndexNowKeyFileName(key: string = INDEXNOW_KEY): string {
+  return `${key}.txt`
+}
+
+export function getIndexNowKeyFilePath(key: string = INDEXNOW_KEY): string {
+  return `/${getIndexNowKeyFileName(key)}`
+}
+
+export function getIndexNowPublicFileRelativePath(
+  key: string = INDEXNOW_KEY,
+): string {
+  return `public/${getIndexNowKeyFileName(key)}`
 }
 
 export function getIndexNowKeyLocation(
-  key: string,
-  siteUrl: string = getSiteUrl(),
+  key: string = INDEXNOW_KEY,
+  siteUrl: string = INDEXNOW_SITE_URL,
 ): string {
   return `${siteUrl}${getIndexNowKeyFilePath(key)}`
 }
 
-export function listIndexNowUrls(siteUrl: string = getSiteUrl()): string[] {
-  return listIndexNowPaths().map((path) =>
+export function listIndexNowUrls(
+  siteUrl: string,
+  agents: readonly { slug: string }[],
+  learnPages: readonly { slug: string }[],
+): string[] {
+  return listIndexNowPaths(agents, learnPages).map((path) =>
     path === '/' ? siteUrl : `${siteUrl}${path}`,
   )
 }
@@ -66,7 +71,7 @@ export function listIndexNowUrls(siteUrl: string = getSiteUrl()): string[] {
 export function buildIndexNowPayload(
   urls: readonly string[],
   key: string,
-  siteUrl: string = getSiteUrl(),
+  siteUrl: string = INDEXNOW_SITE_URL,
 ): IndexNowPayload {
   return {
     host: new URL(siteUrl).host,
@@ -76,59 +81,30 @@ export function buildIndexNowPayload(
   }
 }
 
-export function isIndexNowKeyFileRequest(
-  requestKey: string,
-  configuredKey: string | undefined = env.INDEXNOW_KEY,
-): boolean {
-  return Boolean(configuredKey) && requestKey === configuredKey
-}
+export function parseIndexNowKeyFile(contents: string): string {
+  const key = contents.trim()
 
-export function buildIndexNowKeyFileResponse(
-  requestKey: string,
-  configuredKey: string | undefined = env.INDEXNOW_KEY,
-): Response {
-  if (!isIndexNowKeyFileRequest(requestKey, configuredKey)) {
-    return new Response('Not found', { status: 404 })
+  if (key !== INDEXNOW_KEY) {
+    throw new Error(
+      `IndexNow key file must contain exactly ${INDEXNOW_KEY}, received ${key || '(empty)'}`,
+    )
   }
 
-  return new Response(configuredKey, {
-    headers: {
-      'Cache-Control': 'public, max-age=3600, s-maxage=3600',
-      'Content-Type': 'text/plain; charset=utf-8',
-      'X-Robots-Tag': 'noindex',
-    },
-  })
+  return key
 }
 
-export function isIndexNowCronAuthorized(
-  request: Request,
-  secret: string | undefined = env.CRON_SECRET,
-): boolean {
-  if (!secret) {
-    return false
-  }
-
-  return request.headers.get('authorization') === `Bearer ${secret}`
+export function listIndexNowAgentsFromCatalog(catalog: {
+  items: readonly { meta: { slug: string } }[]
+}): { slug: string }[] {
+  return catalog.items.map((item) => ({ slug: item.meta.slug }))
 }
 
 export async function submitIndexNow(
-  options: SubmitIndexNowOptions = {},
+  options: SubmitIndexNowOptions,
 ): Promise<IndexNowSubmitResult> {
-  const key = options.key ?? env.INDEXNOW_KEY
-  const vercelEnv = options.vercelEnv ?? env.VERCEL_ENV
-  const siteUrl = options.siteUrl ?? getSiteUrl()
-  const urls = options.urls ?? listIndexNowUrls(siteUrl)
+  const siteUrl = options.siteUrl ?? INDEXNOW_SITE_URL
   const fetchImpl = options.fetchImpl ?? fetch
-
-  if (!key) {
-    return { reason: 'missing_key', status: 'skipped' }
-  }
-
-  if (vercelEnv !== 'production') {
-    return { reason: 'not_production', status: 'skipped' }
-  }
-
-  const payload = buildIndexNowPayload(urls, key, siteUrl)
+  const payload = buildIndexNowPayload(options.urls, options.key, siteUrl)
 
   try {
     const response = await fetchImpl(INDEXNOW_ENDPOINT, {

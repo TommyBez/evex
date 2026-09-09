@@ -66,6 +66,7 @@
     "db:studio": "drizzle-kit studio",
     "email:preview": "email dev --dir emails --port 3001",
     "fix": "ultracite fix",
+    "indexnow:submit": "node --experimental-strip-types --disable-warning=ExperimentalWarning --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/submit-indexnow.mts",
     "start": "next start",
     "typecheck": "tsc --noEmit --pretty false",
     "lint": "pnpm fix",

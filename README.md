@@ -113,10 +113,11 @@ variables are validated at startup. Sign-in uses email one-time codes with
 optional GitHub OAuth. See [AGENTS.md](./AGENTS.md) for the full environment
 and setup notes.
 
-Optional IndexNow (Bing / Copilot): set `INDEXNOW_KEY` (8–128 characters,
-`a-z` `A-Z` `0-9` `-`; `openssl rand -hex 32`) and `CRON_SECRET` on the
-Vercel production project. The key is served at `/{INDEXNOW_KEY}.txt`.
-Production cron `GET /api/indexnow` submits money URLs after deploys.
+IndexNow (Bing / Copilot): the public key is a committed static file at
+`apps/web/public/<key>.txt`, served at `https://www.evex.sh/<key>.txt`.
+After the production deploy that ships that file, Soft Eng submits money
+URLs with `pnpm --filter ./apps/web indexnow:submit` (or `pnpm indexnow:submit`
+from the repo root). There is no Vercel env var and no deploy cron.
 
 ## License
 

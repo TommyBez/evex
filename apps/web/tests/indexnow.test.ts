@@ -1,37 +1,38 @@
+import { existsSync, readFileSync } from 'node:fs'
+import path from 'node:path'
 import { describe, expect, it, vi } from 'vitest'
-import { GET as getIndexNowKeyFile } from '@/app/api/indexnow/key/[key]/route'
 import {
-  buildIndexNowKeyFileResponse,
   buildIndexNowPayload,
   getIndexNowKeyFilePath,
   getIndexNowKeyLocation,
+  getIndexNowPublicFileRelativePath,
   INDEXNOW_ENDPOINT,
-  isIndexNowCronAuthorized,
-  isIndexNowKeyFileRequest,
+  INDEXNOW_KEY,
+  INDEXNOW_SITE_URL,
+  listIndexNowAgentsFromCatalog,
   listIndexNowPaths,
   listIndexNowUrls,
+  parseIndexNowKeyFile,
   submitIndexNow,
 } from '@/lib/indexnow'
 import { listLearnPages } from '@/lib/learn-content'
 import { listStaticAgents } from '@/lib/registry'
 
-const SITE_URL = 'https://www.evex.sh'
-const EXAMPLE_KEY = '0123456789abcdef0123456789abcdef'
-const CRON_SECRET = 'test-cron-secret'
+const SITE_URL = INDEXNOW_SITE_URL
 const DOCS_SUBPAGE_PATH = /\/docs\/.+/
+const KEY_FILE_MISMATCH = /must contain exactly/
+const WEB_ROOT = path.join(import.meta.dirname, '..')
 
-function authorizedRequest(url: string, secret = CRON_SECRET): Request {
-  return new Request(url, {
-    headers: { authorization: `Bearer ${secret}` },
-  })
+function readWebSource(relativePath: string): string {
+  return readFileSync(path.join(WEB_ROOT, relativePath), 'utf8')
 }
 
 describe('IndexNow money URL list', () => {
   it('covers home, docs, agents, agent slugs, and learn pages', () => {
-    const paths = listIndexNowPaths()
-    const urls = listIndexNowUrls(SITE_URL)
     const agents = listStaticAgents()
     const learnPages = listLearnPages()
+    const paths = listIndexNowPaths(agents, learnPages)
+    const urls = listIndexNowUrls(SITE_URL, agents, learnPages)
 
     expect(paths).toEqual(
       expect.arrayContaining(['/', '/docs', '/agents', '/learn']),
@@ -61,65 +62,80 @@ describe('IndexNow money URL list', () => {
       urls.some((url) => DOCS_SUBPAGE_PATH.test(new URL(url).pathname)),
     ).toBe(false)
   })
+
+  it('reads agent slugs from the generated catalog the same way the submit script does', () => {
+    const catalog = JSON.parse(
+      readFileSync(
+        path.join(
+          WEB_ROOT,
+          '../../packages/agent-registry/generated/catalog.json',
+        ),
+        'utf8',
+      ),
+    ) as { items: { meta: { slug: string } }[] }
+
+    expect(
+      listIndexNowAgentsFromCatalog(catalog)
+        .map((agent) => agent.slug)
+        .toSorted(),
+    ).toEqual(
+      listStaticAgents()
+        .map((agent) => agent.slug)
+        .toSorted(),
+    )
+  })
 })
 
-describe('IndexNow key path', () => {
-  it('uses the documented /{key}.txt location', () => {
-    expect(getIndexNowKeyFilePath(EXAMPLE_KEY)).toBe(`/${EXAMPLE_KEY}.txt`)
-    expect(getIndexNowKeyLocation(EXAMPLE_KEY, SITE_URL)).toBe(
-      `${SITE_URL}/${EXAMPLE_KEY}.txt`,
-    )
+describe('IndexNow public key file', () => {
+  it('commits the key as a static public file with exactly that key string', () => {
+    const relativePath = getIndexNowPublicFileRelativePath()
+    const filePath = path.join(WEB_ROOT, relativePath)
+    const body = readFileSync(filePath, 'utf8')
+
+    expect(relativePath).toBe(`public/${INDEXNOW_KEY}.txt`)
+    expect(getIndexNowKeyFilePath()).toBe(`/${INDEXNOW_KEY}.txt`)
+    expect(getIndexNowKeyLocation()).toBe(`${SITE_URL}/${INDEXNOW_KEY}.txt`)
+    expect(body).toBe(INDEXNOW_KEY)
+    expect(parseIndexNowKeyFile(body)).toBe(INDEXNOW_KEY)
+    expect(parseIndexNowKeyFile(`${INDEXNOW_KEY}\n`)).toBe(INDEXNOW_KEY)
   })
 
-  it('serves the key only when the request matches the configured key', () => {
-    expect(isIndexNowKeyFileRequest(EXAMPLE_KEY, EXAMPLE_KEY)).toBe(true)
-    expect(isIndexNowKeyFileRequest('other-key', EXAMPLE_KEY)).toBe(false)
-    expect(isIndexNowKeyFileRequest(EXAMPLE_KEY, undefined)).toBe(false)
-
-    const ok = buildIndexNowKeyFileResponse(EXAMPLE_KEY, EXAMPLE_KEY)
-    expect(ok.status).toBe(200)
-    expect(ok.headers.get('Content-Type')).toContain('text/plain')
-    expect(ok.headers.get('X-Robots-Tag')).toBe('noindex')
-
-    const missing = buildIndexNowKeyFileResponse(EXAMPLE_KEY, undefined)
-    expect(missing.status).toBe(404)
+  it('rejects a key file that does not match the committed key', () => {
+    expect(() => parseIndexNowKeyFile('other-key')).toThrow(KEY_FILE_MISMATCH)
   })
 
-  it('404s the hosted key file when INDEXNOW_KEY is unset', async () => {
-    const response = await getIndexNowKeyFile(
-      new Request(`${SITE_URL}/${EXAMPLE_KEY}.txt`),
-      {
-        params: Promise.resolve({ key: EXAMPLE_KEY }),
-      },
-    )
+  it('does not rewrite /{key}.txt through an env-backed API route', () => {
+    const nextConfig = readWebSource('next.config.ts')
+    const envSource = readWebSource('lib/env.ts')
+    const envExample = readWebSource('.env.example')
 
-    expect(response.status).toBe(404)
+    expect(nextConfig).not.toContain('/api/indexnow')
+    expect(nextConfig).not.toContain('INDEXNOW_KEY')
+    expect(envSource).not.toContain('INDEXNOW_KEY')
+    expect(envSource).not.toContain('CRON_SECRET')
+    expect(envExample).not.toContain('INDEXNOW_KEY=')
+    expect(envExample).not.toContain('CRON_SECRET=')
+    expect(existsSync(path.join(WEB_ROOT, 'vercel.json'))).toBe(false)
+    expect(existsSync(path.join(WEB_ROOT, 'app/api/indexnow'))).toBe(false)
   })
 })
 
 describe('IndexNow submit', () => {
   it('builds the IndexNow JSON payload for the money URL set', () => {
-    const urls = listIndexNowUrls(SITE_URL)
-    const payload = buildIndexNowPayload(urls, EXAMPLE_KEY, SITE_URL)
+    const agents = listStaticAgents()
+    const learnPages = listLearnPages()
+    const urls = listIndexNowUrls(SITE_URL, agents, learnPages)
+    const payload = buildIndexNowPayload(urls, INDEXNOW_KEY, SITE_URL)
 
     expect(payload).toEqual({
       host: 'www.evex.sh',
-      key: EXAMPLE_KEY,
-      keyLocation: `${SITE_URL}/${EXAMPLE_KEY}.txt`,
+      key: INDEXNOW_KEY,
+      keyLocation: `${SITE_URL}/${INDEXNOW_KEY}.txt`,
       urlList: urls,
     })
   })
 
-  it('skips when the key is missing or the environment is not production', async () => {
-    await expect(
-      submitIndexNow({ key: undefined, vercelEnv: 'production' }),
-    ).resolves.toEqual({ reason: 'missing_key', status: 'skipped' })
-    await expect(
-      submitIndexNow({ key: EXAMPLE_KEY, vercelEnv: 'preview' }),
-    ).resolves.toEqual({ reason: 'not_production', status: 'skipped' })
-  })
-
-  it('POSTs money URLs to the IndexNow endpoint in production', async () => {
+  it('POSTs money URLs to the IndexNow endpoint', async () => {
     const urls = [`${SITE_URL}/`, `${SITE_URL}/docs`]
     const fetchImpl = vi
       .fn()
@@ -127,10 +143,9 @@ describe('IndexNow submit', () => {
 
     const result = await submitIndexNow({
       fetchImpl,
-      key: EXAMPLE_KEY,
+      key: INDEXNOW_KEY,
       siteUrl: SITE_URL,
       urls,
-      vercelEnv: 'production',
     })
 
     expect(result).toEqual({
@@ -139,26 +154,26 @@ describe('IndexNow submit', () => {
       status: 'submitted',
     })
     expect(fetchImpl).toHaveBeenCalledWith(INDEXNOW_ENDPOINT, {
-      body: JSON.stringify(buildIndexNowPayload(urls, EXAMPLE_KEY, SITE_URL)),
+      body: JSON.stringify(buildIndexNowPayload(urls, INDEXNOW_KEY, SITE_URL)),
       headers: {
         'Content-Type': 'application/json; charset=utf-8',
       },
       method: 'POST',
     })
   })
-})
 
-describe('IndexNow cron auth', () => {
-  it('requires a matching Bearer CRON_SECRET', () => {
-    const request = authorizedRequest(`${SITE_URL}/api/indexnow`)
+  it('treats HTTP 202 as a successful submit', async () => {
+    const result = await submitIndexNow({
+      fetchImpl: vi.fn().mockResolvedValue(new Response(null, { status: 202 })),
+      key: INDEXNOW_KEY,
+      siteUrl: SITE_URL,
+      urls: [`${SITE_URL}/`],
+    })
 
-    expect(isIndexNowCronAuthorized(request, CRON_SECRET)).toBe(true)
-    expect(isIndexNowCronAuthorized(request, undefined)).toBe(false)
-    expect(
-      isIndexNowCronAuthorized(
-        new Request(`${SITE_URL}/api/indexnow`),
-        CRON_SECRET,
-      ),
-    ).toBe(false)
+    expect(result).toEqual({
+      count: 1,
+      httpStatus: 202,
+      status: 'submitted',
+    })
   })
 })

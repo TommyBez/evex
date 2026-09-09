@@ -14,9 +14,6 @@ const nextConfig: NextConfig = {
       { source: '/learn/:slug.md', destination: '/learn/:slug/md' },
       { source: '/docs.md', destination: '/docs/md' },
       { source: '/docs/:slug.md', destination: '/docs/:slug/md' },
-      // IndexNow key file. Static robots.txt / llms.txt / llms-full.txt
-      // win because Next checks the filesystem before rewrites.
-      { source: '/:key.txt', destination: '/api/indexnow/key/:key' },
     ])
   },
   redirects() {
