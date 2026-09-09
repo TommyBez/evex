@@ -11,6 +11,7 @@
         "research"
       ],
       "dependencies": [
+        "@vercel/connect@^0.2.6",
         "eve@^0.47.5",
         "resend@^6.14.0",
         "zod@4.3.6"
@@ -25,6 +26,11 @@
           "path": "agent/agent.ts",
           "type": "registry:file",
           "target": "~/agent/agent.ts"
+        },
+        {
+          "path": "agent/channels/slack.ts",
+          "type": "registry:file",
+          "target": "~/agent/channels/slack.ts"
         },
         {
           "path": "agent/instructions.md",
@@ -55,6 +61,11 @@
           "path": "agent/lib/robots.ts",
           "type": "registry:file",
           "target": "~/agent/lib/robots.ts"
+        },
+        {
+          "path": "agent/lib/slack-post.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/slack-post.ts"
         },
         {
           "path": "agent/lib/snapshot-store.ts",
@@ -171,7 +182,7 @@
         "slug": "competitor-intel-monitor",
         "category": "research",
         "createdAt": "2026-09-07T20:00:00.000Z",
-        "updatedAt": "2026-09-08T09:20:00.000Z",
+        "updatedAt": "2026-09-08T20:40:00.000Z",
         "docs": {
           "overview": [
             "Competitor Intel Monitor is a scheduled eve agent that re-reads a list of competitor pages you already chose. On each cron tick it checks robots.txt, pulls the HTML that is allowed, and compares normalized text to the last snapshot in a JSON file or Upstash Redis. You configure the list and thresholds once, then leave it running.",
@@ -242,8 +253,16 @@
               "body": "User-Agent for page and robots.txt fetches. Defaults to EveCompetitorIntelMonitor/1.0."
             },
             {
-              "name": "COMPETITOR_INTEL_SLACK_WEBHOOK_URL",
-              "body": "Slack incoming webhook. Leave empty to skip Slack. At least one of Slack or a complete email trio is required to send."
+              "name": "COMPETITOR_INTEL_SLACK_CONNECT_UID",
+              "body": "Optional Vercel Connect Slack connector UID for the Eve Slack channel. Leave empty to skip Slack. At least one of Slack Connect or a complete email trio is required to send."
+            },
+            {
+              "name": "COMPETITOR_INTEL_SLACK_CHANNEL_ID",
+              "body": "Optional Slack channel id for the digest. Leave empty to skip Slack. Both this and COMPETITOR_INTEL_SLACK_CONNECT_UID must be set to post."
+            },
+            {
+              "name": "@vercel/connect",
+              "body": "Runtime dependency that supplies Slack credentials through connectSlackCredentials. send_digest posts with Eve callSlackApi after approval, not an incoming webhook."
             },
             {
               "name": "RESEND_API_KEY",

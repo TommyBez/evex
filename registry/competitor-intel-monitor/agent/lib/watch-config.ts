@@ -11,7 +11,8 @@ export type WatchConfig = {
   readonly alert: AlertThresholds;
   readonly storePath: string;
   readonly userAgent: string;
-  readonly slackWebhookUrl?: string;
+  readonly slackConnectUid?: string;
+  readonly slackChannelId?: string;
   readonly digest: {
     readonly from?: string;
     readonly to: readonly string[];
@@ -153,7 +154,8 @@ export const loadWatchConfig = (
     },
     storePath: optional(env.COMPETITOR_INTEL_STORE_PATH) ?? DEFAULT_STORE_PATH,
     userAgent: optional(env.COMPETITOR_INTEL_USER_AGENT) ?? DEFAULT_USER_AGENT,
-    slackWebhookUrl: optional(env.COMPETITOR_INTEL_SLACK_WEBHOOK_URL),
+    slackConnectUid: optional(env.COMPETITOR_INTEL_SLACK_CONNECT_UID),
+    slackChannelId: optional(env.COMPETITOR_INTEL_SLACK_CHANNEL_ID),
     digest: {
       from: optional(env.COMPETITOR_INTEL_DIGEST_FROM),
       to: compactCsv(env.COMPETITOR_INTEL_DIGEST_TO),
@@ -164,6 +166,36 @@ export const loadWatchConfig = (
 
 export const watchConfig = loadWatchConfig();
 
+export const isSlackDeliveryConfigured = (
+  config: WatchConfig = watchConfig,
+): boolean => Boolean(config.slackConnectUid && config.slackChannelId);
+
+export const isEmailDeliveryConfigured = (
+  config: WatchConfig = watchConfig,
+): boolean => Boolean(config.digest.from && config.digest.to.length > 0);
+
+export const missingDeliveryEnv = (
+  config: WatchConfig = watchConfig,
+): readonly string[] => {
+  if (isSlackDeliveryConfigured(config) || isEmailDeliveryConfigured(config)) {
+    return [];
+  }
+  const missing: string[] = [];
+  if (!config.slackConnectUid) {
+    missing.push("COMPETITOR_INTEL_SLACK_CONNECT_UID");
+  }
+  if (!config.slackChannelId) {
+    missing.push("COMPETITOR_INTEL_SLACK_CHANNEL_ID");
+  }
+  if (!config.digest.from) {
+    missing.push("COMPETITOR_INTEL_DIGEST_FROM");
+  }
+  if (config.digest.to.length === 0) {
+    missing.push("COMPETITOR_INTEL_DIGEST_TO");
+  }
+  return missing;
+};
+
 export const missingWatchConfig = (
   config: WatchConfig = watchConfig,
 ): readonly string[] => {
@@ -171,14 +203,8 @@ export const missingWatchConfig = (
   if (config.urls.length === 0) {
     missing.push("COMPETITOR_INTEL_URLS");
   }
-  const hasSlack = Boolean(config.slackWebhookUrl);
-  const hasEmail = Boolean(config.digest.from && config.digest.to.length > 0);
-  if (!hasSlack && !hasEmail) {
-    missing.push("COMPETITOR_INTEL_SLACK_WEBHOOK_URL");
-    missing.push("COMPETITOR_INTEL_DIGEST_FROM");
-    missing.push("COMPETITOR_INTEL_DIGEST_TO");
-  }
-  if (hasEmail && !process.env.RESEND_API_KEY?.trim()) {
+  missing.push(...missingDeliveryEnv(config));
+  if (isEmailDeliveryConfigured(config) && !process.env.RESEND_API_KEY?.trim()) {
     missing.push("RESEND_API_KEY");
   }
   return missing;
