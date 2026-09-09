@@ -1,0 +1,327 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "items": [
+    {
+      "name": "invoice-chase-drafter",
+      "type": "registry:item",
+      "title": "Invoice Chase Drafter",
+      "description": "Weekday AR chase via Connect that drafts mailbox reminders from QuickBooks or Xero and posts an idempotent Slack digest after a paid re-check.",
+      "author": "TommyBez",
+      "categories": ["productivity"],
+      "dependencies": ["@vercel/connect@^0.2.6", "eve@^0.47.5", "zod@4.3.6"],
+      "files": [
+        {
+          "path": ".env.example",
+          "type": "registry:file",
+          "target": "~/.env.example"
+        },
+        {
+          "path": "agent/agent.ts",
+          "type": "registry:file",
+          "target": "~/agent/agent.ts"
+        },
+        {
+          "path": "agent/channels/slack.ts",
+          "type": "registry:file",
+          "target": "~/agent/channels/slack.ts"
+        },
+        {
+          "path": "agent/instructions.md",
+          "type": "registry:file",
+          "target": "~/agent/instructions.md"
+        },
+        {
+          "path": "agent/lib/aging.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/aging.ts"
+        },
+        {
+          "path": "agent/lib/chase-config.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/chase-config.ts"
+        },
+        {
+          "path": "agent/lib/deliver-digest.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/deliver-digest.ts"
+        },
+        {
+          "path": "agent/lib/delivery-store.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/delivery-store.ts"
+        },
+        {
+          "path": "agent/lib/digest.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/digest.ts"
+        },
+        {
+          "path": "agent/lib/http.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/http.ts"
+        },
+        {
+          "path": "agent/lib/invoices.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/invoices.ts"
+        },
+        {
+          "path": "agent/lib/oauth.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/oauth.ts"
+        },
+        {
+          "path": "agent/lib/providers/ar.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/providers/ar.ts"
+        },
+        {
+          "path": "agent/lib/providers/gmail.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/providers/gmail.ts"
+        },
+        {
+          "path": "agent/lib/providers/graph.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/providers/graph.ts"
+        },
+        {
+          "path": "agent/lib/providers/mailbox.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/providers/mailbox.ts"
+        },
+        {
+          "path": "agent/lib/providers/quickbooks.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/providers/quickbooks.ts"
+        },
+        {
+          "path": "agent/lib/providers/types.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/providers/types.ts"
+        },
+        {
+          "path": "agent/lib/providers/xero.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/providers/xero.ts"
+        },
+        {
+          "path": "agent/lib/rfc822.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/rfc822.ts"
+        },
+        {
+          "path": "agent/lib/send-guard.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/send-guard.ts"
+        },
+        {
+          "path": "agent/lib/slack-post.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/slack-post.ts"
+        },
+        {
+          "path": "agent/schedules/chase-open-invoices.ts",
+          "type": "registry:file",
+          "target": "~/agent/schedules/chase-open-invoices.ts"
+        },
+        {
+          "path": "agent/skills/invoice-chase/SKILL.md",
+          "type": "registry:file",
+          "target": "~/agent/skills/invoice-chase/SKILL.md"
+        },
+        {
+          "path": "agent/tools/create_reminder_draft.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/create_reminder_draft.ts"
+        },
+        {
+          "path": "agent/tools/deliver_ar_digest.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/deliver_ar_digest.ts"
+        },
+        {
+          "path": "agent/tools/list_open_invoices.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/list_open_invoices.ts"
+        },
+        {
+          "path": "agent/tools/load_chase_config.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/load_chase_config.ts"
+        },
+        {
+          "path": "agent/tools/preview_ar_digest.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/preview_ar_digest.ts"
+        },
+        {
+          "path": "agent/tools/recheck_paid_invoices.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/recheck_paid_invoices.ts"
+        },
+        {
+          "path": "evals/drafts-require-approval.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/drafts-require-approval.eval.ts"
+        },
+        {
+          "path": "evals/evals.config.ts",
+          "type": "registry:file",
+          "target": "~/evals/evals.config.ts"
+        },
+        {
+          "path": "evals/never-send.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/never-send.eval.ts"
+        },
+        {
+          "path": "evals/paid-recheck.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/paid-recheck.eval.ts"
+        },
+        {
+          "path": "evals/weekday-cron.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/weekday-cron.eval.ts"
+        },
+        {
+          "path": "README.md",
+          "type": "registry:file",
+          "target": "~/agent/README.md"
+        }
+      ],
+      "meta": {
+        "slug": "invoice-chase-drafter",
+        "category": "productivity",
+        "createdAt": "2026-09-09T16:00:00.000Z",
+        "updatedAt": "2026-09-09T16:00:00.000Z",
+        "docs": {
+          "overview": [
+            "Invoice Chase Drafter is an eve agent that reads unpaid invoices from the QuickBooks or Xero company you already connected. On each weekday cron tick it ages those rows into buckets, writes reminder emails into the mailbox Drafts folder, and posts a finance digest to Slack. You review and send the drafts yourself. The agent never calls a send API.",
+            "You interact with it through environment variables and the chase-open-invoices schedule. Set a Custom OAuth Connect UID for QuickBooks or Xero, a Google or Microsoft Connect UID for Drafts, and Slack Connect for the digest. The agent re-checks each invoice before deliver_ar_digest and only posts when confirmSend is true with a date-derived idempotency key.",
+            "It is useful when finance wants weekday chasing without auto-send. Current invoices stay in the digest as current. Overdue rows get a Drafts reminder when a customer email is present. A paid re-check drops invoices that cleared after the first read so Slack does not list them, and the same date key keeps a retried cron from posting twice."
+          ],
+          "howItWorks": [
+            "On the chase-open-invoices schedule (cron from INVOICE_CHASE_CRON, default weekday 08:00 UTC), the agent loads the invoice-chase skill.",
+            "It calls load_chase_config and stops when QuickBooks or Xero Custom OAuth Connect, a mailbox Connect UID, or Slack Connect is missing.",
+            "list_open_invoices mints a Connect token and lists unpaid invoices aged into current, 1-30, 31-60, 61-90, and 90+ buckets. That tool is GET-only.",
+            "recheck_paid_invoices re-reads each invoice and drops rows that are now paid so a later Slack digest cannot list a settled invoice.",
+            "create_reminder_draft writes Gmail drafts.create or Graph Drafts after Eve approval and always returns sent false. preview_ar_digest then deliver_ar_digest with confirmSend true and a date idempotency key post Slack once.",
+            "Four evals cover never-send, the weekday cron path, paid re-check before digest, and drafts that require approval."
+          ],
+          "useCases": [
+            {
+              "title": "Overdue invoice stays in Drafts",
+              "body": "A QuickBooks invoice is twelve days past due. create_reminder_draft writes a Gmail draft to the BillEmail address. sent is false. A human opens Drafts and hits send."
+            },
+            {
+              "title": "Paid between list and digest",
+              "body": "list_open_invoices still shows a Xero row. recheck_paid_invoices sees AmountDue zero. The paid invoice is dropped. Slack only lists still-open aging buckets."
+            },
+            {
+              "title": "Retry does not double-post Slack",
+              "body": "A weekday cron retries after a timeout. deliver_ar_digest sees invoice-chase-drafter-2026-09-09 already stored and returns replayed true. chat.postMessage is not called again."
+            },
+            {
+              "title": "No customer email, still digest",
+              "body": "An overdue invoice has no BillEmail. create_reminder_draft skips the mailbox write. The row still appears in the Slack finance digest after the paid re-check."
+            }
+          ],
+          "requirements": [
+            {
+              "name": "AI_GATEWAY_API_KEY",
+              "body": "A model credential for the deployment, either a Vercel AI Gateway API key or AI Gateway OIDC, so the agent can call zai/glm-5.2."
+            },
+            {
+              "name": "INVOICE_CHASE_AR_PROVIDER",
+              "body": "Optional force of quickbooks or xero. When empty, the first complete Custom OAuth Connect UID wins."
+            },
+            {
+              "name": "INVOICE_CHASE_CRON",
+              "body": "5-field cron for chase-open-invoices. Defaults to 0 8 * * 1-5 (weekday 08:00 UTC on Vercel)."
+            },
+            {
+              "name": "INVOICE_CHASE_MAX_INVOICES",
+              "body": "Maximum unpaid invoices to read per run. Defaults to 100."
+            },
+            {
+              "name": "INVOICE_CHASE_STORE_PATH",
+              "body": "JSON file for digest delivery claims. Defaults to .data/invoice-chase-store.json. Use a durable volume if the app filesystem is ephemeral."
+            },
+            {
+              "name": "INVOICE_CHASE_SLACK_CONNECT_UID",
+              "body": "Vercel Connect Slack connector UID for the Eve Slack channel. Required with the channel id before deliver_ar_digest will post."
+            },
+            {
+              "name": "INVOICE_CHASE_SLACK_CHANNEL_ID",
+              "body": "Slack channel id for the finance digest. Required with the Slack Connect UID."
+            },
+            {
+              "name": "INVOICE_CHASE_QUICKBOOKS_CONNECT_UID",
+              "body": "Custom OAuth Connect UID for QuickBooks Online from vercel connect create. Mints com.intuit.quickbooks.accounting. Reads only."
+            },
+            {
+              "name": "INVOICE_CHASE_QUICKBOOKS_REALM_ID",
+              "body": "QuickBooks company realm id required when the AR provider is quickbooks."
+            },
+            {
+              "name": "INVOICE_CHASE_QUICKBOOKS_ENVIRONMENT",
+              "body": "production or sandbox. Defaults to production. Sandbox talks to sandbox-quickbooks.api.intuit.com."
+            },
+            {
+              "name": "INVOICE_CHASE_XERO_CONNECT_UID",
+              "body": "Custom OAuth Connect UID for Xero from vercel connect create. Mints accounting.transactions.read, accounting.contacts.read, and offline_access."
+            },
+            {
+              "name": "INVOICE_CHASE_XERO_TENANT_ID",
+              "body": "Xero tenant id required when the AR provider is xero."
+            },
+            {
+              "name": "INVOICE_CHASE_MAILBOX_PROVIDER",
+              "body": "Optional force of gmail or outlook. When empty, the first complete mailbox Connect UID wins."
+            },
+            {
+              "name": "INVOICE_CHASE_GOOGLE_CONNECT_UID",
+              "body": "Vercel Connect Google connector UID from vercel connect create google. Mints gmail.compose. The agent never calls messages.send or drafts.send."
+            },
+            {
+              "name": "INVOICE_CHASE_GMAIL_USER",
+              "body": "Optional From address written onto Gmail drafts."
+            },
+            {
+              "name": "INVOICE_CHASE_MICROSOFT_CONNECT_UID",
+              "body": "Vercel Connect Microsoft connector UID from vercel connect create microsoft. Mints Mail.ReadWrite. The agent never calls sendMail."
+            },
+            {
+              "name": "@vercel/connect",
+              "body": "Runtime dependency that mints Custom OAuth and Slack tokens through getTokenResponse and connectSlackCredentials. Slack posts with Eve callSlackApi after approval."
+            }
+          ],
+          "faqs": [
+            {
+              "question": "How do I install and run a weekday chase?",
+              "answer": "Install with npx shadcn@latest add @evex/invoice-chase-drafter, copy .env.example, set QuickBooks or Xero Custom OAuth Connect, a mailbox Connect UID, and Slack, then POST to /eve/v1/dev/schedules/chase-open-invoices while iterating."
+            },
+            {
+              "question": "Does it ever send the reminder email?",
+              "answer": "No. create_reminder_draft always returns sent false. Gmail stops at drafts.create and Graph writes Drafts only. SMTP and send URLs are refused in code. A human sends from the mailbox."
+            },
+            {
+              "question": "What is the paid re-check?",
+              "answer": "recheck_paid_invoices re-reads each invoice before Slack. A row that is now paid or voided is dropped. The digest lists still-open aging buckets only, so a payment that landed after the first list does not get chased."
+            },
+            {
+              "question": "Can a replayed cron post Slack twice?",
+              "answer": "deliver_ar_digest refuses unless confirmSend is true, and it requires the date key from preview_ar_digest. A successful post is stored on invoice-chase-drafter-YYYY-MM-DD, so a retry returns replayed and skips chat.postMessage."
+            },
+            {
+              "question": "Is Slack required?",
+              "answer": "Yes for the finance digest. INVOICE_CHASE_SLACK_CONNECT_UID and INVOICE_CHASE_SLACK_CHANNEL_ID must both be set. The Eve Slack channel uses Connect credentials, not an incoming webhook. Delivery still pauses for Eve approval."
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

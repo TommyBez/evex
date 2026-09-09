@@ -343,6 +343,7 @@ describe('/agents catalog index', () => {
       'competitor-intel-monitor',
       'crm-hygiene-agent',
       'email-triage-assistant',
+      'invoice-chase-drafter',
       'knowledge-base-gardener',
       'meeting-action-extractor',
     ]) {

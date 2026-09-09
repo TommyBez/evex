@@ -112,6 +112,8 @@ const AGENT_METADATA_TITLE_OVERRIDES: Readonly<Record<string, string>> = {
     'Eve CI failure agent - install @evex/github-ci-explainer',
   'github-issue-maintainer':
     'Eve GitHub issue agent - install @evex/github-issue-maintainer',
+  'invoice-chase-drafter':
+    'Eve invoice chase drafter - @evex/invoice-chase-drafter',
   'knowledge-base-gardener':
     'Eve knowledge base gardener - @evex/knowledge-base-gardener',
   'linear-operations-agent':
@@ -165,6 +167,8 @@ const AGENT_JOB_INTENT_LEDES: Readonly<Record<string, string>> = {
   'eve-agent-builder': 'Scaffolds, checks, and deploys a new Eve agent.',
   'github-ci-explainer': 'Explains failed GitHub Actions checks from the log.',
   'github-issue-maintainer': 'GitHub issue agent for Eve.',
+  'invoice-chase-drafter':
+    'On a weekday schedule, pulls open AR from QuickBooks or Xero over Connect, ages it into buckets, and drafts reminder emails into Drafts while Slack gets the finance digest.',
   'knowledge-base-gardener':
     'Finds stale product docs and drafts updates with file cites.',
   'linear-operations-agent':
@@ -224,6 +228,8 @@ const AGENT_DEFINITION_JOB_OVERRIDES: Readonly<Record<string, string>> = {
     'scans the CRM on a cron, drafts a cleanup batch for Slack or digest review, and writes only after you approve',
   'email-triage-assistant':
     'reads the inbox on a schedule or push, sorts threads into buckets, and leaves replies in Drafts only',
+  'invoice-chase-drafter':
+    'pulls open invoices on a weekday cron, leaves reminder drafts in Drafts only, and posts an idempotent AR digest to Slack for finance',
   'knowledge-base-gardener':
     'reads docs on disk and drafts a cited update you review',
   'meeting-action-extractor':
