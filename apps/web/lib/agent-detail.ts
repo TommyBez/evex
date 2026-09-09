@@ -102,6 +102,7 @@ const AGENT_METADATA_TITLE_OVERRIDES: Readonly<Record<string, string>> = {
   'code-reviewer': 'Eve PR review agent - install @evex/code-reviewer',
   'competitor-intel-monitor':
     'Eve competitor intel monitor - @evex/competitor-intel-monitor',
+  'crm-hygiene-agent': 'Eve CRM hygiene agent - @evex/crm-hygiene-agent',
   'docs-knowledge-assistant':
     'Eve docs Q&A agent - install @evex/docs-knowledge-assistant',
   'email-triage-assistant':
@@ -156,6 +157,8 @@ const AGENT_JOB_INTENT_LEDES: Readonly<Record<string, string>> = {
   'code-reviewer': 'PR review agent for Eve.',
   'competitor-intel-monitor':
     'Watches competitor pages on a schedule and sends a scored Slack or email digest when something changes.',
+  'crm-hygiene-agent':
+    'On a schedule, scans HubSpot, Salesforce, or Pipedrive via Connect and proposes dedupe, normalize, and enrich work you approve before anything writes.',
   'docs-knowledge-assistant': 'Docs Q&A agent for Eve.',
   'email-triage-assistant':
     'Triages Gmail, Outlook, or IMAP threads and writes tone-matched draft replies you send yourself.',
@@ -217,6 +220,8 @@ export function shouldRenderAgentDescriptionParagraph({
 const AGENT_DEFINITION_JOB_OVERRIDES: Readonly<Record<string, string>> = {
   'competitor-intel-monitor':
     'fetches your URL list, diffs each page against a store, and delivers only changes that clear your alert thresholds.',
+  'crm-hygiene-agent':
+    'scans the CRM on a cron, drafts a cleanup batch for Slack or digest review, and writes only after you approve',
   'email-triage-assistant':
     'reads the inbox on a schedule or push, sorts threads into buckets, and leaves replies in Drafts only',
   'knowledge-base-gardener':
