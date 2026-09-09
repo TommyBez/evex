@@ -1,0 +1,314 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "items": [
+    {
+      "name": "crm-hygiene-agent",
+      "type": "registry:item",
+      "title": "CRM Hygiene Agent",
+      "description": "Scheduled CRM hygiene via Connect that proposes dedupe, normalize, and enrich batches for human approval before any write.",
+      "author": "TommyBez",
+      "categories": [
+        "productivity"
+      ],
+      "dependencies": [
+        "@vercel/connect@^0.2.6",
+        "eve@^0.47.5",
+        "resend@^6.14.0",
+        "zod@4.3.6"
+      ],
+      "files": [
+        {
+          "path": ".env.example",
+          "type": "registry:file",
+          "target": "~/.env.example"
+        },
+        {
+          "path": "agent/agent.ts",
+          "type": "registry:file",
+          "target": "~/agent/agent.ts"
+        },
+        {
+          "path": "agent/channels/slack.ts",
+          "type": "registry:file",
+          "target": "~/agent/channels/slack.ts"
+        },
+        {
+          "path": "agent/instructions.md",
+          "type": "registry:file",
+          "target": "~/agent/instructions.md"
+        },
+        {
+          "path": "agent/lib/audit-log.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/audit-log.ts"
+        },
+        {
+          "path": "agent/lib/crm-config.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/crm-config.ts"
+        },
+        {
+          "path": "agent/lib/deliver-digest.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/deliver-digest.ts"
+        },
+        {
+          "path": "agent/lib/digest.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/digest.ts"
+        },
+        {
+          "path": "agent/lib/hygiene.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/hygiene.ts"
+        },
+        {
+          "path": "agent/lib/oauth.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/oauth.ts"
+        },
+        {
+          "path": "agent/lib/providers/http.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/providers/http.ts"
+        },
+        {
+          "path": "agent/lib/providers/hubspot.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/providers/hubspot.ts"
+        },
+        {
+          "path": "agent/lib/providers/index.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/providers/index.ts"
+        },
+        {
+          "path": "agent/lib/providers/pipedrive.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/providers/pipedrive.ts"
+        },
+        {
+          "path": "agent/lib/providers/salesforce.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/providers/salesforce.ts"
+        },
+        {
+          "path": "agent/lib/providers/types.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/providers/types.ts"
+        },
+        {
+          "path": "agent/lib/slack-post.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/slack-post.ts"
+        },
+        {
+          "path": "agent/lib/write-guard.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/write-guard.ts"
+        },
+        {
+          "path": "agent/schedules/crm-hygiene-scan.ts",
+          "type": "registry:file",
+          "target": "~/agent/schedules/crm-hygiene-scan.ts"
+        },
+        {
+          "path": "agent/skills/crm-hygiene/SKILL.md",
+          "type": "registry:file",
+          "target": "~/agent/skills/crm-hygiene/SKILL.md"
+        },
+        {
+          "path": "agent/tools/apply_hygiene_writes.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/apply_hygiene_writes.ts"
+        },
+        {
+          "path": "agent/tools/deliver_hygiene_digest.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/deliver_hygiene_digest.ts"
+        },
+        {
+          "path": "agent/tools/load_crm_config.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/load_crm_config.ts"
+        },
+        {
+          "path": "agent/tools/preview_hygiene_digest.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/preview_hygiene_digest.ts"
+        },
+        {
+          "path": "agent/tools/propose_hygiene_batch.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/propose_hygiene_batch.ts"
+        },
+        {
+          "path": "agent/tools/scan_crm_records.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/scan_crm_records.ts"
+        },
+        {
+          "path": "evals/digest-preview.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/digest-preview.eval.ts"
+        },
+        {
+          "path": "evals/evals.config.ts",
+          "type": "registry:file",
+          "target": "~/evals/evals.config.ts"
+        },
+        {
+          "path": "evals/never-write-without-confirm.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/never-write-without-confirm.eval.ts"
+        },
+        {
+          "path": "evals/schedule-scan.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/schedule-scan.eval.ts"
+        },
+        {
+          "path": "evals/writes-require-approval.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/writes-require-approval.eval.ts"
+        },
+        {
+          "path": "README.md",
+          "type": "registry:file",
+          "target": "~/agent/README.md"
+        }
+      ],
+      "meta": {
+        "slug": "crm-hygiene-agent",
+        "category": "productivity",
+        "createdAt": "2026-09-09T12:00:00.000Z",
+        "updatedAt": "2026-09-09T18:00:00.000Z",
+        "docs": {
+          "overview": [
+            "CRM Hygiene Agent is an eve agent that connects to one HubSpot, Salesforce, or Pipedrive account you already own. On each cron tick it reads contacts through Vercel Connect, drafts a dedupe, normalize, and enrich batch, and waits for you to approve before any CRM write.",
+            "You interact with it through environment variables and Slack or email. Set a Connect UID for the CRM you use, pick Slack Connect, Resend, or both, and trigger crm-hygiene-scan. The agent previews every digest and only delivers when confirmSend is true. CRM writes stay behind apply_hygiene_writes.",
+            "It is useful when you want scheduled cleanup without silent merges. Duplicate emails become a reviewable dedupe row. Name and phone formatting become normalize rows. Empty company or phone fields become enrich rows that copy from a sibling on the same domain. The append-only audit log records proposed, delivered, approved, written, and refused."
+          ],
+          "howItWorks": [
+            "On the crm-hygiene-scan schedule (cron from CRM_HYGIENE_CRON, default 08:00 UTC), the agent loads the crm-hygiene skill.",
+            "It calls load_crm_config and stops when a HubSpot, Salesforce, or Pipedrive Connect UID is missing, or when neither Slack nor email delivery is configured.",
+            "scan_crm_records mints a Vercel Connect token and lists contacts. That tool is read-only and never merges or patches a record.",
+            "propose_hygiene_batch drafts dedupe, normalize, and enrich work, writes the batch into the append-only audit log, and returns written false.",
+            "If the batch has proposals, the agent calls preview_hygiene_digest, then deliver_hygiene_digest with confirmSend true. That tool pauses for Eve approval before the Slack Connect channel or Resend. The cron path does not call apply_hygiene_writes.",
+            "Four evals cover the schedule path, digest preview, writes that require approval, and a run that must not apply without confirmWrite."
+          ],
+          "useCases": [
+            {
+              "title": "Duplicate emails waiting for a human",
+              "body": "Two HubSpot contacts share ava@example.com. propose_hygiene_batch adds a dedupe row. Slack gets the draft batch. apply_hygiene_writes runs only after you approve with confirmWrite true."
+            },
+            {
+              "title": "Name and phone cleanup",
+              "body": "A Salesforce contact has firstName ava and a ten-digit phone. The normalize proposal title-cases the name and prefixes plus on the phone. Nothing is patched until apply_hygiene_writes is approved."
+            },
+            {
+              "title": "Fill empty company from a sibling",
+              "body": "A Pipedrive person on example.com has no company. Another person on that domain lists Acme. The enrich row copies Acme into the empty field and never overwrites a filled company."
+            },
+            {
+              "title": "Monday cron, Slack review",
+              "body": "Set CRM_HYGIENE_CRON to weekday mornings and Slack Connect. Operators get one draft batch in the Eve Slack channel. The cron path stops after deliver_hygiene_digest. Writes wait for chat plus approval."
+            }
+          ],
+          "requirements": [
+            {
+              "name": "AI_GATEWAY_API_KEY",
+              "body": "A model credential for the deployment, either a Vercel AI Gateway API key or AI Gateway OIDC, so the agent can call zai/glm-5.2."
+            },
+            {
+              "name": "CRM_PROVIDER",
+              "body": "Optional force of hubspot, salesforce, or pipedrive. When empty, the first complete Connect UID wins."
+            },
+            {
+              "name": "CRM_HYGIENE_CRON",
+              "body": "5-field cron for crm-hygiene-scan. Defaults to 0 8 * * * (08:00 UTC on Vercel)."
+            },
+            {
+              "name": "CRM_HYGIENE_MAX_RECORDS",
+              "body": "Maximum contacts to read per scan. Defaults to 100."
+            },
+            {
+              "name": "CRM_HYGIENE_AUDIT_PATH",
+              "body": "Append-only JSONL audit log. Defaults to .data/crm-hygiene-audit.jsonl. Stores identifiers, proposal kinds, and changed field names only. Use a durable volume if the app filesystem is ephemeral."
+            },
+            {
+              "name": "CRM_HYGIENE_AUDIT_RETENTION_DAYS",
+              "body": "Days to keep audit rows. Defaults to 90. propose_hygiene_batch purges older rows."
+            },
+            {
+              "name": "CRM_HYGIENE_DEFAULT_PHONE_COUNTRY_CODE",
+              "body": "Optional country calling code, digits only, used before adding + to a national phone. Leave empty to leave non-E.164 numbers unchanged."
+            },
+            {
+              "name": "CRM_HYGIENE_SLACK_CONNECT_UID",
+              "body": "Optional Vercel Connect Slack connector UID for the Eve Slack channel. Leave empty to skip Slack delivery."
+            },
+            {
+              "name": "CRM_HYGIENE_SLACK_CHANNEL_ID",
+              "body": "Optional Slack channel id for the draft batch. Leave empty to skip Slack delivery."
+            },
+            {
+              "name": "CRM_HYGIENE_HUBSPOT_CONNECT_UID",
+              "body": "Vercel Connect HubSpot connector UID from vercel connect create hubspot. Mints crm.objects.contacts.read, crm.objects.contacts.write, and crm.objects.companies.read. Writes still require apply_hygiene_writes after Eve approval."
+            },
+            {
+              "name": "CRM_HYGIENE_SALESFORCE_CONNECT_UID",
+              "body": "Vercel Connect Salesforce connector UID from vercel connect create salesforce. Mints api and refresh_token."
+            },
+            {
+              "name": "CRM_HYGIENE_SALESFORCE_INSTANCE_URL",
+              "body": "HTTPS Salesforce instance URL required when the provider is salesforce."
+            },
+            {
+              "name": "CRM_HYGIENE_PIPEDRIVE_CONNECT_UID",
+              "body": "Vercel Connect Pipedrive connector UID from vercel connect create pipedrive. Mints contacts:read and contacts:full."
+            },
+            {
+              "name": "CRM_HYGIENE_PIPEDRIVE_COMPANY_DOMAIN",
+              "body": "Optional Pipedrive company domain. The runtime talks to api.pipedrive.com with the Connect token."
+            },
+            {
+              "name": "RESEND_API_KEY",
+              "body": "Resend API key used by deliver_hygiene_digest when email recipients are configured. The idempotency key is forwarded to Resend."
+            },
+            {
+              "name": "CRM_HYGIENE_DIGEST_FROM",
+              "body": "Verified Resend sender for the HTML digest. Recipients and sender cannot be overridden through tool input."
+            },
+            {
+              "name": "CRM_HYGIENE_DIGEST_TO",
+              "body": "Comma-separated recipient addresses. Optional CRM_HYGIENE_DIGEST_SUBJECT defaults to CRM hygiene batch."
+            }
+          ],
+          "faqs": [
+            {
+              "question": "How do I install and run a scan?",
+              "answer": "Install with npx shadcn@latest add @evex/crm-hygiene-agent, copy .env.example, set one CRM Connect UID plus Slack or Resend, then POST to /eve/v1/dev/schedules/crm-hygiene-scan while iterating."
+            },
+            {
+              "question": "Does the cron path write to the CRM?",
+              "answer": "No. crm-hygiene-scan reads, proposes, and may deliver a digest after approval. apply_hygiene_writes is the only write path and is not called on cron. confirmWrite must be true after a later Eve approval."
+            },
+            {
+              "question": "Is Slack required?",
+              "answer": "No. CRM_HYGIENE_SLACK_CONNECT_UID and CRM_HYGIENE_SLACK_CHANNEL_ID are optional. When both are set, deliver_hygiene_digest posts the draft batch through the Eve Slack channel. That ping is not a CRM write."
+            },
+            {
+              "question": "How do I approve a cleanup batch?",
+              "answer": "Review the Slack or email digest, then call apply_hygiene_writes with the proposed batch and confirmWrite true. The tool always pauses for Eve approval. Without that grant the CRM client refuses POST, PATCH, PUT, and DELETE."
+            },
+            {
+              "question": "What if two contacts share an email?",
+              "answer": "propose_hygiene_batch adds a dedupe row that keeps the fuller record as primary. The merge stays staged until you approve apply_hygiene_writes. There is no auto-merge and no silent overwrite."
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

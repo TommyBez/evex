@@ -105,6 +105,7 @@ const JOB_INTENT_METADATA_TITLES: Readonly<Record<string, string>> = {
   'code-reviewer': 'Eve PR review agent - install @evex/code-reviewer',
   'competitor-intel-monitor':
     'Eve competitor intel monitor - @evex/competitor-intel-monitor',
+  'crm-hygiene-agent': 'Eve CRM hygiene agent - @evex/crm-hygiene-agent',
   'docs-knowledge-assistant':
     'Eve docs Q&A agent - install @evex/docs-knowledge-assistant',
   'email-triage-assistant':
@@ -138,6 +139,8 @@ const JOB_INTENT_LEDES: Readonly<Record<string, string>> = {
   'code-reviewer': 'PR review agent for Eve.',
   'competitor-intel-monitor':
     'Watches competitor pages on a schedule and sends a scored Slack or email digest when something changes.',
+  'crm-hygiene-agent':
+    'On a schedule, scans HubSpot, Salesforce, or Pipedrive via Connect and proposes dedupe, normalize, and enrich work you approve before anything writes.',
   'docs-knowledge-assistant': 'Docs Q&A agent for Eve.',
   'email-triage-assistant':
     'Triages Gmail, Outlook, or IMAP threads and writes tone-matched draft replies you send yourself.',
@@ -370,6 +373,7 @@ describe('shouldRenderAgentDescriptionParagraph', () => {
 
 const DEMAND_BACKED_PLAYS = [
   'competitor-intel-monitor',
+  'crm-hygiene-agent',
   'email-triage-assistant',
   'knowledge-base-gardener',
   'meeting-action-extractor',
@@ -378,6 +382,8 @@ const DEMAND_BACKED_PLAYS = [
 const DEMAND_BACKED_DESCRIPTIONS: Readonly<Record<string, string>> = {
   'competitor-intel-monitor':
     'Scheduled competitor URL monitor that diffs pages and delivers scored Slack or email digests.',
+  'crm-hygiene-agent':
+    'Scheduled CRM hygiene via Connect that proposes dedupe, normalize, and enrich batches for human approval before any write.',
   'email-triage-assistant':
     'Inbox triage that classifies threads and writes draft replies without sending.',
   'knowledge-base-gardener':
@@ -388,6 +394,7 @@ const DEMAND_BACKED_DESCRIPTIONS: Readonly<Record<string, string>> = {
 
 const DEMAND_BACKED_LEDE_STEMS: Readonly<Record<string, string>> = {
   'competitor-intel-monitor': 'watches competitor pages on a schedule',
+  'crm-hygiene-agent': 'scans hubspot, salesforce, or pipedrive',
   'email-triage-assistant': 'triages gmail, outlook, or imap',
   'knowledge-base-gardener': 'finds stale product docs',
   'meeting-action-extractor':
@@ -726,6 +733,41 @@ describe('getAgentDefinitionBlock', () => {
     expect(block.plainText).toContain(
       'npx shadcn@latest add @evex/knowledge-base-gardener',
     )
+  })
+
+  it('uses a distinct lowercase What-is clause for crm-hygiene-agent', () => {
+    const agent = listStaticAgents().find(
+      (item) => item.slug === 'crm-hygiene-agent',
+    )
+    expect(agent).toBeDefined()
+    if (!agent) {
+      return
+    }
+
+    const job =
+      'scans the CRM on a cron, drafts a cleanup batch for Slack or digest review, and writes only after you approve'
+    expect(job.startsWith('scans')).toBe(true)
+    expect(job.endsWith('.')).toBe(false)
+
+    const lede = getAgentJobIntentLede('crm-hygiene-agent')
+    const block = getAgentDefinitionBlock(agent)
+    expect(lede).toBe(
+      'On a schedule, scans HubSpot, Salesforce, or Pipedrive via Connect and proposes dedupe, normalize, and enrich work you approve before anything writes.',
+    )
+    expect(agent.description).toBe(
+      'Scheduled CRM hygiene via Connect that proposes dedupe, normalize, and enrich batches for human approval before any write.',
+    )
+    expect(block.plainText).not.toContain(lede)
+    expect(block.plainText.toLowerCase()).not.toContain(
+      'scans hubspot, salesforce, or pipedrive',
+    )
+    expect(block.plainText).toContain(
+      `CRM Hygiene Agent is an Eve agent that ${job}.`,
+    )
+    expect(block.plainText).toContain(
+      'npx shadcn@latest add @evex/crm-hygiene-agent',
+    )
+    expect(block.plainText).not.toContain('eve add')
   })
 
   it('uses a distinct lowercase What-is clause for email-triage-assistant', () => {
