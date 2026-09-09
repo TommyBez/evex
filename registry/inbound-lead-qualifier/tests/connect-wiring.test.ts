@@ -99,6 +99,48 @@ describe("Connect and signed HTTP wiring", () => {
     );
   });
 
+  it("skips an incomplete Salesforce connector when auto-selecting CRM", () => {
+    expect(
+      resolveCrmProvider({
+        INBOUND_LEAD_SALESFORCE_CONNECT_UID:
+          "salesforce/inbound-lead-qualifier",
+      }),
+    ).toBeNull();
+    expect(
+      resolveCrmProvider({
+        INBOUND_LEAD_SALESFORCE_CONNECT_UID:
+          "salesforce/inbound-lead-qualifier",
+        INBOUND_LEAD_PIPEDRIVE_CONNECT_UID: "pipedrive/inbound-lead-qualifier",
+      }),
+    ).toBe("pipedrive");
+    expect(
+      resolveCrmProvider({
+        INBOUND_LEAD_HUBSPOT_CONNECT_UID: "hubspot/inbound-lead-qualifier",
+        INBOUND_LEAD_SALESFORCE_CONNECT_UID:
+          "salesforce/inbound-lead-qualifier",
+        INBOUND_LEAD_PIPEDRIVE_CONNECT_UID: "pipedrive/inbound-lead-qualifier",
+      }),
+    ).toBe("hubspot");
+    expect(
+      isCrmConfigured(
+        loadInboundLeadConfig({
+          INBOUND_LEAD_SALESFORCE_CONNECT_UID:
+            "salesforce/inbound-lead-qualifier",
+          INBOUND_LEAD_PIPEDRIVE_CONNECT_UID:
+            "pipedrive/inbound-lead-qualifier",
+        }),
+      ),
+    ).toBe(true);
+    expect(
+      resolveCrmProvider({
+        CRM_PROVIDER: "salesforce",
+        INBOUND_LEAD_SALESFORCE_CONNECT_UID:
+          "salesforce/inbound-lead-qualifier",
+        INBOUND_LEAD_PIPEDRIVE_CONNECT_UID: "pipedrive/inbound-lead-qualifier",
+      }),
+    ).toBe("salesforce");
+  });
+
   it("mints a Connect token through the injected mint, not a homemade OAuth dance", async () => {
     const minted = await mintConnectAccessToken({
       connectorUid: "hubspot/inbound-lead-qualifier",

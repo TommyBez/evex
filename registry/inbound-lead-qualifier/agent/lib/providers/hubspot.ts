@@ -40,6 +40,48 @@ const toRecord = (contact: HubSpotContact): CrmLeadRecord => ({
 const contactProperties =
   "email,firstname,lastname,phone,company,jobtitle,createdate";
 
+export function buildHubSpotCreatedSinceSearch(
+  since: string,
+  max: number,
+): {
+  readonly filterGroups: readonly {
+    readonly filters: readonly {
+      readonly propertyName: string;
+      readonly operator: string;
+      readonly value: string;
+    }[];
+  }[];
+  readonly sorts: readonly {
+    readonly propertyName: string;
+    readonly direction: "ASCENDING";
+  }[];
+  readonly properties: readonly string[];
+  readonly limit: number;
+} {
+  const sinceMs = Date.parse(since);
+  return {
+    filterGroups: [
+      {
+        filters: [
+          {
+            propertyName: "createdate",
+            operator: "GT",
+            value: Number.isFinite(sinceMs) ? String(sinceMs) : since,
+          },
+        ],
+      },
+    ],
+    sorts: [
+      {
+        propertyName: "createdate",
+        direction: "ASCENDING",
+      },
+    ],
+    properties: contactProperties.split(","),
+    limit: Math.min(Math.max(max, 1), HUBSPOT_MAX_PAGE_SIZE),
+  };
+}
+
 export function createHubSpotClient(
   config: InboundLeadConfig,
   fetchImpl: FetchLike = fetch,
@@ -65,19 +107,15 @@ export function createHubSpotClient(
       const collected: CrmLeadRecord[] = [];
       let after: string | undefined;
       while (collected.length < max) {
-        const limit = Math.min(HUBSPOT_MAX_PAGE_SIZE, max - collected.length);
-        const params = new URLSearchParams({
-          limit: String(limit),
-          properties: contactProperties,
-        });
-        if (after) {
-          params.set("after", after);
-        }
         const response = await crmFetch({
           fetchImpl,
-          url: `https://api.hubapi.com/crm/v3/objects/contacts?${params.toString()}`,
-          method: "GET",
+          url: "https://api.hubapi.com/crm/v3/objects/contacts/search",
+          method: "POST",
           headers: await headers(),
+          body: JSON.stringify({
+            ...buildHubSpotCreatedSinceSearch(since, max - collected.length),
+            after,
+          }),
         });
         const body = await readJson<{
           results?: HubSpotContact[];
@@ -85,11 +123,7 @@ export function createHubSpotClient(
         }>(response);
         const page = (body.results ?? [])
           .map(toRecord)
-          .filter(
-            (record) =>
-              !seenIds.includes(record.id) &&
-              (!record.submittedAt || record.submittedAt > since),
-          );
+          .filter((record) => !seenIds.includes(record.id));
         collected.push(...page);
         after = body.paging?.next?.after;
         if (!after || (body.results ?? []).length === 0) {

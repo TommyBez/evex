@@ -117,6 +117,11 @@
           "target": "~/agent/lib/push-auth.ts"
         },
         {
+          "path": "agent/lib/push-inbox.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/push-inbox.ts"
+        },
+        {
           "path": "agent/lib/score.ts",
           "type": "registry:file",
           "target": "~/agent/lib/score.ts"
@@ -221,7 +226,7 @@
         "slug": "inbound-lead-qualifier",
         "category": "productivity",
         "createdAt": "2026-09-09T20:00:00.000Z",
-        "updatedAt": "2026-09-09T20:00:00.000Z",
+        "updatedAt": "2026-09-09T21:30:00.000Z",
         "docs": {
           "overview": [
             "Inbound Lead Qualifier is an eve agent that accepts a signed HTTP form post, a Typeform Connect poll, or a HubSpot, Salesforce, or Pipedrive scan. On each run it sanitizes untrusted fields, fail-closes enrichment when the email is missing, and waits for you to approve draft_crm_note before any CRM write.",
@@ -231,7 +236,7 @@
           "howItWorks": [
             "On the inbound-lead-scan schedule (cron from INBOUND_LEAD_CRON, default hourly UTC), the agent loads the inbound-lead skill.",
             "It calls load_lead_config and stops when neither signed push, Typeform Connect, nor a CRM Connect UID is set.",
-            "ingest_lead_event accepts a signed webhook payload or polls Typeform and the CRM for records newer than the cursor. Form fields stay untrusted.",
+            "ingest_lead_event accepts a signed webhook payload, a persisted push leadId, or polls Typeform and the CRM for records newer than the cursor. Form fields stay untrusted.",
             "enrich_lead fail-closes on a missing, invalid, or free email. score_icp then returns hot, warm, cold, or unscored. Unscored leads are never hot.",
             "draft_crm_note always pauses for Eve approval and returns written false until confirmWrite is true. notify_slack_hot_lead posts only when the band is hot. The agent never emails the lead.",
             "Four evals cover never-write-without-confirm, schedule-or-push, the hot Slack gate, and untrusted lead fields."

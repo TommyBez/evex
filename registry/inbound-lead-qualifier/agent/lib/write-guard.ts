@@ -57,10 +57,18 @@ export function assertApprovalGrant(
   }
 }
 
+export function isReadOnlyCrmPost(url: string): boolean {
+  return /\/crm\/v3\/objects\/[^/?#]+\/search(?:\?|#|$)/i.test(url);
+}
+
 export function assertReadOnlyRequest(method: string, url: string): void {
-  if (isCrmMutationMethod(method)) {
+  const normalized = method.trim().toUpperCase();
+  if (normalized === "POST" && isReadOnlyCrmPost(url)) {
+    return;
+  }
+  if (isCrmMutationMethod(normalized)) {
     throw new Error(
-      `Refused ${method} ${url}: list and enrich are read-only. CRM writes go through draft_crm_note after Eve approval.`,
+      `Refused ${normalized} ${url}: list and enrich are read-only. CRM writes go through draft_crm_note after Eve approval.`,
     );
   }
 }

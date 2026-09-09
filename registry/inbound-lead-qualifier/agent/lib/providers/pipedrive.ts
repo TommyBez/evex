@@ -7,6 +7,7 @@ import {
   type FetchLike,
 } from "../oauth";
 import type { ApprovalGrant } from "../write-guard";
+import { takeOldestEligible } from "../cursor-store";
 import { crmFetch, readJson } from "./http";
 import type { CrmClient, CrmLeadRecord, CrmNoteDraft } from "./types";
 
@@ -79,20 +80,51 @@ export function createPipedriveClient(
   return {
     provider: "pipedrive",
     async listNewSince({ since, seenIds, max = 50 }) {
-      const response = await crmFetch({
-        fetchImpl,
-        url: `https://api.pipedrive.com/api/v2/persons?limit=${max}&sort_by=add_time&sort_direction=desc`,
-        method: "GET",
-        headers: await headers(),
-      });
-      const body = await readJson<{ data?: PipedrivePerson[] }>(response);
-      return (body.data ?? [])
-        .map(toRecord)
-        .filter(
-          (record) =>
-            !seenIds.includes(record.id) &&
-            (!record.submittedAt || record.submittedAt > since),
-        );
+      const collected: CrmLeadRecord[] = [];
+      let cursor: string | undefined;
+      for (;;) {
+        const params = new URLSearchParams({
+          limit: "100",
+          sort_by: "add_time",
+          sort_direction: "desc",
+        });
+        if (cursor) {
+          params.set("cursor", cursor);
+        }
+        const response = await crmFetch({
+          fetchImpl,
+          url: `https://api.pipedrive.com/api/v2/persons?${params.toString()}`,
+          method: "GET",
+          headers: await headers(),
+        });
+        const body = await readJson<{
+          data?: PipedrivePerson[];
+          additional_data?: {
+            readonly next_cursor?: string;
+            readonly pagination?: { readonly next_cursor?: string };
+          };
+        }>(response);
+        const page = body.data ?? [];
+        let reachedKnown = false;
+        for (const person of page) {
+          const record = toRecord(person);
+          if (record.submittedAt && record.submittedAt <= since) {
+            reachedKnown = true;
+            break;
+          }
+          if (!seenIds.includes(record.id)) {
+            collected.push(record);
+          }
+        }
+        const nextCursor =
+          body.additional_data?.next_cursor ??
+          body.additional_data?.pagination?.next_cursor;
+        if (reachedKnown || !nextCursor || page.length === 0) {
+          break;
+        }
+        cursor = nextCursor;
+      }
+      return takeOldestEligible(collected, max);
     },
     async findContactByEmail(email) {
       const response = await crmFetch({

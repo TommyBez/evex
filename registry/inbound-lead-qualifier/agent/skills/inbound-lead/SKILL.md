@@ -12,7 +12,8 @@ Eve approval and `confirmWrite: true`. Slack is hot-only.
 ## Steps
 
 1. Call `load_lead_config`. Stop when `notConfigured` is true.
-2. Call `ingest_lead_event` with the push payload, or `poll` true on cron.
+2. Call `ingest_lead_event` with the push payload or persisted `leadId`,
+   or `poll` true on cron.
 3. Call `enrich_lead`. Stop on `failClosed`. Do not invent firmographics.
 4. Call `score_icp`.
 5. Call `draft_crm_note` with `confirmWrite` false unless a human already

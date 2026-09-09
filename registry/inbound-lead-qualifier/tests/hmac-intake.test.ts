@@ -3,6 +3,10 @@ import { describe, expect, it } from "vitest";
 import { hmacSha256, verifyLeadHmac } from "../agent/lib/hmac";
 import { parseLeadEvent } from "../agent/lib/lead-events";
 import { authorizeLeadPush } from "../agent/lib/push-auth";
+import {
+  buildPushQualifyPrompt,
+  persistPushLead,
+} from "../agent/lib/push-inbox";
 
 const SECRET = "test-inbound-hmac-secret";
 
@@ -113,5 +117,22 @@ describe("HMAC intake", () => {
     }
     expect(typeform.source).toBe("typeform");
     expect(typeform.lead.company).toBe("Acme");
+  });
+
+  it("embeds the sanitized lead and persist id in the queued push prompt", () => {
+    const parsed = parseLeadEvent({
+      body: { email: "ava@acme.com", firstName: "Ava", company: "Acme" },
+    });
+    expect("ignored" in parsed).toBe(false);
+    if ("ignored" in parsed) {
+      throw new Error("expected form lead");
+    }
+    const leadId = persistPushLead(parsed.lead);
+    const prompt = buildPushQualifyPrompt(parsed.lead, leadId);
+    expect(leadId).toMatch(/^push-lead:/);
+    expect(prompt).toContain(leadId);
+    expect(prompt).toContain("ava@acme.com");
+    expect(prompt).toContain("Sanitized inbound lead JSON:");
+    expect(prompt).toContain("ingest_lead_event");
   });
 });

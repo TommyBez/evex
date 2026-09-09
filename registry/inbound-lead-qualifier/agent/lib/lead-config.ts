@@ -67,6 +67,22 @@ const parseBoolean = (value: string | undefined, fallback: boolean): boolean => 
   return fallback;
 };
 
+export function isCrmProviderEnvComplete(
+  provider: CrmProvider,
+  env: NodeJS.Dict<string>,
+): boolean {
+  if (provider === "hubspot") {
+    return Boolean(optional(env.INBOUND_LEAD_HUBSPOT_CONNECT_UID));
+  }
+  if (provider === "salesforce") {
+    return Boolean(
+      optional(env.INBOUND_LEAD_SALESFORCE_CONNECT_UID) &&
+        optional(env.INBOUND_LEAD_SALESFORCE_INSTANCE_URL),
+    );
+  }
+  return Boolean(optional(env.INBOUND_LEAD_PIPEDRIVE_CONNECT_UID));
+}
+
 export function resolveCrmProvider(
   env: NodeJS.Dict<string>,
 ): CrmProvider | null {
@@ -82,14 +98,10 @@ export function resolveCrmProvider(
     return null;
   }
 
-  if (optional(env.INBOUND_LEAD_HUBSPOT_CONNECT_UID)) {
-    return "hubspot";
-  }
-  if (optional(env.INBOUND_LEAD_SALESFORCE_CONNECT_UID)) {
-    return "salesforce";
-  }
-  if (optional(env.INBOUND_LEAD_PIPEDRIVE_CONNECT_UID)) {
-    return "pipedrive";
+  for (const provider of CRM_PROVIDERS) {
+    if (isCrmProviderEnvComplete(provider, env)) {
+      return provider;
+    }
   }
   return null;
 }

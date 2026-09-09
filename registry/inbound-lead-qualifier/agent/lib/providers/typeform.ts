@@ -6,6 +6,7 @@ import {
   type ConnectTokenMint,
   type FetchLike,
 } from "../oauth";
+import { takeOldestEligible } from "../cursor-store";
 import { parseLeadEvent } from "../lead-events";
 import type { LeadFields } from "../untrusted";
 import { crmFetch, readJson } from "./http";
@@ -56,36 +57,49 @@ export function createTypeformClient(
     ok: true,
     value: {
       async listResponsesSince({ since, seenIds, max = 25 }) {
-        const params = new URLSearchParams({
-          since,
-          page_size: String(max),
-          completed: "true",
-        });
-        const response = await crmFetch({
-          fetchImpl,
-          url: `https://api.typeform.com/forms/${encodeURIComponent(formId)}/responses?${params.toString()}`,
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${await token()}`,
-            Accept: "application/json",
-          },
-        });
-        const body = await readJson<{ items?: unknown[] }>(response);
         const leads: LeadFields[] = [];
-        for (const item of body.items ?? []) {
-          const parsed = parseLeadEvent({
-            body: { form_response: item },
-            sourceHint: "typeform",
+        let page = 1;
+        for (;;) {
+          const params = new URLSearchParams({
+            since,
+            page_size: "100",
+            page: String(page),
+            completed: "true",
           });
-          if ("ignored" in parsed) {
-            continue;
+          const response = await crmFetch({
+            fetchImpl,
+            url: `https://api.typeform.com/forms/${encodeURIComponent(formId)}/responses?${params.toString()}`,
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${await token()}`,
+              Accept: "application/json",
+            },
+          });
+          const body = await readJson<{
+            items?: unknown[];
+            page_count?: number;
+          }>(response);
+          const items = body.items ?? [];
+          for (const item of items) {
+            const parsed = parseLeadEvent({
+              body: { form_response: item },
+              sourceHint: "typeform",
+            });
+            if ("ignored" in parsed) {
+              continue;
+            }
+            if (parsed.lead.id && seenIds.includes(parsed.lead.id)) {
+              continue;
+            }
+            leads.push({ ...parsed.lead, source: "typeform" });
           }
-          if (parsed.lead.id && seenIds.includes(parsed.lead.id)) {
-            continue;
+          const pageCount = body.page_count ?? 1;
+          if (page >= pageCount || items.length === 0) {
+            break;
           }
-          leads.push({ ...parsed.lead, source: "typeform" });
+          page += 1;
         }
-        return leads;
+        return takeOldestEligible(leads, max);
       },
     },
   };

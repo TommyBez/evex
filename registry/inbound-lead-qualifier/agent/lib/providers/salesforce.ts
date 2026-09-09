@@ -35,6 +35,14 @@ const toRecord = (contact: SalesforceContact): CrmLeadRecord => ({
 
 const escapeSoql = (value: string): string => value.replaceAll("'", "\\'");
 
+export function buildSalesforceCreatedSinceQuery(
+  since: string,
+  max: number,
+): string {
+  const iso = since.replaceAll("'", "");
+  return `SELECT Id, Email, FirstName, LastName, Phone, Title, CreatedDate, Account.Name FROM Contact WHERE CreatedDate > ${iso} ORDER BY CreatedDate ASC LIMIT ${max}`;
+}
+
 export function createSalesforceClient(
   config: InboundLeadConfig,
   fetchImpl: FetchLike = fetch,
@@ -59,7 +67,7 @@ export function createSalesforceClient(
     provider: "salesforce",
     async listNewSince({ since, seenIds, max = 50 }) {
       const query = encodeURIComponent(
-        `SELECT Id, Email, FirstName, LastName, Phone, Title, CreatedDate, Account.Name FROM Contact WHERE CreatedDate > ${since} ORDER BY CreatedDate DESC LIMIT ${max}`,
+        buildSalesforceCreatedSinceQuery(since, max),
       );
       const response = await crmFetch({
         fetchImpl,

@@ -13,13 +13,33 @@ const EMPTY_CURSOR: LeadCursor = {
 
 const MAX_SEEN_IDS = 500;
 
+export function takeOldestEligible<T extends { readonly submittedAt?: string }>(
+  leads: readonly T[],
+  max: number,
+): T[] {
+  return [...leads]
+    .sort((left, right) =>
+      (left.submittedAt ?? "").localeCompare(right.submittedAt ?? ""),
+    )
+    .slice(0, Math.max(0, max));
+}
+
+export function nextCursorSince<T extends { readonly submittedAt?: string }>(
+  leads: readonly T[],
+): string | undefined {
+  const timestamps = leads
+    .map((lead) => lead.submittedAt)
+    .filter((value): value is string => Boolean(value))
+    .sort();
+  return timestamps.at(-1);
+}
+
 export function createCursorStore(filePath: string): {
   readonly path: string;
   read(): LeadCursor;
   remember(input: {
     readonly ids: readonly string[];
     readonly since?: string;
-    readonly now?: string;
   }): LeadCursor;
 } {
   return {
@@ -43,9 +63,10 @@ export function createCursorStore(filePath: string): {
         return EMPTY_CURSOR;
       }
     },
-    remember({ ids, since, now }) {
+    remember({ ids, since }) {
       const current = this.read();
-      const nextSince = since ?? now ?? new Date().toISOString();
+      const nextSince =
+        since && since > current.since ? since : current.since;
       const seen = [...current.seenIds];
       for (const id of ids) {
         if (id && !seen.includes(id)) {
