@@ -113,6 +113,11 @@ variables are validated at startup. Sign-in uses email one-time codes with
 optional GitHub OAuth. See [AGENTS.md](./AGENTS.md) for the full environment
 and setup notes.
 
+Optional IndexNow (Bing / Copilot): set `INDEXNOW_KEY` (8–128 characters,
+`a-z` `A-Z` `0-9` `-`; `openssl rand -hex 32`) and `CRON_SECRET` on the
+Vercel production project. The key is served at `/{INDEXNOW_KEY}.txt`.
+Production cron `GET /api/indexnow` submits money URLs after deploys.
+
 ## License
 
 MIT © [TommyBez](https://github.com/TommyBez)

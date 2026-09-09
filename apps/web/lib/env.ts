@@ -6,6 +6,7 @@ const environmentSchema = z
   .object({
     BETTER_AUTH_SECRET: z.string().min(1).optional(),
     BETTER_AUTH_URL: z.string().min(1).optional(),
+    CRON_SECRET: z.string().min(1).optional(),
     DATABASE_URL: z
       .string()
       .min(
@@ -14,6 +15,15 @@ const environmentSchema = z
       ),
     GITHUB_CLIENT_ID: z.string().min(1).optional(),
     GITHUB_CLIENT_SECRET: z.string().min(1).optional(),
+    // IndexNow key is public at /{key}.txt; keep it in env so it can be
+    // rotated without a commit. Format: 8-128 chars, a-z A-Z 0-9 and dashes.
+    INDEXNOW_KEY: z
+      .string()
+      .regex(
+        /^[a-zA-Z0-9-]{8,128}$/,
+        'INDEXNOW_KEY must be 8-128 characters: a-z, A-Z, 0-9, or dashes (openssl rand -hex 32).',
+      )
+      .optional(),
     NEXT_PUBLIC_SITE_URL: z.string().min(1).optional(),
     NODE_ENV: z
       .enum(['development', 'production', 'test'])
@@ -45,9 +55,11 @@ function loadEnvironment() {
   const parsed = environmentSchema.safeParse({
     BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET,
     BETTER_AUTH_URL: process.env.BETTER_AUTH_URL,
+    CRON_SECRET: process.env.CRON_SECRET,
     DATABASE_URL: process.env.DATABASE_URL,
     GITHUB_CLIENT_ID: process.env.GITHUB_CLIENT_ID,
     GITHUB_CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET,
+    INDEXNOW_KEY: process.env.INDEXNOW_KEY,
     NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
     NODE_ENV: process.env.NODE_ENV,
     RESEND_API_KEY: process.env.RESEND_API_KEY,
