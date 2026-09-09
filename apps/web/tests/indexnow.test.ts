@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { GET as getIndexNowKeyFile } from '@/app/[key].txt/route'
+import { GET as getIndexNowKeyFile } from '@/app/api/indexnow/key/[key]/route'
 import {
   buildIndexNowKeyFileResponse,
   buildIndexNowPayload,
