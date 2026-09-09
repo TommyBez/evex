@@ -64,7 +64,6 @@ export default defineTool({
       htmlPreview: draft.html.slice(0, 500),
       runDate: date,
       idempotencyKey: buildDigestIdempotencyKey(typedBatch, date),
-      draft,
     };
   },
 });

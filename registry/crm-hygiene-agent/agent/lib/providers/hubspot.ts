@@ -7,9 +7,11 @@ import {
   type ConnectTokenMint,
   type FetchLike,
 } from "../oauth";
-import type { ApprovalGrant } from "../write-guard";
+import { PartialWriteError, type ApprovalGrant } from "../write-guard";
 import { crmFetch, readJson } from "./http";
 import type { CrmClient } from "./types";
+
+export const HUBSPOT_MAX_PAGE_SIZE = 100;
 
 type HubSpotContact = {
   readonly id: string;
@@ -78,50 +80,74 @@ export function createHubSpotClient(
   return {
     provider: "hubspot",
     async listRecords({ max }) {
-      const url = `https://api.hubapi.com/crm/v3/objects/contacts?limit=${max}&properties=email,firstname,lastname,phone,company,website`;
-      const response = await crmFetch({
-        fetchImpl,
-        url,
-        method: "GET",
-        headers: await headers(),
-      });
-      const body = await readJson<{ results?: HubSpotContact[] }>(response);
-      return (body.results ?? []).slice(0, max).map(toRecord);
+      const collected: CrmRecord[] = [];
+      let after: string | undefined;
+      while (collected.length < max) {
+        const limit = Math.min(HUBSPOT_MAX_PAGE_SIZE, max - collected.length);
+        const params = new URLSearchParams({
+          limit: String(limit),
+          properties: "email,firstname,lastname,phone,company,website",
+        });
+        if (after) {
+          params.set("after", after);
+        }
+        const response = await crmFetch({
+          fetchImpl,
+          url: `https://api.hubapi.com/crm/v3/objects/contacts?${params.toString()}`,
+          method: "GET",
+          headers: await headers(),
+        });
+        const body = await readJson<{
+          results?: HubSpotContact[];
+          paging?: { readonly next?: { readonly after?: string } };
+        }>(response);
+        const page = (body.results ?? []).map(toRecord);
+        collected.push(...page);
+        after = body.paging?.next?.after;
+        if (!after || page.length === 0) {
+          break;
+        }
+      }
+      return collected.slice(0, max);
     },
     async applyWrites({ batchId, proposals, grant }) {
       const applied: string[] = [];
       for (const proposal of proposals) {
-        if (proposal.kind === "dedupe" && proposal.mergeRecordId) {
+        try {
+          if (proposal.kind === "dedupe" && proposal.mergeRecordId) {
+            await crmFetch({
+              fetchImpl,
+              url: "https://api.hubapi.com/crm/v3/objects/contacts/merge",
+              method: "POST",
+              headers: await headers(),
+              body: JSON.stringify({
+                primaryObjectId: proposal.recordId,
+                objectIdToMerge: proposal.mergeRecordId,
+              }),
+              grant,
+              batchId,
+            });
+            applied.push(proposal.id);
+            continue;
+          }
+
+          const properties = propertiesOf(proposal.after);
+          if (Object.keys(properties).length === 0) {
+            continue;
+          }
           await crmFetch({
             fetchImpl,
-            url: "https://api.hubapi.com/crm/v3/objects/contacts/merge",
-            method: "POST",
+            url: `https://api.hubapi.com/crm/v3/objects/contacts/${proposal.recordId}`,
+            method: "PATCH",
             headers: await headers(),
-            body: JSON.stringify({
-              primaryObjectId: proposal.recordId,
-              objectIdToMerge: proposal.mergeRecordId,
-            }),
+            body: JSON.stringify({ properties }),
             grant,
             batchId,
           });
           applied.push(proposal.id);
-          continue;
+        } catch (error) {
+          throw new PartialWriteError(applied, error);
         }
-
-        const properties = propertiesOf(proposal.after);
-        if (Object.keys(properties).length === 0) {
-          continue;
-        }
-        await crmFetch({
-          fetchImpl,
-          url: `https://api.hubapi.com/crm/v3/objects/contacts/${proposal.recordId}`,
-          method: "PATCH",
-          headers: await headers(),
-          body: JSON.stringify({ properties }),
-          grant,
-          batchId,
-        });
-        applied.push(proposal.id);
       }
       return { written: true as const, applied };
     },

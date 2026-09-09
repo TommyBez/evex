@@ -6,6 +6,7 @@ export const DEFAULT_HYGIENE_CRON = "0 8 * * *";
 export const DEFAULT_MAX_RECORDS = 100;
 export const DEFAULT_AUDIT_PATH = ".data/crm-hygiene-audit.jsonl";
 export const DEFAULT_DIGEST_SUBJECT = "CRM hygiene batch";
+export const DEFAULT_AUDIT_RETENTION_DAYS = 90;
 
 export type CrmHygieneConfig = {
   readonly provider: CrmProvider | null;
@@ -30,6 +31,8 @@ export type CrmHygieneConfig = {
     readonly to: readonly string[];
     readonly subject: string;
   };
+  readonly defaultPhoneCountryCode?: string;
+  readonly auditRetentionDays: number;
 };
 
 const optional = (value: string | undefined): string | undefined => {
@@ -107,6 +110,13 @@ export function loadCrmHygieneConfig(
       to: compactCsv(env.CRM_HYGIENE_DIGEST_TO),
       subject: optional(env.CRM_HYGIENE_DIGEST_SUBJECT) ?? DEFAULT_DIGEST_SUBJECT,
     },
+    defaultPhoneCountryCode: optional(
+      env.CRM_HYGIENE_DEFAULT_PHONE_COUNTRY_CODE,
+    )?.replace(/\D/g, "") || undefined,
+    auditRetentionDays: parsePositiveInteger(
+      env.CRM_HYGIENE_AUDIT_RETENTION_DAYS,
+      DEFAULT_AUDIT_RETENTION_DAYS,
+    ),
   };
 }
 

@@ -41,6 +41,34 @@ export function normalizeEmail(value: string | undefined): string | undefined {
   return trimmed ? trimmed : undefined;
 }
 
+const lettersOf = (value: string): string =>
+  [...value].filter((char) => /[A-Za-z]/.test(char)).join("");
+
+const isUniformLetterCase = (value: string): boolean => {
+  const letters = lettersOf(value);
+  return (
+    letters.length === 0 ||
+    letters === letters.toLowerCase() ||
+    letters === letters.toUpperCase()
+  );
+};
+
+const titleCasePart = (part: string): string => {
+  let seenLetter = false;
+  return [...part]
+    .map((char) => {
+      if (!/[A-Za-z]/.test(char)) {
+        return char;
+      }
+      if (!seenLetter) {
+        seenLetter = true;
+        return char.toUpperCase();
+      }
+      return char.toLowerCase();
+    })
+    .join("");
+};
+
 export function normalizeName(value: string | undefined): string | undefined {
   const trimmed = value?.trim().replace(WHITESPACE, " ");
   if (!trimmed) {
@@ -48,19 +76,43 @@ export function normalizeName(value: string | undefined): string | undefined {
   }
   return trimmed
     .split(" ")
-    .map((part) => {
-      const lower = part.toLowerCase();
-      return `${lower.slice(0, 1).toUpperCase()}${lower.slice(1)}`;
-    })
+    .map((part) => (isUniformLetterCase(part) ? titleCasePart(part) : part))
     .join(" ");
 }
 
-export function normalizePhone(value: string | undefined): string | undefined {
-  const digits = value?.replace(NON_DIGITS, "") ?? "";
-  if (digits.length < 10 || digits.length > 15) {
-    return value?.trim() || undefined;
+const E164 = /^\+[1-9]\d{7,14}$/;
+
+export function normalizePhone(
+  value: string | undefined,
+  defaultCountryCode?: string,
+): string | undefined {
+  const trimmed = value?.trim();
+  if (!trimmed) {
+    return undefined;
   }
-  return `+${digits}`;
+  if (E164.test(trimmed)) {
+    return trimmed;
+  }
+  if (trimmed.startsWith("+")) {
+    const plusDigits = trimmed.replace(NON_DIGITS, "");
+    if (plusDigits.length >= 8 && plusDigits.length <= 15) {
+      return `+${plusDigits}`;
+    }
+    return trimmed;
+  }
+  const digits = trimmed.replace(NON_DIGITS, "");
+  const country = defaultCountryCode?.replace(NON_DIGITS, "") ?? "";
+  if (
+    country.length > 0 &&
+    digits.length >= 10 &&
+    digits.length <= 15 - country.length
+  ) {
+    if (digits.startsWith(country) && digits.length > country.length) {
+      return `+${digits}`;
+    }
+    return `+${country}${digits}`;
+  }
+  return trimmed;
 }
 
 export function emailDomain(email: string | undefined): string | undefined {
@@ -89,26 +141,37 @@ const proposalId = (
   return `${kind}-${digest}`;
 };
 
-const changedFields = (
+export function changedFieldNames(
   before: Partial<CrmRecord>,
   after: Partial<CrmRecord>,
-): boolean => {
+): readonly string[] {
   const keys = new Set([...Object.keys(before), ...Object.keys(after)]);
+  const names: string[] = [];
   for (const key of keys) {
     const field = key as keyof CrmRecord;
     if ((before[field] ?? "") !== (after[field] ?? "")) {
-      return true;
+      names.push(key);
     }
   }
-  return false;
-};
+  return names;
+}
 
-export function proposeNormalize(record: CrmRecord): HygieneProposal | null {
+const changedFields = (
+  before: Partial<CrmRecord>,
+  after: Partial<CrmRecord>,
+): boolean => changedFieldNames(before, after).length > 0;
+
+export function proposeNormalize(
+  record: CrmRecord,
+  options: { readonly defaultPhoneCountryCode?: string } = {},
+): HygieneProposal | null {
   const after = {
     email: normalizeEmail(record.email) ?? record.email,
     firstName: normalizeName(record.firstName) ?? record.firstName,
     lastName: normalizeName(record.lastName) ?? record.lastName,
-    phone: normalizePhone(record.phone) ?? record.phone,
+    phone:
+      normalizePhone(record.phone, options.defaultPhoneCountryCode) ??
+      record.phone,
   };
   const before = {
     email: record.email,
@@ -267,9 +330,11 @@ export function proposeHygieneBatch(input: {
   readonly provider: string;
   readonly records: readonly CrmRecord[];
   readonly scannedAt?: string;
+  readonly defaultPhoneCountryCode?: string;
 }): HygieneBatch {
   const scannedAt = input.scannedAt ?? new Date().toISOString();
-  const dedupe = proposeDedupes(input.records);
+  const dedupe =
+    input.provider === "salesforce" ? [] : proposeDedupes(input.records);
   const mergeSourceIds = mergeSourceIdsOf(dedupe);
   const proposals: HygieneProposal[] = [...dedupe];
 
@@ -277,7 +342,9 @@ export function proposeHygieneBatch(input: {
     if (mergeSourceIds.has(record.id)) {
       continue;
     }
-    const normalize = proposeNormalize(record);
+    const normalize = proposeNormalize(record, {
+      defaultPhoneCountryCode: input.defaultPhoneCountryCode,
+    });
     if (normalize) {
       proposals.push(normalize);
     }

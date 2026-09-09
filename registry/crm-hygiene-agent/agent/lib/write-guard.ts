@@ -65,6 +65,42 @@ export function assertReadOnlyRequest(method: string, url: string): void {
   }
 }
 
+export class PartialWriteError extends Error {
+  readonly applied: readonly string[];
+
+  constructor(applied: readonly string[], cause: unknown) {
+    const message =
+      cause instanceof Error ? cause.message : "CRM write failed.";
+    super(message, cause instanceof Error ? { cause } : undefined);
+    this.name = "PartialWriteError";
+    this.applied = applied;
+  }
+}
+
+export function applyWritesFailureAudit(error: unknown): {
+  readonly type: "written" | "refused";
+  readonly written: boolean;
+  readonly applied: readonly string[];
+  readonly note: string;
+} {
+  const applied = error instanceof PartialWriteError ? error.applied : [];
+  const note = error instanceof Error ? error.message : "CRM write failed.";
+  if (applied.length > 0) {
+    return {
+      type: "written",
+      written: true,
+      applied,
+      note: `Partial write: ${note}`,
+    };
+  }
+  return {
+    type: "refused",
+    written: false,
+    applied: [],
+    note,
+  };
+}
+
 export function assertApprovedMutation(
   method: string,
   url: string,

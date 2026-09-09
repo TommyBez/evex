@@ -262,7 +262,17 @@ describe("approval gate", () => {
         after: { orgId: "42", company: "Acme" },
         reason: "Fill organization",
       }),
-    ).toEqual({ org_id: 42 });
+    ).toEqual({ org_id: 42, org_name: "Acme" });
+    expect(
+      pipedriveWriteBody({
+        id: "enrich-3",
+        kind: "enrich",
+        recordId: "9",
+        before: { company: undefined },
+        after: { company: "360" },
+        reason: "Fill company name that happens to be digits",
+      }),
+    ).toEqual({ org_name: "360" });
 
     const bodies: unknown[] = [];
     const client = createPipedriveClient(

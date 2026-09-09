@@ -75,14 +75,21 @@ export async function mintConnectAccessToken(input: {
     subject: { type: "app" },
     scopes: [...input.scopes],
   });
-  const remainingMs = response.expiresAt - Date.now();
   return {
     accessToken: response.token,
-    expiresIn:
-      remainingMs > 0
-        ? Math.max(1, Math.floor(remainingMs / 1000))
-        : DEFAULT_ACCESS_TOKEN_TTL_SECONDS,
+    expiresIn: ttlSecondsFromExpiresAt(response.expiresAt),
   };
+}
+
+export function ttlSecondsFromExpiresAt(
+  expiresAtMs: number,
+  nowMs = Date.now(),
+): number {
+  const remainingMs = expiresAtMs - nowMs;
+  if (remainingMs <= 0) {
+    throw new Error("Connect returned an access token that is already expired.");
+  }
+  return Math.max(1, Math.floor(remainingMs / 1000));
 }
 
 export function scopesForProvider(

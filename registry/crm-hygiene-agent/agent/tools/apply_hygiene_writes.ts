@@ -9,7 +9,10 @@ import {
   batchProviderMismatch,
   createConfiguredCrmClient,
 } from "../lib/providers/index";
-import { createApprovalGrant } from "../lib/write-guard";
+import {
+  applyWritesFailureAudit,
+  createApprovalGrant,
+} from "../lib/write-guard";
 
 const proposalSchema = z.object({
   id: z.string().min(1),
@@ -145,19 +148,19 @@ export default defineTool({
         provider: client.value.provider,
       };
     } catch (error) {
-      const note =
-        error instanceof Error ? error.message : "CRM write failed.";
+      const failure = applyWritesFailureAudit(error);
       audit.append({
-        type: "refused",
+        type: failure.type,
         batchId: typedBatch.batchId,
-        proposalIds,
-        written: false,
-        note,
+        proposalIds: failure.applied,
+        written: failure.written,
+        note: failure.note,
       });
       return {
-        written: false,
-        applied: [],
-        note,
+        written: failure.written,
+        partial: failure.applied.length > 0,
+        applied: failure.applied,
+        note: failure.note,
       };
     }
   },

@@ -28,8 +28,12 @@ export default defineTool({
       provider,
       records: records as CrmRecord[],
       scannedAt,
+      defaultPhoneCountryCode: crmHygieneConfig.defaultPhoneCountryCode,
     });
     const audit = createAuditLog(crmHygieneConfig.auditPath);
+    audit.purgeExpired({
+      retentionDays: crmHygieneConfig.auditRetentionDays,
+    });
     audit.saveBatch(batch);
     audit.append({
       type: "proposed",

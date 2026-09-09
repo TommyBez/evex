@@ -118,6 +118,15 @@ export const deliverHygieneDigest = async ({
       idempotencyKey,
     });
     if (emailResult.error) {
+      if (slackSent) {
+        audit.append({
+          type: "delivered",
+          batchId: batch.batchId,
+          idempotencyKey,
+          note: "slack",
+          written: false,
+        });
+      }
       return {
         sent: false,
         idempotencyKey,

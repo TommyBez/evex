@@ -182,7 +182,7 @@
         "slug": "crm-hygiene-agent",
         "category": "productivity",
         "createdAt": "2026-09-09T12:00:00.000Z",
-        "updatedAt": "2026-09-09T12:00:00.000Z",
+        "updatedAt": "2026-09-09T18:00:00.000Z",
         "docs": {
           "overview": [
             "CRM Hygiene Agent is an eve agent that connects to one HubSpot, Salesforce, or Pipedrive account you already own. On each cron tick it reads contacts through Vercel Connect, drafts a dedupe, normalize, and enrich batch, and waits for you to approve before any CRM write.",
@@ -234,7 +234,15 @@
             },
             {
               "name": "CRM_HYGIENE_AUDIT_PATH",
-              "body": "Append-only JSONL audit log. Defaults to .data/crm-hygiene-audit.jsonl. Use a durable volume if the app filesystem is ephemeral."
+              "body": "Append-only JSONL audit log. Defaults to .data/crm-hygiene-audit.jsonl. Stores identifiers, proposal kinds, and changed field names only. Use a durable volume if the app filesystem is ephemeral."
+            },
+            {
+              "name": "CRM_HYGIENE_AUDIT_RETENTION_DAYS",
+              "body": "Days to keep audit rows. Defaults to 90. propose_hygiene_batch purges older rows."
+            },
+            {
+              "name": "CRM_HYGIENE_DEFAULT_PHONE_COUNTRY_CODE",
+              "body": "Optional country calling code, digits only, used before adding + to a national phone. Leave empty to leave non-E.164 numbers unchanged."
             },
             {
               "name": "CRM_HYGIENE_SLACK_CONNECT_UID",

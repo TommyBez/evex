@@ -7,8 +7,12 @@ import {
   type ConnectTokenMint,
   type FetchLike,
 } from "../oauth";
+import { PartialWriteError } from "../write-guard";
 import { crmFetch, readJson } from "./http";
 import type { CrmClient } from "./types";
+
+export const SALESFORCE_MERGE_UNSUPPORTED =
+  "Salesforce Contact merge is not supported over REST. Merge contacts in Salesforce, then approve normalize or enrich only.";
 
 type SalesforceContact = {
   readonly Id: string;
@@ -17,7 +21,6 @@ type SalesforceContact = {
   readonly LastName?: string;
   readonly Phone?: string;
   readonly Account?: { readonly Name?: string };
-  readonly Website?: string;
 };
 
 const toRecord = (contact: SalesforceContact): CrmRecord => ({
@@ -27,10 +30,11 @@ const toRecord = (contact: SalesforceContact): CrmRecord => ({
   lastName: contact.LastName,
   phone: contact.Phone,
   company: contact.Account?.Name,
-  website: contact.Website,
 });
 
-const fieldsOf = (after: HygieneProposal["after"]): Record<string, string> => {
+export function salesforceContactFields(
+  after: HygieneProposal["after"],
+): Record<string, string> {
   const fields: Record<string, string> = {};
   if (after.email) {
     fields.Email = after.email;
@@ -44,11 +48,8 @@ const fieldsOf = (after: HygieneProposal["after"]): Record<string, string> => {
   if (after.phone) {
     fields.Phone = after.phone;
   }
-  if (after.website) {
-    fields.Website = after.website;
-  }
   return fields;
-};
+}
 
 export function createSalesforceClient(
   config: CrmHygieneConfig,
@@ -88,40 +89,28 @@ export function createSalesforceClient(
     async applyWrites({ batchId, proposals, grant }) {
       const applied: string[] = [];
       for (const proposal of proposals) {
-        if (proposal.kind === "dedupe" && proposal.mergeRecordId) {
+        try {
+          if (proposal.kind === "dedupe") {
+            throw new Error(SALESFORCE_MERGE_UNSUPPORTED);
+          }
+
+          const fields = salesforceContactFields(proposal.after);
+          if (Object.keys(fields).length === 0) {
+            continue;
+          }
           await crmFetch({
             fetchImpl,
-            url: `${instanceUrl}/services/data/v61.0/merge/`,
-            method: "POST",
+            url: `${instanceUrl}/services/data/v61.0/sobjects/Contact/${proposal.recordId}`,
+            method: "PATCH",
             headers: await headers(),
-            body: JSON.stringify({
-              masterRecord: {
-                attributes: { type: "Contact" },
-                Id: proposal.recordId,
-              },
-              recordToMergeIds: [proposal.mergeRecordId],
-            }),
+            body: JSON.stringify(fields),
             grant,
             batchId,
           });
           applied.push(proposal.id);
-          continue;
+        } catch (error) {
+          throw new PartialWriteError(applied, error);
         }
-
-        const fields = fieldsOf(proposal.after);
-        if (Object.keys(fields).length === 0) {
-          continue;
-        }
-        await crmFetch({
-          fetchImpl,
-          url: `${instanceUrl}/services/data/v61.0/sobjects/Contact/${proposal.recordId}`,
-          method: "PATCH",
-          headers: await headers(),
-          body: JSON.stringify(fields),
-          grant,
-          batchId,
-        });
-        applied.push(proposal.id);
       }
       return { written: true as const, applied };
     },

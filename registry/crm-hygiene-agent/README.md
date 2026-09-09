@@ -27,7 +27,9 @@ Copy `.env.example` into your Eve app environment. Set one CRM provider.
 - `CRM_PROVIDER` — `hubspot`, `salesforce`, or `pipedrive`. Empty uses the first complete Connect UID.
 - `CRM_HYGIENE_CRON` — 5-field cron (UTC on Vercel). Defaults to `0 8 * * *`.
 - `CRM_HYGIENE_MAX_RECORDS` — contacts to read per scan. Defaults to `100`.
-- `CRM_HYGIENE_AUDIT_PATH` — append-only JSONL log. Defaults to `.data/crm-hygiene-audit.jsonl`. Use a durable volume in production.
+- `CRM_HYGIENE_AUDIT_PATH` — append-only JSONL log. Defaults to `.data/crm-hygiene-audit.jsonl`. Use a durable volume in production. Rows store identifiers, proposal kinds, and changed field names only — not CRM field values.
+- `CRM_HYGIENE_AUDIT_RETENTION_DAYS` — days to keep audit rows. Defaults to `90`. `propose_hygiene_batch` purges older rows.
+- `CRM_HYGIENE_DEFAULT_PHONE_COUNTRY_CODE` — optional country calling code (digits only) used before adding `+` to a national phone. Leave empty to leave non-E.164 numbers unchanged.
 
 ### Optional Slack (Vercel Connect)
 
@@ -79,4 +81,5 @@ from `apply_hygiene_writes`.
 - **`notConfirmed: true` on deliver** — `deliver_hygiene_digest` was called without `confirmSend: true`.
 - **`notConfirmed: true` on apply** — `apply_hygiene_writes` was called without `confirmWrite: true`. Nothing was written.
 - **`Refused CRM write`** — a provider tried a POST, PATCH, PUT, or DELETE without an `ApprovalGrant`.
+- **Salesforce merge unsupported** — Contact merge is not available over REST. The agent does not propose Salesforce dedupe writes; merge contacts in Salesforce, then approve normalize or enrich.
 - **Slack skipped** — `CRM_HYGIENE_SLACK_CONNECT_UID` or `CRM_HYGIENE_SLACK_CHANNEL_ID` is empty. That is optional when email is configured.

@@ -171,6 +171,67 @@ describe("cron and digest path", () => {
     ).toHaveLength(1);
   });
 
+  it("records Slack as delivered when email fails so Slack is not re-posted", async () => {
+    const auditPath = path.join(
+      mkdtempSync(path.join(tmpdir(), "crm-hygiene-")),
+      "audit.jsonl",
+    );
+    const audit = createAuditLog(auditPath);
+    const batch = proposeHygieneBatch({
+      provider: "hubspot",
+      scannedAt: "2026-09-09T08:00:00.000Z",
+      records: [{ id: "1", email: "ava@example.com", firstName: "Ava" }],
+    });
+    let slackCalls = 0;
+    const first = await deliverHygieneDigest({
+      audit,
+      batch,
+      digest: {
+        from: "ops@example.com",
+        to: ["ops@example.com"],
+        subject: "CRM hygiene batch",
+      },
+      slackConnectUid: "slack/crm-hygiene-agent",
+      slackChannelId: "C0123456789",
+      runDate: "2026-09-09",
+      idempotencyKey: "crm-hygiene-agent-2026-09-09-partialslack",
+      postSlack: async () => {
+        slackCalls += 1;
+        return { ok: true };
+      },
+      sendEmail: async () => ({
+        error: { name: "resend_failed", message: "mailbox unavailable" },
+      }),
+    });
+    expect(first.sent).toBe(false);
+    expect(first.slackSent).toBe(true);
+    expect(slackCalls).toBe(1);
+    expect(audit.findByIdempotencyKey("crm-hygiene-agent-2026-09-09-partialslack")?.note).toBe(
+      "slack",
+    );
+
+    const retry = await deliverHygieneDigest({
+      audit,
+      batch,
+      digest: {
+        from: "ops@example.com",
+        to: ["ops@example.com"],
+        subject: "CRM hygiene batch",
+      },
+      slackConnectUid: "slack/crm-hygiene-agent",
+      slackChannelId: "C0123456789",
+      runDate: "2026-09-09",
+      idempotencyKey: "crm-hygiene-agent-2026-09-09-partialslack",
+      postSlack: async () => {
+        slackCalls += 1;
+        return { ok: true };
+      },
+      sendEmail: async () => ({ id: "should-not-send" }),
+    });
+    expect(retry.replayed).toBe(true);
+    expect(slackCalls).toBe(1);
+  });
+
   it("requires Slack or email before a digest can send", () => {
     const config = loadCrmHygieneConfig({
       CRM_HYGIENE_HUBSPOT_CONNECT_UID: "hubspot/crm-hygiene-agent",

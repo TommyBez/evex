@@ -7,6 +7,7 @@ import {
   type ConnectTokenMint,
   type FetchLike,
 } from "../oauth";
+import { PartialWriteError } from "../write-guard";
 import { crmFetch, readJson } from "./http";
 import type { CrmClient } from "./types";
 
@@ -92,13 +93,9 @@ export function pipedriveWriteBody(
   const orgId = proposal.after.orgId?.trim();
   if (orgId && /^\d+$/.test(orgId)) {
     body.org_id = Number(orgId);
-  } else if (proposal.after.company?.trim()) {
-    const company = proposal.after.company.trim();
-    if (/^\d+$/.test(company)) {
-      body.org_id = Number(company);
-    } else {
-      body.org_name = company;
-    }
+  }
+  if (proposal.after.company?.trim()) {
+    body.org_name = proposal.after.company.trim();
   }
   return body;
 }
@@ -137,34 +134,38 @@ export function createPipedriveClient(
     async applyWrites({ batchId, proposals, grant }) {
       const applied: string[] = [];
       for (const proposal of proposals) {
-        if (proposal.kind === "dedupe" && proposal.mergeRecordId) {
+        try {
+          if (proposal.kind === "dedupe" && proposal.mergeRecordId) {
+            await crmFetch({
+              fetchImpl,
+              url: `https://api.pipedrive.com/v1/persons/${proposal.mergeRecordId}/merge`,
+              method: "PUT",
+              headers: await headers(),
+              body: JSON.stringify({ merge_with_id: Number(proposal.recordId) }),
+              grant,
+              batchId,
+            });
+            applied.push(proposal.id);
+            continue;
+          }
+
+          const body = pipedriveWriteBody(proposal);
+          if (Object.keys(body).length === 0) {
+            continue;
+          }
           await crmFetch({
             fetchImpl,
-            url: `https://api.pipedrive.com/v1/persons/${proposal.mergeRecordId}/merge`,
+            url: `https://api.pipedrive.com/v1/persons/${proposal.recordId}`,
             method: "PUT",
             headers: await headers(),
-            body: JSON.stringify({ merge_with_id: Number(proposal.recordId) }),
+            body: JSON.stringify(body),
             grant,
             batchId,
           });
           applied.push(proposal.id);
-          continue;
+        } catch (error) {
+          throw new PartialWriteError(applied, error);
         }
-
-        const body = pipedriveWriteBody(proposal);
-        if (Object.keys(body).length === 0) {
-          continue;
-        }
-        await crmFetch({
-          fetchImpl,
-          url: `https://api.pipedrive.com/v1/persons/${proposal.recordId}`,
-          method: "PUT",
-          headers: await headers(),
-          body: JSON.stringify(body),
-          grant,
-          batchId,
-        });
-        applied.push(proposal.id);
       }
       return { written: true as const, applied };
     },

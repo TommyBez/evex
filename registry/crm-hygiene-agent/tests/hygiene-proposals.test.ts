@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  normalizeName,
+  normalizePhone,
   proposeEnrich,
   proposeHygieneBatch,
   proposeNormalize,
@@ -93,5 +95,47 @@ describe("hygiene proposals", () => {
           proposal.kind === "normalize" && proposal.recordId === primaryId,
       ),
     ).toBe(true);
+  });
+
+  it("preserves mixed-case name components and only recases uniform case", () => {
+    expect(normalizeName("McDonald")).toBe("McDonald");
+    expect(normalizeName("O'Brien")).toBe("O'Brien");
+    expect(normalizeName("ada")).toBe("Ada");
+    expect(normalizeName("AVA")).toBe("Ava");
+    expect(normalizeName("mary-jane")).toBe("Mary-jane");
+  });
+
+  it("does not invent + from a national phone without a country code", () => {
+    expect(normalizePhone("4155551212")).toBe("4155551212");
+    expect(normalizePhone("+14155551212")).toBe("+14155551212");
+    expect(normalizePhone("+1 415 555 1212")).toBe("+14155551212");
+    expect(normalizePhone("4155551212", "1")).toBe("+14155551212");
+    expect(
+      proposeNormalize({
+        id: "1",
+        email: "ava@example.com",
+        phone: "4155551212",
+      }),
+    ).toBeNull();
+    expect(
+      proposeNormalize(
+        { id: "1", email: "ava@example.com", phone: "4155551212" },
+        { defaultPhoneCountryCode: "1" },
+      )?.after.phone,
+    ).toBe("+14155551212");
+  });
+
+  it("does not propose Salesforce Contact merges", () => {
+    const batch = proposeHygieneBatch({
+      provider: "salesforce",
+      scannedAt: "2026-09-09T08:00:00.000Z",
+      records: [
+        { id: "1", email: "ava@example.com", firstName: "Ava" },
+        { id: "2", email: "ava@example.com", firstName: "Ava" },
+      ],
+    });
+    expect(batch.proposals.some((proposal) => proposal.kind === "dedupe")).toBe(
+      false,
+    );
   });
 });
