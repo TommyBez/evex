@@ -148,6 +148,27 @@ describe("cron and digest path", () => {
     expect(posted?.text).not.toContain("hooks.slack.com");
     expect(audit.list().some((event) => event.type === "delivered")).toBe(true);
     expect(audit.list().some((event) => event.type === "written")).toBe(false);
+
+    let slackCalls = 1;
+    const replay = await deliverHygieneDigest({
+      audit,
+      batch,
+      digest: { to: [], subject: "CRM hygiene batch" },
+      slackConnectUid: "slack/crm-hygiene-agent",
+      slackChannelId: "C0123456789",
+      runDate: utcDateStamp(new Date("2026-09-09T08:00:00.000Z")),
+      idempotencyKey: "crm-hygiene-agent-2026-09-09-deadbeefdeadbeef",
+      postSlack: async () => {
+        slackCalls += 1;
+        return { ok: true };
+      },
+    });
+    expect(replay.replayed).toBe(true);
+    expect(replay.sent).toBe(true);
+    expect(slackCalls).toBe(1);
+    expect(
+      audit.list().filter((event) => event.type === "delivered"),
+    ).toHaveLength(1);
   });
 
   it("requires Slack or email before a digest can send", () => {

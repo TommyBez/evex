@@ -5,7 +5,10 @@ import { z } from "zod";
 import { createAuditLog, proposalIdsOf } from "../lib/audit-log";
 import { crmHygieneConfig } from "../lib/crm-config";
 import type { HygieneBatch } from "../lib/hygiene";
-import { createConfiguredCrmClient } from "../lib/providers/index";
+import {
+  batchProviderMismatch,
+  createConfiguredCrmClient,
+} from "../lib/providers/index";
 import { createApprovalGrant } from "../lib/write-guard";
 
 const proposalSchema = z.object({
@@ -95,6 +98,24 @@ export default defineTool({
       };
     }
 
+    const mismatch = batchProviderMismatch(
+      typedBatch.provider,
+      client.value.provider,
+    );
+    if (mismatch) {
+      audit.append({
+        type: "refused",
+        batchId: typedBatch.batchId,
+        proposalIds,
+        written: false,
+        note: mismatch,
+      });
+      return {
+        written: false,
+        note: mismatch,
+      };
+    }
+
     audit.append({
       type: "approved",
       batchId: typedBatch.batchId,
@@ -103,24 +124,41 @@ export default defineTool({
       note: `Grant issued at ${grant.issuedAt} from ${grant.source}.`,
     });
 
-    const result = await client.value.applyWrites({
-      batchId: typedBatch.batchId,
-      proposals: typedBatch.proposals,
-      grant,
-    });
+    try {
+      const result = await client.value.applyWrites({
+        batchId: typedBatch.batchId,
+        proposals: typedBatch.proposals,
+        grant,
+      });
 
-    audit.append({
-      type: "written",
-      batchId: typedBatch.batchId,
-      proposalIds: result.applied,
-      written: true,
-    });
+      audit.append({
+        type: "written",
+        batchId: typedBatch.batchId,
+        proposalIds: result.applied,
+        written: true,
+      });
 
-    return {
-      written: true,
-      applied: result.applied,
-      batchId: typedBatch.batchId,
-      provider: client.value.provider,
-    };
+      return {
+        written: true,
+        applied: result.applied,
+        batchId: typedBatch.batchId,
+        provider: client.value.provider,
+      };
+    } catch (error) {
+      const note =
+        error instanceof Error ? error.message : "CRM write failed.";
+      audit.append({
+        type: "refused",
+        batchId: typedBatch.batchId,
+        proposalIds,
+        written: false,
+        note,
+      });
+      return {
+        written: false,
+        applied: [],
+        note,
+      };
+    }
   },
 });

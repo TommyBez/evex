@@ -9,6 +9,15 @@ import { createPipedriveClient } from "./pipedrive";
 import { createSalesforceClient } from "./salesforce";
 import type { CrmClient, CrmClientResult } from "./types";
 
+export function batchProviderMismatch(
+  batchProvider: string,
+  configuredProvider: string,
+): string | undefined {
+  if (batchProvider !== configuredProvider) {
+    return `Batch provider ${batchProvider} does not match configured CRM_PROVIDER ${configuredProvider}.`;
+  }
+}
+
 export function createConfiguredCrmClient(
   config: CrmHygieneConfig = crmHygieneConfig,
   options: {

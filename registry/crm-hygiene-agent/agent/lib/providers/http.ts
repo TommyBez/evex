@@ -21,11 +21,22 @@ export async function crmFetch(input: {
     assertReadOnlyRequest(method, input.url);
   }
 
-  return input.fetchImpl(input.url, {
+  const response = await input.fetchImpl(input.url, {
     method,
     headers: input.headers,
     body: input.body,
   });
+
+  const isMutation = Boolean(input.grant && input.batchId);
+  if (isMutation && !response.ok) {
+    const detail = (await response.text()).slice(0, 500);
+    const suffix = detail ? `: ${detail}` : ".";
+    throw new Error(
+      `CRM write failed (${response.status}) for ${method} ${input.url}${suffix}`,
+    );
+  }
+
+  return response;
 }
 
 export async function readJson<T>(response: Response): Promise<T> {

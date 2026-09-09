@@ -16,7 +16,23 @@ type PipedrivePerson = {
   readonly email?: readonly { readonly value?: string }[] | string;
   readonly phone?: readonly { readonly value?: string }[] | string;
   readonly org_name?: string;
-  readonly org_id?: { readonly name?: string };
+  readonly org_id?:
+    | number
+    | string
+    | { readonly value?: number | string; readonly name?: string };
+};
+
+const orgIdOf = (value: PipedrivePerson["org_id"]): string | undefined => {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return String(value);
+  }
+  if (typeof value === "string" && value.trim()) {
+    return value.trim();
+  }
+  if (value && typeof value === "object" && value.value !== undefined) {
+    return orgIdOf(value.value);
+  }
+  return undefined;
 };
 
 const firstValue = (
@@ -49,11 +65,16 @@ const toRecord = (person: PipedrivePerson): CrmRecord => {
     firstName: names.firstName,
     lastName: names.lastName,
     phone: firstValue(person.phone),
-    company: person.org_name ?? person.org_id?.name,
+    company:
+      person.org_name ??
+      (typeof person.org_id === "object" ? person.org_id?.name : undefined),
+    orgId: orgIdOf(person.org_id),
   };
 };
 
-const bodyOf = (proposal: HygieneProposal): Record<string, unknown> => {
+export function pipedriveWriteBody(
+  proposal: HygieneProposal,
+): Record<string, unknown> {
   const name = [proposal.after.firstName, proposal.after.lastName]
     .filter(Boolean)
     .join(" ")
@@ -68,8 +89,19 @@ const bodyOf = (proposal: HygieneProposal): Record<string, unknown> => {
   if (proposal.after.phone) {
     body.phone = [{ value: proposal.after.phone, primary: true }];
   }
+  const orgId = proposal.after.orgId?.trim();
+  if (orgId && /^\d+$/.test(orgId)) {
+    body.org_id = Number(orgId);
+  } else if (proposal.after.company?.trim()) {
+    const company = proposal.after.company.trim();
+    if (/^\d+$/.test(company)) {
+      body.org_id = Number(company);
+    } else {
+      body.org_name = company;
+    }
+  }
   return body;
-};
+}
 
 export function createPipedriveClient(
   config: CrmHygieneConfig,
@@ -119,7 +151,7 @@ export function createPipedriveClient(
           continue;
         }
 
-        const body = bodyOf(proposal);
+        const body = pipedriveWriteBody(proposal);
         if (Object.keys(body).length === 0) {
           continue;
         }

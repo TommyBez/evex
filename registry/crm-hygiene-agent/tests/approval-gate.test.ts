@@ -1,4 +1,4 @@
-import { mkdtempSync } from "node:fs";
+import { mkdtempSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
@@ -8,8 +8,13 @@ import type { ApprovalContext, ApprovalPolicy } from "eve/tools/approval";
 import { createAuditLog } from "../agent/lib/audit-log";
 import { loadCrmHygieneConfig } from "../agent/lib/crm-config";
 import { proposeHygieneBatch } from "../agent/lib/hygiene";
-import { createConfiguredCrmClient } from "../agent/lib/providers/index";
+import { crmFetch } from "../agent/lib/providers/http";
+import {
+  batchProviderMismatch,
+  createConfiguredCrmClient,
+} from "../agent/lib/providers/index";
 import { createHubSpotClient } from "../agent/lib/providers/hubspot";
+import { createPipedriveClient, pipedriveWriteBody } from "../agent/lib/providers/pipedrive";
 import {
   assertReadOnlyRequest,
   createApprovalGrant,
@@ -171,5 +176,126 @@ describe("approval gate", () => {
       throw new Error("expected missing CRM config");
     }
     expect(client.missingEnv).toContain("CRM_PROVIDER");
+  });
+
+  it("rejects failed CRM mutation responses before recording writes", async () => {
+    const grant = createApprovalGrant({
+      batchId: "batch-409",
+      confirmWrite: true,
+    });
+    await expect(
+      crmFetch({
+        fetchImpl: async () => new Response("conflict", { status: 409 }),
+        url: "https://api.hubapi.com/crm/v3/objects/contacts/1",
+        method: "PATCH",
+        body: "{}",
+        grant,
+        batchId: "batch-409",
+      }),
+    ).rejects.toThrow(/CRM write failed \(409\)/);
+
+    const urls: string[] = [];
+    const client = createHubSpotClient(
+      loadCrmHygieneConfig({
+        CRM_PROVIDER: "hubspot",
+        CRM_HYGIENE_HUBSPOT_CONNECT_UID: "hubspot/crm-hygiene-agent",
+      }),
+      async (input, init) => {
+        urls.push(`${init?.method ?? "GET"} ${String(input)}`);
+        return new Response("merge conflict", { status: 409 });
+      },
+      async () => ({ accessToken: "pat-test", expiresIn: 3600 }),
+    );
+
+    await expect(
+      client.applyWrites({
+        batchId: "batch-409",
+        grant,
+        proposals: [
+          {
+            id: "normalize-1",
+            kind: "normalize",
+            recordId: "1",
+            before: { email: "Ava@Example.com" },
+            after: { email: "ava@example.com" },
+            reason: "Normalize email",
+          },
+        ],
+      }),
+    ).rejects.toThrow(/CRM write failed \(409\)/);
+    expect(urls.some((url) => url.startsWith("PATCH"))).toBe(true);
+  });
+
+  it("refuses a batch whose provider does not match the configured CRM client", () => {
+    const applySource = readFileSync(
+      path.join(import.meta.dirname, "../agent/tools/apply_hygiene_writes.ts"),
+      "utf8",
+    );
+    const executeSource = applySource.slice(applySource.indexOf("async execute"));
+    expect(executeSource).toContain("batchProviderMismatch");
+    expect(executeSource.indexOf("batchProviderMismatch")).toBeLessThan(
+      executeSource.indexOf("applyWrites"),
+    );
+    expect(batchProviderMismatch("salesforce", "hubspot")).toMatch(
+      /does not match configured CRM_PROVIDER hubspot/,
+    );
+    expect(batchProviderMismatch("hubspot", "hubspot")).toBeUndefined();
+  });
+
+  it("maps Pipedrive company enrichment onto the organization field", async () => {
+    expect(
+      pipedriveWriteBody({
+        id: "enrich-1",
+        kind: "enrich",
+        recordId: "9",
+        before: { company: undefined },
+        after: { company: "Acme" },
+        reason: "Fill company",
+      }),
+    ).toEqual({ org_name: "Acme" });
+    expect(
+      pipedriveWriteBody({
+        id: "enrich-2",
+        kind: "enrich",
+        recordId: "9",
+        before: { orgId: undefined },
+        after: { orgId: "42", company: "Acme" },
+        reason: "Fill organization",
+      }),
+    ).toEqual({ org_id: 42 });
+
+    const bodies: unknown[] = [];
+    const client = createPipedriveClient(
+      loadCrmHygieneConfig({
+        CRM_PROVIDER: "pipedrive",
+        CRM_HYGIENE_PIPEDRIVE_CONNECT_UID: "pipedrive/crm-hygiene-agent",
+      }),
+      async (_input, init) => {
+        if (init?.body) {
+          bodies.push(JSON.parse(String(init.body)));
+        }
+        return Response.json({ data: { id: 9 } });
+      },
+      async () => ({ accessToken: "pat-test", expiresIn: 3600 }),
+    );
+    const result = await client.applyWrites({
+      batchId: "batch-org",
+      grant: createApprovalGrant({
+        batchId: "batch-org",
+        confirmWrite: true,
+      }),
+      proposals: [
+        {
+          id: "enrich-company",
+          kind: "enrich",
+          recordId: "9",
+          before: { company: undefined },
+          after: { company: "Acme" },
+          reason: "Fill company",
+        },
+      ],
+    });
+    expect(result.applied).toEqual(["enrich-company"]);
+    expect(bodies).toEqual([{ org_name: "Acme" }]);
   });
 });

@@ -59,7 +59,7 @@ export const deliverHygieneDigest = async ({
   const draft: DigestDraft = buildDigestDraft(batch, { digest }, resolvedDate);
   const cached = audit.findByIdempotencyKey(idempotencyKey);
 
-  if (cached?.type === "delivered" && cached.written !== false) {
+  if (cached?.type === "delivered") {
     return {
       sent: true,
       replayed: true,

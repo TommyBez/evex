@@ -12,6 +12,7 @@ export type CrmRecord = {
   readonly phone?: string;
   readonly company?: string;
   readonly website?: string;
+  readonly orgId?: string;
 };
 
 export type HygieneProposal = {
@@ -181,6 +182,8 @@ export function proposeEnrich(
   let phone: { readonly before?: string; readonly after?: string } | undefined;
   let website: { readonly before?: string; readonly after?: string } | undefined;
 
+  let orgId: { readonly before?: string; readonly after?: string } | undefined;
+
   if (!record.company?.trim() && domain) {
     const donor = records.find(
       (candidate) =>
@@ -190,18 +193,24 @@ export function proposeEnrich(
     );
     if (donor?.company) {
       company = { before: record.company, after: donor.company };
+      if (donor.orgId?.trim() && !record.orgId?.trim()) {
+        orgId = { before: record.orgId, after: donor.orgId };
+      }
     }
   }
 
-  if (!record.phone?.trim() && domain) {
-    const donor = records.find(
-      (candidate) =>
-        candidate.id !== record.id &&
-        emailDomain(candidate.email) === domain &&
-        Boolean(candidate.phone?.trim()),
-    );
-    if (donor?.phone) {
-      phone = { before: record.phone, after: donor.phone };
+  if (!record.phone?.trim()) {
+    const email = normalizeEmail(record.email);
+    if (email) {
+      const donor = records.find(
+        (candidate) =>
+          candidate.id !== record.id &&
+          normalizeEmail(candidate.email) === email &&
+          Boolean(candidate.phone?.trim()),
+      );
+      if (donor?.phone) {
+        phone = { before: record.phone, after: donor.phone };
+      }
     }
   }
 
@@ -221,11 +230,13 @@ export function proposeEnrich(
     company: company?.before,
     phone: phone?.before,
     website: website?.before,
+    orgId: orgId?.before,
   };
   const after: Partial<CrmRecord> = {
     company: company?.after,
     phone: phone?.after,
     website: website?.after,
+    orgId: orgId?.after,
   };
 
   if (!changedFields(before, after)) {
@@ -242,15 +253,30 @@ export function proposeEnrich(
   };
 }
 
+export function mergeSourceIdsOf(
+  proposals: readonly HygieneProposal[],
+): ReadonlySet<string> {
+  return new Set(
+    proposals.flatMap((proposal) =>
+      proposal.mergeRecordId ? [proposal.mergeRecordId] : [],
+    ),
+  );
+}
+
 export function proposeHygieneBatch(input: {
   readonly provider: string;
   readonly records: readonly CrmRecord[];
   readonly scannedAt?: string;
 }): HygieneBatch {
   const scannedAt = input.scannedAt ?? new Date().toISOString();
-  const proposals: HygieneProposal[] = [...proposeDedupes(input.records)];
+  const dedupe = proposeDedupes(input.records);
+  const mergeSourceIds = mergeSourceIdsOf(dedupe);
+  const proposals: HygieneProposal[] = [...dedupe];
 
   for (const record of input.records) {
+    if (mergeSourceIds.has(record.id)) {
+      continue;
+    }
     const normalize = proposeNormalize(record);
     if (normalize) {
       proposals.push(normalize);
