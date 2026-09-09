@@ -185,14 +185,15 @@ describe("approval gate", () => {
     });
     await expect(
       crmFetch({
-        fetchImpl: async () => new Response("conflict", { status: 409 }),
+        fetchImpl: async () =>
+          new Response('{"email":"secret.person@example.com"}', { status: 409 }),
         url: "https://api.hubapi.com/crm/v3/objects/contacts/1",
         method: "PATCH",
         body: "{}",
         grant,
         batchId: "batch-409",
       }),
-    ).rejects.toThrow(/CRM write failed \(409\)/);
+    ).rejects.toThrow(/^CRM write failed \(409\) for PATCH\.$/);
 
     const urls: string[] = [];
     const client = createHubSpotClient(

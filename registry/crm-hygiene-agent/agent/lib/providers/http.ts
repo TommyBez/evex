@@ -29,11 +29,7 @@ export async function crmFetch(input: {
 
   const isMutation = Boolean(input.grant && input.batchId);
   if (isMutation && !response.ok) {
-    const detail = (await response.text()).slice(0, 500);
-    const suffix = detail ? `: ${detail}` : ".";
-    throw new Error(
-      `CRM write failed (${response.status}) for ${method} ${input.url}${suffix}`,
-    );
+    throw new Error(`CRM write failed (${response.status}) for ${method}.`);
   }
 
   return response;

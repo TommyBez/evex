@@ -17,6 +17,7 @@ import {
   applyWritesFailureAudit,
   createApprovalGrant,
   PartialWriteError,
+  sanitizeCrmWriteAuditNote,
 } from "../agent/lib/write-guard";
 
 const hubspotConfig = loadCrmHygieneConfig({
@@ -32,10 +33,26 @@ const salesforceConfig = loadCrmHygieneConfig({
 
 describe("CodeRabbit review fixes", () => {
   it("throws instead of caching an expired Connect token TTL", () => {
-    expect(() => ttlSecondsFromExpiresAt(Date.now() - 1_000)).toThrow(
+    const now = Date.now();
+    expect(() => ttlSecondsFromExpiresAt(now - 1_000, now)).toThrow(
       /already expired/,
     );
-    expect(ttlSecondsFromExpiresAt(Date.now() + 90_000, Date.now())).toBe(90);
+    expect(ttlSecondsFromExpiresAt(now + 90_000, now)).toBe(90);
+  });
+
+  it("keeps HTTP status and method in audit notes without provider response bodies", () => {
+    const leaked =
+      'CRM write failed (409) for PATCH https://api.hubapi.com/crm/v3/objects/contacts/1: {"email":"secret.person@example.com","phone":"+14155551212"}';
+    expect(sanitizeCrmWriteAuditNote(leaked)).toBe(
+      "CRM write failed (409) for PATCH.",
+    );
+    const failure = applyWritesFailureAudit(
+      new PartialWriteError(["normalize-1"], new Error(leaked)),
+    );
+    expect(failure.note).toBe("Partial write: CRM write failed (409) for PATCH.");
+    expect(failure.note).not.toContain("secret.person@example.com");
+    expect(failure.note).not.toContain("+14155551212");
+    expect(failure.note).not.toContain("{");
   });
 
   it("clamps HubSpot list limit to 100 and follows paging.next.after", async () => {

@@ -77,6 +77,23 @@ export class PartialWriteError extends Error {
   }
 }
 
+const CRM_WRITE_FAILED = /CRM write failed \((\d{3})\)(?: for ([A-Z]+))?/;
+
+export function sanitizeCrmWriteAuditNote(message: string): string {
+  const match = CRM_WRITE_FAILED.exec(message);
+  if (match?.[1]) {
+    return match[2]
+      ? `CRM write failed (${match[1]}) for ${match[2]}.`
+      : `CRM write failed (${match[1]}).`;
+  }
+  const looksLikeProviderPayload =
+    message.includes("{") ||
+    message.includes("@") ||
+    message.includes("\n") ||
+    message.length > 200;
+  return looksLikeProviderPayload ? "CRM write failed." : message;
+}
+
 export function applyWritesFailureAudit(error: unknown): {
   readonly type: "written" | "refused";
   readonly written: boolean;
@@ -84,7 +101,8 @@ export function applyWritesFailureAudit(error: unknown): {
   readonly note: string;
 } {
   const applied = error instanceof PartialWriteError ? error.applied : [];
-  const note = error instanceof Error ? error.message : "CRM write failed.";
+  const raw = error instanceof Error ? error.message : "CRM write failed.";
+  const note = sanitizeCrmWriteAuditNote(raw);
   if (applied.length > 0) {
     return {
       type: "written",
