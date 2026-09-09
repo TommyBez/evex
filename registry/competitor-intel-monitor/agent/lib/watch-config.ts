@@ -187,8 +187,12 @@ export const missingDeliveryEnv = (
   if (!config.slackChannelId) {
     missing.push("COMPETITOR_INTEL_SLACK_CHANNEL_ID");
   }
-  missing.push("COMPETITOR_INTEL_DIGEST_FROM");
-  missing.push("COMPETITOR_INTEL_DIGEST_TO");
+  if (!config.digest.from) {
+    missing.push("COMPETITOR_INTEL_DIGEST_FROM");
+  }
+  if (config.digest.to.length === 0) {
+    missing.push("COMPETITOR_INTEL_DIGEST_TO");
+  }
   return missing;
 };
 

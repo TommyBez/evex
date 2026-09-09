@@ -145,4 +145,24 @@ https://example.com/changelog
       "COMPETITOR_INTEL_DIGEST_TO",
     ]);
   });
+
+  it("reports only the unset email variable when email delivery is incomplete", () => {
+    const fromOnly = missingDeliveryEnv(
+      loadWatchConfig(
+        { COMPETITOR_INTEL_DIGEST_FROM: "alerts@example.com" },
+        () => ({ urls: [] }),
+      ),
+    );
+    expect(fromOnly).toContain("COMPETITOR_INTEL_DIGEST_TO");
+    expect(fromOnly).not.toContain("COMPETITOR_INTEL_DIGEST_FROM");
+
+    const toOnly = missingDeliveryEnv(
+      loadWatchConfig(
+        { COMPETITOR_INTEL_DIGEST_TO: "ops@example.com" },
+        () => ({ urls: [] }),
+      ),
+    );
+    expect(toOnly).toContain("COMPETITOR_INTEL_DIGEST_FROM");
+    expect(toOnly).not.toContain("COMPETITOR_INTEL_DIGEST_TO");
+  });
 });
