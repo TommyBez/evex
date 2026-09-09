@@ -7,12 +7,23 @@ import sendDigest from "../agent/tools/send_digest";
 const alreadyApprovedContext = {
   approvedTools: new Set(["send_digest"]),
   callId: "send-digest-approval",
+  getSandbox: async () => {
+    throw new Error("always() does not use getSandbox()");
+  },
+  getSkill: () => {
+    throw new Error("always() does not use getSkill()");
+  },
+  session: {
+    id: "send-digest-approval-session",
+    auth: { current: null, initiator: null },
+    turn: { id: "send-digest-approval-turn", sequence: 0 },
+  },
   toolName: "send_digest",
   toolInput: {
     confirmSend: true,
     idempotencyKey: "competitor-intel-monitor-2026-09-07",
   },
-} as unknown as ApprovalContext;
+} satisfies ApprovalContext;
 
 const isApprovalPolicy = (value: unknown): value is ApprovalPolicy =>
   typeof value === "function";
