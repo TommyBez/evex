@@ -113,6 +113,10 @@ variables are validated at startup. Sign-in uses email one-time codes with
 optional GitHub OAuth. See [AGENTS.md](./AGENTS.md) for the full environment
 and setup notes.
 
+IndexNow (Bing / Copilot): the public key is the committed static file
+`apps/web/public/722f9dbdbaa7cdae691ad3fbf85aad80a13e57b451aab1b656f84b26b0d0aa84.txt`,
+served at `https://www.evex.sh/722f9dbdbaa7cdae691ad3fbf85aad80a13e57b451aab1b656f84b26b0d0aa84.txt`.
+
 ## License
 
 MIT © [TommyBez](https://github.com/TommyBez)
