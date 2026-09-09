@@ -112,6 +112,8 @@ const AGENT_METADATA_TITLE_OVERRIDES: Readonly<Record<string, string>> = {
     'Eve CI failure agent - install @evex/github-ci-explainer',
   'github-issue-maintainer':
     'Eve GitHub issue agent - install @evex/github-issue-maintainer',
+  'inbound-lead-qualifier':
+    'Eve inbound lead qualifier - @evex/inbound-lead-qualifier',
   'invoice-chase-drafter':
     'Eve invoice chase drafter - @evex/invoice-chase-drafter',
   'knowledge-base-gardener':
@@ -167,6 +169,8 @@ const AGENT_JOB_INTENT_LEDES: Readonly<Record<string, string>> = {
   'eve-agent-builder': 'Scaffolds, checks, and deploys a new Eve agent.',
   'github-ci-explainer': 'Explains failed GitHub Actions checks from the log.',
   'github-issue-maintainer': 'GitHub issue agent for Eve.',
+  'inbound-lead-qualifier':
+    'Takes inbound leads from a signed webhook, CRM scan, or Typeform poll, enriches and scores ICP fit, then drafts a CRM note and Slack-pings only the hot ones.',
   'invoice-chase-drafter':
     'On a weekday schedule, pulls open AR from QuickBooks or Xero over Connect, ages it into buckets, and drafts reminder emails into Drafts while Slack gets the finance digest.',
   'knowledge-base-gardener':
@@ -228,6 +232,8 @@ const AGENT_DEFINITION_JOB_OVERRIDES: Readonly<Record<string, string>> = {
     'scans the CRM on a cron, drafts a cleanup batch for Slack or digest review, and writes only after you approve',
   'email-triage-assistant':
     'reads the inbox on a schedule or push, sorts threads into buckets, and leaves replies in Drafts only',
+  'inbound-lead-qualifier':
+    'ingests leads over push or cron, enriches and scores them, drafts a CRM note behind approval, and posts only hot leads to Slack',
   'invoice-chase-drafter':
     'pulls open invoices on a weekday cron, leaves reminder drafts in Drafts only, and posts an idempotent AR digest to Slack for finance',
   'knowledge-base-gardener':
