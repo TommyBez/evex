@@ -7,6 +7,7 @@ import {
   getIndexNowKeyLocation,
   getIndexNowPublicFileRelativePath,
   INDEXNOW_ENDPOINT,
+  INDEXNOW_FETCH_TIMEOUT_MS,
   INDEXNOW_KEY,
   INDEXNOW_SITE_URL,
   listIndexNowAgentsFromCatalog,
@@ -21,6 +22,7 @@ import { listStaticAgents } from '@/lib/registry'
 const SITE_URL = INDEXNOW_SITE_URL
 const DOCS_SUBPAGE_PATH = /\/docs\/.+/
 const KEY_FILE_MISMATCH = /must contain exactly/
+const INDEXNOW_ABORT_OR_TIMEOUT = /abort|timeout/i
 const WEB_ROOT = path.join(import.meta.dirname, '..')
 
 function readWebSource(relativePath: string): string {
@@ -159,6 +161,39 @@ describe('IndexNow submit', () => {
         'Content-Type': 'application/json; charset=utf-8',
       },
       method: 'POST',
+      signal: expect.any(AbortSignal),
+    })
+    expect(INDEXNOW_FETCH_TIMEOUT_MS).toBe(10_000)
+  })
+
+  it('returns the existing error shape when the request is aborted', async () => {
+    const fetchImpl = vi.fn(
+      (_url: string, init?: RequestInit) =>
+        new Promise<Response>((_resolve, reject) => {
+          const signal = init?.signal
+          if (!signal) {
+            reject(new Error('missing abort signal'))
+            return
+          }
+
+          signal.addEventListener('abort', () => {
+            reject(signal.reason ?? new DOMException('Aborted', 'AbortError'))
+          })
+        }),
+    )
+
+    const result = await submitIndexNow({
+      fetchImpl,
+      key: INDEXNOW_KEY,
+      siteUrl: SITE_URL,
+      timeoutMs: 5,
+      urls: [`${SITE_URL}/`],
+    })
+
+    expect(result.status).toBe('error')
+    expect(result).toEqual({
+      message: expect.stringMatching(INDEXNOW_ABORT_OR_TIMEOUT),
+      status: 'error',
     })
   })
 

@@ -2,6 +2,7 @@ export const INDEXNOW_ENDPOINT = 'https://api.indexnow.org/indexnow'
 export const INDEXNOW_SITE_URL = 'https://www.evex.sh'
 export const INDEXNOW_KEY =
   '722f9dbdbaa7cdae691ad3fbf85aad80a13e57b451aab1b656f84b26b0d0aa84'
+export const INDEXNOW_FETCH_TIMEOUT_MS = 10_000
 
 export interface IndexNowPayload {
   host: string
@@ -21,7 +22,9 @@ export type IndexNowSubmitResult =
 interface SubmitIndexNowOptions {
   fetchImpl?: typeof fetch
   key: string
+  signal?: AbortSignal
   siteUrl?: string
+  timeoutMs?: number
   urls: readonly string[]
 }
 
@@ -105,6 +108,9 @@ export async function submitIndexNow(
   const siteUrl = options.siteUrl ?? INDEXNOW_SITE_URL
   const fetchImpl = options.fetchImpl ?? fetch
   const payload = buildIndexNowPayload(options.urls, options.key, siteUrl)
+  const signal =
+    options.signal ??
+    AbortSignal.timeout(options.timeoutMs ?? INDEXNOW_FETCH_TIMEOUT_MS)
 
   try {
     const response = await fetchImpl(INDEXNOW_ENDPOINT, {
@@ -113,6 +119,7 @@ export async function submitIndexNow(
         'Content-Type': 'application/json; charset=utf-8',
       },
       method: 'POST',
+      signal,
     })
 
     if (!response.ok && response.status !== 202) {
