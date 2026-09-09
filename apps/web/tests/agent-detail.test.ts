@@ -115,6 +115,8 @@ const JOB_INTENT_METADATA_TITLES: Readonly<Record<string, string>> = {
     'Eve CI failure agent - install @evex/github-ci-explainer',
   'github-issue-maintainer':
     'Eve GitHub issue agent - install @evex/github-issue-maintainer',
+  'invoice-chase-drafter':
+    'Eve invoice chase drafter - @evex/invoice-chase-drafter',
   'knowledge-base-gardener':
     'Eve knowledge base gardener - @evex/knowledge-base-gardener',
   'linear-operations-agent':
@@ -147,6 +149,8 @@ const JOB_INTENT_LEDES: Readonly<Record<string, string>> = {
   'eve-agent-builder': 'Scaffolds, checks, and deploys a new Eve agent.',
   'github-ci-explainer': 'Explains failed GitHub Actions checks from the log.',
   'github-issue-maintainer': 'GitHub issue agent for Eve.',
+  'invoice-chase-drafter':
+    'On a weekday schedule, pulls open AR from QuickBooks or Xero over Connect, ages it into buckets, and drafts reminder emails into Drafts while Slack gets the finance digest.',
   'knowledge-base-gardener':
     'Finds stale product docs and drafts updates with file cites.',
   'linear-operations-agent':
@@ -375,6 +379,7 @@ const DEMAND_BACKED_PLAYS = [
   'competitor-intel-monitor',
   'crm-hygiene-agent',
   'email-triage-assistant',
+  'invoice-chase-drafter',
   'knowledge-base-gardener',
   'meeting-action-extractor',
 ] as const
@@ -386,6 +391,8 @@ const DEMAND_BACKED_DESCRIPTIONS: Readonly<Record<string, string>> = {
     'Scheduled CRM hygiene via Connect that proposes dedupe, normalize, and enrich batches for human approval before any write.',
   'email-triage-assistant':
     'Inbox triage that classifies threads and writes draft replies without sending.',
+  'invoice-chase-drafter':
+    'Weekday AR chase via Connect that drafts mailbox reminders from QuickBooks or Xero and posts an idempotent Slack digest after a paid re-check.',
   'knowledge-base-gardener':
     'Finds stale product docs and drafts updates with file cites.',
   'meeting-action-extractor':
@@ -396,6 +403,7 @@ const DEMAND_BACKED_LEDE_STEMS: Readonly<Record<string, string>> = {
   'competitor-intel-monitor': 'watches competitor pages on a schedule',
   'crm-hygiene-agent': 'scans hubspot, salesforce, or pipedrive',
   'email-triage-assistant': 'triages gmail, outlook, or imap',
+  'invoice-chase-drafter': 'pulls open ar from quickbooks',
   'knowledge-base-gardener': 'finds stale product docs',
   'meeting-action-extractor':
     'extracts owners and deadlines from meeting transcripts',
@@ -802,6 +810,41 @@ describe('getAgentDefinitionBlock', () => {
     expect(block.plainText).toContain(
       'npx shadcn@latest add @evex/email-triage-assistant',
     )
+  })
+
+  it('uses a distinct lowercase What-is clause for invoice-chase-drafter', () => {
+    const agent = listStaticAgents().find(
+      (item) => item.slug === 'invoice-chase-drafter',
+    )
+    expect(agent).toBeDefined()
+    if (!agent) {
+      return
+    }
+
+    const job =
+      'pulls open invoices on a weekday cron, leaves reminder drafts in Drafts only, and posts an idempotent AR digest to Slack for finance'
+    expect(job.startsWith('pulls')).toBe(true)
+    expect(job.endsWith('.')).toBe(false)
+
+    const lede = getAgentJobIntentLede('invoice-chase-drafter')
+    const block = getAgentDefinitionBlock(agent)
+    expect(lede).toBe(
+      'On a weekday schedule, pulls open AR from QuickBooks or Xero over Connect, ages it into buckets, and drafts reminder emails into Drafts while Slack gets the finance digest.',
+    )
+    expect(agent.description).toBe(
+      'Weekday AR chase via Connect that drafts mailbox reminders from QuickBooks or Xero and posts an idempotent Slack digest after a paid re-check.',
+    )
+    expect(block.plainText).not.toContain(lede)
+    expect(block.plainText.toLowerCase()).not.toContain(
+      'pulls open ar from quickbooks',
+    )
+    expect(block.plainText).toContain(
+      `Invoice Chase Drafter is an Eve agent that ${job}.`,
+    )
+    expect(block.plainText).toContain(
+      'npx shadcn@latest add @evex/invoice-chase-drafter',
+    )
+    expect(block.plainText).not.toContain('eve add')
   })
 
   it('uses a distinct What-is clause for competitor-intel-monitor', () => {
