@@ -167,8 +167,8 @@ describe('IndexNow submit', () => {
   })
 
   it('returns the existing error shape when the request is aborted', async () => {
-    const fetchImpl = vi.fn(
-      (_url: string, init?: RequestInit) =>
+    const fetchImpl = vi.fn<typeof fetch>(
+      (_input, init) =>
         new Promise<Response>((_resolve, reject) => {
           const signal = init?.signal
           if (!signal) {
