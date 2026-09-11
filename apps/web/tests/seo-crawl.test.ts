@@ -347,6 +347,7 @@ describe('/agents catalog index', () => {
       'invoice-chase-drafter',
       'knowledge-base-gardener',
       'meeting-action-extractor',
+      'rfp-response-drafter',
     ]) {
       expect(
         entries.some(

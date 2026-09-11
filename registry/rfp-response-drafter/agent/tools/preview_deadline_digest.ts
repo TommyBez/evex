@@ -1,0 +1,43 @@
+import { defineTool } from "eve/tools";
+import { z } from "zod";
+
+import {
+  buildDeadlineDigest,
+  buildDigestIdempotencyKey,
+  utcDateStamp,
+} from "../lib/digest";
+import { rfpResponseConfig } from "../lib/rfp-config";
+
+const upcomingRfpSchema = z.object({
+  id: z.string().min(1).max(120),
+  title: z.string().min(1).max(200),
+  dueDate: z.string().min(1).max(40),
+  sourceId: z.string().max(400).optional(),
+});
+
+const previewDeadlineDigestInput = z.object({
+  rfps: z.array(upcomingRfpSchema).max(50),
+  runDate: z.string().min(1).max(10).optional(),
+});
+
+export default defineTool({
+  description:
+    "Preview the optional RFP deadline digest and return the date idempotency key. Does not post Slack, write Drive, or submit a portal.",
+  inputSchema: previewDeadlineDigestInput,
+  execute({ rfps, runDate }) {
+    const resolvedDate = runDate ?? utcDateStamp();
+    const draft = buildDeadlineDigest(rfps, {
+      runDate: resolvedDate,
+      subject: rfpResponseConfig.digestSubject,
+    });
+    return {
+      runDate: resolvedDate,
+      idempotencyKey: buildDigestIdempotencyKey(resolvedDate),
+      subject: draft.subject,
+      slackText: draft.slackText,
+      upcomingCount: draft.upcomingCount,
+      submitted: false,
+      sent: false,
+    };
+  },
+});

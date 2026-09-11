@@ -126,6 +126,8 @@ const JOB_INTENT_METADATA_TITLES: Readonly<Record<string, string>> = {
   'meeting-action-extractor':
     'Meeting action extractor · @evex/meeting-action-extractor',
   'openui-assistant': 'Eve OpenUI agent - install @evex/openui-assistant',
+  'rfp-response-drafter':
+    'Eve RFP response drafter - @evex/rfp-response-drafter',
   'postgres-data-analyst':
     'Eve Postgres SQL agent - @evex/postgres-data-analyst',
   'programmatic-seo-agent': 'Eve programmatic SEO agent',
@@ -162,6 +164,8 @@ const JOB_INTENT_LEDES: Readonly<Record<string, string>> = {
   'meeting-action-extractor':
     'Extracts owners and deadlines from meeting transcripts, then drafts Linear follow-ups you approve.',
   'openui-assistant': 'Streams OpenUI generative UI in an Eve chat.',
+  'rfp-response-drafter':
+    'Pulls RFPs from Drive or the sandbox, grounds each answer in a knowledge pack with file citations, routes open questions to SMEs on Slack, and writes an approved draft Doc without submitting a portal response.',
   'postgres-data-analyst':
     'Answers Slack questions with read-only Postgres SQL.',
   'programmatic-seo-agent': 'Finds keywords and opens a PR of SEO pages.',
@@ -387,6 +391,7 @@ const DEMAND_BACKED_PLAYS = [
   'invoice-chase-drafter',
   'knowledge-base-gardener',
   'meeting-action-extractor',
+  'rfp-response-drafter',
 ] as const
 
 const DEMAND_BACKED_DESCRIPTIONS: Readonly<Record<string, string>> = {
@@ -404,6 +409,8 @@ const DEMAND_BACKED_DESCRIPTIONS: Readonly<Record<string, string>> = {
     'Finds stale product docs and drafts updates with file cites.',
   'meeting-action-extractor':
     'Extracts owners and deadlines from a meeting transcript and drafts Linear follow-ups for approval.',
+  'rfp-response-drafter':
+    'RFP response drafter via Google Drive Connect and sandbox files that cites every claim, Slack-routes SME gaps, and write-backs approved Drive or mailbox drafts without portal submit.',
 }
 
 const DEMAND_BACKED_LEDE_STEMS: Readonly<Record<string, string>> = {
@@ -415,6 +422,7 @@ const DEMAND_BACKED_LEDE_STEMS: Readonly<Record<string, string>> = {
   'knowledge-base-gardener': 'finds stale product docs',
   'meeting-action-extractor':
     'extracts owners and deadlines from meeting transcripts',
+  'rfp-response-drafter': 'pulls rfps from drive or the sandbox',
 }
 
 describe('demand-backed first-party plays', () => {
@@ -886,6 +894,41 @@ describe('getAgentDefinitionBlock', () => {
     )
     expect(block.plainText).toContain(
       'npx shadcn@latest add @evex/invoice-chase-drafter',
+    )
+    expect(block.plainText).not.toContain('eve add')
+  })
+
+  it('uses a distinct lowercase What-is clause for rfp-response-drafter', () => {
+    const agent = listStaticAgents().find(
+      (item) => item.slug === 'rfp-response-drafter',
+    )
+    expect(agent).toBeDefined()
+    if (!agent) {
+      return
+    }
+
+    const job =
+      'drafts cited RFP answers from Drive or sandbox knowledge packs, pauses for Slack SME approval, and writes back only as an approved draft'
+    expect(job.startsWith('drafts')).toBe(true)
+    expect(job.endsWith('.')).toBe(false)
+
+    const lede = getAgentJobIntentLede('rfp-response-drafter')
+    const block = getAgentDefinitionBlock(agent)
+    expect(lede).toBe(
+      'Pulls RFPs from Drive or the sandbox, grounds each answer in a knowledge pack with file citations, routes open questions to SMEs on Slack, and writes an approved draft Doc without submitting a portal response.',
+    )
+    expect(agent.description).toBe(
+      'RFP response drafter via Google Drive Connect and sandbox files that cites every claim, Slack-routes SME gaps, and write-backs approved Drive or mailbox drafts without portal submit.',
+    )
+    expect(block.plainText).not.toContain(lede)
+    expect(block.plainText.toLowerCase()).not.toContain(
+      'pulls rfps from drive or the sandbox',
+    )
+    expect(block.plainText).toContain(
+      `RFP Response Drafter is an Eve agent that ${job}.`,
+    )
+    expect(block.plainText).toContain(
+      'npx shadcn@latest add @evex/rfp-response-drafter',
     )
     expect(block.plainText).not.toContain('eve add')
   })

@@ -1,0 +1,320 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "items": [
+    {
+      "name": "rfp-response-drafter",
+      "type": "registry:item",
+      "title": "RFP Response Drafter",
+      "description": "RFP response drafter via Google Drive Connect and sandbox files that cites every claim, Slack-routes SME gaps, and write-backs approved Drive or mailbox drafts without portal submit.",
+      "author": "TommyBez",
+      "categories": [
+        "productivity"
+      ],
+      "dependencies": [
+        "@vercel/connect@^0.2.6",
+        "eve@^0.47.5",
+        "zod@4.3.6"
+      ],
+      "files": [
+        {
+          "path": ".env.example",
+          "type": "registry:file",
+          "target": "~/.env.example"
+        },
+        {
+          "path": "agent/agent.ts",
+          "type": "registry:file",
+          "target": "~/agent/agent.ts"
+        },
+        {
+          "path": "agent/channels/slack.ts",
+          "type": "registry:file",
+          "target": "~/agent/channels/slack.ts"
+        },
+        {
+          "path": "agent/instructions.md",
+          "type": "registry:file",
+          "target": "~/agent/instructions.md"
+        },
+        {
+          "path": "agent/lib/cite-gate.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/cite-gate.ts"
+        },
+        {
+          "path": "agent/lib/delivery-store.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/delivery-store.ts"
+        },
+        {
+          "path": "agent/lib/digest.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/digest.ts"
+        },
+        {
+          "path": "agent/lib/draft-copy.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/draft-copy.ts"
+        },
+        {
+          "path": "agent/lib/http.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/http.ts"
+        },
+        {
+          "path": "agent/lib/oauth.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/oauth.ts"
+        },
+        {
+          "path": "agent/lib/providers/drive.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/providers/drive.ts"
+        },
+        {
+          "path": "agent/lib/providers/gmail.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/providers/gmail.ts"
+        },
+        {
+          "path": "agent/lib/providers/graph.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/providers/graph.ts"
+        },
+        {
+          "path": "agent/lib/providers/mailbox.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/providers/mailbox.ts"
+        },
+        {
+          "path": "agent/lib/providers/types.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/providers/types.ts"
+        },
+        {
+          "path": "agent/lib/rfc822.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/rfc822.ts"
+        },
+        {
+          "path": "agent/lib/rfp-config.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/rfp-config.ts"
+        },
+        {
+          "path": "agent/lib/sandbox-paths.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/sandbox-paths.ts"
+        },
+        {
+          "path": "agent/lib/slack-post.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/slack-post.ts"
+        },
+        {
+          "path": "agent/lib/write-guard.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/write-guard.ts"
+        },
+        {
+          "path": "agent/schedules/rfp-deadline-digest.ts",
+          "type": "registry:file",
+          "target": "~/agent/schedules/rfp-deadline-digest.ts"
+        },
+        {
+          "path": "agent/skills/rfp-response/SKILL.md",
+          "type": "registry:file",
+          "target": "~/agent/skills/rfp-response/SKILL.md"
+        },
+        {
+          "path": "agent/tools/ask_sme_questions.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/ask_sme_questions.ts"
+        },
+        {
+          "path": "agent/tools/deliver_deadline_digest.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/deliver_deadline_digest.ts"
+        },
+        {
+          "path": "agent/tools/draft_cited_sections.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/draft_cited_sections.ts"
+        },
+        {
+          "path": "agent/tools/ingest_rfp_sources.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/ingest_rfp_sources.ts"
+        },
+        {
+          "path": "agent/tools/load_rfp_config.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/load_rfp_config.ts"
+        },
+        {
+          "path": "agent/tools/preview_deadline_digest.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/preview_deadline_digest.ts"
+        },
+        {
+          "path": "agent/tools/write_approved_draft.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/write_approved_draft.ts"
+        },
+        {
+          "path": "evals/approval-before-write.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/approval-before-write.eval.ts"
+        },
+        {
+          "path": "evals/cite-gate.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/cite-gate.eval.ts"
+        },
+        {
+          "path": "evals/evals.config.ts",
+          "type": "registry:file",
+          "target": "~/evals/evals.config.ts"
+        },
+        {
+          "path": "evals/never-portal-submit.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/never-portal-submit.eval.ts"
+        },
+        {
+          "path": "evals/slack-sme-pause.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/slack-sme-pause.eval.ts"
+        },
+        {
+          "path": "README.md",
+          "type": "registry:file",
+          "target": "~/agent/README.md"
+        }
+      ],
+      "meta": {
+        "slug": "rfp-response-drafter",
+        "category": "productivity",
+        "createdAt": "2026-09-11T08:00:00.000Z",
+        "updatedAt": "2026-09-11T08:00:00.000Z",
+        "docs": {
+          "overview": [
+            "RFP Response Drafter is an eve agent that reads a questionnaire and a knowledge pack through Google Drive Connect or files on disk. It drafts sectioned answers, requires a file citation on every claim, posts leftover questions to Slack for an SME, and writes only an approved Drive Doc or mailbox Draft. A human reviews that draft. The agent never submits a vendor portal.",
+            "You interact with it through Eve chat and environment variables. Set a Google Connect UID for Drive, sandbox roots for local packs, Slack Connect for SME questions, and optionally a mailbox Connect UID for Drafts. The rfp-deadline-digest schedule is optional. write_approved_draft pauses until confirmWrite is true after SME approval.",
+            "It is useful when a proposal team wants cited answers without auto-submitting a portal. Drive or disk files become the only allowed sources. Uncited claims fail closed. Slack holds the SME pause. The approved write-back is a Drive Doc or a mailbox Draft the team sends themselves."
+          ],
+          "howItWorks": [
+            "On Eve chat or the optional rfp-deadline-digest schedule (cron from RFP_RESPONSE_CRON, default weekday 08:00 UTC), the agent loads the rfp-response skill.",
+            "It calls load_rfp_config and stops when Slack Connect or a Drive or mailbox write-back target is missing.",
+            "ingest_rfp_sources reads Google Drive files through Connect and materializes sandbox paths under RFP_RESPONSE_SANDBOX_ROOTS. That tool is read-only.",
+            "draft_cited_sections applies a hard cite gate. Every claim needs a file citation from the ingested pack. Uncited claims fail closed.",
+            "ask_sme_questions posts leftover questions to Slack Connect and pauses for SME approval. write_approved_draft then writes a Drive draft Doc or mailbox Drafts after confirmWrite is true. It never submits a portal.",
+            "Four evals cover the cite gate, approval before write, never-portal-submit, and the Slack SME pause."
+          ],
+          "useCases": [
+            {
+              "title": "Sandbox pack, cited Drive draft",
+              "body": "A security questionnaire sits in rfps/acme.md and the answers live in knowledge-packs/security.md. ingest_rfp_sources materializes both. draft_cited_sections cites the pack file. write_approved_draft creates a Drive Doc titled DRAFT after approval."
+            },
+            {
+              "title": "SME pause on a missing control",
+              "body": "The pack does not state the SOC 2 report date. draft_cited_sections returns that open question. ask_sme_questions posts it to Slack and pauses. write_approved_draft is not called until the SME approves."
+            },
+            {
+              "title": "Uncited claim fails closed",
+              "body": "A section claims twenty-four-seven coverage with no file citation. draft_cited_sections returns drafted false and lists the uncited claim. No Drive Doc is created. No mailbox Draft is written. Nothing is submitted."
+            },
+            {
+              "title": "Deadline digest without a portal post",
+              "body": "Two RFPs are due next week. preview_deadline_digest returns rfp-response-drafter-2026-09-11. deliver_deadline_digest posts Slack once after approval. A retry of the same date key returns replayed and does not post again."
+            }
+          ],
+          "requirements": [
+            {
+              "name": "AI_GATEWAY_API_KEY",
+              "body": "A model credential for the deployment, either a Vercel AI Gateway API key or AI Gateway OIDC, so the agent can call zai/glm-5.2."
+            },
+            {
+              "name": "RFP_RESPONSE_CRON",
+              "body": "5-field cron for rfp-deadline-digest. Defaults to 0 8 * * 1-5 (weekday 08:00 UTC on Vercel)."
+            },
+            {
+              "name": "RFP_RESPONSE_STORE_PATH",
+              "body": "JSON file for digest delivery claims. Defaults to .data/rfp-response-store.json. Use a durable volume if the app filesystem is ephemeral."
+            },
+            {
+              "name": "RFP_RESPONSE_SLACK_CONNECT_UID",
+              "body": "Vercel Connect Slack connector UID for the Eve Slack channel. Required with the channel id before ask_sme_questions or the digest will post."
+            },
+            {
+              "name": "RFP_RESPONSE_SLACK_CHANNEL_ID",
+              "body": "Slack channel id for SME questions and the optional deadline digest. Required with the Slack Connect UID."
+            },
+            {
+              "name": "RFP_RESPONSE_GOOGLE_CONNECT_UID",
+              "body": "Vercel Connect Google connector UID from vercel connect create google. Mints drive.readonly for ingest, drive.file and documents for a draft Doc, and gmail.compose for mailbox Drafts."
+            },
+            {
+              "name": "RFP_RESPONSE_DRIVE_FOLDER_ID",
+              "body": "Optional Google Drive folder id used when listing RFP and pack files. Empty lists the connector default."
+            },
+            {
+              "name": "RFP_RESPONSE_GMAIL_USER",
+              "body": "Optional From address written onto Gmail drafts."
+            },
+            {
+              "name": "RFP_RESPONSE_MAILBOX_PROVIDER",
+              "body": "Optional force of gmail or outlook. When empty, the first complete mailbox Connect UID wins."
+            },
+            {
+              "name": "RFP_RESPONSE_DRAFT_TO",
+              "body": "Recipient written onto mailbox Drafts. Required when write-back includes mailbox."
+            },
+            {
+              "name": "RFP_RESPONSE_MICROSOFT_CONNECT_UID",
+              "body": "Vercel Connect Microsoft connector UID from vercel connect create microsoft. Mints Mail.ReadWrite. The agent never calls sendMail."
+            },
+            {
+              "name": "RFP_RESPONSE_SANDBOX_ROOTS",
+              "body": "Comma-separated sandbox roots for local RFP and knowledge-pack files. Defaults to rfps,knowledge-packs."
+            },
+            {
+              "name": "RFP_RESPONSE_WRITEBACK",
+              "body": "Optional force of drive, mailbox, or both. When empty, Drive wins if a Google Connect UID is set."
+            },
+            {
+              "name": "RFP_RESPONSE_DIGEST_SUBJECT",
+              "body": "Optional Slack digest subject prefix. Defaults to RFP deadline digest."
+            },
+            {
+              "name": "@vercel/connect",
+              "body": "Runtime dependency that mints Google, Microsoft, and Slack tokens through getTokenResponse and connectSlackCredentials. Slack posts with Eve callSlackApi after approval."
+            }
+          ],
+          "faqs": [
+            {
+              "question": "How do I install rfp-response-drafter?",
+              "answer": "Install with npx shadcn@latest add @evex/rfp-response-drafter, copy .env.example, set Slack Connect plus a Google Connect UID or a mailbox, then ingest an RFP from Drive or the rfps sandbox root while iterating in Eve chat."
+            },
+            {
+              "question": "Does it submit the response to a vendor portal?",
+              "answer": "No. write_approved_draft always returns submitted false. Portal submit URLs and paste-to-text intents are refused in code. The write-back is a Drive draft Doc or a mailbox Drafts message a human reviews."
+            },
+            {
+              "question": "What happens if a claim has no file citation?",
+              "answer": "draft_cited_sections fails closed. The tool returns drafted false and lists the uncited claim. write_approved_draft will not write Drive or mailbox until every claim cites an ingested pack or RFP file."
+            },
+            {
+              "question": "When does Slack pause the run?",
+              "answer": "ask_sme_questions always pauses for Eve approval before it posts. Use it when draft_cited_sections returns open questions. Do not call write_approved_draft until the SME approves those gaps."
+            },
+            {
+              "question": "Is the deadline digest required?",
+              "answer": "No. rfp-deadline-digest is optional. When you run it, deliver_deadline_digest requires confirmSend true and the date key from preview_deadline_digest. A replayed rfp-response-drafter-YYYY-MM-DD key does not post Slack twice."
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
