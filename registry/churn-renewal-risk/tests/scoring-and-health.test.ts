@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
 
+import { mkdtempSync } from "node:fs";
+import { tmpdir } from "node:os";
+import path from "node:path";
+
+import { bucketsFromScores, createCursorStore } from "../agent/lib/cursor-store";
 import { draftSavePlayBody } from "../agent/lib/note-copy";
 import {
   healthFromStripePayloads,
@@ -181,6 +186,26 @@ describe("Stripe health payloads", () => {
     expect(health.unpaidInvoices).toBe(1);
     expect(health.failedCharges30d).toBe(1);
     expect(health.openInvoiceCents).toBe(1200);
+  });
+});
+
+describe("durable cursor", () => {
+  it("remembers scored buckets and the last digest key", () => {
+    const cursorPath = path.join(
+      mkdtempSync(path.join(tmpdir(), "churn-cursor-")),
+      "cursor.json",
+    );
+    const store = createCursorStore(cursorPath);
+    store.rememberScore({
+      scannedAt: "2026-09-11T08:00:00.000Z",
+      batchId: "churn-renewal-2026-09-11-hubspot",
+      buckets: bucketsFromScores([{ accountId: "1", bucket: "healthy" }]),
+    });
+    expect(store.read().buckets).toEqual({ "1": "healthy" });
+    store.rememberDigestKey("churn-renewal-risk-2026-09-11");
+    const next = store.read();
+    expect(next.buckets).toEqual({ "1": "healthy" });
+    expect(next.lastDigestKey).toBe("churn-renewal-risk-2026-09-11");
   });
 });
 

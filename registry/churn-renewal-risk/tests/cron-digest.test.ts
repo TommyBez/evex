@@ -4,6 +4,7 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { createAuditLog } from "../agent/lib/audit-log";
+import { createCursorStore } from "../agent/lib/cursor-store";
 import { deliverRenewalDigest } from "../agent/lib/deliver-digest";
 import {
   buildDigestDraft,
@@ -52,10 +53,9 @@ describe("movers digest", () => {
   });
 
   it("posts Slack once and replays the same date key", async () => {
-    const auditPath = path.join(
-      mkdtempSync(path.join(tmpdir(), "churn-renewal-")),
-      "audit.jsonl",
-    );
+    const dir = mkdtempSync(path.join(tmpdir(), "churn-renewal-"));
+    const auditPath = path.join(dir, "audit.jsonl");
+    const cursorPath = path.join(dir, "cursor.json");
     const audit = createAuditLog(auditPath);
     const posts: string[] = [];
     const first = await deliverRenewalDigest({
@@ -65,6 +65,7 @@ describe("movers digest", () => {
       slackChannelId: "C0123456789",
       runDate: "2026-09-11",
       idempotencyKey: DIGEST_KEY,
+      cursorPath,
       postSlack: async (input) => {
         posts.push(input.connectUid);
         expect(input.connectUid).toBe("slack/churn-renewal-risk");
@@ -81,6 +82,7 @@ describe("movers digest", () => {
       slackChannelId: "C0123456789",
       runDate: "2026-09-11",
       idempotencyKey: DIGEST_KEY,
+      cursorPath,
       postSlack: async () => {
         posts.push("again");
         return { ok: true };
@@ -89,5 +91,6 @@ describe("movers digest", () => {
     expect(replay.replayed).toBe(true);
     expect(posts).toEqual(["slack/churn-renewal-risk"]);
     expect(audit.list().some((event) => event.type === "delivered")).toBe(true);
+    expect(createCursorStore(cursorPath).read().lastDigestKey).toBe(DIGEST_KEY);
   });
 });

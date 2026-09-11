@@ -1,5 +1,7 @@
 import { createAuditLog, type AuditLog } from "./audit-log";
+import { createCursorStore } from "./cursor-store";
 import { buildDigestDraft, type DigestDraft } from "./digest";
+import { churnRenewalConfig } from "./renewal-config";
 import { utcDateStamp, type ScoreBatch } from "./score";
 import { postSlackDigest, type SlackChannelSend } from "./slack-post";
 
@@ -11,6 +13,7 @@ export type DeliverRenewalDigestInput = {
   readonly runDate?: string;
   readonly idempotencyKey: string;
   readonly subject?: string;
+  readonly cursorPath?: string;
   readonly postSlack?: SlackChannelSend;
 };
 
@@ -34,6 +37,7 @@ export const deliverRenewalDigest = async ({
   runDate,
   idempotencyKey,
   subject,
+  cursorPath = churnRenewalConfig.cursorPath,
   postSlack = postSlackDigest,
 }: DeliverRenewalDigestInput): Promise<DeliverRenewalDigestResult> => {
   const resolvedDate = runDate ?? utcDateStamp();
@@ -129,6 +133,7 @@ export const deliverRenewalDigest = async ({
     idempotencyKey,
     note: "slack",
   });
+  createCursorStore(cursorPath).rememberDigestKey(idempotencyKey);
 
   return {
     sent: true,

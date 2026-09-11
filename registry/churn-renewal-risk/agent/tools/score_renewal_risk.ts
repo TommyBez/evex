@@ -2,6 +2,7 @@ import { defineTool } from "eve/tools";
 import { z } from "zod";
 
 import { accountIdsOf, createAuditLog } from "../lib/audit-log";
+import { bucketsFromScores, createCursorStore } from "../lib/cursor-store";
 import { churnRenewalConfig } from "../lib/renewal-config";
 import { scoreRenewalRisk } from "../lib/score";
 
@@ -39,7 +40,7 @@ const healthLookupSchema = z.union([
 
 export default defineTool({
   description:
-    "Score renewal-window accounts into Healthy, Watch, or At-risk using Stripe health. Fail-closed health stays unscored. Writes an append-only audit snapshot. Does not write the CRM and does not email the customer.",
+    "Score renewal-window accounts into Healthy, Watch, or At-risk using Stripe health. Fail-closed health stays unscored. Writes the durable cursor and an append-only audit snapshot. Does not write the CRM and does not email the customer.",
   inputSchema: z.object({
     provider: z.string().min(1),
     accounts: z.array(accountSchema),
@@ -47,14 +48,29 @@ export default defineTool({
   }),
   execute({ provider, accounts, healthByAccountId }) {
     const audit = createAuditLog(churnRenewalConfig.auditPath);
+    const cursor = createCursorStore(churnRenewalConfig.cursorPath);
     audit.purgeExpired({
       retentionDays: churnRenewalConfig.auditRetentionDays,
     });
+    const previousBuckets = {
+      ...audit.previousBuckets(),
+      ...cursor.read().buckets,
+    };
     const batch = scoreRenewalRisk({
       provider,
       accounts,
       healthByAccountId,
-      previousBuckets: audit.previousBuckets(),
+      previousBuckets,
+    });
+    cursor.rememberScore({
+      scannedAt: batch.scannedAt,
+      batchId: batch.batchId,
+      buckets: bucketsFromScores(
+        batch.scored.map((row) => ({
+          accountId: row.account.id,
+          bucket: row.bucket,
+        })),
+      ),
     });
     audit.saveBatch(batch);
     audit.append({

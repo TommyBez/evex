@@ -99,6 +99,7 @@ export default defineTool({
       slackChannelId: churnRenewalConfig.slackChannelId,
       runDate: deliveryKey.runDate,
       idempotencyKey: deliveryKey.idempotencyKey,
+      cursorPath: churnRenewalConfig.cursorPath,
     });
   },
 });

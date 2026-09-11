@@ -12,10 +12,10 @@ npx shadcn@latest add @evex/churn-renewal-risk
 
 ## What it does
 
-1. **Scan on a weekly schedule** — `churn-renewal-scan` fires on `CHURN_RENEWAL_CRON` (default `0 8 * * 1` UTC).
+1. **Scan on a weekly schedule** — `churn-renewal-scan` fires on `CHURN_RENEWAL_CRON` (default `0 8 * * 1` UTC) and starts a Slack session with Eve `appAuth`.
 2. **Read CRM via Connect** — `scan_renewal_accounts` mints a HubSpot or Salesforce token and lists accounts whose renewal date falls in `CHURN_RENEWAL_LOOKAHEAD_DAYS`. That path is read-only.
 3. **Load Stripe health** — `load_stripe_health` mints a Stripe Connect token and reads payment signals. Missing or invalid customers fail closed. They are not scored Healthy.
-4. **Score movers** — `score_renewal_risk` buckets Healthy, Watch, and At-risk, compares against the last audit snapshot, and appends a `scored` row.
+4. **Score movers** — `score_renewal_risk` buckets Healthy, Watch, and At-risk, compares against the durable cursor (and last audit snapshot), and appends a `scored` row.
 5. **Preview, then Slack** — `preview_renewal_digest` builds the movers digest. `deliver_renewal_digest` requires `confirmSend: true` and pauses for Eve approval before Slack. Delivery is not a CRM write and is not a customer email.
 6. **Write a note only after approval** — `draft_save_play` always pauses. It refuses unless `confirmWrite` is true, mints an `ApprovalGrant`, then writes a HubSpot company note or Salesforce task. There is no auto-email.
 
@@ -36,6 +36,7 @@ Copy `.env.example` into your Eve app environment. Set one CRM provider, Stripe 
 - `CHURN_RENEWAL_LOOKAHEAD_DAYS` — renewal window in days. Defaults to `90`.
 - `CHURN_RENEWAL_MAX_ACCOUNTS` — accounts to read per scan. Defaults to `100`.
 - `CHURN_RENEWAL_AUDIT_PATH` — append-only JSONL log. Defaults to `.data/churn-renewal-audit.jsonl`. Use a durable volume in production. Rows store identifiers and buckets only — not CRM or Stripe values.
+- `CHURN_RENEWAL_CURSOR_PATH` — durable JSON cursor of last buckets and digest key. Defaults to `.data/churn-renewal-cursor.json`.
 - `CHURN_RENEWAL_AUDIT_RETENTION_DAYS` — days to keep audit rows. Defaults to `90`.
 
 ### Slack

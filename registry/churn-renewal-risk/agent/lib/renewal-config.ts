@@ -6,6 +6,7 @@ export const DEFAULT_RENEWAL_CRON = "0 8 * * 1";
 export const DEFAULT_LOOKAHEAD_DAYS = 90;
 export const DEFAULT_MAX_ACCOUNTS = 100;
 export const DEFAULT_AUDIT_PATH = ".data/churn-renewal-audit.jsonl";
+export const DEFAULT_CURSOR_PATH = ".data/churn-renewal-cursor.json";
 export const DEFAULT_AUDIT_RETENTION_DAYS = 90;
 export const DEFAULT_HUBSPOT_RENEWAL_PROPERTY = "renewal_date";
 export const DEFAULT_HUBSPOT_STRIPE_CUSTOMER_PROPERTY = "stripe_customer_id";
@@ -19,6 +20,7 @@ export type ChurnRenewalConfig = {
   readonly lookaheadDays: number;
   readonly maxAccounts: number;
   readonly auditPath: string;
+  readonly cursorPath: string;
   readonly auditRetentionDays: number;
   readonly slackConnectUid?: string;
   readonly slackChannelId?: string;
@@ -86,6 +88,7 @@ export function loadChurnRenewalConfig(
       DEFAULT_MAX_ACCOUNTS,
     ),
     auditPath: optional(env.CHURN_RENEWAL_AUDIT_PATH) ?? DEFAULT_AUDIT_PATH,
+    cursorPath: optional(env.CHURN_RENEWAL_CURSOR_PATH) ?? DEFAULT_CURSOR_PATH,
     auditRetentionDays: parsePositiveInteger(
       env.CHURN_RENEWAL_AUDIT_RETENTION_DAYS,
       DEFAULT_AUDIT_RETENTION_DAYS,

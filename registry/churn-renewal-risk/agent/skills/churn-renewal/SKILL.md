@@ -16,7 +16,7 @@ writes.
 2. Call `scan_renewal_accounts`. The tool is read-only.
 3. Call `load_stripe_health`. Stop on `failClosed` for that account. Do
    not invent a Healthy score.
-4. Call `score_renewal_risk`. The audit log records `scored`.
+4. Call `score_renewal_risk`. The durable cursor and audit log record `scored`.
 5. Call `preview_renewal_digest`, then `deliver_renewal_digest` with
    `confirmSend: true` when Slack is configured. That tool pauses for Eve
    approval before Slack. Delivery is not a CRM write.

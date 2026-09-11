@@ -42,6 +42,11 @@
           "target": "~/agent/lib/audit-log.ts"
         },
         {
+          "path": "agent/lib/cursor-store.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/cursor-store.ts"
+        },
+        {
           "path": "agent/lib/deliver-digest.ts",
           "type": "registry:file",
           "target": "~/agent/lib/deliver-digest.ts"
@@ -172,6 +177,11 @@
           "target": "~/evals/cron-read-only.eval.ts"
         },
         {
+          "path": "evals/digest-not-customer-email.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/digest-not-customer-email.eval.ts"
+        },
+        {
           "path": "evals/evals.config.ts",
           "type": "registry:file",
           "target": "~/evals/evals.config.ts"
@@ -201,7 +211,7 @@
         "slug": "churn-renewal-risk",
         "category": "productivity",
         "createdAt": "2026-09-11T12:00:00.000Z",
-        "updatedAt": "2026-09-11T12:00:00.000Z",
+        "updatedAt": "2026-09-11T14:00:00.000Z",
         "docs": {
           "overview": [
             "Churn and Renewal Risk is an eve agent that reads HubSpot or Salesforce accounts whose renewal date falls in a lookahead window. It loads Stripe payment health through Vercel Connect, buckets Healthy, Watch, and At-risk, and waits for you before any CRM note.",
@@ -209,12 +219,12 @@
             "It is useful when renewal owners want a movers digest without auto-email. Fail-closed Stripe lookups stay unscored. At-risk rows become a save-play note only after Eve approval. The append-only audit log records scored, delivered, approved, written, and refused."
           ],
           "howItWorks": [
-            "On the churn-renewal-scan schedule (cron from CHURN_RENEWAL_CRON, default Monday 08:00 UTC), the agent loads the churn-renewal skill.",
+            "On the churn-renewal-scan schedule (cron from CHURN_RENEWAL_CRON, default Monday 08:00 UTC), Eve fires a Slack session with appAuth.",
             "It calls load_renewal_config and stops when a HubSpot or Salesforce Connect UID, Stripe Connect, or Slack delivery is missing.",
             "scan_renewal_accounts mints a Vercel Connect token and lists renewal-window companies or accounts. That tool is read-only and never writes a note.",
-            "load_stripe_health looks up payment signals. Missing or invalid customers fail closed. score_renewal_risk then buckets Healthy, Watch, and At-risk and writes the snapshot into the append-only audit log.",
-            "If there are movers, the agent calls preview_renewal_digest, then deliver_renewal_digest with confirmSend true. That tool pauses for Eve approval before the Slack Connect channel. The cron path does not call draft_save_play.",
-            "Four evals cover never-write-without-confirm, fail-closed health, never auto-email the customer, and a cron path that stays read-only."
+            "load_stripe_health looks up payment signals. Missing or invalid customers fail closed. score_renewal_risk buckets Healthy, Watch, and At-risk and writes the durable cursor plus the append-only audit log.",
+            "If there are movers, the agent calls preview_renewal_digest, then deliver_renewal_digest with confirmSend true. That tool pauses for Eve approval before Slack and is not a customer email. The cron path does not call draft_save_play.",
+            "Evals cover never-write-without-confirm, fail-closed health, digest-not-customer-email, never auto-email the customer, and a cron path that stays read-only."
           ],
           "useCases": [
             {
@@ -258,6 +268,10 @@
             {
               "name": "CHURN_RENEWAL_AUDIT_PATH",
               "body": "Append-only JSONL audit log. Defaults to .data/churn-renewal-audit.jsonl. Stores identifiers and buckets only. Use a durable volume if the app filesystem is ephemeral."
+            },
+            {
+              "name": "CHURN_RENEWAL_CURSOR_PATH",
+              "body": "Durable JSON cursor of last scanned buckets and Slack digest key. Defaults to .data/churn-renewal-cursor.json. Use a durable volume if the app filesystem is ephemeral."
             },
             {
               "name": "CHURN_RENEWAL_AUDIT_RETENTION_DAYS",
