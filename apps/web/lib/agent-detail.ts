@@ -123,6 +123,8 @@ const AGENT_METADATA_TITLE_OVERRIDES: Readonly<Record<string, string>> = {
   'meeting-action-extractor':
     'Meeting action extractor · @evex/meeting-action-extractor',
   'openui-assistant': 'Eve OpenUI agent - install @evex/openui-assistant',
+  'rfp-response-drafter':
+    'Eve RFP response drafter - @evex/rfp-response-drafter',
   'postgres-data-analyst':
     'Eve Postgres SQL agent - @evex/postgres-data-analyst',
   'programmatic-seo-agent': 'Eve programmatic SEO agent',
@@ -180,6 +182,8 @@ const AGENT_JOB_INTENT_LEDES: Readonly<Record<string, string>> = {
   'meeting-action-extractor':
     'Extracts owners and deadlines from meeting transcripts, then drafts Linear follow-ups you approve.',
   'openui-assistant': 'Streams OpenUI generative UI in an Eve chat.',
+  'rfp-response-drafter':
+    'Pulls RFPs from Drive or the sandbox, grounds each answer in a knowledge pack with file citations, routes open questions to SMEs on Slack, and writes an approved draft Doc without submitting a portal response.',
   'postgres-data-analyst':
     'Answers Slack questions with read-only Postgres SQL.',
   'programmatic-seo-agent': 'Finds keywords and opens a PR of SEO pages.',
@@ -240,6 +244,8 @@ const AGENT_DEFINITION_JOB_OVERRIDES: Readonly<Record<string, string>> = {
     'reads docs on disk and drafts a cited update you review',
   'meeting-action-extractor':
     'reads a transcript on disk and drafts Linear issues you approve',
+  'rfp-response-drafter':
+    'drafts cited RFP answers from Drive or sandbox knowledge packs, pauses for Slack SME approval, and writes back only as an approved draft',
 }
 const DEFAULT_DEFINITION_JOB_WHEN_LEDE_MATCHES =
   'prepares a copy-ready draft you review and apply yourself'
