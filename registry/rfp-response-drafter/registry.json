@@ -246,7 +246,7 @@
         "slug": "rfp-response-drafter",
         "category": "productivity",
         "createdAt": "2026-09-11T08:00:00.000Z",
-        "updatedAt": "2026-09-11T14:00:00.000Z",
+        "updatedAt": "2026-09-11T15:30:00.000Z",
         "docs": {
           "overview": [
             "RFP Response Drafter is an eve agent that lists configured Google Drive RFP and knowledge folders, exports Docs and PDFs into the workspace, and registers sandbox packs. It drafts sectioned answers, requires a pack path or Drive file citation on every claim, posts leftover questions to Slack for an SME, and writes only an approved Drive Doc or mailbox Draft. A human reviews that draft. The agent never submits a vendor portal.",

@@ -1,6 +1,7 @@
 import { defineTool } from "eve/tools";
 import { z } from "zod";
 
+import { isCalendarDate } from "../lib/aging";
 import {
   buildDeadlineDigest,
   buildDigestIdempotencyKey,
@@ -26,6 +27,14 @@ export default defineTool({
   inputSchema: previewDeadlineDigestInput,
   execute({ rfps, runDate }) {
     const resolvedDate = runDate ?? utcDateStamp();
+    if (!isCalendarDate(resolvedDate)) {
+      return {
+        ok: false,
+        submitted: false,
+        sent: false,
+        note: "runDate must be a real YYYY-MM-DD calendar date.",
+      };
+    }
     const draft = buildDeadlineDigest(rfps, {
       runDate: resolvedDate,
       subject: rfpResponseConfig.digestSubject,

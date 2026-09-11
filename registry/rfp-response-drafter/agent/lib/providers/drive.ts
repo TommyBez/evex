@@ -28,10 +28,12 @@ import type {
 const DRIVE_API = "https://www.googleapis.com/drive/v3/files";
 const DOCS_API = "https://docs.googleapis.com/v1/documents";
 const GOOGLE_DOC = "application/vnd.google-apps.document";
-const LIST_FIELDS = "files(id,name,mimeType,webViewLink)";
+const LIST_FIELDS = "nextPageToken,files(id,name,mimeType,webViewLink)";
+const LIST_PAGE_SIZE = "50";
 
 type DriveListResponse = {
   readonly files?: readonly DriveFile[];
+  readonly nextPageToken?: string;
 };
 
 type DriveCreateResponse = {
@@ -73,17 +75,26 @@ export function createDriveClient(
     const query = folderId
       ? `'${folderId}' in parents and trashed = false`
       : "trashed = false";
-    const params = new URLSearchParams({
-      q: query,
-      fields: LIST_FIELDS,
-      pageSize: "50",
-    });
-    const listed = await readOnlyJson<DriveListResponse>({
-      url: `${DRIVE_API}?${params.toString()}`,
-      headers: { authorization: `Bearer ${await readToken()}` },
-      fetchImpl,
-    });
-    return listed.files ?? [];
+    const files: DriveFile[] = [];
+    let pageToken: string | undefined;
+    do {
+      const params = new URLSearchParams({
+        q: query,
+        fields: LIST_FIELDS,
+        pageSize: LIST_PAGE_SIZE,
+      });
+      if (pageToken) {
+        params.set("pageToken", pageToken);
+      }
+      const listed = await readOnlyJson<DriveListResponse>({
+        url: `${DRIVE_API}?${params.toString()}`,
+        headers: { authorization: `Bearer ${await readToken()}` },
+        fetchImpl,
+      });
+      files.push(...(listed.files ?? []));
+      pageToken = listed.nextPageToken;
+    } while (pageToken);
+    return files;
   };
 
   const exportFile: DriveClient["exportFile"] = async (input) => {
@@ -177,25 +188,26 @@ export function createDriveClient(
         },
         fetchImpl,
       });
-      const documentId = created.id ?? "unknown";
-      if (documentId !== "unknown") {
-        await draftsOnlyJson({
-          url: `${DOCS_API}/${encodeURIComponent(documentId)}:batchUpdate`,
-          method: "POST",
-          headers: { authorization: `Bearer ${await writeToken()}` },
-          body: {
-            requests: [
-              {
-                insertText: {
-                  location: { index: 1 },
-                  text: input.body,
-                },
-              },
-            ],
-          },
-          fetchImpl,
-        });
+      const documentId = created.id;
+      if (!documentId) {
+        throw new Error("Drive create did not return a document id.");
       }
+      await draftsOnlyJson({
+        url: `${DOCS_API}/${encodeURIComponent(documentId)}:batchUpdate`,
+        method: "POST",
+        headers: { authorization: `Bearer ${await writeToken()}` },
+        body: {
+          requests: [
+            {
+              insertText: {
+                location: { index: 1 },
+                text: input.body,
+              },
+            },
+          ],
+        },
+        fetchImpl,
+      });
       return {
         drafted: true,
         submitted: false,

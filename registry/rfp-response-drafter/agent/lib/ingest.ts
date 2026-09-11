@@ -106,19 +106,27 @@ export async function ingestRfpSources(input: {
         chunkIndex: exported.chunkIndex,
         chunkCount: exported.chunkCount,
       };
-      if (exported.encoding === "binary" && exported.bytes) {
+      if (exported.encoding === "binary") {
+        if (!exported.bytes) {
+          rejected.push(`drive:${driveFile.fileId}: missing binary payload`);
+          continue;
+        }
         await input.sandbox.writeBinaryFile({
           path: recorded.path,
           content: exported.bytes,
         });
       } else {
+        if (exported.text === undefined) {
+          rejected.push(`drive:${driveFile.fileId}: missing text payload`);
+          continue;
+        }
         await input.sandbox.writeTextFile({
           path: recorded.path,
-          content: exported.text ?? "",
+          content: exported.text,
         });
         if (driveFile.kind === "rfp") {
           discoveredRfps.push(
-            openRfpFromMaterialized(recorded, exported.text ?? ""),
+            openRfpFromMaterialized(recorded, exported.text),
           );
         }
       }

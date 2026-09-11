@@ -26,21 +26,33 @@ export function createResendSender(input: {
 }): EmailSender {
   const fetchImpl = input.fetchImpl ?? fetch;
   return async (payload) => {
-    const response = await fetchImpl("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        authorization: `Bearer ${input.apiKey}`,
-        "content-type": "application/json",
-        "idempotency-key": payload.idempotencyKey,
-      },
-      body: JSON.stringify({
-        from: payload.from,
-        to: [...payload.to],
-        subject: payload.subject,
-        html: payload.html,
-        text: payload.text,
-      }),
-    });
+    let response: Response;
+    try {
+      response = await fetchImpl("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          authorization: `Bearer ${input.apiKey}`,
+          "content-type": "application/json",
+          "idempotency-key": payload.idempotencyKey,
+        },
+        body: JSON.stringify({
+          from: payload.from,
+          to: [...payload.to],
+          subject: payload.subject,
+          html: payload.html,
+          text: payload.text,
+        }),
+        signal: AbortSignal.timeout(15_000),
+      });
+    } catch (error) {
+      return {
+        error: {
+          name: "resend_transport_failed",
+          message:
+            error instanceof Error ? error.message : "Resend request failed.",
+        },
+      };
+    }
     let body: ResendResponse = {};
     try {
       body = (await response.json()) as ResendResponse;

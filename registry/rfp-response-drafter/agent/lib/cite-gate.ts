@@ -98,7 +98,6 @@ export function citationAliases(source: PackSource): readonly string[] {
   };
 
   add(source.sourceId);
-  add(source.title);
   add(source.path);
   add(source.workspacePath);
   add(source.driveFileId);

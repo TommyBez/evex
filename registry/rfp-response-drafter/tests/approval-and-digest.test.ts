@@ -64,10 +64,13 @@ describe("deadline aging digest", () => {
 
     const now = new Date("2026-09-11T00:00:00.000Z");
     expect(daysUntilDueOn("2026-09-20", now)).toBe(9);
+    expect(daysUntilDueOn("not-a-date", now)).toBeNull();
+    expect(daysUntilDueOn("", now)).toBeNull();
     expect(bucketForDaysUntilDue(9)).toBe("upcoming");
-    expect(withAging({ id: "late", title: "Late", dueDate: "2026-08-01" }, now).bucket).toBe(
+    expect(withAging({ id: "late", title: "Late", dueDate: "2026-08-01" }, now)?.bucket).toBe(
       "30+",
     );
+    expect(withAging({ id: "bad", title: "Bad", dueDate: "invalid" }, now)).toBeNull();
 
     const draft = buildDeadlineDigest(
       [
@@ -80,6 +83,7 @@ describe("deadline aging digest", () => {
     expect(draft.aging.upcoming).toBe(1);
     expect(draft.aging["30+"]).toBe(1);
     expect(draft.slackText).toContain("Nothing is submitted");
+    expect(draft.text).toContain("Nothing is submitted");
     expect(draft.html).toContain("Aging:");
 
     const store = createDeliveryStore(

@@ -1,5 +1,6 @@
 import {
   countByBucket,
+  isCalendarDate,
   utcDateStamp,
   withAging,
   type OpenRfp,
@@ -45,6 +46,13 @@ export const resolveDigestDeliveryKey = (input: {
   readonly idempotencyKey: string;
 }): DigestDeliveryKey => {
   const runDate = input.runDate ?? utcDateStamp();
+  if (!isCalendarDate(runDate)) {
+    return {
+      ok: false,
+      runDate,
+      expected: "rfp-response-drafter-YYYY-MM-DD",
+    };
+  }
   const expected = buildDigestIdempotencyKey(runDate);
   if (input.idempotencyKey !== expected) {
     return { ok: false, runDate, expected };
@@ -62,7 +70,16 @@ const escapeHtml = (value: string): string =>
 export const ageOpenRfps = (
   rfps: readonly UpcomingRfp[],
   now = new Date(),
-): readonly OpenRfp[] => rfps.map((rfp) => withAging(rfp, now));
+): readonly OpenRfp[] => {
+  const aged: OpenRfp[] = [];
+  for (const rfp of rfps) {
+    const next = withAging(rfp, now);
+    if (next) {
+      aged.push(next);
+    }
+  }
+  return aged;
+};
 
 export const buildDeadlineDigest = (
   rfps: readonly UpcomingRfp[],
@@ -73,13 +90,19 @@ export const buildDeadlineDigest = (
   } = {},
 ): DigestDraft => {
   const runDate = options.runDate ?? utcDateStamp(options.now);
+  if (!isCalendarDate(runDate)) {
+    throw new Error("runDate must be a real YYYY-MM-DD calendar date.");
+  }
   const aged = ageOpenRfps(rfps, options.now ?? new Date(`${runDate}T00:00:00.000Z`));
   const aging = countByBucket(aged);
   const subject = `${options.subject ?? "RFP deadline digest"} — ${runDate}`;
-  const lines = aged.slice(0, 20).map((rfp) => {
+  const slackLines = aged.slice(0, 20).map((rfp) => {
     const title = escapeSlackMrkdwn(rfp.title);
     const dueDate = escapeSlackMrkdwn(rfp.dueDate);
     return `• ${title} due ${dueDate} (${rfp.bucket})`;
+  });
+  const textLines = aged.slice(0, 20).map((rfp) => {
+    return `• ${rfp.title} due ${rfp.dueDate} (${rfp.bucket})`;
   });
   const bucketLine = `Aging: upcoming ${aging.upcoming}, due-today ${aging["due-today"]}, 1-7 ${aging["1-7"]}, 8-30 ${aging["8-30"]}, 30+ ${aging["30+"]}.`;
   const header = [
@@ -87,8 +110,8 @@ export const buildDeadlineDigest = (
     `${aged.length} open RFP${aged.length === 1 ? "" : "s"}. Drafts stay in Drive or mailbox Drafts. Nothing is submitted.`,
     bucketLine,
   ];
-  const slackText = [...header, ...lines].join("\n");
-  const text = slackText;
+  const slackText = [...header, ...slackLines].join("\n");
+  const text = [...header, ...textLines].join("\n");
   const htmlLines = aged.slice(0, 20).map((rfp) => {
     return `<li>${escapeHtml(rfp.title)} due ${escapeHtml(rfp.dueDate)} (${escapeHtml(rfp.bucket)})</li>`;
   });

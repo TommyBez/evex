@@ -52,12 +52,15 @@ export function createGmailMailbox(
         body: { message: { raw } },
         fetchImpl,
       });
+      if (!draft.id) {
+        throw new Error("Gmail drafts.create did not return a draft id.");
+      }
       return {
         drafted: true,
         sent: false,
         submitted: false,
         provider: "gmail",
-        draftId: draft.id ?? draft.message?.id ?? "unknown",
+        draftId: draft.id,
         rfpId: input.rfpId,
         mailbox: "Drafts",
       } satisfies MailboxDraftResult;

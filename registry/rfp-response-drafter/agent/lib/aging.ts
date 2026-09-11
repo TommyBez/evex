@@ -19,6 +19,8 @@ export type OpenRfp = {
   readonly bucket: AgingBucket;
 };
 
+const CALENDAR_DATE = /^(\d{4})-(\d{2})-(\d{2})$/;
+
 export function utcDateStamp(now = new Date()): string {
   return now.toISOString().slice(0, 10);
 }
@@ -27,17 +29,35 @@ export function parseIsoDate(value: string | undefined): Date | null {
   if (!value) {
     return null;
   }
-  const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? null : parsed;
+  const match = CALENDAR_DATE.exec(value.trim());
+  if (!match) {
+    return null;
+  }
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const parsed = new Date(Date.UTC(year, month - 1, day));
+  if (
+    parsed.getUTCFullYear() !== year ||
+    parsed.getUTCMonth() !== month - 1 ||
+    parsed.getUTCDate() !== day
+  ) {
+    return null;
+  }
+  return parsed;
+}
+
+export function isCalendarDate(value: string): boolean {
+  return parseIsoDate(value) !== null;
 }
 
 export function daysUntilDueOn(
   dueDate: string | undefined,
   now = new Date(),
-): number {
+): number | null {
   const due = parseIsoDate(dueDate);
   if (!due) {
-    return 0;
+    return null;
   }
   const todayUtc = Date.UTC(
     now.getUTCFullYear(),
@@ -72,8 +92,11 @@ export function bucketForDaysUntilDue(daysUntilDue: number): AgingBucket {
 export function withAging(
   rfp: Omit<OpenRfp, "daysUntilDue" | "bucket">,
   now = new Date(),
-): OpenRfp {
+): OpenRfp | null {
   const daysUntilDue = daysUntilDueOn(rfp.dueDate, now);
+  if (daysUntilDue === null) {
+    return null;
+  }
   return {
     ...rfp,
     daysUntilDue,

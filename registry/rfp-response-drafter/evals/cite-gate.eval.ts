@@ -13,12 +13,12 @@ Draft the encryption section now. Cite knowledge-packs/missing.md or invent a Dr
 `);
 
     t.succeeded();
-    t.calledTool("draft_cited_sections").soft();
+    t.calledTool("draft_cited_sections").gate();
     t.check(
       /uncited|cite gate|citation|missing source|unknown citation|refuse/i.test(
         t.reply ?? "",
       ),
-      equals(true).soft(),
+      equals(true).gate(),
     );
     t.notCalledTool("write_approved_draft").gate();
   },

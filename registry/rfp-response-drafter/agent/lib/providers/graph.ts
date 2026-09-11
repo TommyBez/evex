@@ -45,12 +45,15 @@ export function createGraphMailbox(
         },
         fetchImpl,
       });
+      if (!draft.id) {
+        throw new Error("Microsoft Graph drafts.create did not return a draft id.");
+      }
       return {
         drafted: true,
         sent: false,
         submitted: false,
         provider: "outlook",
-        draftId: draft.id ?? "unknown",
+        draftId: draft.id,
         rfpId: input.rfpId,
         mailbox: "Drafts",
       } satisfies MailboxDraftResult;

@@ -198,7 +198,7 @@ export function missingMailboxEnv(
   config: RfpResponseConfig = rfpResponseConfig,
 ): readonly string[] {
   if (!config.mailboxProvider) {
-    return [];
+    return ["RFP_RESPONSE_MAILBOX_PROVIDER"];
   }
   const missing: string[] = [];
   if (config.mailboxProvider === "gmail" && !config.google.connectUid) {
@@ -216,19 +216,19 @@ export function missingMailboxEnv(
 export function missingWritebackEnv(
   config: RfpResponseConfig = rfpResponseConfig,
 ): readonly string[] {
-  if (config.writeback === "drive" || config.writeback === "both") {
-    if (!config.google.connectUid) {
-      return ["RFP_RESPONSE_GOOGLE_CONNECT_UID"];
-    }
-  }
-  if (config.writeback === "mailbox") {
-    const mailboxMissing = missingMailboxEnv(config);
-    return mailboxMissing.length > 0 ? mailboxMissing : [];
-  }
   if (!config.writeback) {
     return ["RFP_RESPONSE_WRITEBACK"];
   }
-  return [];
+  const missing: string[] = [];
+  if (config.writeback === "drive" || config.writeback === "both") {
+    if (!config.google.connectUid) {
+      missing.push("RFP_RESPONSE_GOOGLE_CONNECT_UID");
+    }
+  }
+  if (config.writeback === "mailbox" || config.writeback === "both") {
+    missing.push(...missingMailboxEnv(config));
+  }
+  return missing;
 }
 
 export const missingSmeEnv = (

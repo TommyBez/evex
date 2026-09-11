@@ -64,14 +64,11 @@ const readStore = (filePath: string): StoreFile => {
   if (!existsSync(filePath)) {
     return emptyStore();
   }
-  try {
-    const parsed = JSON.parse(readFileSync(filePath, "utf8")) as StoreFile;
-    return {
-      deliveries: Array.isArray(parsed.deliveries) ? parsed.deliveries : [],
-    };
-  } catch {
-    return emptyStore();
+  const parsed = JSON.parse(readFileSync(filePath, "utf8")) as StoreFile;
+  if (!Array.isArray(parsed.deliveries)) {
+    throw new Error("RFP digest store is corrupt: deliveries must be an array.");
   }
+  return { deliveries: parsed.deliveries };
 };
 
 export const writeStoreAtomically = (
