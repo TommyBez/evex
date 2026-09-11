@@ -15,6 +15,10 @@ export type MaterializedFile = {
   readonly encoding: "text" | "binary";
   readonly driveFileId?: string;
   readonly driveUrl?: string;
+  readonly truncated?: boolean;
+  readonly charCount?: number;
+  readonly chunkIndex?: number;
+  readonly chunkCount?: number;
 };
 
 export function isGoogleDocMime(mimeType: string): boolean {
@@ -56,12 +60,25 @@ export function safeFilename(name: string, mimeType: string): string {
   return base;
 }
 
+export function uniqueDriveFilename(
+  name: string,
+  mimeType: string,
+  fileId: string,
+): string {
+  const safe = safeFilename(name, mimeType);
+  const extensionMatch = /\.[A-Za-z0-9]+$/.exec(safe);
+  const extension = extensionMatch?.[0] ?? "";
+  const stem = extension.length > 0 ? safe.slice(0, -extension.length) : safe;
+  const id = fileId.replaceAll(/[^a-zA-Z0-9_-]/g, "").slice(0, 64) || "file";
+  return `${stem}--${id}${extension}`;
+}
+
 export function workspaceRelativePath(
   kind: "rfp" | "pack",
   filename: string,
 ): string {
   const root = kind === "rfp" ? DEFAULT_RFP_ROOT : DEFAULT_PACK_ROOT;
-  return `${root}/${safeFilename(filename, "")}`;
+  return `${root}/${filename}`;
 }
 
 export function workspaceAbsolutePath(relative: string): string {
@@ -103,7 +120,11 @@ export function materializedFromDrive(input: {
   readonly kind: "rfp" | "pack";
   readonly webViewLink?: string;
 }): MaterializedFile {
-  const filename = safeFilename(input.name, input.mimeType);
+  const filename = uniqueDriveFilename(
+    input.name,
+    input.mimeType,
+    input.fileId,
+  );
   const path = workspaceRelativePath(input.kind, filename);
   return {
     sourceId: `drive:${input.fileId}`,
@@ -119,6 +140,7 @@ export function materializedFromDrive(input: {
       mimeType: input.mimeType,
       webViewLink: input.webViewLink,
     }),
+    truncated: false,
   };
 }
 

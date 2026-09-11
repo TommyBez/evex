@@ -192,6 +192,7 @@ export function evaluateCiteGate(input: {
       continue;
     }
 
+    const citedClaims: string[] = [];
     for (const claim of section.claims) {
       const claimText = claim.text.trim();
       const sourceId = claim.citation.sourceId.trim();
@@ -208,8 +209,15 @@ export function evaluateCiteGate(input: {
         uncited.push(`${section.heading}: unknown citation ${sourceId}`);
         continue;
       }
+      citedClaims.push(claimText);
       if (!citedSourceIds.includes(matched.sourceId)) {
         citedSourceIds.push(matched.sourceId);
+      }
+    }
+
+    for (const assertion of bodyAssertions(section.body)) {
+      if (!isBodyAssertionCovered(assertion, citedClaims)) {
+        uncited.push(`${section.heading}: uncited body ${assertion}`);
       }
     }
   }
@@ -218,7 +226,7 @@ export function evaluateCiteGate(input: {
     return {
       ok: false,
       drafted: false,
-      note: "Cite gate failed closed. Every claim needs a pack path and/or Drive file id or URL from the ingested sources.",
+      note: "Cite gate failed closed. Every claim and every body assertion needs a pack path and/or Drive file id or URL from the ingested sources.",
       uncited,
     };
   }
@@ -253,21 +261,60 @@ export function collectOpenQuestions(
   return questions;
 }
 
+export function bodyAssertions(body: string): readonly string[] {
+  return body
+    .split(/(?<=[.!?])\s+|\n+/)
+    .map((part) => part.trim())
+    .filter((part) => part.length > 0);
+}
+
+const normalizeAssertion = (value: string): string =>
+  value
+    .toLowerCase()
+    .replaceAll(/\s+/g, " ")
+    .replace(/[.,;:!?]+$/g, "")
+    .trim();
+
+export function isBodyAssertionCovered(
+  assertion: string,
+  citedClaims: readonly string[],
+): boolean {
+  const normalizedAssertion = normalizeAssertion(assertion);
+  if (normalizedAssertion.length === 0) {
+    return true;
+  }
+  return citedClaims.some((claim) => {
+    const normalizedClaim = normalizeAssertion(claim);
+    return (
+      normalizedClaim.length > 0 &&
+      (normalizedAssertion.includes(normalizedClaim) ||
+        normalizedClaim.includes(normalizedAssertion))
+    );
+  });
+}
+
 export function evaluateSmeWriteGate(input: {
   readonly openQuestions: readonly string[];
-  readonly smeApproved?: boolean;
+  readonly approvedRecord?: {
+    readonly status: "approved" | "pending";
+    readonly questions: readonly string[];
+  } | null;
 }):
   | { readonly ok: true }
   | { readonly ok: false; readonly note: string; readonly openQuestions: readonly string[] } {
   if (input.openQuestions.length === 0) {
     return { ok: true };
   }
-  if (input.smeApproved === true) {
+  const record = input.approvedRecord;
+  if (
+    record?.status === "approved" &&
+    input.openQuestions.every((question) => record.questions.includes(question))
+  ) {
     return { ok: true };
   }
   return {
     ok: false,
-    note: "Open SME questions remain. Call ask_sme_questions and wait for Slack SME approval before write_approved_draft.",
+    note: "Open SME questions remain. Call ask_sme_questions, then record_sme_reply after a correlated SME Slack reply. write_approved_draft checks the durable approval record.",
     openQuestions: input.openQuestions,
   };
 }

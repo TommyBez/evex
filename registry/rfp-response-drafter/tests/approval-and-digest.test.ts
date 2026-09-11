@@ -43,7 +43,6 @@ describe("approval before write", () => {
     expect(
       evaluateSmeWriteGate({
         openQuestions: ["Need the SOC 2 date"],
-        smeApproved: false,
       }).ok,
     ).toBe(false);
   });
@@ -135,6 +134,32 @@ describe("deadline aging digest", () => {
     expect(replay.replayed).toBe(true);
     expect(slackPosts).toBe(1);
     expect(emailPosts).toBe(1);
+  });
+
+  it("claims the date key before the first send so overlapping runs do not both post", async () => {
+    const store = createDeliveryStore(
+      path.join(mkdtempSync(path.join(tmpdir(), "rfp-claim-")), "store.json"),
+    );
+    const firstClaim = store.claim(DIGEST_KEY, "2026-09-11");
+    expect(firstClaim.acquired).toBe(true);
+    let slackPosts = 0;
+    const overlapping = await deliverDeadlineDigest({
+      store,
+      rfps: [{ id: "acme", title: "Acme", dueDate: "2026-09-20" }],
+      slackConnectUid: "slack/rfp",
+      slackChannelId: "C1",
+      digestFrom: undefined,
+      digestTo: [],
+      runDate: "2026-09-11",
+      idempotencyKey: DIGEST_KEY,
+      postSlack: async () => {
+        slackPosts += 1;
+        return { ok: true };
+      },
+    });
+    expect(overlapping.inProgress).toBe(true);
+    expect(overlapping.sent).toBe(false);
+    expect(slackPosts).toBe(0);
   });
 
   it("treats Slack or email as enough for digest delivery", () => {

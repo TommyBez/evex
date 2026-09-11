@@ -107,6 +107,8 @@ describe("workspace ingest", () => {
             encoding: "text",
             text: "Q1: Describe encryption.",
             driveUrl: "https://docs.google.com/document/d/doc-rfp/edit",
+            truncated: false,
+            charCount: 24,
           },
           "pdf-pack": {
             id: "pdf-pack",
@@ -116,6 +118,8 @@ describe("workspace ingest", () => {
             encoding: "binary",
             bytes: new Uint8Array([37, 80, 68, 70]),
             driveUrl: "https://drive.google.com/file/d/pdf-pack/view",
+            truncated: false,
+            byteCount: 4,
           },
         },
       }),
@@ -125,19 +129,21 @@ describe("workspace ingest", () => {
     expect(result.materialized).toBe(true);
     expect(ingestOutputHasFileContent(result)).toBe(false);
     expect(result.files.some((file) => "content" in file)).toBe(false);
-    expect(sandbox.text.get("rfps/Acme RFP.txt")).toBe("Q1: Describe encryption.");
-    expect(sandbox.binary.get("knowledge-packs/Security pack.pdf")).toEqual(
+    expect(sandbox.text.get("rfps/Acme RFP--doc-rfp.txt")).toBe(
+      "Q1: Describe encryption.",
+    );
+    expect(sandbox.binary.get("knowledge-packs/Security pack--pdf-pack.pdf")).toEqual(
       new Uint8Array([37, 80, 68, 70]),
     );
     expect(result.sources).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          path: "rfps/Acme RFP.txt",
+          path: "rfps/Acme RFP--doc-rfp.txt",
           driveFileId: "doc-rfp",
           driveUrl: "https://docs.google.com/document/d/doc-rfp/edit",
         }),
         expect.objectContaining({
-          path: "knowledge-packs/Security pack.pdf",
+          path: "knowledge-packs/Security pack--pdf-pack.pdf",
           driveFileId: "pdf-pack",
         }),
         expect.objectContaining({

@@ -12,7 +12,9 @@ import {
 import { draftMailboxSubject, formatDraftBody } from "../lib/draft-copy";
 import { createConfiguredDrive } from "../lib/providers/drive";
 import { createConfiguredMailbox } from "../lib/providers/mailbox";
-import { rfpResponseConfig } from "../lib/rfp-config";
+import { rfpResponseConfig, siblingStorePath } from "../lib/rfp-config";
+import { createSmeStore } from "../lib/sme-store";
+import { executeApprovedWrite } from "../lib/write-back";
 import { assertDraftWriteIntent } from "../lib/write-guard";
 
 const citationSchema = z.object({
@@ -52,12 +54,6 @@ const writeApprovedDraftInput = z.object({
   sources: z.array(sourceSchema).min(1).max(40),
   sections: z.array(sectionSchema).min(1).max(30),
   openQuestions: z.array(z.string().min(1).max(500)).max(10).optional(),
-  smeApproved: z
-    .boolean()
-    .optional()
-    .describe(
-      "Must be true when open questions remain. Set only after ask_sme_questions and SME approval.",
-    ),
   confirmWrite: z
     .boolean()
     .describe("Must be true after Eve and SME approval. Never a portal submit."),
@@ -100,9 +96,12 @@ export default defineTool({
       input.sections as DraftSection[],
       input.openQuestions ?? [],
     );
+    const smeRecord = createSmeStore(
+      siblingStorePath(rfpResponseConfig.storePath, "rfp-sme-store.json"),
+    ).findApproved(input.rfpId);
     const smeGate = evaluateSmeWriteGate({
       openQuestions,
-      smeApproved: input.smeApproved,
+      approvedRecord: smeRecord,
     });
     if (!smeGate.ok) {
       return {
@@ -136,45 +135,27 @@ export default defineTool({
     });
     const title = `DRAFT: ${input.rfpTitle}`;
 
-    const driveResult =
-      target === "mailbox"
-        ? undefined
-        : await writeDriveDraft(title, body);
-    const mailboxResult =
-      target === "drive"
-        ? undefined
-        : await writeMailboxDraft({
-            rfpId: input.rfpId,
-            subject: draftMailboxSubject(input.rfpTitle),
-            body,
-          });
-
-    if (driveResult && !driveResult.ok) {
-      return {
-        drafted: false,
-        sent: false,
-        submitted: false,
-        note: driveResult.note,
-        missingEnv: driveResult.missingEnv,
-      };
-    }
-    if (mailboxResult && !mailboxResult.ok) {
-      return {
-        drafted: false,
-        sent: false,
-        submitted: false,
-        note: mailboxResult.note,
-        missingEnv: mailboxResult.missingEnv,
-      };
+    const written = await executeApprovedWrite({
+      target,
+      config: rfpResponseConfig,
+      writeDrive: () => writeDriveDraft(title, body),
+      writeMailbox: () =>
+        writeMailboxDraft({
+          rfpId: input.rfpId,
+          subject: draftMailboxSubject(input.rfpTitle),
+          body,
+        }),
+    });
+    if (!written.drafted) {
+      return written;
     }
 
     return {
-      drafted: true,
-      sent: false,
-      submitted: false,
-      drive: driveResult?.value,
-      mailbox: mailboxResult?.value,
-      note: "Approved draft written. A human reviews the Drive Doc or mailbox Drafts. Nothing was submitted.",
+      ...written,
+      note:
+        written.partial && written.note
+          ? written.note
+          : "Approved draft written. A human reviews the Drive Doc or mailbox Drafts. Nothing was submitted.",
     };
   },
 });

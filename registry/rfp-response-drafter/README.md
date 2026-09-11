@@ -9,9 +9,9 @@ The agent reads an RFP and a knowledge pack from Google Drive Connect and/or san
 1. **Load config** — `load_rfp_config` reports Drive RFP and knowledge folders, sandbox roots, Slack, mailbox, and the write-back target.
 2. **Ingest into the workspace** — `ingest_rfp_sources` lists the configured Drive folders, exports Docs and PDFs into `/workspace/rfps` and `/workspace/knowledge-packs`, and registers sandbox paths. It returns paths and Drive ids only. Read those files with built-in `read_file`, `glob`, and `grep`.
 3. **Cite gate** — `draft_cited_sections` requires every claim to cite a pack path and/or a Drive file id or URL. It fails closed when a claim is uncited or the source is missing.
-4. **SME Slack pause** — `ask_sme_questions` posts open questions through the Eve Slack Connect channel and pauses for SME approval before any external-facing draft leaves.
-5. **Approved draft only** — `write_approved_draft` pauses for Eve approval, requires `confirmWrite: true` and SME approval when questions are open, and writes a Drive draft Doc and/or mailbox Drafts. It always returns `submitted: false` and `sent: false`.
-6. **Optional deadline digest** — `rfp-deadline-digest` on `RFP_RESPONSE_CRON` previews aging buckets and posts Slack and/or Resend email once per date key.
+4. **SME Slack pause** — `ask_sme_questions` posts open questions through the Eve Slack Connect channel and records them as pending. A Slack accept is not approval. `record_sme_reply` writes the durable approval after a correlated SME reply.
+5. **Approved draft only** — `write_approved_draft` pauses for Eve approval, requires `confirmWrite: true`, and checks the SME store when questions are open. It writes a Drive draft Doc and/or mailbox Drafts. It always returns `submitted: false` and `sent: false`.
+6. **Optional deadline digest** — `rfp-deadline-digest` on `RFP_RESPONSE_CRON` ingests configured RFPs, loads persisted due dates, previews aging buckets, and posts Slack and/or Resend email once per date key.
 
 ## Installation
 
@@ -85,7 +85,7 @@ This is a digest, not an RFP send. The agent still never claims the questionnair
 - **`notConfigured: missingEnv RFP_RESPONSE_SLACK_CONNECT_UID`** — Slack SME routing is required.
 - **`notConfigured: missingEnv RFP_RESPONSE_WRITEBACK`** — set a Google Connect UID or a mailbox plus `RFP_RESPONSE_DRAFT_TO`.
 - **`Cite gate failed closed`** — a claim had no pack path or Drive id/URL, or the citation was not in the ingested sources.
-- **`Open SME questions remain`** — call `ask_sme_questions` and wait before `write_approved_draft`.
+- **`Open SME questions remain`** — call `ask_sme_questions`, then `record_sme_reply` after the SME answers. A Slack post is not approval.
 - **`confirmWrite must be true`** — `write_approved_draft` refuses until after Eve and SME approval.
 - **`Refused portal submit`** — intent was `submit` or `paste`, or a provider tried a portal URL.
 - **Slack or email replayed** — the same `rfp-response-drafter-YYYY-MM-DD` key already delivered.

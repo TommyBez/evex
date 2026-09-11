@@ -173,7 +173,7 @@ describe("cite gate", () => {
 });
 
 describe("SME write gate", () => {
-  it("blocks write-back while open questions lack SME approval", () => {
+  it("blocks write-back until a durable approved record covers the questions", () => {
     expect(
       evaluateSmeWriteGate({
         openQuestions: ["What is the SOC 2 report date?"],
@@ -182,10 +182,48 @@ describe("SME write gate", () => {
     expect(
       evaluateSmeWriteGate({
         openQuestions: ["What is the SOC 2 report date?"],
-        smeApproved: true,
+        approvedRecord: {
+          status: "pending",
+          questions: ["What is the SOC 2 report date?"],
+        },
+      }),
+    ).toMatchObject({ ok: false });
+    expect(
+      evaluateSmeWriteGate({
+        openQuestions: ["What is the SOC 2 report date?"],
+        approvedRecord: {
+          status: "approved",
+          questions: ["What is the SOC 2 report date?"],
+        },
       }),
     ).toEqual({ ok: true });
     expect(evaluateSmeWriteGate({ openQuestions: [] })).toEqual({ ok: true });
+  });
+});
+
+describe("body cite gate", () => {
+  it("fails closed when section.body adds an uncited assertion", () => {
+    const result = evaluateCiteGate({
+      sources: pack,
+      sections: [
+        {
+          heading: "Encryption",
+          body: "We encrypt at rest. We also offer twenty-four-seven coverage.",
+          claims: [
+            {
+              text: "We encrypt at rest.",
+              citation: { sourceId: "knowledge-packs/security.md" },
+            },
+          ],
+        },
+      ],
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.uncited.some((item) => item.includes("uncited body"))).toBe(
+        true,
+      );
+    }
   });
 });
 

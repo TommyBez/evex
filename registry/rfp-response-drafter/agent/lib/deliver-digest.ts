@@ -22,6 +22,7 @@ export type DeliverDeadlineDigestResult = {
   readonly sent: boolean;
   readonly submitted: false;
   readonly replayed?: boolean;
+  readonly inProgress?: boolean;
   readonly idempotencyKey: string;
   readonly runDate: string;
   readonly slackSent?: boolean;
@@ -49,35 +50,47 @@ export const deliverDeadlineDigest = async ({
     digestFrom && digestTo.length > 0 && sendEmail,
   );
   const draft = buildDeadlineDigest(rfps, { runDate, subject });
-  const cached = store.find(idempotencyKey);
-  const slackAlready = Boolean(cached?.slackSent);
-  const emailAlready = Boolean(cached?.emailSent);
 
-  if (
-    cached &&
-    (!slackConfigured || slackAlready) &&
-    (!emailConfigured || emailAlready)
-  ) {
+  const claim = store.claim(idempotencyKey, runDate);
+  if (claim.replayed) {
     return {
       sent: true,
       submitted: false,
       replayed: true,
       idempotencyKey,
-      runDate: cached.runDate,
-      slackSent: slackAlready,
-      emailSent: emailAlready,
+      runDate: claim.state?.runDate ?? runDate,
+      slackSent: claim.state?.slackSent,
+      emailSent: claim.state?.emailSent,
       upcomingCount: draft.upcomingCount,
     };
   }
+  if (!claim.acquired) {
+    return {
+      sent: false,
+      submitted: false,
+      inProgress: true,
+      idempotencyKey,
+      runDate,
+      error: {
+        name: "delivery_in_progress",
+        message: "Another digest already claimed this date key.",
+      },
+    };
+  }
 
-  let slackSent = slackAlready;
-  if (slackConfigured && !slackAlready && slackConnectUid && slackChannelId) {
+  const cached = claim.state;
+  let slackSent = Boolean(cached?.slackSent);
+  let emailSent = Boolean(cached?.emailSent);
+  let emailMessageId = cached?.emailMessageId;
+
+  if (slackConfigured && !slackSent && slackConnectUid && slackChannelId) {
     const slack = await postSlack({
       connectUid: slackConnectUid,
       channelId: slackChannelId,
       text: draft.slackText,
     });
     if (!slack.ok) {
+      store.release(idempotencyKey);
       return {
         sent: false,
         submitted: false,
@@ -91,11 +104,20 @@ export const deliverDeadlineDigest = async ({
       };
     }
     slackSent = true;
+    store.save({
+      idempotencyKey,
+      runDate,
+      slackSent: true,
+      emailSent,
+      emailMessageId,
+      claimedAt: cached?.claimedAt,
+      claimOwner: cached?.claimOwner,
+      status: "in_progress",
+      postedAt: new Date().toISOString(),
+    });
   }
 
-  let emailSent = emailAlready;
-  let emailMessageId = cached?.emailMessageId;
-  if (emailConfigured && !emailAlready && digestFrom && sendEmail) {
+  if (emailConfigured && !emailSent && digestFrom && sendEmail) {
     const emailResult = await sendEmail({
       from: digestFrom,
       to: digestTo,
@@ -105,15 +127,16 @@ export const deliverDeadlineDigest = async ({
       idempotencyKey,
     });
     if (emailResult.error) {
-      if (slackSent) {
-        store.save({
-          idempotencyKey,
-          runDate,
-          slackSent: true,
-          emailSent: false,
-          postedAt: new Date().toISOString(),
-        });
-      }
+      store.save({
+        idempotencyKey,
+        runDate,
+        slackSent,
+        emailSent: false,
+        claimedAt: cached?.claimedAt,
+        claimOwner: cached?.claimOwner,
+        status: "in_progress",
+        postedAt: new Date().toISOString(),
+      });
       return {
         sent: false,
         submitted: false,
@@ -138,6 +161,7 @@ export const deliverDeadlineDigest = async ({
     emailSent,
     emailMessageId,
     postedAt: new Date().toISOString(),
+    status: "complete",
   });
 
   return {

@@ -1,9 +1,10 @@
 import { defineTool } from "eve/tools";
 import { z } from "zod";
 
+import { createDeadlineStore } from "../lib/deadline-store";
 import { ingestRfpSources } from "../lib/ingest";
 import { createConfiguredDrive } from "../lib/providers/drive";
-import { rfpResponseConfig } from "../lib/rfp-config";
+import { rfpResponseConfig, siblingStorePath } from "../lib/rfp-config";
 import { configuredSandboxRoots } from "../lib/sandbox-paths";
 
 const ingestInput = z.object({
@@ -62,6 +63,9 @@ export default defineTool({
       sandboxRoots: configuredSandboxRoots(),
       driveFiles: input.driveFiles,
       sandboxPaths: input.sandboxPaths,
+      deadlineStore: createDeadlineStore(
+        siblingStorePath(rfpResponseConfig.storePath, "rfp-deadlines.json"),
+      ),
     });
   },
 });

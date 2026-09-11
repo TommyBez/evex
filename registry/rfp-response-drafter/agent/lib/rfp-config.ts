@@ -1,3 +1,5 @@
+import path from "node:path";
+
 export const MAILBOX_PROVIDERS = ["gmail", "outlook"] as const;
 export const WRITEBACK_TARGETS = ["drive", "mailbox", "both"] as const;
 
@@ -103,6 +105,13 @@ export function resolveWritebackTarget(
     return "mailbox";
   }
   return null;
+}
+
+export function siblingStorePath(
+  storePath: string,
+  filename: string,
+): string {
+  return path.join(path.dirname(storePath), filename);
 }
 
 export function sandboxRootsFromEnv(

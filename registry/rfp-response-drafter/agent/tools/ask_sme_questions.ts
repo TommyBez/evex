@@ -6,10 +6,13 @@ import {
   isSlackConfigured,
   missingSmeEnv,
   rfpResponseConfig,
+  siblingStorePath,
 } from "../lib/rfp-config";
+import { createSmeStore } from "../lib/sme-store";
 import { buildSmeSlackText, postSlackMessage } from "../lib/slack-post";
 
 const askSmeQuestionsInput = z.object({
+  rfpId: z.string().min(1).max(200),
   rfpTitle: z.string().min(1).max(200),
   questions: z
     .array(z.string().min(1).max(500))
@@ -20,15 +23,16 @@ const askSmeQuestionsInput = z.object({
 
 export default defineTool({
   description:
-    "Route open RFP questions to SMEs on Slack Connect and pause for SME approval before any external-facing draft leaves. Always pauses. Does not write a Drive Doc, mailbox Draft, or portal submit.",
+    "Route open RFP questions to SMEs on Slack Connect and create a pending approval record. Posting is not approval. Always pauses. Does not write a Drive Doc, mailbox Draft, or portal submit.",
   inputSchema: askSmeQuestionsInput,
   approval: always<z.infer<typeof askSmeQuestionsInput>>(),
-  async execute({ rfpTitle, questions }) {
+  async execute({ rfpId, rfpTitle, questions }) {
     if (!isSlackConfigured()) {
       return {
         posted: false,
         paused: true,
         smeApproved: false,
+        smeStatus: "pending" as const,
         submitted: false,
         sent: false,
         note: "Slack SME routing is not configured.",
@@ -41,18 +45,34 @@ export default defineTool({
       channelId: rfpResponseConfig.slackChannelId ?? "",
       text: buildSmeSlackText({ rfpTitle, questions }),
     });
+    if (!result.ok) {
+      return {
+        posted: false,
+        paused: true,
+        smeApproved: false,
+        smeStatus: "pending" as const,
+        submitted: false,
+        sent: false,
+        questionCount: questions.length,
+        error: result.error,
+        note: result.error,
+      };
+    }
+
+    const request = createSmeStore(
+      siblingStorePath(rfpResponseConfig.storePath, "rfp-sme-store.json"),
+    ).createPending({ rfpId, rfpTitle, questions });
 
     return {
-      posted: result.ok,
+      posted: true,
       paused: true,
-      smeApproved: result.ok,
+      smeApproved: false,
+      smeStatus: request.status,
+      smeRequestId: request.smeRequestId,
       submitted: false,
       sent: false,
       questionCount: questions.length,
-      error: result.error,
-      note: result.ok
-        ? "SME questions posted. Pause for SME approval before write_approved_draft. Pass smeApproved true only after the SME replies."
-        : result.error,
+      note: "SME questions posted and recorded as pending. A Slack accept is not approval. Call record_sme_reply after a correlated SME reply.",
     };
   },
 });

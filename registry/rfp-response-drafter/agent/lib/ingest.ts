@@ -1,5 +1,10 @@
 import type { PackSource } from "./cite-gate";
 import {
+  openRfpFromMaterialized,
+  type DeadlineStore,
+} from "./deadline-store";
+import type { UpcomingRfp } from "./digest";
+import {
   ingestOutputHasFileContent,
   isDriveExportCandidate,
   materializedFromDrive,
@@ -41,6 +46,7 @@ export type IngestResult = {
     readonly pack: DriveFolderListing;
   };
   readonly rejected: readonly string[];
+  readonly openRfps?: readonly UpcomingRfp[];
   readonly missingEnv?: readonly string[];
 };
 
@@ -53,9 +59,11 @@ export async function ingestRfpSources(input: {
   readonly sandboxRoots: readonly string[];
   readonly driveFiles?: readonly IngestDriveFile[];
   readonly sandboxPaths?: readonly IngestSandboxPath[];
+  readonly deadlineStore?: DeadlineStore;
 }): Promise<IngestResult> {
   const files: MaterializedFile[] = [];
   const rejected: string[] = [];
+  const discoveredRfps: UpcomingRfp[] = [];
   let folders: IngestResult["folders"];
 
   if (input.drive) {
@@ -91,18 +99,30 @@ export async function ingestRfpSources(input: {
         kind: driveFile.kind,
         webViewLink: exported.webViewLink,
       });
+      const recorded: MaterializedFile = {
+        ...materialized,
+        truncated: exported.truncated,
+        charCount: exported.charCount,
+        chunkIndex: exported.chunkIndex,
+        chunkCount: exported.chunkCount,
+      };
       if (exported.encoding === "binary" && exported.bytes) {
         await input.sandbox.writeBinaryFile({
-          path: materialized.path,
+          path: recorded.path,
           content: exported.bytes,
         });
       } else {
         await input.sandbox.writeTextFile({
-          path: materialized.path,
+          path: recorded.path,
           content: exported.text ?? "",
         });
+        if (driveFile.kind === "rfp") {
+          discoveredRfps.push(
+            openRfpFromMaterialized(recorded, exported.text ?? ""),
+          );
+        }
       }
-      files.push(materialized);
+      files.push(recorded);
     }
   }
 
@@ -121,6 +141,9 @@ export async function ingestRfpSources(input: {
         continue;
       }
       files.push(materialized);
+      if (sandboxFile.kind === "rfp") {
+        discoveredRfps.push(openRfpFromMaterialized(materialized, exists));
+      }
     } catch {
       rejected.push(materialized.path);
     }
@@ -143,6 +166,16 @@ export async function ingestRfpSources(input: {
     };
   }
 
+  if (input.deadlineStore && discoveredRfps.length > 0) {
+    const byId = new Map(
+      input.deadlineStore.list().map((rfp) => [rfp.id, rfp] as const),
+    );
+    for (const rfp of discoveredRfps) {
+      byId.set(rfp.id, rfp);
+    }
+    input.deadlineStore.save([...byId.values()]);
+  }
+
   const result: IngestResult = {
     ok: true,
     materialized: true,
@@ -152,6 +185,7 @@ export async function ingestRfpSources(input: {
     files,
     folders,
     rejected,
+    openRfps: discoveredRfps,
   };
 
   if (ingestOutputHasFileContent(result)) {

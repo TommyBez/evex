@@ -110,6 +110,10 @@ export function createDriveClient(
         encoding,
         bytes,
         driveUrl,
+        truncated: false,
+        byteCount: bytes.byteLength,
+        chunkIndex: 1,
+        chunkCount: 1,
       } satisfies DriveExport;
     }
     const text = await readText({
@@ -121,8 +125,12 @@ export function createDriveClient(
       ...meta,
       kind: input.kind,
       encoding,
-      text: text.slice(0, 48_000),
+      text,
       driveUrl,
+      truncated: false,
+      charCount: text.length,
+      chunkIndex: 1,
+      chunkCount: 1,
     } satisfies DriveExport;
   };
 

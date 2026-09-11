@@ -47,6 +47,11 @@ export type DriveExport = DriveFile & {
   readonly text?: string;
   readonly bytes?: Uint8Array;
   readonly driveUrl: string;
+  readonly truncated: boolean;
+  readonly charCount?: number;
+  readonly byteCount?: number;
+  readonly chunkIndex?: number;
+  readonly chunkCount?: number;
 };
 
 export type DriveSource = DriveExport;

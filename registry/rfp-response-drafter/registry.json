@@ -47,6 +47,11 @@
           "target": "~/agent/lib/cite-gate.ts"
         },
         {
+          "path": "agent/lib/deadline-store.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/deadline-store.ts"
+        },
+        {
           "path": "agent/lib/deliver-digest.ts",
           "type": "registry:file",
           "target": "~/agent/lib/deliver-digest.ts"
@@ -137,6 +142,16 @@
           "target": "~/agent/lib/slack-post.ts"
         },
         {
+          "path": "agent/lib/sme-store.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/sme-store.ts"
+        },
+        {
+          "path": "agent/lib/write-back.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/write-back.ts"
+        },
+        {
           "path": "agent/lib/write-guard.ts",
           "type": "registry:file",
           "target": "~/agent/lib/write-guard.ts"
@@ -172,9 +187,19 @@
           "target": "~/agent/tools/ingest_rfp_sources.ts"
         },
         {
+          "path": "agent/tools/load_open_rfps.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/load_open_rfps.ts"
+        },
+        {
           "path": "agent/tools/load_rfp_config.ts",
           "type": "registry:file",
           "target": "~/agent/tools/load_rfp_config.ts"
+        },
+        {
+          "path": "agent/tools/record_sme_reply.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/record_sme_reply.ts"
         },
         {
           "path": "agent/tools/preview_deadline_digest.ts",
@@ -221,7 +246,7 @@
         "slug": "rfp-response-drafter",
         "category": "productivity",
         "createdAt": "2026-09-11T08:00:00.000Z",
-        "updatedAt": "2026-09-11T12:00:00.000Z",
+        "updatedAt": "2026-09-11T14:00:00.000Z",
         "docs": {
           "overview": [
             "RFP Response Drafter is an eve agent that lists configured Google Drive RFP and knowledge folders, exports Docs and PDFs into the workspace, and registers sandbox packs. It drafts sectioned answers, requires a pack path or Drive file citation on every claim, posts leftover questions to Slack for an SME, and writes only an approved Drive Doc or mailbox Draft. A human reviews that draft. The agent never submits a vendor portal.",
@@ -231,9 +256,9 @@
           "howItWorks": [
             "On Eve chat or the optional rfp-deadline-digest schedule (cron from RFP_RESPONSE_CRON, default weekday 08:00 UTC), the agent loads the rfp-response skill.",
             "It calls load_rfp_config and stops when Slack Connect or a Drive or mailbox write-back target is missing.",
-            "ingest_rfp_sources lists the configured Drive RFP and knowledge folders, exports Docs and PDFs into the workspace, and registers sandbox paths. It returns paths and Drive ids only.",
-            "The model reads those files with built-in read_file, glob, and grep. draft_cited_sections applies a hard cite gate. Every claim needs a pack path and or a Drive file id or URL. Missing sources fail closed.",
-            "ask_sme_questions posts leftover questions to Slack Connect and pauses for SME approval before any external draft leaves. write_approved_draft then writes a Drive draft Doc or mailbox Drafts after confirmWrite is true. It never submits a portal.",
+            "ingest_rfp_sources lists the configured Drive RFP and knowledge folders, exports Docs and PDFs into the workspace, and registers sandbox paths. The deadline schedule then calls load_open_rfps so preview has rows.",
+            "The model reads those files with built-in read_file, glob, and grep. draft_cited_sections applies a hard cite gate to claims and body prose. Missing sources fail closed.",
+            "ask_sme_questions posts leftover questions as pending. record_sme_reply stores a correlated SME reply. write_approved_draft checks that record, preflights Drive and mailbox, then writes drafts after confirmWrite is true. It never submits a portal.",
             "Four evals cover the cite gate refuse-on-missing-source, approval before write, never-portal-submit, and the Slack SME pause."
           ],
           "useCases": [
@@ -351,7 +376,7 @@
             },
             {
               "question": "When does Slack pause the run?",
-              "answer": "ask_sme_questions always pauses for Eve approval before it posts. Use it when draft_cited_sections returns open questions. write_approved_draft is refused until the SME approves those gaps."
+              "answer": "ask_sme_questions always pauses for Eve approval before it posts. A Slack accept is not SME approval. After the SME replies, record_sme_reply writes the durable record that write_approved_draft checks."
             },
             {
               "question": "Is the deadline digest required?",
