@@ -11,8 +11,10 @@ const citationSchema = z.object({
   sourceId: z
     .string()
     .min(1)
-    .max(400)
-    .describe("Ingested source id from ingest_rfp_sources, such as sandbox:rfps/acme.md."),
+    .max(500)
+    .describe(
+      "Pack path, Drive file id, Drive URL, or ingest sourceId. Example: knowledge-packs/security.md or https://docs.google.com/document/d/FILE_ID",
+    ),
   locator: z.string().max(200).optional(),
 });
 
@@ -29,10 +31,14 @@ const sectionSchema = z.object({
 });
 
 const sourceSchema = z.object({
-  sourceId: z.string().min(1).max(400),
+  sourceId: z.string().min(1).max(500),
   title: z.string().min(1).max(400),
   kind: z.enum(["rfp", "pack"]),
   origin: z.enum(["drive", "sandbox"]),
+  path: z.string().max(400).optional(),
+  workspacePath: z.string().max(400).optional(),
+  driveFileId: z.string().max(200).optional(),
+  driveUrl: z.string().max(500).optional(),
 });
 
 const draftCitedSectionsInput = z.object({
@@ -47,7 +53,7 @@ const draftCitedSectionsInput = z.object({
 
 export default defineTool({
   description:
-    "Draft sectioned RFP answers with a hard cite gate. Every claim needs a file citation from the ingested pack. Fails closed when a claim is uncited. Does not write Drive, mailbox, or a portal.",
+    "Draft sectioned RFP answers with a hard cite gate. Every claim must cite a pack path and/or Drive file id or URL from the ingested sources. Fails closed when a claim is uncited or the source is missing. Does not write Drive, mailbox, or a portal.",
   inputSchema: draftCitedSectionsInput,
   execute(input) {
     const gate = evaluateCiteGate({

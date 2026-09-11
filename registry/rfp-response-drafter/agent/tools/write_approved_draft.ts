@@ -3,7 +3,9 @@ import { always } from "eve/tools/approval";
 import { z } from "zod";
 
 import {
+  collectOpenQuestions,
   evaluateCiteGate,
+  evaluateSmeWriteGate,
   type DraftSection,
   type PackSource,
 } from "../lib/cite-gate";
@@ -14,7 +16,7 @@ import { rfpResponseConfig } from "../lib/rfp-config";
 import { assertDraftWriteIntent } from "../lib/write-guard";
 
 const citationSchema = z.object({
-  sourceId: z.string().min(1).max(400),
+  sourceId: z.string().min(1).max(500),
   locator: z.string().max(200).optional(),
 });
 
@@ -34,10 +36,14 @@ const sectionSchema = z.object({
 });
 
 const sourceSchema = z.object({
-  sourceId: z.string().min(1).max(400),
+  sourceId: z.string().min(1).max(500),
   title: z.string().min(1).max(400),
   kind: z.enum(["rfp", "pack"]),
   origin: z.enum(["drive", "sandbox"]),
+  path: z.string().max(400).optional(),
+  workspacePath: z.string().max(400).optional(),
+  driveFileId: z.string().max(200).optional(),
+  driveUrl: z.string().max(500).optional(),
 });
 
 const writeApprovedDraftInput = z.object({
@@ -45,6 +51,13 @@ const writeApprovedDraftInput = z.object({
   rfpId: z.string().min(1).max(200),
   sources: z.array(sourceSchema).min(1).max(40),
   sections: z.array(sectionSchema).min(1).max(30),
+  openQuestions: z.array(z.string().min(1).max(500)).max(10).optional(),
+  smeApproved: z
+    .boolean()
+    .optional()
+    .describe(
+      "Must be true when open questions remain. Set only after ask_sme_questions and SME approval.",
+    ),
   confirmWrite: z
     .boolean()
     .describe("Must be true after Eve and SME approval. Never a portal submit."),
@@ -58,7 +71,7 @@ const writeApprovedDraftInput = z.object({
 
 export default defineTool({
   description:
-    "Write an approved RFP draft as a Google Drive Doc and/or a mailbox Drafts message. Always pauses for Eve human approval. Requires confirmWrite=true. Never submits a portal, never pastes text as write-back, never sends mail.",
+    "Write an approved RFP draft as a Google Drive Doc and/or a mailbox Drafts message. Always pauses for Eve human approval. Requires confirmWrite=true and SME approval when questions are open. Never submits a portal, never pastes text as write-back, never sends mail.",
   inputSchema: writeApprovedDraftInput,
   approval: always<z.infer<typeof writeApprovedDraftInput>>(),
   async execute(input) {
@@ -80,6 +93,25 @@ export default defineTool({
         submitted: false,
         notConfirmed: true,
         note: "confirmWrite must be true after SME approval. This tool never submits a portal.",
+      };
+    }
+
+    const openQuestions = collectOpenQuestions(
+      input.sections as DraftSection[],
+      input.openQuestions ?? [],
+    );
+    const smeGate = evaluateSmeWriteGate({
+      openQuestions,
+      smeApproved: input.smeApproved,
+    });
+    if (!smeGate.ok) {
+      return {
+        drafted: false,
+        sent: false,
+        submitted: false,
+        smeBlocked: true,
+        note: smeGate.note,
+        openQuestions: smeGate.openQuestions,
       };
     }
 

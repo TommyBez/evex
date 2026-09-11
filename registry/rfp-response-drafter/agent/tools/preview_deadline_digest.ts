@@ -22,7 +22,7 @@ const previewDeadlineDigestInput = z.object({
 
 export default defineTool({
   description:
-    "Preview the optional RFP deadline digest and return the date idempotency key. Does not post Slack, write Drive, or submit a portal.",
+    "Preview the optional RFP deadline and aging digest and return the date idempotency key. Does not post Slack, send digest email, write Drive, or submit a portal.",
   inputSchema: previewDeadlineDigestInput,
   execute({ rfps, runDate }) {
     const resolvedDate = runDate ?? utcDateStamp();
@@ -35,6 +35,9 @@ export default defineTool({
       idempotencyKey: buildDigestIdempotencyKey(resolvedDate),
       subject: draft.subject,
       slackText: draft.slackText,
+      text: draft.text,
+      html: draft.html,
+      aging: draft.aging,
       upcomingCount: draft.upcomingCount,
       submitted: false,
       sent: false,

@@ -37,9 +37,19 @@
           "target": "~/agent/instructions.md"
         },
         {
+          "path": "agent/lib/aging.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/aging.ts"
+        },
+        {
           "path": "agent/lib/cite-gate.ts",
           "type": "registry:file",
           "target": "~/agent/lib/cite-gate.ts"
+        },
+        {
+          "path": "agent/lib/deliver-digest.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/deliver-digest.ts"
         },
         {
           "path": "agent/lib/delivery-store.ts",
@@ -50,6 +60,16 @@
           "path": "agent/lib/digest.ts",
           "type": "registry:file",
           "target": "~/agent/lib/digest.ts"
+        },
+        {
+          "path": "agent/lib/ingest.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/ingest.ts"
+        },
+        {
+          "path": "agent/lib/materialize.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/materialize.ts"
         },
         {
           "path": "agent/lib/draft-copy.ts",
@@ -90,6 +110,11 @@
           "path": "agent/lib/providers/types.ts",
           "type": "registry:file",
           "target": "~/agent/lib/providers/types.ts"
+        },
+        {
+          "path": "agent/lib/resend-email.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/resend-email.ts"
         },
         {
           "path": "agent/lib/rfc822.ts",
@@ -196,37 +221,37 @@
         "slug": "rfp-response-drafter",
         "category": "productivity",
         "createdAt": "2026-09-11T08:00:00.000Z",
-        "updatedAt": "2026-09-11T08:00:00.000Z",
+        "updatedAt": "2026-09-11T12:00:00.000Z",
         "docs": {
           "overview": [
-            "RFP Response Drafter is an eve agent that reads a questionnaire and a knowledge pack through Google Drive Connect or files on disk. It drafts sectioned answers, requires a file citation on every claim, posts leftover questions to Slack for an SME, and writes only an approved Drive Doc or mailbox Draft. A human reviews that draft. The agent never submits a vendor portal.",
-            "You interact with it through Eve chat and environment variables. Set a Google Connect UID for Drive, sandbox roots for local packs, Slack Connect for SME questions, and optionally a mailbox Connect UID for Drafts. The rfp-deadline-digest schedule is optional. write_approved_draft pauses until confirmWrite is true after SME approval.",
-            "It is useful when a proposal team wants cited answers without auto-submitting a portal. Drive or disk files become the only allowed sources. Uncited claims fail closed. Slack holds the SME pause. The approved write-back is a Drive Doc or a mailbox Draft the team sends themselves."
+            "RFP Response Drafter is an eve agent that lists configured Google Drive RFP and knowledge folders, exports Docs and PDFs into the workspace, and registers sandbox packs. It drafts sectioned answers, requires a pack path or Drive file citation on every claim, posts leftover questions to Slack for an SME, and writes only an approved Drive Doc or mailbox Draft. A human reviews that draft. The agent never submits a vendor portal.",
+            "You interact with it through Eve chat and environment variables. Set a Google Connect UID plus RFP and knowledge folder ids, sandbox roots for local packs, Slack Connect for SME questions, and optionally a mailbox Connect UID for Drafts. The rfp-deadline-digest schedule is optional Slack or email. write_approved_draft pauses until confirmWrite is true after SME approval.",
+            "It is useful when a proposal team wants cited answers without auto-submitting a portal. Drive or disk files become the only allowed sources. The model reads them with built-in file tools. Uncited claims fail closed. Slack holds the SME pause. The approved write-back is a Drive Doc or a mailbox Draft the team sends themselves."
           ],
           "howItWorks": [
             "On Eve chat or the optional rfp-deadline-digest schedule (cron from RFP_RESPONSE_CRON, default weekday 08:00 UTC), the agent loads the rfp-response skill.",
             "It calls load_rfp_config and stops when Slack Connect or a Drive or mailbox write-back target is missing.",
-            "ingest_rfp_sources reads Google Drive files through Connect and materializes sandbox paths under RFP_RESPONSE_SANDBOX_ROOTS. That tool is read-only.",
-            "draft_cited_sections applies a hard cite gate. Every claim needs a file citation from the ingested pack. Uncited claims fail closed.",
-            "ask_sme_questions posts leftover questions to Slack Connect and pauses for SME approval. write_approved_draft then writes a Drive draft Doc or mailbox Drafts after confirmWrite is true. It never submits a portal.",
-            "Four evals cover the cite gate, approval before write, never-portal-submit, and the Slack SME pause."
+            "ingest_rfp_sources lists the configured Drive RFP and knowledge folders, exports Docs and PDFs into the workspace, and registers sandbox paths. It returns paths and Drive ids only.",
+            "The model reads those files with built-in read_file, glob, and grep. draft_cited_sections applies a hard cite gate. Every claim needs a pack path and or a Drive file id or URL. Missing sources fail closed.",
+            "ask_sme_questions posts leftover questions to Slack Connect and pauses for SME approval before any external draft leaves. write_approved_draft then writes a Drive draft Doc or mailbox Drafts after confirmWrite is true. It never submits a portal.",
+            "Four evals cover the cite gate refuse-on-missing-source, approval before write, never-portal-submit, and the Slack SME pause."
           ],
           "useCases": [
             {
               "title": "Sandbox pack, cited Drive draft",
-              "body": "A security questionnaire sits in rfps/acme.md and the answers live in knowledge-packs/security.md. ingest_rfp_sources materializes both. draft_cited_sections cites the pack file. write_approved_draft creates a Drive Doc titled DRAFT after approval."
+              "body": "A security questionnaire sits in rfps/acme.md and the answers live in knowledge-packs/security.md. ingest_rfp_sources registers both paths. The model reads them with read_file. draft_cited_sections cites the pack path. write_approved_draft creates a Drive Doc titled DRAFT after approval."
             },
             {
               "title": "SME pause on a missing control",
-              "body": "The pack does not state the SOC 2 report date. draft_cited_sections returns that open question. ask_sme_questions posts it to Slack and pauses. write_approved_draft is not called until the SME approves."
+              "body": "The pack does not state the SOC 2 report date. draft_cited_sections returns that open question. ask_sme_questions posts it to Slack and pauses. write_approved_draft is refused until the SME approves."
             },
             {
               "title": "Uncited claim fails closed",
-              "body": "A section claims twenty-four-seven coverage with no file citation. draft_cited_sections returns drafted false and lists the uncited claim. No Drive Doc is created. No mailbox Draft is written. Nothing is submitted."
+              "body": "A section claims twenty-four-seven coverage with no pack path or Drive id. draft_cited_sections returns drafted false and lists the uncited claim. No Drive Doc is created. No mailbox Draft is written. Nothing is submitted."
             },
             {
-              "title": "Deadline digest without a portal post",
-              "body": "Two RFPs are due next week. preview_deadline_digest returns rfp-response-drafter-2026-09-11. deliver_deadline_digest posts Slack once after approval. A retry of the same date key returns replayed and does not post again."
+              "title": "Deadline aging digest without a portal post",
+              "body": "Two RFPs are overdue. preview_deadline_digest returns aging buckets and rfp-response-drafter-2026-09-11. deliver_deadline_digest posts Slack or email once after approval. A retry of the same date key returns replayed."
             }
           ],
           "requirements": [
@@ -256,7 +281,15 @@
             },
             {
               "name": "RFP_RESPONSE_DRIVE_FOLDER_ID",
-              "body": "Optional Google Drive folder id used when listing RFP and pack files. Empty lists the connector default."
+              "body": "Optional shared Google Drive folder id used when a specific RFP or knowledge folder is empty."
+            },
+            {
+              "name": "RFP_RESPONSE_DRIVE_RFP_FOLDER_ID",
+              "body": "Configured Google Drive folder that holds RFP questionnaires. ingest_rfp_sources lists it and exports Docs and PDFs into the workspace."
+            },
+            {
+              "name": "RFP_RESPONSE_DRIVE_PACK_FOLDER_ID",
+              "body": "Configured Google Drive folder that holds the knowledge pack. ingest_rfp_sources lists it and exports Docs and PDFs into the workspace."
             },
             {
               "name": "RFP_RESPONSE_GMAIL_USER",
@@ -284,7 +317,19 @@
             },
             {
               "name": "RFP_RESPONSE_DIGEST_SUBJECT",
-              "body": "Optional Slack digest subject prefix. Defaults to RFP deadline digest."
+              "body": "Optional digest subject prefix. Defaults to RFP deadline digest."
+            },
+            {
+              "name": "RFP_RESPONSE_DIGEST_FROM",
+              "body": "Optional Resend From address for the deadline digest. Slack or email is enough for digest delivery."
+            },
+            {
+              "name": "RFP_RESPONSE_DIGEST_TO",
+              "body": "Optional comma-separated Resend recipients for the deadline digest."
+            },
+            {
+              "name": "RESEND_API_KEY",
+              "body": "Optional Resend API key for the deadline digest email. This is a digest, not an RFP send."
             },
             {
               "name": "@vercel/connect",
@@ -302,15 +347,15 @@
             },
             {
               "question": "What happens if a claim has no file citation?",
-              "answer": "draft_cited_sections fails closed. The tool returns drafted false and lists the uncited claim. write_approved_draft will not write Drive or mailbox until every claim cites an ingested pack or RFP file."
+              "answer": "draft_cited_sections fails closed. The tool returns drafted false and lists the uncited claim. write_approved_draft will not write Drive or mailbox until every claim cites a pack path or a Drive file id or URL from the ingested sources."
             },
             {
               "question": "When does Slack pause the run?",
-              "answer": "ask_sme_questions always pauses for Eve approval before it posts. Use it when draft_cited_sections returns open questions. Do not call write_approved_draft until the SME approves those gaps."
+              "answer": "ask_sme_questions always pauses for Eve approval before it posts. Use it when draft_cited_sections returns open questions. write_approved_draft is refused until the SME approves those gaps."
             },
             {
               "question": "Is the deadline digest required?",
-              "answer": "No. rfp-deadline-digest is optional. When you run it, deliver_deadline_digest requires confirmSend true and the date key from preview_deadline_digest. A replayed rfp-response-drafter-YYYY-MM-DD key does not post Slack twice."
+              "answer": "No. rfp-deadline-digest is optional. When you run it, deliver_deadline_digest requires confirmSend true and the date key from preview_deadline_digest. A replayed rfp-response-drafter-YYYY-MM-DD key does not post Slack or email twice."
             }
           ]
         }

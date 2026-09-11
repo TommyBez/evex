@@ -112,3 +112,23 @@ export async function readText(input: {
   }
   return text;
 }
+
+export async function readBytes(input: {
+  readonly url: string;
+  readonly headers?: Record<string, string>;
+  readonly fetchImpl?: FetchLike;
+  readonly timeoutMs?: number;
+  readonly signal?: AbortSignal;
+}): Promise<Uint8Array> {
+  const fetchImpl = input.fetchImpl ?? fetch;
+  const timeoutMs = input.timeoutMs ?? DEFAULT_REQUEST_TIMEOUT_MS;
+  const response = await fetchImpl(input.url, {
+    method: "GET",
+    headers: { accept: "application/pdf, application/octet-stream, */*", ...input.headers },
+    signal: mergeAbortSignals(timeoutMs, input.signal),
+  });
+  if (!response.ok) {
+    throw new Error(statusError("GET", input.url, response.status));
+  }
+  return new Uint8Array(await response.arrayBuffer());
+}

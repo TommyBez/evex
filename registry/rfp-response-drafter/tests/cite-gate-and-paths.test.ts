@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { evaluateCiteGate } from "../agent/lib/cite-gate";
+import {
+  evaluateCiteGate,
+  evaluateSmeWriteGate,
+  resolveCitedSource,
+} from "../agent/lib/cite-gate";
 import {
   isAllowedSandboxPath,
   normalizeSandboxPath,
@@ -13,6 +17,18 @@ const pack = [
     title: "knowledge-packs/security.md",
     kind: "pack" as const,
     origin: "sandbox" as const,
+    path: "knowledge-packs/security.md",
+    workspacePath: "/workspace/knowledge-packs/security.md",
+  },
+  {
+    sourceId: "drive:1AbCDriveFile",
+    title: "Security pack",
+    kind: "pack" as const,
+    origin: "drive" as const,
+    path: "knowledge-packs/Security pack.txt",
+    workspacePath: "/workspace/knowledge-packs/Security pack.txt",
+    driveFileId: "1AbCDriveFile",
+    driveUrl: "https://docs.google.com/document/d/1AbCDriveFile/edit",
   },
 ];
 
@@ -62,8 +78,36 @@ describe("cite gate", () => {
     }
   });
 
-  it("passes when every claim cites an ingested file", () => {
+  it("refuses on a missing Drive URL or pack path", () => {
+    expect(
+      resolveCitedSource(
+        "https://docs.google.com/document/d/not-in-pack/edit",
+        pack,
+      ),
+    ).toBeUndefined();
     const result = evaluateCiteGate({
+      sources: pack,
+      sections: [
+        {
+          heading: "Encryption",
+          body: "We invent a claim.",
+          claims: [
+            {
+              text: "We invent a claim.",
+              citation: {
+                sourceId: "https://drive.google.com/file/d/missing-id/view",
+              },
+            },
+          ],
+        },
+      ],
+    });
+    expect(result.ok).toBe(false);
+    expect(result.drafted).toBe(false);
+  });
+
+  it("accepts a pack path, Drive file id, or Drive URL", () => {
+    const pathHit = evaluateCiteGate({
       sources: pack,
       sections: [
         {
@@ -73,7 +117,7 @@ describe("cite gate", () => {
             {
               text: "We encrypt at rest.",
               citation: {
-                sourceId: "sandbox:knowledge-packs/security.md",
+                sourceId: "/workspace/knowledge-packs/security.md",
                 locator: "p.2",
               },
             },
@@ -81,11 +125,67 @@ describe("cite gate", () => {
         },
       ],
     });
-    expect(result).toMatchObject({
+    expect(pathHit).toMatchObject({
       ok: true,
       drafted: true,
       citedSourceIds: ["sandbox:knowledge-packs/security.md"],
     });
+
+    const idHit = evaluateCiteGate({
+      sources: pack,
+      sections: [
+        {
+          heading: "Controls",
+          body: "We hold SOC 2.",
+          claims: [
+            {
+              text: "We hold SOC 2.",
+              citation: { sourceId: "1AbCDriveFile" },
+            },
+          ],
+        },
+      ],
+    });
+    expect(idHit.ok).toBe(true);
+
+    const urlHit = evaluateCiteGate({
+      sources: pack,
+      sections: [
+        {
+          heading: "Controls",
+          body: "We hold SOC 2.",
+          claims: [
+            {
+              text: "We hold SOC 2.",
+              citation: {
+                sourceId: "https://docs.google.com/document/d/1AbCDriveFile/edit",
+              },
+            },
+          ],
+        },
+      ],
+    });
+    expect(urlHit).toMatchObject({
+      ok: true,
+      citedSourceIds: ["drive:1AbCDriveFile"],
+    });
+  });
+});
+
+describe("SME write gate", () => {
+  it("blocks write-back while open questions lack SME approval", () => {
+    expect(
+      evaluateSmeWriteGate({
+        openQuestions: ["What is the SOC 2 report date?"],
+      }),
+    ).toMatchObject({ ok: false });
+    expect(
+      evaluateSmeWriteGate({
+        openQuestions: ["What is the SOC 2 report date?"],
+        smeApproved: true,
+      }),
+    ).toEqual({ ok: true });
+    expect(evaluateSmeWriteGate({ openQuestions: [] })).toEqual({ ok: true });
   });
 });
 

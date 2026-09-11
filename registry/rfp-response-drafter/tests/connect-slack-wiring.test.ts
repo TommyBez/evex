@@ -57,8 +57,12 @@ describe("Connect and Slack wiring", () => {
   it("resolves Drive read and mailbox Drafts from Google or Microsoft Connect", () => {
     const driveOnly = loadRfpResponseConfig({
       RFP_RESPONSE_GOOGLE_CONNECT_UID: "google/rfp-response-drafter",
+      RFP_RESPONSE_DRIVE_RFP_FOLDER_ID: "rfp-folder",
+      RFP_RESPONSE_DRIVE_PACK_FOLDER_ID: "pack-folder",
     });
     expect(isDriveConfigured(driveOnly)).toBe(true);
+    expect(driveOnly.google.driveRfpFolderId).toBe("rfp-folder");
+    expect(driveOnly.google.drivePackFolderId).toBe("pack-folder");
     expect(driveOnly.writeback).toBe("drive");
     expect(
       resolveWritebackTarget({
@@ -101,7 +105,7 @@ describe("Connect and Slack wiring", () => {
     const client = createDriveClient(
       loadRfpResponseConfig({
         RFP_RESPONSE_GOOGLE_CONNECT_UID: "google/rfp-response-drafter",
-        RFP_RESPONSE_DRIVE_FOLDER_ID: "folder-1",
+        RFP_RESPONSE_DRIVE_RFP_FOLDER_ID: "folder-1",
       }),
       async (input, init) => {
         urls.push(`${init?.method ?? "GET"} ${String(input)}`);

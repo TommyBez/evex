@@ -32,12 +32,24 @@ export type DriveFile = {
   readonly id: string;
   readonly name: string;
   readonly mimeType: string;
+  readonly webViewLink?: string;
 };
 
-export type DriveSource = DriveFile & {
-  readonly content: string;
-  readonly kind: "rfp" | "pack";
+export type DriveFolderListing = {
+  readonly role: "rfp" | "pack";
+  readonly folderId?: string;
+  readonly files: readonly DriveFile[];
 };
+
+export type DriveExport = DriveFile & {
+  readonly kind: "rfp" | "pack";
+  readonly encoding: "text" | "binary";
+  readonly text?: string;
+  readonly bytes?: Uint8Array;
+  readonly driveUrl: string;
+};
+
+export type DriveSource = DriveExport;
 
 export type DriveDraftResult = {
   readonly drafted: true;
@@ -50,6 +62,14 @@ export type DriveDraftResult = {
 
 export type DriveClient = {
   listFiles(input: { readonly folderId?: string }): Promise<readonly DriveFile[]>;
+  listConfiguredFolders(): Promise<{
+    readonly rfp: DriveFolderListing;
+    readonly pack: DriveFolderListing;
+  }>;
+  exportFile(input: {
+    readonly fileId: string;
+    readonly kind: "rfp" | "pack";
+  }): Promise<DriveExport>;
   readFile(input: {
     readonly fileId: string;
     readonly kind: "rfp" | "pack";

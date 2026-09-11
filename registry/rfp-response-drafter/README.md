@@ -6,12 +6,12 @@ The agent reads an RFP and a knowledge pack from Google Drive Connect and/or san
 
 ## What it does
 
-1. **Load config** — `load_rfp_config` reports Drive, sandbox roots, Slack, mailbox, and the write-back target.
-2. **Ingest and materialize** — `ingest_rfp_sources` reads Drive files through Vercel Connect and materializes sandbox paths under `RFP_RESPONSE_SANDBOX_ROOTS`. That path is read-only.
-3. **Cite gate** — `draft_cited_sections` requires a file citation on every claim and fails closed when a claim is uncited.
-4. **SME Slack pause** — `ask_sme_questions` posts open questions through the Eve Slack Connect channel and pauses for SME approval.
-5. **Approved draft only** — `write_approved_draft` pauses for Eve approval, requires `confirmWrite: true`, and writes a Drive draft Doc and/or mailbox Drafts. It always returns `submitted: false` and `sent: false`.
-6. **Optional deadline digest** — `rfp-deadline-digest` on `RFP_RESPONSE_CRON` previews upcoming due dates and posts Slack once per date key.
+1. **Load config** — `load_rfp_config` reports Drive RFP and knowledge folders, sandbox roots, Slack, mailbox, and the write-back target.
+2. **Ingest into the workspace** — `ingest_rfp_sources` lists the configured Drive folders, exports Docs and PDFs into `/workspace/rfps` and `/workspace/knowledge-packs`, and registers sandbox paths. It returns paths and Drive ids only. Read those files with built-in `read_file`, `glob`, and `grep`.
+3. **Cite gate** — `draft_cited_sections` requires every claim to cite a pack path and/or a Drive file id or URL. It fails closed when a claim is uncited or the source is missing.
+4. **SME Slack pause** — `ask_sme_questions` posts open questions through the Eve Slack Connect channel and pauses for SME approval before any external-facing draft leaves.
+5. **Approved draft only** — `write_approved_draft` pauses for Eve approval, requires `confirmWrite: true` and SME approval when questions are open, and writes a Drive draft Doc and/or mailbox Drafts. It always returns `submitted: false` and `sent: false`.
+6. **Optional deadline digest** — `rfp-deadline-digest` on `RFP_RESPONSE_CRON` previews aging buckets and posts Slack and/or Resend email once per date key.
 
 ## Installation
 
@@ -39,15 +39,17 @@ Create a Slack connector and attach triggers to `/eve/v1/slack`
 - `RFP_RESPONSE_SLACK_CONNECT_UID` — Connect Slack connector UID.
 - `RFP_RESPONSE_SLACK_CHANNEL_ID` — Slack channel id for SME questions and the optional digest.
 
-Both are required before `ask_sme_questions` or `deliver_deadline_digest` will post. Those tools still pause for Eve approval.
+Both are required before `ask_sme_questions` will post. The deadline digest can use Slack and/or Resend email. Those tools still pause for Eve approval.
 
 ### Google Drive via Vercel Connect
 
 - `RFP_RESPONSE_GOOGLE_CONNECT_UID` — from `vercel connect create google`.
-- `RFP_RESPONSE_DRIVE_FOLDER_ID` — optional Drive folder to list.
+- `RFP_RESPONSE_DRIVE_RFP_FOLDER_ID` — Drive folder that holds questionnaires.
+- `RFP_RESPONSE_DRIVE_PACK_FOLDER_ID` — Drive folder that holds the knowledge pack.
+- `RFP_RESPONSE_DRIVE_FOLDER_ID` — optional shared fallback when a specific folder is empty.
 - `RFP_RESPONSE_GMAIL_USER` — optional From address written onto Gmail drafts.
 
-Drive read uses `drive.readonly`. Draft Docs use `drive.file` and `documents`. Gmail drafts use `gmail.compose`. The runtime write guard refuses portal submit URLs, `messages.send`, `drafts.send`, `sendMail`, and SMTP.
+Drive read uses `drive.readonly`. Docs export as `text/plain`. PDFs download with `alt=media`. Draft Docs use `drive.file` and `documents`. Gmail drafts use `gmail.compose`. The runtime write guard refuses portal submit URLs, `messages.send`, `drafts.send`, `sendMail`, and SMTP.
 
 ### Mailbox via Vercel Connect (Drafts only)
 
@@ -57,10 +59,19 @@ Drive read uses `drive.readonly`. Draft Docs use `drive.file` and `documents`. G
 
 Graph uses `Mail.ReadWrite`. The agent never calls `sendMail`.
 
+### Optional digest email (Resend)
+
+- `RESEND_API_KEY` — Resend API key for the deadline digest only.
+- `RFP_RESPONSE_DIGEST_FROM` — From address.
+- `RFP_RESPONSE_DIGEST_TO` — comma-separated recipients.
+- `RFP_RESPONSE_DIGEST_SUBJECT` — subject prefix. Defaults to `RFP deadline digest`.
+
+This is a digest, not an RFP send. The agent still never claims the questionnaire was submitted.
+
 ## Smoke test
 
-1. Set Slack Connect (UID + channel id) and a Google Connect UID. Optionally drop an RFP under `rfps/` and a pack under `knowledge-packs/`.
-2. In Eve chat: load config, ingest the sandbox paths, draft cited sections, ask any SME questions, then write the approved draft with `confirmWrite: true`.
+1. Set Slack Connect (UID + channel id) and a Google Connect UID. Point the RFP and pack folder ids at Drive folders, or drop an RFP under `rfps/` and a pack under `knowledge-packs/`.
+2. In Eve chat: load config, ingest sources, read the materialized files with `read_file`, draft cited sections, ask any SME questions, then write the approved draft with `confirmWrite: true`.
 3. Trigger the optional digest in dev:
 
    ```bash
@@ -73,7 +84,8 @@ Graph uses `Mail.ReadWrite`. The agent never calls `sendMail`.
 
 - **`notConfigured: missingEnv RFP_RESPONSE_SLACK_CONNECT_UID`** — Slack SME routing is required.
 - **`notConfigured: missingEnv RFP_RESPONSE_WRITEBACK`** — set a Google Connect UID or a mailbox plus `RFP_RESPONSE_DRAFT_TO`.
-- **`Cite gate failed closed`** — a claim had no file citation, or the citation was not in the ingested pack.
+- **`Cite gate failed closed`** — a claim had no pack path or Drive id/URL, or the citation was not in the ingested sources.
+- **`Open SME questions remain`** — call `ask_sme_questions` and wait before `write_approved_draft`.
 - **`confirmWrite must be true`** — `write_approved_draft` refuses until after Eve and SME approval.
 - **`Refused portal submit`** — intent was `submit` or `paste`, or a provider tried a portal URL.
-- **Slack replayed** — the same `rfp-response-drafter-YYYY-MM-DD` key already posted.
+- **Slack or email replayed** — the same `rfp-response-drafter-YYYY-MM-DD` key already delivered.

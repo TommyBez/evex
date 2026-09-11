@@ -3,6 +3,10 @@ export type PackSource = {
   readonly title: string;
   readonly kind: "rfp" | "pack";
   readonly origin: "drive" | "sandbox";
+  readonly path?: string;
+  readonly workspacePath?: string;
+  readonly driveFileId?: string;
+  readonly driveUrl?: string;
 };
 
 export type Citation = {
@@ -38,13 +42,120 @@ export type CiteGateSuccess = {
 
 export type CiteGateResult = CiteGateSuccess | CiteGateFailure;
 
-const sourceIndex = (sources: readonly PackSource[]): Map<string, PackSource> => {
-  const index = new Map<string, PackSource>();
-  for (const source of sources) {
-    index.set(source.sourceId, source);
+const DRIVE_ID_IN_PATH =
+  /\/(?:document|file|presentation|spreadsheets)\/d\/([a-zA-Z0-9_-]+)/i;
+const DRIVE_ID_QUERY = /[?&]id=([a-zA-Z0-9_-]+)/i;
+
+export function normalizeCitePath(value: string): string {
+  return value
+    .trim()
+    .replaceAll("\\", "/")
+    .replace(/^sandbox:/i, "")
+    .replace(/^\/workspace\//, "")
+    .replace(/^\.\//, "")
+    .replace(/^\/+/, "")
+    .replace(/\/+$/, "");
+}
+
+export function extractDriveFileId(value: string): string | undefined {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return undefined;
   }
-  return index;
-};
+  const prefixed = /^drive:([a-zA-Z0-9_-]+)$/i.exec(trimmed);
+  if (prefixed?.[1]) {
+    return prefixed[1];
+  }
+  if (/^[a-zA-Z0-9_-]{10,}$/.test(trimmed) && !trimmed.includes("/")) {
+    return trimmed;
+  }
+  try {
+    const parsed = new URL(trimmed);
+    const fromPath = DRIVE_ID_IN_PATH.exec(parsed.pathname);
+    if (fromPath?.[1]) {
+      return fromPath[1];
+    }
+    const fromQuery = DRIVE_ID_QUERY.exec(`${parsed.search}${parsed.hash}`);
+    if (fromQuery?.[1]) {
+      return fromQuery[1];
+    }
+  } catch {
+    const fromPath = DRIVE_ID_IN_PATH.exec(trimmed);
+    if (fromPath?.[1]) {
+      return fromPath[1];
+    }
+  }
+  return undefined;
+}
+
+export function citationAliases(source: PackSource): readonly string[] {
+  const aliases = new Set<string>();
+  const add = (value: string | undefined) => {
+    const trimmed = value?.trim();
+    if (trimmed) {
+      aliases.add(trimmed);
+    }
+  };
+
+  add(source.sourceId);
+  add(source.title);
+  add(source.path);
+  add(source.workspacePath);
+  add(source.driveFileId);
+  add(source.driveUrl);
+
+  if (source.path) {
+    const relative = normalizeCitePath(source.path);
+    add(relative);
+    add(`sandbox:${relative}`);
+    add(`/workspace/${relative}`);
+  }
+  if (source.workspacePath) {
+    add(normalizeCitePath(source.workspacePath));
+  }
+  if (source.driveFileId) {
+    add(`drive:${source.driveFileId}`);
+    add(`https://drive.google.com/file/d/${source.driveFileId}/view`);
+    add(`https://docs.google.com/document/d/${source.driveFileId}`);
+    add(`https://docs.google.com/document/d/${source.driveFileId}/edit`);
+  }
+
+  return [...aliases];
+}
+
+export function resolveCitedSource(
+  citation: string,
+  sources: readonly PackSource[],
+): PackSource | undefined {
+  const trimmed = citation.trim();
+  if (trimmed.length === 0) {
+    return undefined;
+  }
+
+  const citationPath = normalizeCitePath(trimmed);
+  const citationDriveId = extractDriveFileId(trimmed);
+
+  for (const source of sources) {
+    if (citationAliases(source).includes(trimmed)) {
+      return source;
+    }
+    if (citationPath.length > 0) {
+      for (const alias of citationAliases(source)) {
+        if (normalizeCitePath(alias) === citationPath) {
+          return source;
+        }
+      }
+    }
+    if (citationDriveId && source.driveFileId === citationDriveId) {
+      return source;
+    }
+    if (citationDriveId && source.sourceId === `drive:${citationDriveId}`) {
+      return source;
+    }
+  }
+
+  return undefined;
+}
 
 export function evaluateCiteGate(input: {
   readonly sections: readonly DraftSection[];
@@ -59,8 +170,7 @@ export function evaluateCiteGate(input: {
     };
   }
 
-  const sources = sourceIndex(input.sources);
-  if (sources.size === 0) {
+  if (input.sources.length === 0) {
     return {
       ok: false,
       drafted: false,
@@ -93,12 +203,13 @@ export function evaluateCiteGate(input: {
         uncited.push(`${section.heading}: uncited claim`);
         continue;
       }
-      if (!sources.has(sourceId)) {
+      const matched = resolveCitedSource(sourceId, input.sources);
+      if (!matched) {
         uncited.push(`${section.heading}: unknown citation ${sourceId}`);
         continue;
       }
-      if (!citedSourceIds.includes(sourceId)) {
-        citedSourceIds.push(sourceId);
+      if (!citedSourceIds.includes(matched.sourceId)) {
+        citedSourceIds.push(matched.sourceId);
       }
     }
   }
@@ -107,7 +218,7 @@ export function evaluateCiteGate(input: {
     return {
       ok: false,
       drafted: false,
-      note: "Cite gate failed closed. Every claim needs a file citation from the ingested pack.",
+      note: "Cite gate failed closed. Every claim needs a pack path and/or Drive file id or URL from the ingested sources.",
       uncited,
     };
   }
@@ -122,6 +233,7 @@ export function evaluateCiteGate(input: {
 
 export function collectOpenQuestions(
   sections: readonly DraftSection[],
+  extra: readonly string[] = [],
 ): readonly string[] {
   const questions: string[] = [];
   for (const section of sections) {
@@ -132,5 +244,30 @@ export function collectOpenQuestions(
       }
     }
   }
+  for (const question of extra) {
+    const trimmed = question.trim();
+    if (trimmed.length > 0 && !questions.includes(trimmed)) {
+      questions.push(trimmed);
+    }
+  }
   return questions;
+}
+
+export function evaluateSmeWriteGate(input: {
+  readonly openQuestions: readonly string[];
+  readonly smeApproved?: boolean;
+}):
+  | { readonly ok: true }
+  | { readonly ok: false; readonly note: string; readonly openQuestions: readonly string[] } {
+  if (input.openQuestions.length === 0) {
+    return { ok: true };
+  }
+  if (input.smeApproved === true) {
+    return { ok: true };
+  }
+  return {
+    ok: false,
+    note: "Open SME questions remain. Call ask_sme_questions and wait for Slack SME approval before write_approved_draft.",
+    openQuestions: input.openQuestions,
+  };
 }

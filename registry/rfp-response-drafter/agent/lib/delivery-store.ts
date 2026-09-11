@@ -5,6 +5,8 @@ export type DigestDelivery = {
   readonly idempotencyKey: string;
   readonly runDate: string;
   readonly slackSent: boolean;
+  readonly emailSent?: boolean;
+  readonly emailMessageId?: string;
   readonly postedAt?: string;
 };
 

@@ -4,7 +4,7 @@ import { z } from "zod";
 
 import {
   isSlackConfigured,
-  missingDeliveryEnv,
+  missingSmeEnv,
   rfpResponseConfig,
 } from "../lib/rfp-config";
 import { buildSmeSlackText, postSlackMessage } from "../lib/slack-post";
@@ -20,7 +20,7 @@ const askSmeQuestionsInput = z.object({
 
 export default defineTool({
   description:
-    "Route open RFP questions to SMEs on Slack Connect and pause for SME approval. Always pauses. Does not write a Drive Doc, mailbox Draft, or portal submit.",
+    "Route open RFP questions to SMEs on Slack Connect and pause for SME approval before any external-facing draft leaves. Always pauses. Does not write a Drive Doc, mailbox Draft, or portal submit.",
   inputSchema: askSmeQuestionsInput,
   approval: always<z.infer<typeof askSmeQuestionsInput>>(),
   async execute({ rfpTitle, questions }) {
@@ -28,10 +28,11 @@ export default defineTool({
       return {
         posted: false,
         paused: true,
+        smeApproved: false,
         submitted: false,
         sent: false,
         note: "Slack SME routing is not configured.",
-        missingEnv: missingDeliveryEnv(),
+        missingEnv: missingSmeEnv(),
       };
     }
 
@@ -44,12 +45,13 @@ export default defineTool({
     return {
       posted: result.ok,
       paused: true,
+      smeApproved: result.ok,
       submitted: false,
       sent: false,
       questionCount: questions.length,
       error: result.error,
       note: result.ok
-        ? "SME questions posted. Pause for SME approval before write_approved_draft."
+        ? "SME questions posted. Pause for SME approval before write_approved_draft. Pass smeApproved true only after the SME replies."
         : result.error,
     };
   },

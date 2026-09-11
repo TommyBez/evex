@@ -1,4 +1,9 @@
-import { draftsOnlyJson, readOnlyJson, readText } from "../http";
+import { draftsOnlyJson, readBytes, readOnlyJson, readText } from "../http";
+import {
+  driveFileUrl,
+  exportEncoding,
+  isGoogleDocMime,
+} from "../materialize";
 import {
   createAccessTokenCache,
   DRIVE_DRAFT_SCOPES,
@@ -7,12 +12,23 @@ import {
   type ConnectTokenMint,
   type FetchLike,
 } from "../oauth";
-import type { RfpResponseConfig } from "../rfp-config";
-import type { DriveClient, DriveDraftResult, DriveFile, DriveSource } from "./types";
+import {
+  resolveDrivePackFolderId,
+  resolveDriveRfpFolderId,
+  type RfpResponseConfig,
+} from "../rfp-config";
+import type {
+  DriveClient,
+  DriveDraftResult,
+  DriveExport,
+  DriveFile,
+  DriveFolderListing,
+} from "./types";
 
 const DRIVE_API = "https://www.googleapis.com/drive/v3/files";
 const DOCS_API = "https://docs.googleapis.com/v1/documents";
 const GOOGLE_DOC = "application/vnd.google-apps.document";
+const LIST_FIELDS = "files(id,name,mimeType,webViewLink)";
 
 type DriveListResponse = {
   readonly files?: readonly DriveFile[];
@@ -22,8 +38,6 @@ type DriveCreateResponse = {
   readonly id?: string;
   readonly name?: string;
 };
-
-const isGoogleDoc = (mimeType: string): boolean => mimeType === GOOGLE_DOC;
 
 export function createDriveClient(
   config: RfpResponseConfig,
@@ -54,46 +68,95 @@ export function createDriveClient(
     });
   });
 
-  return {
-    async listFiles(input) {
-      const folderId = input.folderId ?? config.google.driveFolderId;
-      const query = folderId
-        ? `'${folderId}' in parents and trashed = false`
-        : "trashed = false";
-      const params = new URLSearchParams({
-        q: query,
-        fields: "files(id,name,mimeType)",
-        pageSize: "50",
-      });
-      const listed = await readOnlyJson<DriveListResponse>({
-        url: `${DRIVE_API}?${params.toString()}`,
-        headers: { authorization: `Bearer ${await readToken()}` },
-        fetchImpl,
-      });
-      return listed.files ?? [];
-    },
+  const listFiles: DriveClient["listFiles"] = async (input) => {
+    const folderId = input.folderId;
+    const query = folderId
+      ? `'${folderId}' in parents and trashed = false`
+      : "trashed = false";
+    const params = new URLSearchParams({
+      q: query,
+      fields: LIST_FIELDS,
+      pageSize: "50",
+    });
+    const listed = await readOnlyJson<DriveListResponse>({
+      url: `${DRIVE_API}?${params.toString()}`,
+      headers: { authorization: `Bearer ${await readToken()}` },
+      fetchImpl,
+    });
+    return listed.files ?? [];
+  };
 
-    async readFile(input) {
-      const meta = await readOnlyJson<DriveFile>({
-        url: `${DRIVE_API}/${encodeURIComponent(input.fileId)}?fields=id,name,mimeType`,
-        headers: { authorization: `Bearer ${await readToken()}` },
-        fetchImpl,
-      });
-      const token = await readToken();
-      const contentUrl = isGoogleDoc(meta.mimeType)
-        ? `${DRIVE_API}/${encodeURIComponent(meta.id)}/export?mimeType=text/plain`
-        : `${DRIVE_API}/${encodeURIComponent(meta.id)}?alt=media`;
-      const content = await readText({
+  const exportFile: DriveClient["exportFile"] = async (input) => {
+    const meta = await readOnlyJson<DriveFile>({
+      url: `${DRIVE_API}/${encodeURIComponent(input.fileId)}?fields=id,name,mimeType,webViewLink`,
+      headers: { authorization: `Bearer ${await readToken()}` },
+      fetchImpl,
+    });
+    const token = await readToken();
+    const encoding = exportEncoding(meta.mimeType);
+    const contentUrl = isGoogleDocMime(meta.mimeType)
+      ? `${DRIVE_API}/${encodeURIComponent(meta.id)}/export?mimeType=text/plain`
+      : `${DRIVE_API}/${encodeURIComponent(meta.id)}?alt=media`;
+    const driveUrl = driveFileUrl(meta);
+    if (encoding === "binary") {
+      const bytes = await readBytes({
         url: contentUrl,
         headers: { authorization: `Bearer ${token}` },
         fetchImpl,
       });
       return {
         ...meta,
-        content: content.slice(0, 48_000),
         kind: input.kind,
-      } satisfies DriveSource;
+        encoding,
+        bytes,
+        driveUrl,
+      } satisfies DriveExport;
+    }
+    const text = await readText({
+      url: contentUrl,
+      headers: { authorization: `Bearer ${token}` },
+      fetchImpl,
+    });
+    return {
+      ...meta,
+      kind: input.kind,
+      encoding,
+      text: text.slice(0, 48_000),
+      driveUrl,
+    } satisfies DriveExport;
+  };
+
+  return {
+    listFiles,
+
+    async listConfiguredFolders() {
+      const rfpFolderId = resolveDriveRfpFolderId(config);
+      const packFolderId = resolveDrivePackFolderId(config);
+      const rfpFiles = rfpFolderId
+        ? await listFiles({ folderId: rfpFolderId })
+        : [];
+      const packFiles =
+        packFolderId && packFolderId === rfpFolderId
+          ? rfpFiles
+          : packFolderId
+            ? await listFiles({ folderId: packFolderId })
+            : [];
+      return {
+        rfp: {
+          role: "rfp",
+          folderId: rfpFolderId,
+          files: rfpFiles,
+        } satisfies DriveFolderListing,
+        pack: {
+          role: "pack",
+          folderId: packFolderId,
+          files: packFiles,
+        } satisfies DriveFolderListing,
+      };
     },
+
+    exportFile,
+    readFile: exportFile,
 
     async createDraftDoc(input) {
       const created = await draftsOnlyJson<DriveCreateResponse>({
