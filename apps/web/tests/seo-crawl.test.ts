@@ -340,6 +340,7 @@ describe('/agents catalog index', () => {
     expect(installation?.lastModified).toEqual(new Date('2026-09-05'))
 
     for (const slug of [
+      'churn-renewal-risk',
       'competitor-intel-monitor',
       'crm-hygiene-agent',
       'email-triage-assistant',

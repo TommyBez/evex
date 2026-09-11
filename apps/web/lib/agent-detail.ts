@@ -99,6 +99,7 @@ export function getAgentInstallSummaryDescription({
 const AGENT_METADATA_TITLE_OVERRIDES: Readonly<Record<string, string>> = {
   'brand-visual-asset-generator': 'Eve brand SVG agent',
   'branded-seo-page-builder': 'Eve branded SEO page agent',
+  'churn-renewal-risk': 'Eve churn and renewal risk - @evex/churn-renewal-risk',
   'code-reviewer': 'Eve PR review agent - install @evex/code-reviewer',
   'competitor-intel-monitor':
     'Eve competitor intel monitor - @evex/competitor-intel-monitor',
@@ -160,6 +161,8 @@ const AGENT_JOB_INTENT_LEDES: Readonly<Record<string, string>> = {
   'brand-visual-asset-generator':
     'Generates brand-aligned SVG packs from a site.',
   'branded-seo-page-builder': 'Builds an on-brand SEO page from a domain.',
+  'churn-renewal-risk':
+    'Weekly cron scores CRM accounts in a renewal window against Stripe payment health, posts a Slack digest of Healthy/Watch/At-risk movers, and drafts save plays as CRM notes behind approval without emailing the customer.',
   'code-reviewer': 'PR review agent for Eve.',
   'competitor-intel-monitor':
     'Watches competitor pages on a schedule and sends a scored Slack or email digest when something changes.',
@@ -230,6 +233,8 @@ export function shouldRenderAgentDescriptionParagraph({
 // Distinct draft-only clauses for the What-is block. Must not restate a
 // locked job-intent lede (that sentence already sits under the H1).
 const AGENT_DEFINITION_JOB_OVERRIDES: Readonly<Record<string, string>> = {
+  'churn-renewal-risk':
+    'scans renewal-dated CRM accounts with Stripe health on a cron, Slack-digests risk buckets, and drafts owner save plays as approved CRM notes',
   'competitor-intel-monitor':
     'fetches your URL list, diffs each page against a store, and delivers only changes that clear your alert thresholds.',
   'crm-hygiene-agent':

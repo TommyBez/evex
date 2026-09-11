@@ -1,0 +1,337 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "items": [
+    {
+      "name": "churn-renewal-risk",
+      "type": "registry:item",
+      "title": "Churn and Renewal Risk",
+      "description": "Churn and renewal risk scanner via Connect CRM and Stripe that Slack-digests Healthy/Watch/At-risk movers and drafts HITL CRM save plays without auto-emailing customers.",
+      "author": "TommyBez",
+      "categories": [
+        "productivity"
+      ],
+      "dependencies": [
+        "@vercel/connect@^0.2.6",
+        "eve@^0.47.5",
+        "zod@4.3.6"
+      ],
+      "files": [
+        {
+          "path": ".env.example",
+          "type": "registry:file",
+          "target": "~/.env.example"
+        },
+        {
+          "path": "agent/agent.ts",
+          "type": "registry:file",
+          "target": "~/agent/agent.ts"
+        },
+        {
+          "path": "agent/channels/slack.ts",
+          "type": "registry:file",
+          "target": "~/agent/channels/slack.ts"
+        },
+        {
+          "path": "agent/instructions.md",
+          "type": "registry:file",
+          "target": "~/agent/instructions.md"
+        },
+        {
+          "path": "agent/lib/audit-log.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/audit-log.ts"
+        },
+        {
+          "path": "agent/lib/deliver-digest.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/deliver-digest.ts"
+        },
+        {
+          "path": "agent/lib/digest.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/digest.ts"
+        },
+        {
+          "path": "agent/lib/note-copy.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/note-copy.ts"
+        },
+        {
+          "path": "agent/lib/oauth.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/oauth.ts"
+        },
+        {
+          "path": "agent/lib/providers/http.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/providers/http.ts"
+        },
+        {
+          "path": "agent/lib/providers/hubspot.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/providers/hubspot.ts"
+        },
+        {
+          "path": "agent/lib/providers/index.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/providers/index.ts"
+        },
+        {
+          "path": "agent/lib/providers/salesforce.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/providers/salesforce.ts"
+        },
+        {
+          "path": "agent/lib/providers/stripe.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/providers/stripe.ts"
+        },
+        {
+          "path": "agent/lib/providers/types.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/providers/types.ts"
+        },
+        {
+          "path": "agent/lib/renewal-config.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/renewal-config.ts"
+        },
+        {
+          "path": "agent/lib/score.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/score.ts"
+        },
+        {
+          "path": "agent/lib/send-guard.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/send-guard.ts"
+        },
+        {
+          "path": "agent/lib/slack-post.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/slack-post.ts"
+        },
+        {
+          "path": "agent/lib/untrusted.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/untrusted.ts"
+        },
+        {
+          "path": "agent/lib/write-guard.ts",
+          "type": "registry:file",
+          "target": "~/agent/lib/write-guard.ts"
+        },
+        {
+          "path": "agent/schedules/churn-renewal-scan.ts",
+          "type": "registry:file",
+          "target": "~/agent/schedules/churn-renewal-scan.ts"
+        },
+        {
+          "path": "agent/skills/churn-renewal/SKILL.md",
+          "type": "registry:file",
+          "target": "~/agent/skills/churn-renewal/SKILL.md"
+        },
+        {
+          "path": "agent/tools/deliver_renewal_digest.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/deliver_renewal_digest.ts"
+        },
+        {
+          "path": "agent/tools/draft_save_play.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/draft_save_play.ts"
+        },
+        {
+          "path": "agent/tools/load_renewal_config.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/load_renewal_config.ts"
+        },
+        {
+          "path": "agent/tools/load_stripe_health.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/load_stripe_health.ts"
+        },
+        {
+          "path": "agent/tools/preview_renewal_digest.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/preview_renewal_digest.ts"
+        },
+        {
+          "path": "agent/tools/scan_renewal_accounts.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/scan_renewal_accounts.ts"
+        },
+        {
+          "path": "agent/tools/score_renewal_risk.ts",
+          "type": "registry:file",
+          "target": "~/agent/tools/score_renewal_risk.ts"
+        },
+        {
+          "path": "evals/cron-read-only.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/cron-read-only.eval.ts"
+        },
+        {
+          "path": "evals/evals.config.ts",
+          "type": "registry:file",
+          "target": "~/evals/evals.config.ts"
+        },
+        {
+          "path": "evals/fail-closed-health.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/fail-closed-health.eval.ts"
+        },
+        {
+          "path": "evals/never-auto-email.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/never-auto-email.eval.ts"
+        },
+        {
+          "path": "evals/never-write-without-confirm.eval.ts",
+          "type": "registry:file",
+          "target": "~/evals/never-write-without-confirm.eval.ts"
+        },
+        {
+          "path": "README.md",
+          "type": "registry:file",
+          "target": "~/agent/README.md"
+        }
+      ],
+      "meta": {
+        "slug": "churn-renewal-risk",
+        "category": "productivity",
+        "createdAt": "2026-09-11T12:00:00.000Z",
+        "updatedAt": "2026-09-11T12:00:00.000Z",
+        "docs": {
+          "overview": [
+            "Churn and Renewal Risk is an eve agent that reads HubSpot or Salesforce accounts whose renewal date falls in a lookahead window. It loads Stripe payment health through Vercel Connect, buckets Healthy, Watch, and At-risk, and waits for you before any CRM note.",
+            "You interact with it through environment variables and Slack. Set a HubSpot or Salesforce Connect UID, a Stripe Connect UID, and Slack Connect, then trigger churn-renewal-scan. The agent previews every digest and only posts when confirmSend is true. CRM notes stay behind draft_save_play.",
+            "It is useful when renewal owners want a movers digest without auto-email. Fail-closed Stripe lookups stay unscored. At-risk rows become a save-play note only after Eve approval. The append-only audit log records scored, delivered, approved, written, and refused."
+          ],
+          "howItWorks": [
+            "On the churn-renewal-scan schedule (cron from CHURN_RENEWAL_CRON, default Monday 08:00 UTC), the agent loads the churn-renewal skill.",
+            "It calls load_renewal_config and stops when a HubSpot or Salesforce Connect UID, Stripe Connect, or Slack delivery is missing.",
+            "scan_renewal_accounts mints a Vercel Connect token and lists renewal-window companies or accounts. That tool is read-only and never writes a note.",
+            "load_stripe_health looks up payment signals. Missing or invalid customers fail closed. score_renewal_risk then buckets Healthy, Watch, and At-risk and writes the snapshot into the append-only audit log.",
+            "If there are movers, the agent calls preview_renewal_digest, then deliver_renewal_digest with confirmSend true. That tool pauses for Eve approval before the Slack Connect channel. The cron path does not call draft_save_play.",
+            "Four evals cover never-write-without-confirm, fail-closed health, never auto-email the customer, and a cron path that stays read-only."
+          ],
+          "useCases": [
+            {
+              "title": "Past-due Stripe, At-risk mover",
+              "body": "A HubSpot company renews in forty days and Stripe marks the customer delinquent. score_renewal_risk buckets At-risk. Slack lists the mover. draft_save_play writes a company note only after you approve with confirmWrite true."
+            },
+            {
+              "title": "Healthy last week, Watch this week",
+              "body": "A Salesforce account was Healthy on the prior audit snapshot. Renewal is now nine days out. The score moves to Watch. deliver_renewal_digest posts that mover after confirmSend and Eve approval."
+            },
+            {
+              "title": "Missing Stripe customer fails closed",
+              "body": "An account has a renewal date but no Stripe customer id. load_stripe_health returns failClosed. The account is not scored Healthy. No save-play note is invented."
+            },
+            {
+              "title": "Monday cron, Slack review",
+              "body": "Set CHURN_RENEWAL_CRON to Monday mornings and Slack Connect. Operators get one movers digest in the Eve Slack channel. The cron path stops after deliver_renewal_digest. Notes wait for chat plus approval."
+            }
+          ],
+          "requirements": [
+            {
+              "name": "AI_GATEWAY_API_KEY",
+              "body": "A model credential for the deployment, either a Vercel AI Gateway API key or AI Gateway OIDC, so the agent can call zai/glm-5.2."
+            },
+            {
+              "name": "CRM_PROVIDER",
+              "body": "Optional force of hubspot or salesforce. When empty, the first complete Connect UID wins."
+            },
+            {
+              "name": "CHURN_RENEWAL_CRON",
+              "body": "5-field cron for churn-renewal-scan. Defaults to 0 8 * * 1 (Monday 08:00 UTC on Vercel)."
+            },
+            {
+              "name": "CHURN_RENEWAL_LOOKAHEAD_DAYS",
+              "body": "Days ahead to include CRM accounts by renewal date. Defaults to 90."
+            },
+            {
+              "name": "CHURN_RENEWAL_MAX_ACCOUNTS",
+              "body": "Maximum renewal-window accounts to read per scan. Defaults to 100."
+            },
+            {
+              "name": "CHURN_RENEWAL_AUDIT_PATH",
+              "body": "Append-only JSONL audit log. Defaults to .data/churn-renewal-audit.jsonl. Stores identifiers and buckets only. Use a durable volume if the app filesystem is ephemeral."
+            },
+            {
+              "name": "CHURN_RENEWAL_AUDIT_RETENTION_DAYS",
+              "body": "Days to keep audit rows. Defaults to 90. score_renewal_risk purges older rows."
+            },
+            {
+              "name": "CHURN_RENEWAL_SLACK_CONNECT_UID",
+              "body": "Vercel Connect Slack connector UID for the Eve Slack channel. Required with the channel id before deliver_renewal_digest will post."
+            },
+            {
+              "name": "CHURN_RENEWAL_SLACK_CHANNEL_ID",
+              "body": "Slack channel id for the movers digest. Required with the Slack Connect UID."
+            },
+            {
+              "name": "CHURN_RENEWAL_HUBSPOT_CONNECT_UID",
+              "body": "Vercel Connect HubSpot connector UID from vercel connect create hubspot. Mints crm.objects.companies.read, crm.objects.companies.write, and crm.objects.notes.write. Notes still require draft_save_play after Eve approval."
+            },
+            {
+              "name": "CHURN_RENEWAL_HUBSPOT_RENEWAL_PROPERTY",
+              "body": "HubSpot company date property used as the renewal window. Defaults to renewal_date."
+            },
+            {
+              "name": "CHURN_RENEWAL_HUBSPOT_STRIPE_CUSTOMER_PROPERTY",
+              "body": "HubSpot company property that stores the Stripe customer id. Defaults to stripe_customer_id."
+            },
+            {
+              "name": "CHURN_RENEWAL_SALESFORCE_CONNECT_UID",
+              "body": "Vercel Connect Salesforce connector UID from vercel connect create salesforce. Mints api and refresh_token."
+            },
+            {
+              "name": "CHURN_RENEWAL_SALESFORCE_INSTANCE_URL",
+              "body": "HTTPS Salesforce instance URL required when the provider is salesforce."
+            },
+            {
+              "name": "CHURN_RENEWAL_SALESFORCE_RENEWAL_FIELD",
+              "body": "Salesforce Account date field used as the renewal window. Defaults to Renewal_Date__c."
+            },
+            {
+              "name": "CHURN_RENEWAL_SALESFORCE_STRIPE_CUSTOMER_FIELD",
+              "body": "Salesforce Account field that stores the Stripe customer id. Defaults to Stripe_Customer_Id__c."
+            },
+            {
+              "name": "CHURN_RENEWAL_STRIPE_CONNECT_UID",
+              "body": "Vercel Connect Stripe connector UID from vercel connect create stripe. Mints read_only. Health lookups never write Stripe."
+            },
+            {
+              "name": "@vercel/connect",
+              "body": "Runtime dependency that mints HubSpot, Salesforce, Stripe, and Slack tokens through getTokenResponse and connectSlackCredentials. Slack posts with Eve callSlackApi after approval."
+            }
+          ],
+          "faqs": [
+            {
+              "question": "How do I install and run a weekly scan?",
+              "answer": "Install with npx shadcn@latest add @evex/churn-renewal-risk, copy .env.example, set HubSpot or Salesforce Connect, Stripe Connect, and Slack, then POST to /eve/v1/dev/schedules/churn-renewal-scan while iterating."
+            },
+            {
+              "question": "Does the cron path write to the CRM?",
+              "answer": "No. churn-renewal-scan reads, scores, and may deliver a Slack digest after approval. draft_save_play is the only write path and is not called on cron. confirmWrite must be true after a later Eve approval."
+            },
+            {
+              "question": "Does it ever email the customer?",
+              "answer": "No. There is no email tool. SMTP and send URLs are refused in code. Slack is the only outbound notify, and only for the movers digest after confirmSend and Eve approval."
+            },
+            {
+              "question": "What happens when Stripe health is missing?",
+              "answer": "load_stripe_health fail-closes when the customer id is missing, invalid, or the Stripe lookup fails. score_renewal_risk leaves that account unscored. It is never invented as Healthy."
+            },
+            {
+              "question": "How do I approve a save play?",
+              "answer": "Review the Slack digest, then call draft_save_play with the account, bucket, and confirmWrite true. The tool always pauses for Eve approval. Without that grant the CRM client refuses POST, PATCH, PUT, and DELETE."
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

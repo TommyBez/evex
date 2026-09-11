@@ -102,6 +102,7 @@ describe('getAgentInstallSummaryDescription', () => {
 const JOB_INTENT_METADATA_TITLES: Readonly<Record<string, string>> = {
   'brand-visual-asset-generator': 'Eve brand SVG agent',
   'branded-seo-page-builder': 'Eve branded SEO page agent',
+  'churn-renewal-risk': 'Eve churn and renewal risk - @evex/churn-renewal-risk',
   'code-reviewer': 'Eve PR review agent - install @evex/code-reviewer',
   'competitor-intel-monitor':
     'Eve competitor intel monitor - @evex/competitor-intel-monitor',
@@ -142,6 +143,8 @@ const JOB_INTENT_LEDES: Readonly<Record<string, string>> = {
   'brand-visual-asset-generator':
     'Generates brand-aligned SVG packs from a site.',
   'branded-seo-page-builder': 'Builds an on-brand SEO page from a domain.',
+  'churn-renewal-risk':
+    'Weekly cron scores CRM accounts in a renewal window against Stripe payment health, posts a Slack digest of Healthy/Watch/At-risk movers, and drafts save plays as CRM notes behind approval without emailing the customer.',
   'code-reviewer': 'PR review agent for Eve.',
   'competitor-intel-monitor':
     'Watches competitor pages on a schedule and sends a scored Slack or email digest when something changes.',
@@ -384,6 +387,7 @@ describe('shouldRenderAgentDescriptionParagraph', () => {
 })
 
 const DEMAND_BACKED_PLAYS = [
+  'churn-renewal-risk',
   'competitor-intel-monitor',
   'crm-hygiene-agent',
   'email-triage-assistant',
@@ -395,6 +399,8 @@ const DEMAND_BACKED_PLAYS = [
 ] as const
 
 const DEMAND_BACKED_DESCRIPTIONS: Readonly<Record<string, string>> = {
+  'churn-renewal-risk':
+    'Churn and renewal risk scanner via Connect CRM and Stripe that Slack-digests Healthy/Watch/At-risk movers and drafts HITL CRM save plays without auto-emailing customers.',
   'competitor-intel-monitor':
     'Scheduled competitor URL monitor that diffs pages and delivers scored Slack or email digests.',
   'crm-hygiene-agent':
@@ -414,6 +420,7 @@ const DEMAND_BACKED_DESCRIPTIONS: Readonly<Record<string, string>> = {
 }
 
 const DEMAND_BACKED_LEDE_STEMS: Readonly<Record<string, string>> = {
+  'churn-renewal-risk': 'weekly cron scores crm accounts',
   'competitor-intel-monitor': 'watches competitor pages on a schedule',
   'crm-hygiene-agent': 'scans hubspot, salesforce, or pipedrive',
   'email-triage-assistant': 'triages gmail, outlook, or imap',
@@ -790,6 +797,41 @@ describe('getAgentDefinitionBlock', () => {
     )
     expect(block.plainText).toContain(
       'npx shadcn@latest add @evex/crm-hygiene-agent',
+    )
+    expect(block.plainText).not.toContain('eve add')
+  })
+
+  it('uses a distinct lowercase What-is clause for churn-renewal-risk', () => {
+    const agent = listStaticAgents().find(
+      (item) => item.slug === 'churn-renewal-risk',
+    )
+    expect(agent).toBeDefined()
+    if (!agent) {
+      return
+    }
+
+    const job =
+      'scans renewal-dated CRM accounts with Stripe health on a cron, Slack-digests risk buckets, and drafts owner save plays as approved CRM notes'
+    expect(job.startsWith('scans')).toBe(true)
+    expect(job.endsWith('.')).toBe(false)
+
+    const lede = getAgentJobIntentLede('churn-renewal-risk')
+    const block = getAgentDefinitionBlock(agent)
+    expect(lede).toBe(
+      'Weekly cron scores CRM accounts in a renewal window against Stripe payment health, posts a Slack digest of Healthy/Watch/At-risk movers, and drafts save plays as CRM notes behind approval without emailing the customer.',
+    )
+    expect(agent.description).toBe(
+      'Churn and renewal risk scanner via Connect CRM and Stripe that Slack-digests Healthy/Watch/At-risk movers and drafts HITL CRM save plays without auto-emailing customers.',
+    )
+    expect(block.plainText).not.toContain(lede)
+    expect(block.plainText.toLowerCase()).not.toContain(
+      'weekly cron scores crm accounts',
+    )
+    expect(block.plainText).toContain(
+      `Churn and Renewal Risk is an Eve agent that ${job}.`,
+    )
+    expect(block.plainText).toContain(
+      'npx shadcn@latest add @evex/churn-renewal-risk',
     )
     expect(block.plainText).not.toContain('eve add')
   })
