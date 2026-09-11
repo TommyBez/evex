@@ -115,6 +115,8 @@ const JOB_INTENT_METADATA_TITLES: Readonly<Record<string, string>> = {
     'Eve CI failure agent - install @evex/github-ci-explainer',
   'github-issue-maintainer':
     'Eve GitHub issue agent - install @evex/github-issue-maintainer',
+  'inbound-lead-qualifier':
+    'Eve inbound lead qualifier - @evex/inbound-lead-qualifier',
   'invoice-chase-drafter':
     'Eve invoice chase drafter - @evex/invoice-chase-drafter',
   'knowledge-base-gardener':
@@ -149,6 +151,8 @@ const JOB_INTENT_LEDES: Readonly<Record<string, string>> = {
   'eve-agent-builder': 'Scaffolds, checks, and deploys a new Eve agent.',
   'github-ci-explainer': 'Explains failed GitHub Actions checks from the log.',
   'github-issue-maintainer': 'GitHub issue agent for Eve.',
+  'inbound-lead-qualifier':
+    'Takes inbound leads from a signed webhook, CRM scan, or Typeform poll, enriches and scores ICP fit, then drafts a CRM note and Slack-pings only the hot ones.',
   'invoice-chase-drafter':
     'On a weekday schedule, pulls open AR from QuickBooks or Xero over Connect, ages it into buckets, and drafts reminder emails into Drafts while Slack gets the finance digest.',
   'knowledge-base-gardener':
@@ -379,6 +383,7 @@ const DEMAND_BACKED_PLAYS = [
   'competitor-intel-monitor',
   'crm-hygiene-agent',
   'email-triage-assistant',
+  'inbound-lead-qualifier',
   'invoice-chase-drafter',
   'knowledge-base-gardener',
   'meeting-action-extractor',
@@ -391,6 +396,8 @@ const DEMAND_BACKED_DESCRIPTIONS: Readonly<Record<string, string>> = {
     'Scheduled CRM hygiene via Connect that proposes dedupe, normalize, and enrich batches for human approval before any write.',
   'email-triage-assistant':
     'Inbox triage that classifies threads and writes draft replies without sending.',
+  'inbound-lead-qualifier':
+    'Inbound lead qualifier via signed intake or Connect CRM/Typeform that scores ICP fit, drafts approved CRM notes, and Slack-notifies hot leads only.',
   'invoice-chase-drafter':
     'Weekday AR chase via Connect that drafts mailbox reminders from QuickBooks or Xero and posts an idempotent Slack digest after a paid re-check.',
   'knowledge-base-gardener':
@@ -403,6 +410,7 @@ const DEMAND_BACKED_LEDE_STEMS: Readonly<Record<string, string>> = {
   'competitor-intel-monitor': 'watches competitor pages on a schedule',
   'crm-hygiene-agent': 'scans hubspot, salesforce, or pipedrive',
   'email-triage-assistant': 'triages gmail, outlook, or imap',
+  'inbound-lead-qualifier': 'takes inbound leads from a signed webhook',
   'invoice-chase-drafter': 'pulls open ar from quickbooks',
   'knowledge-base-gardener': 'finds stale product docs',
   'meeting-action-extractor':
@@ -810,6 +818,41 @@ describe('getAgentDefinitionBlock', () => {
     expect(block.plainText).toContain(
       'npx shadcn@latest add @evex/email-triage-assistant',
     )
+  })
+
+  it('uses a distinct lowercase What-is clause for inbound-lead-qualifier', () => {
+    const agent = listStaticAgents().find(
+      (item) => item.slug === 'inbound-lead-qualifier',
+    )
+    expect(agent).toBeDefined()
+    if (!agent) {
+      return
+    }
+
+    const job =
+      'ingests leads over push or cron, enriches and scores them, drafts a CRM note behind approval, and posts only hot leads to Slack'
+    expect(job.startsWith('ingests')).toBe(true)
+    expect(job.endsWith('.')).toBe(false)
+
+    const lede = getAgentJobIntentLede('inbound-lead-qualifier')
+    const block = getAgentDefinitionBlock(agent)
+    expect(lede).toBe(
+      'Takes inbound leads from a signed webhook, CRM scan, or Typeform poll, enriches and scores ICP fit, then drafts a CRM note and Slack-pings only the hot ones.',
+    )
+    expect(agent.description).toBe(
+      'Inbound lead qualifier via signed intake or Connect CRM/Typeform that scores ICP fit, drafts approved CRM notes, and Slack-notifies hot leads only.',
+    )
+    expect(block.plainText).not.toContain(lede)
+    expect(block.plainText.toLowerCase()).not.toContain(
+      'takes inbound leads from a signed webhook',
+    )
+    expect(block.plainText).toContain(
+      `Inbound Lead Qualifier is an Eve agent that ${job}.`,
+    )
+    expect(block.plainText).toContain(
+      'npx shadcn@latest add @evex/inbound-lead-qualifier',
+    )
+    expect(block.plainText).not.toContain('eve add')
   })
 
   it('uses a distinct lowercase What-is clause for invoice-chase-drafter', () => {
